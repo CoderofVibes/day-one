@@ -39,6 +39,7 @@
 | README | Must work for AI judges: what it is, the problem, and "do X → see Y" steps to try it. No marketing. Tool-neutral (Codex judges too). |
 | Payout | Mainnet NEAR account (human creates it) |
 | Prior-work rule | The only rule: "Build the project during the hackathon." Git history is the evidence. |
+| Form limits | Project name 2–80 chars, unique; description 20–2000 chars; URLs ≤300. A reused name or email is rejected. **Leave the "Website" field empty**: HACKATHON.md calls it a spam honeypot (research 19). |
 
 **Target tracks (ids), ranked by fit:** `realworld` (Real-World Money), `business` (Autonomous Business — site wording: "humans setting constraints"), `security` (AI Security & Defense), `agents` (Agent Economy). Conditional: `swarms` if group purchasing is built; `privacy` only if Kevin's inference runs on NEAR AI Cloud with attestation shown. Tag only what exists on Nov 13.
 
@@ -170,7 +171,7 @@ Everything below is in scope. The tiers are **build order and cut order**, not a
 
 Lead with what is NEAR-specific:
 
-1. **Org chart = account tree, permissions = keys.** `plant-b.acmeholdings.near` is a sub-account of the acquirer; Kevin's function-call keys can only call the policy and escrow contracts. Named accounts, sub-accounts and access keys are native to NEAR, not bolted on.
+1. **Org chart = account tree, permissions = keys.** `plant-b.acme-holdings.testnet` is a sub-account of the acquirer and `kevin.plant-b.acme-holdings.testnet` sits under it; Kevin's function-call key can only call the spend-policy contract, and cannot move tokens at all. Named accounts, sub-accounts and access keys are native to NEAR, not bolted on. (Precisely: the tree is a naming and creation hierarchy; a parent has no control over a sub-account after creation. Authority comes from keys and contract checks.)
 2. **Enforced, not logged:** spending limits live in a contract outside any one vendor's database; HQ, plant, supplier and auditor see the same rule and the same refusals.
 3. **Cross-company neutrality:** the acquirer's purchasing agent and a supplier's sales agent settle on a layer neither company controls.
 4. **Instant settlement on delivery** in stablecoins replaces net-30 paper chases.
@@ -301,7 +302,7 @@ Plan for half the human's days to be lost. Claude Code sessions should be resuma
 ## 13. Constraints
 
 - **Solo developer on paternity leave with a newborn:** plan for interrupted, unpredictable sessions; small tasks; always resumable; tasks that run unattended for 30–60 minutes and end in a commit.
-- **Disk:** ~100 GB free, shared with an active game project. Budget ~15–25 GB. **No local NEAR node, no local LLMs.** Periodic `cargo clean`; prune Docker if used.
+- **Disk:** about 50 GB free on C: (measured 2026-10-22), shared with an active game project. Budget ≤15 GB. **No local NEAR node, no local LLMs.** Periodic `cargo clean`; prune Docker if used.
 - **Testnet only** for development; mainnet only for the payout account (and, only with explicit approval, a tiny Intents dry run).
 - **Fictional data only** — nothing from the human's former employer.
 - **No compliance claims** (GMP / 21 CFR etc.) — "audit-friendly records" only.
@@ -331,7 +332,20 @@ Plan for half the human's days to be lost. Claude Code sessions should be resuma
 
 ---
 
-## 15. Changes from v1
+## 15. Phase 0 outcomes (2026-10-22)
+
+Phase 0 is complete. Specs and plans are in `docs/`; research with sources is in `docs/research/`; decisions for the human are in `docs/OPEN_QUESTIONS.md`. Research changed these points; the docs already reflect them:
+
+- **Kevin's key cannot move tokens.** Function-call keys cannot attach any deposit, and token transfers need 1 yoctoNEAR. So the plant budget sits in the spend-policy contract, which funds escrow itself once its rules pass (research 01, 03).
+- **Approval carries the PO terms.** A refused attempt is rolled back, so nothing is stored for a bare `approve(po_id)`. The director approves exact terms; Kevin retries the identical call (research 04).
+- **Token.** Circle testnet USDC exists, but the faucet gives 20 USDC per 2 hours. Default: main demo in a labeled test token (DTUSD), plus one real-USDC PO (research 01; OPEN_QUESTIONS 4).
+- **Contracts build and test in WSL2.** The NEAR test sandbox has no Windows binary (research 08).
+- **Relayer is ours.** No hosted relayer exists; near-api-js 7.3.1 builds and relays meta-transactions in-process (research 06).
+- **Vision can stay on NEAR AI Cloud.** Its attested enclave tier includes vision models; a Nov 2 bake-off decides, with Claude Sonnet as fallback (research 10, 13).
+- **OutLayer, Trezu/Sputnik and Intents are not dependencies.** OutLayer checks policy off-chain, so its refusals would not appear on the explorer (research 11).
+- **Anchoring folds into spend-policy** as stored hashes plus events, with a keyless verify script (research 09).
+
+## 16. Changes from v1
 
 - Spend-policy contract named as the hero; "refused by the chain, then approved by text" is the defining demo beat.
 - NEAR Intents removed from the spine (no testnet; not needed for same-chain USDC). Direct NEP-141 settlement with Circle's testnet USDC.
