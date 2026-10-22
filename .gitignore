@@ -1,0 +1,38 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+near-credentials/
+.near-credentials/
+
+# Node
+node_modules/
+dist/
+build/
+.vite/
+coverage/
+*.log
+
+# Rust
+target/
+**/*.rs.bk
+
+# Local data
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+data/runtime/
+
+# Demo recordings and large media
+recordings/
+*.mp4
+*.mov
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
