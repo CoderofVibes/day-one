@@ -27,7 +27,7 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 
 ### Human tasks [H] — in priority order
 1. **Answer `docs/OPEN_QUESTIONS.md`**, at least the "before Nov 1" group, including #17–19 (which Phase 0 package is canonical, a private GitHub remote, unattended runs).
-1b. **Finish `wrangler login`** so Claude can deploy the Muse bridge relay; then send Muse the Worker URL only.
+1b. ~~**Finish `wrangler login`**~~ Done Oct 25: relay deployed at `https://muse-claude-bridge.coderofvibes.workers.dev`, MCP server registered in Claude Code's user config, first message and the three canonical docs sent to Muse. **Still open:** restart the Claude desktop app so the bridge tools load; give Muse the URL and the token (token file is outside the repo, never in chat).
 2. **Create the two top-level testnet accounts early** (name squatting): `acme-holdings.testnet` and `dayone-relayer.testnet`. Command in research 05. Needs near-cli-rs (step 4).
 3. ~~**Install WSL2 Ubuntu**~~ Done Oct 25: Ubuntu 26.04.1 LTS, user `tony`, no reboot was needed. **Still open:** run `sudo apt-get install -y build-essential` in the Ubuntu window (needs your password) so Rust has a C linker.
 4. ~~**Install Node 24 LTS** and **near-cli-rs 0.30.1**~~ Done Oct 25: Node 24.22.1; near-cli-rs 0.30.1 at `C:\Users\antho\.cargo\bin\near.exe` (the npm route fails on this PC because Git's `tar` misreads `C:\` paths; the PowerShell installer works).
@@ -43,7 +43,7 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 - [x] [I] In WSL2: rustup stable 1.99.1, `wasm32-unknown-unknown`, cargo-near 0.22.0 installed Oct 25. Disk recorded in RISKS.md.
 - [x] [I] Verified Oct 25: `node -v` 24.22.1, `near --version` 0.30.1, `cargo near --version` 0.22.0. No project code.
 - [ ] [I] After Tony installs `build-essential`: build and test one throwaway near-sdk hello-world contract in a scratch folder outside the repo (toolchain check only, nothing committed) and record build time and `target/` size in RISKS.md.
-- [ ] [I] Send Muse the current `PLAN.md`, `FICTIONAL_DATA.md` and `OPEN_QUESTIONS.md` over the bridge once it is live (follows the first reply).
+- [x] [I] Sent Muse the current `PLAN.md`, `FICTIONAL_DATA.md` and `OPEN_QUESTIONS.md` over the bridge (messages #2–#4, Oct 25), after the first reply (#1).
 
 ---
 
