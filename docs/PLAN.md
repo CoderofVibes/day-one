@@ -29,8 +29,8 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 1. **Answer `docs/OPEN_QUESTIONS.md`**, at least the "before Nov 1" group, including #17–19 (which Phase 0 package is canonical, a private GitHub remote, unattended runs).
 1b. **Finish `wrangler login`** so Claude can deploy the Muse bridge relay; then send Muse the Worker URL only.
 2. **Create the two top-level testnet accounts early** (name squatting): `acme-holdings.testnet` and `dayone-relayer.testnet`. Command in research 05. Needs near-cli-rs (step 4).
-3. **Install WSL2 Ubuntu** (admin PowerShell `wsl --install -d Ubuntu`, then reboot). Needed for contract builds and tests.
-4. **Install Node 24 LTS** on Windows (e.g. `winget install OpenJS.NodeJS.LTS`) and **near-cli-rs 0.30.1** (Windows MSI or installer, research 05). Or approve Claude doing installs in a prep session.
+3. ~~**Install WSL2 Ubuntu**~~ Done Oct 25: Ubuntu 26.04.1 LTS, user `tony`, no reboot was needed. **Still open:** run `sudo apt-get install -y build-essential` in the Ubuntu window (needs your password) so Rust has a C linker.
+4. ~~**Install Node 24 LTS** and **near-cli-rs 0.30.1**~~ Done Oct 25: Node 24.22.1; near-cli-rs 0.30.1 at `C:\Users\antho\.cargo\bin\near.exe` (the npm route fails on this PC because Git's `tar` misreads `C:\` paths; the PowerShell installer works).
 5. **Collect testnet NEAR:** target 40 NEAR into `acme-holdings.testnet` (faucet; ask NEAR Discord or Telegram if short).
 6. **Collect Circle testnet USDC:** faucet.circle.com, "Near Testnet", 20 USDC per address every 2 hours, CAPTCHA. Register the account with the USDC contract first (research 01). Target 100 USDC. **Ask in Circle's Discord** for a larger testnet grant.
 7. **NEAR AI Cloud:** create an account, an API key, and add about $5 of credit.
@@ -40,8 +40,10 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 11. **X account:** confirm it can post video.
 
 ### Claude tasks in prep (tooling only, once the human approves installs)
-- [ ] [I] In WSL2: install rustup stable (≥1.95), `wasm32-unknown-unknown`, cargo-near 0.22.0. Record disk use in RISKS.md.
-- [ ] [I] Verify `node -v`, `near --version`, `cargo near --version`. No project code.
+- [x] [I] In WSL2: rustup stable 1.99.1, `wasm32-unknown-unknown`, cargo-near 0.22.0 installed Oct 25. Disk recorded in RISKS.md.
+- [x] [I] Verified Oct 25: `node -v` 24.22.1, `near --version` 0.30.1, `cargo near --version` 0.22.0. No project code.
+- [ ] [I] After Tony installs `build-essential`: build and test one throwaway near-sdk hello-world contract in a scratch folder outside the repo (toolchain check only, nothing committed) and record build time and `target/` size in RISKS.md.
+- [ ] [I] Send Muse the current `PLAN.md`, `FICTIONAL_DATA.md` and `OPEN_QUESTIONS.md` over the bridge once it is live (follows the first reply).
 
 ---
 

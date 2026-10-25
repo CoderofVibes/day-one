@@ -17,7 +17,11 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 
 | Task | Command |
 |---|---|
-| _(none yet — build work starts 2026-11-01)_ | |
+| Check Node (Windows) | `node --version` → v24.22.1 |
+| Check NEAR CLI (Windows) | `near --version` → near-cli-rs 0.30.1 (installed at `C:\Users\antho\.cargo\bin`) |
+| Run a command in WSL Ubuntu from Windows | `wsl -d Ubuntu -- bash -lc '<command>'` |
+| Check the contract toolchain (WSL) | `wsl -d Ubuntu -- bash -lc 'source ~/.cargo/env; rustc --version; cargo near --version'` → 1.99.1, 0.22.0 |
+| _(build commands are added from 2026-11-01)_ | |
 
 ## Team and working protocol
 
