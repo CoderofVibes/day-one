@@ -187,7 +187,7 @@ Opening (draft):
 
 Stats (**re-cite from primary sources before use**: SBA Office of Advocacy, Census SUSB, PitchBook directly):
 - Small firms (<500 employees) are ~98% of US manufacturers; ~4.8M workers, ~41% of manufacturing employment — secondary: https://manufacturingleadgeneration.com/small-manufacturing-business-statistics/ (citing SBA/Census)
-- ~40% of small businesses are Boomer-owned; 3M+ expected to change hands within a decade — secondary: https://impactalpha.com/cdfis-are-the-key-to-saving-3-million-small-businesses-from-the-silver-tsunami/
+- The owner-succession claim in the opening ("millions of small businesses will change hands") needs a verified source before use. The earlier "~40% Boomer-owned" stat was dropped on Oct 25 as unverified; use the replacement from Muse's pitch-stats verification once it is in `docs/research/`.
 - Add-ons were 72.9% of US PE buyouts by deal count in 2025 (PitchBook) — secondary: https://www.peony.ink/blog/add-on-acquisition-strategy
 - Integration after close is where buy-and-build differentiates — https://capitalpad.com/private-equity-roll-up-statistics/
 
