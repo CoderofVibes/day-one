@@ -13,6 +13,12 @@ Each question has a recommendation. Reply with the number and "yes" to accept it
 7. **Who runs the testnet setup script.** It creates sub-accounts and keys on testnet from your local credentials. Recommend: Claude runs it on Nov 4 after you say yes in chat.
 8. **NEAR Discord.** Please ask: "Do research docs, specs and an empty repo skeleton made before Nov 1 count as allowed prep?" and "Is KYC required to receive a prize?"
 
+## Before Nov 1 — added Oct 25 (workflow)
+
+17. **Two Phase 0 packages exist.** This repo (committed Oct 22) and Muse's "Plan v2" folder (Oct 23–25) were produced separately from the same brief and disagree on fictional names (Hollow Pine / Acme Riverside vs Summit Ridge / Juniper Ridge), demo numbers (PO-1042 = $5,150 for 700 kg ascorbic acid vs $410 for 100 kg Vitamin C), the test token (DTUSD vs mock tUSDC), the data layer (Drizzle vs plain SQLite), the twin order (2D map first vs 3D first) and the plan structure. Recommend: **this repo is canonical**; Muse's three approved Plan v2 features and the pull-forward rule are now folded into `PLAN.md`; `FEATURES_V2.md` and `HANDOFF_FROM_MUSE.md` are kept as inputs. Muse stops editing its own copy of `docs/` and proposes changes through the bridge; Claude commits them. Muse's research findings that this repo lacks get checked against `docs/research/` one by one. Say "17 yes" or name the lineage you prefer.
+18. **Private GitHub remote.** Muse cannot read this repo (it is only on your PC), so it verifies work from descriptions, not from files, and scheduled unattended Claude runs cannot work on the code either. Recommend: create a **private** GitHub repository and let Claude push to it. Private is not public, so the hackathon's "build during the window" evidence is unaffected and the repo stays hidden until the Nov 13 confirmation. Pushing still needs your "yes" each time until you say otherwise. Say "18 yes" and the repo name.
+19. **Unattended runs.** Claude Code only works while a session is open; nothing runs between your sessions. For Claude to progress on its own, either (a) you open a session each morning and say "continue the plan" (the bridge inbox loads automatically), or (b) a scheduled Claude Code routine runs the plan every few hours; (b) needs #18. Recommend (a) now, (b) once #18 is done.
+
 ## By Nov 4
 
 9. **What a director approval overrides.** Recommend: for that one PO, it overrides the per-PO limit and the monthly caps, but never the plant budget. Alternative: per-PO limit only.

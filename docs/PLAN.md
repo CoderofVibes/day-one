@@ -13,6 +13,8 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 - **[H]** = needs the human (accounts, keys, CAPTCHA, approvals, recording, posting).
 - Tiers: **T0** spine, **T1** economy, **T2** polish (PROJECT_BRIEF §5). Nothing in T1 starts while a T0 item is broken.
 - Plan for half of each day to be lost. Buffers are built in on Nov 7, Nov 12 and Nov 14.
+- **Pull forward (Tony, Oct 23 and Oct 25).** When a day's work finishes early, start the next day's top task; do not wait for a go-ahead. Spine work first, then gated features whose gates are green. Hard gates never move: the Nov 2 vision decision, the Nov 7 spine checkpoint, the Nov 10 cut decision, the Nov 13 freeze, the Nov 14 submission, and every **[H]** confirmation item.
+- **Autonomous by default.** Claude and Muse work through this plan without checking in between tasks. Questions for Tony go into `OPEN_QUESTIONS.md` with a recommendation; work continues on whatever does not depend on the answer. See `AGENTS.md`, "Team and working protocol".
 
 ---
 
@@ -24,7 +26,8 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 - [x] Skeleton, `AGENTS.md`, `CLAUDE.md`, `.env.example`, local git repo
 
 ### Human tasks [H] — in priority order
-1. **Answer `docs/OPEN_QUESTIONS.md`**, at least the "before Nov 1" group.
+1. **Answer `docs/OPEN_QUESTIONS.md`**, at least the "before Nov 1" group, including #17–19 (which Phase 0 package is canonical, a private GitHub remote, unattended runs).
+1b. **Finish `wrangler login`** so Claude can deploy the Muse bridge relay; then send Muse the Worker URL only.
 2. **Create the two top-level testnet accounts early** (name squatting): `acme-holdings.testnet` and `dayone-relayer.testnet`. Command in research 05. Needs near-cli-rs (step 4).
 3. **Install WSL2 Ubuntu** (admin PowerShell `wsl --install -d Ubuntu`, then reboot). Needed for contract builds and tests.
 4. **Install Node 24 LTS** on Windows (e.g. `winget install OpenJS.NodeJS.LTS`) and **near-cli-rs 0.30.1** (Windows MSI or installer, research 05). Or approve Claude doing installs in a prep session.
@@ -90,6 +93,7 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 ### Sun Nov 8 — supplier agents
 - [ ] [I] `agents/suppliers/`: rule-based `SupplierAgent` per vendor with its own account; RFQ over the bus; quote hashes anchored from supplier accounts; QuickChem excluded with a reason; escrow pays the supplier's own account.
 - [ ] [I] Three-facility view and the ASC-261009-01 discrepancy flow with a proposed adjustment.
+- [ ] [I] **Spreadsheet import wizard** (Plan v2, `FEATURES_V2.md` §1). Gate: ledger and seed path green since Nov 1. Messy CSV/XLSX → column mapping → junk, duplicate and unit-mismatch flags → purchaser confirms → opening inventory posts through the seed path. Anything outside the defined mess patterns goes to review, never guessed.
 
 ### Mon Nov 9 — map and privacy
 - [ ] [I] 2D plant map (React + SVG) driven by `deriveTwinState(events, t)`: departments come online, quarantine distinct, money and material flows.
@@ -100,9 +104,12 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 - [ ] **Morning cut decision.** Spine flawless in live and replay, T1 done → start T2. Otherwise T2 is cut and the rest of the week is spine, README and demo.
 - [ ] [I] README first full draft from `README_TEMPLATE.md`, with the claims table filled from real files, tests and tx hashes.
 - [ ] [I] T2 (if go): 3D twin in `web/src/twin3d/` from the same `TwinState` and layout.
+- [ ] [I] **Bookkeeper pack** (Plan v2, `FEATURES_V2.md` §2). Gate: settlement works end to end on testnet (Nov 6–7). QuickBooks-friendly CSV export of settled POs from the accounting view, plus duplicate-invoice and price-drift alert queries shown there.
+- [ ] [I] **Cross-plant transfer suggestions, forecast side** (Plan v2, `FEATURES_V2.md` §3). Gate: the forecast job works (Nov 5). Forecast output includes transfer proposals (surplus plant → short plant, valued against the avoided purchase). An approved proposal writes a normal transfer event pair through the existing ledger API.
 
 ### Wed Nov 11 — T2
 - [ ] [I] 3D twin continued, record-mode fixed-step clock.
+- [ ] [I] **Transfer suggestions UI card** (Plan v2): one line per proposal (what, from where, what it saves) with approve/dismiss. Only if the Nov 10 forecast-side proposals exist.
 - [ ] [I] Group purchasing across three plants: pooled RFQ, supplier bids, one PO allocated per plant (`swarms`).
 
 ### Thu Nov 12 — T2 and buffer
@@ -124,6 +131,8 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 ---
 
 ## Cut list (cut from the bottom first)
+
+The three Plan v2 features sit behind their own gates and are cut before anything on this list if their gate is red on the day.
 
 1. NEAR Auth spike
 2. Kevin as API/MCP server
