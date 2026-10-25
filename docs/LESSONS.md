@@ -8,6 +8,7 @@ _(none yet)_
 
 ## Lessons
 
+- **2026-10-25** — Python's default `urllib` user-agent got HTTP 403 from the Cloudflare relay (bot filter) while curl, PowerShell and Node succeeded. Rule: scripts that call the bridge directly set a `User-Agent` header.
 - **2026-10-25** — Claude's shell runs in a sandbox: a global `npm install -g` and a PowerShell `Set-Content` both landed in a virtual overlay the human could not see, and nobody noticed until a command failed on his side. Rule: after installing or writing anything outside the repo, verify from an independent vantage point (`wsl -d Ubuntu -- ls /mnt/c/...` sees the real disk) before telling the human it exists.
 - **2026-10-25** — Piping a string from PowerShell into `wrangler secret put` stored the token with a trailing newline, so every request got 401. Rule: upload secrets with `wrangler secret bulk <json file>`, then test one authenticated request before declaring the deploy done.
 - **2026-10-25** — Two agents produced two Phase 0 packages from the same brief without noticing for three days. Rule: one writer per artefact; git is the single source of truth; the other agent proposes, never edits its own copy. (Promoted to `AGENTS.md`, "Team and working protocol".)

@@ -32,7 +32,7 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 3. ~~**Install WSL2 Ubuntu**~~ Done Oct 25: Ubuntu 26.04.1 LTS, user `tony`, no reboot was needed. **Still open:** run `sudo apt-get install -y build-essential` in the Ubuntu window (needs your password) so Rust has a C linker.
 4. ~~**Install Node 24 LTS** and **near-cli-rs 0.30.1**~~ Done Oct 25: Node 24.22.1; near-cli-rs 0.30.1 at `C:\Users\antho\.cargo\bin\near.exe` (the npm route fails on this PC because Git's `tar` misreads `C:\` paths; the PowerShell installer works).
 5. **Collect testnet NEAR:** target 40 NEAR into `acme-holdings.testnet` (faucet; ask NEAR Discord or Telegram if short).
-6. **Collect Circle testnet USDC:** faucet.circle.com, "Near Testnet", 20 USDC per address every 2 hours, CAPTCHA. Register the account with the USDC contract first (research 01). Target 100 USDC. **Ask in Circle's Discord** for a larger testnet grant.
+6. **Collect Circle testnet USDC:** faucet.circle.com, "Near Testnet", 20 USDC per address every 2 hours, CAPTCHA. Register the account with the USDC contract first (research 01). Target 100 USDC. **Ask in Circle's Discord** for a larger testnet grant. After the **first** claim, tell Claude which account you used, so Claude can confirm on-chain that the balance landed in Circle's contract (`3e22…b8af`); the faucet's delivery to NEAR is the one thing not yet proven (research 01, re-verified Oct 25).
 7. **NEAR AI Cloud:** create an account, an API key, and add about $5 of credit.
 8. **Anthropic API (fallback):** link a Console organization to the Max plan to claim the $200/month API credit; create a dedicated workspace with a spend limit and an API key.
 9. **NEAR Discord:** ask what counts as prep (OPEN_QUESTIONS).
@@ -135,6 +135,8 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 ## Cut list (cut from the bottom first)
 
 The three Plan v2 features sit behind their own gates and are cut before anything on this list if their gate is red on the day.
+
+**Shared gate for all three Plan v2 features** (proposed by Claude, accepted by Muse and Tony, Oct 25): none of them starts until the full loop — refusal → approval → escrow → QC release → payment — has run end to end on testnet at least once (the Nov 7 spine checkpoint). Their individual gates apply on top.
 
 1. NEAR Auth spike
 2. Kevin as API/MCP server
