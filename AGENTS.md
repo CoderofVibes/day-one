@@ -39,7 +39,7 @@ Muse and Claude talk through the **muse-claude-bridge**: a hosted relay with a l
 ## Hard rules
 
 1. **Testnet only.** Never deploy to mainnet, sign a mainnet transaction, or spend real tokens without explicit confirmation from the human in chat.
-2. **Never without explicit human confirmation:** pushing, making the repo public, posting on X or anywhere else, submitting the hackathon form, mainnet anything.
+2. **Never without explicit human confirmation:** making the repo public, posting on X or anywhere else, submitting the hackathon form, mainnet anything. Pushing to the **private** `origin` (github.com/CoderofVibes/day-one) has standing approval from Tony (Oct 25, 2026); pushing anywhere else, or changing visibility, does not.
 3. **No secrets in git.** Keys, API tokens and account private keys live in `.env` (gitignored) or `~/.near-credentials`. `.env.example` lists every variable with a placeholder.
 4. **Fictional data only.** Every company, person, product, lot, price and batch record is invented. Nothing from any real employer.
 5. **No compliance claims.** Say "audit-friendly records". Never claim GMP, 21 CFR Part 11 or any other compliance.
