@@ -21,7 +21,9 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Check NEAR CLI (Windows) | `near --version` → near-cli-rs 0.30.1 (installed at `C:\Users\antho\.cargo\bin`) |
 | Run a command in WSL Ubuntu from Windows | `wsl -d Ubuntu -- bash -lc '<command>'` |
 | Check the contract toolchain (WSL) | `wsl -d Ubuntu -- bash -lc 'source ~/.cargo/env; rustc --version; cargo near --version'` → 1.99.1, 0.22.0 |
-| _(build commands are added from 2026-11-01)_ | |
+| Build a contract (WSL, from its folder) | `cargo near build non-reproducible-wasm` → `target/near/<name>.wasm` (verified Oct 25 on a throwaway template) |
+| Test a contract incl. sandbox (WSL) | `cargo test` (verified Oct 25; then `cargo clean`, target grows to ~2.5 GB) |
+| _(project build commands are added from 2026-11-01)_ | |
 
 ## Team and working protocol
 

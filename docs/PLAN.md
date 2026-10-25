@@ -42,7 +42,7 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 ### Claude tasks in prep (tooling only, once the human approves installs)
 - [x] [I] In WSL2: rustup stable 1.99.1, `wasm32-unknown-unknown`, cargo-near 0.22.0 installed Oct 25. Disk recorded in RISKS.md.
 - [x] [I] Verified Oct 25: `node -v` 24.22.1, `near --version` 0.30.1, `cargo near --version` 0.22.0. No project code.
-- [ ] [I] After Tony installs `build-essential`: build and test one throwaway near-sdk hello-world contract in a scratch folder outside the repo (toolchain check only, nothing committed) and record build time and `target/` size in RISKS.md.
+- [x] [I] Oct 25: throwaway `cargo near new` contract in WSL scratch (deleted after): `cargo near build non-reproducible-wasm` 17 s, 102 KB wasm with ABI; `cargo test` 7 unit + 1 near-sandbox integration test passed. The sandbox runs in WSL, so CONTRACTS §7 integration tests are viable. Sizes in RISKS.md.
 - [x] [I] Sent Muse the current `PLAN.md`, `FICTIONAL_DATA.md` and `OPEN_QUESTIONS.md` over the bridge (messages #2–#4, Oct 25), after the first reply (#1).
 
 ---
