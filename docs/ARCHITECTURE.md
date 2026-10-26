@@ -54,8 +54,7 @@ flowchart LR
   end
 
   subgraph NEAR["NEAR testnet"]
-    Policy["spend-policy<br/>limits, approvals, anchors,<br/>holds plant budget"]
-    Escrow["po-escrow<br/>fund, receive, QC release, refund"]
+    Policy["spend-policy<br/>limits, approvals, PO escrow,<br/>QC release, anchors,<br/>holds plant budget"]
     Token["USDC (Circle) / DTUSD<br/>NEP-141"]
     SupAcct["supplier accounts"]
   end
@@ -76,9 +75,8 @@ flowchart LR
   Relayer --> Keys
   Relayer --> Chain
   Chain --> Policy
-  Chain --> Escrow
-  Policy -- ft_transfer_call --> Token -- ft_on_transfer --> Escrow
-  Escrow -- ft_transfer --> Token --> SupAcct
+  Token -- ft_on_transfer (treasury funds budget) --> Policy
+  Policy -- ft_transfer on QC release --> Token --> SupAcct
   LLM --> Attest
 ```
 
@@ -94,7 +92,6 @@ flowchart LR
 | `server/relayer` | Builds and relays staff delegate actions; allowlists receivers and methods | Relay deposits; relay non-staff senders |
 | `server/attestation` | Fetches and verifies NEAR AI Cloud attestation and per-response signatures | — |
 | `contracts/spend-policy` | Holds the plant budget; per-agent limits, caps, approvals, pause; funds escrow; record anchors | Pay suppliers |
-| `contracts/po-escrow` | PO funds state machine; release on QC, refund on reject/cancel | Accept funds from anyone but the policy contract |
 
 ---
 
@@ -105,7 +102,7 @@ flowchart LR
 | Spend limits, caps, approver, pause | **On-chain** (spend-policy) | "Enforced, not logged" |
 | PO authorization or refusal | **On-chain** | Refusal must be a visible chain result |
 | Director approval | **On-chain**, signed by director's key, relayer-paid | Kevin cannot forge it |
-| PO funds, escrow, release, refund | **On-chain** (token + po-escrow) | Settlement neither company controls |
+| PO funds, escrow, release, refund | **On-chain** (token + spend-policy escrow) | Settlement neither company controls |
 | Record fingerprints (batch records, lot event chain, receipts) | **On-chain** hashes in spend-policy + NEP-297 events | Tamper-evident, verifiable by anyone |
 | Supplier quote amounts and terms (Tier 1) | On-chain as a hash only | Prices stay private |
 | PO amount and supplier | On-chain (unavoidable for settlement) | Stated in README as a limitation |
@@ -125,8 +122,8 @@ Full list and creation commands: `CONTRACTS.md` §1 and research 05.
 |---|---|---|---|
 | `kevin.plant-b.acme-holdings.testnet` | Function-call key | `spend-policy`: `submit_po`, `cancel_po`, `anchor`, `anchor_batch` | Server env |
 | `director.plant-b…` | Function-call key | `spend-policy`: `approve_po`, `reject_po` | Server env (phone is simulated) |
-| `receiving.plant-b…` | Function-call key | `po-escrow`: `confirm_receipt` | Server env |
-| `qc.plant-b…` | Function-call key | `po-escrow`: `qc_release`, `qc_reject` | Server env |
+| `receiving.plant-b…` | Function-call key | `spend-policy`: `confirm_receipt` | Server env |
+| `qc.plant-b…` | Function-call key | `spend-policy`: `qc_release`, `qc_reject` | Server env |
 | Supplier accounts (Tier 1) | Full-access key | Their own account | Server env (the simulated supplier *is* the agent) |
 | `dayone-relayer.testnet` | Full-access key | Pays staff gas | Server env |
 | `acme-holdings.testnet` and contract accounts | Full-access keys | Deploy, configure, fund | Human's local credentials only; used by setup scripts |
@@ -158,8 +155,6 @@ sequenceDiagram
   participant S as server
   participant L as Linda (phone mock)
   participant R as relayer
-  participant T as token (USDC/DTUSD)
-  participant E as po-escrow
 
   K->>P: submit_po(PO-1042, northgate, 5150.00, raw_material, po_hash)
   P-->>K: PANIC "exceeds Kevin's per-PO limit of $2,500.00; director approval required"
@@ -171,16 +166,14 @@ sequenceDiagram
   R->>P: relayed tx (signer = relayer, predecessor = director)
   P-->>R: po_approved event
   K->>P: submit_po(same args) — retry
-  P->>T: ft_transfer_call(po-escrow, 5150.00, msg{po_id, supplier})
-  T->>E: ft_on_transfer(sender = spend-policy)
-  E-->>T: keep all (PO Funded)
-  P-->>K: escrow_funded event
+  P-->>K: po_authorized + po_funded (budget → escrow inside the same contract)
 ```
 
 ### 5.3 Receipt → QC → payment
+0. Northgate’s agent reads `get_po`, sees the funds held, and signs `accept_po` and `mark_shipped(PO-1042, supplier_lot)` from its own account.
 1. Tommy photographs the packing slip. Kevin matches it to PO-1042 (vendor, material, quantity, supplier lot).
-2. Server relays `po-escrow.confirm_receipt(PO-1042)` signed with Tommy's key. Lot event `received → quarantine`.
-3. Priya taps Release. Server relays `po-escrow.qc_release(PO-1042)` signed with Priya's key. Escrow pays the supplier with `ft_transfer`; a callback rolls back on failure. Lot event `quarantine → released`.
+2. Server relays `spend-policy.confirm_receipt(PO-1042)` signed with Tommy's key. Lot event `received → quarantine`.
+3. Priya taps Release. Server relays `spend-policy.qc_release(PO-1042)` signed with Priya's key. Escrow pays the supplier with `ft_transfer`; a callback rolls back on failure. Lot event `quarantine → released`.
 4. Marcy's screen shows "PO-1042 — paid $5,150.00", invoice matched to PO and receipt.
 
 ### 5.4 Supplier agents (Tier 1)
@@ -205,7 +198,6 @@ Determinism: seeded event list with fixed timestamps and a demo clock. Sampling 
 ```
 contracts/              Cargo workspace (built in WSL2)
   spend-policy/         limits, approvals, pause, anchors
-  po-escrow/            PO funds state machine
 agents/
   kevin/                workflow, tools, prompts
   suppliers/            created when Tier 1 starts

@@ -1,6 +1,8 @@
 # Contracts — Day One
 
-Two Rust contracts on NEAR testnet, one Cargo workspace, built and tested in WSL2. Design detail and alternatives considered are in research 03, 04, 08 and 09. This file is the build spec.
+**One** Rust contract on NEAR testnet, `spend-policy`, which holds the plant budget, enforces Kevin's limits, records approvals, escrows each PO, releases on QC and anchors records. Built and tested in WSL2. Design detail and alternatives are in research 03, 04, 08 and 09; the merge was decided by Tony on Oct 25 (OPEN_QUESTIONS #21, BUILD_ANALYSIS §4.2). This file is the build spec.
+
+The escrow lives inside the policy contract: approved funds move from `budget` to `escrowed[po_id]` internally, so there is no cross-contract funding hop. The only token transfers out are the payout to the supplier and the refund to the treasury. Separation of duties is unchanged: each account's key reaches only its own methods, and no key can move tokens.
 
 - `near-sdk` 5.29.1 (Rust ≥1.95), `cargo-near` 0.22.0, `near-contract-standards` 5.29.1
 - Build: `cargo near build non-reproducible-wasm` (reproducible Docker builds are skipped to save disk)
@@ -22,11 +24,10 @@ Root: `acme-holdings.testnet` (free on 2026-10-22; the human creates it before N
 | `plant-c.acme-holdings.testnet` | Facility C | none | 0.2 |
 | `kevin.plant-b.acme-holdings.testnet` | Kevin | FC: spend-policy `submit_po`, `cancel_po`, `anchor`, `anchor_batch`; allowance ~2 NEAR | 1 |
 | `director.plant-b.acme-holdings.testnet` | Linda, ops director | FC: spend-policy `approve_po`, `reject_po` | 0 |
-| `receiving.plant-b.acme-holdings.testnet` | Tommy, receiving | FC: po-escrow `confirm_receipt` | 0 |
-| `qc.plant-b.acme-holdings.testnet` | Priya, QC | FC: po-escrow `qc_release`, `qc_reject` | 0 |
-| `spend-policy.acme-holdings.testnet` | Spend-policy contract | none after deploy | 5 |
-| `po-escrow.acme-holdings.testnet` | PO escrow contract | none after deploy | 5 |
-| `spend-policy-usdc.acme-holdings.testnet`, `po-escrow-usdc.acme-holdings.testnet` | Same wasm, initialized with Circle USDC, for the real-USDC proof PO (§2) | none after deploy | 3 each |
+| `receiving.plant-b.acme-holdings.testnet` | Tommy, receiving | FC: spend-policy `confirm_receipt` | 0 |
+| `qc.plant-b.acme-holdings.testnet` | Priya, QC | FC: spend-policy `qc_release`, `qc_reject` | 0 |
+| `spend-policy.acme-holdings.testnet` | The contract: policy, escrow, anchors | none after deploy | 5 |
+| `spend-policy-usdc.acme-holdings.testnet` | Same wasm, initialized with Circle USDC, for the bonus real-USDC PO (§2) | none after deploy | 3 |
 | `dayone-relayer.testnet` | Day One's relayer (vendor-owned, outside Acme's tree) | full access | 10 |
 | `northgate-ingredients.testnet` | Supplier agent (qualified) | full access | 1 |
 | `ridgeway-ascorbics.testnet` | Supplier agent (qualified, second source) | full access | 1 |
@@ -50,13 +51,13 @@ The contracts are **token-agnostic**: the token account id is set at `new()` and
 | Circle testnet USDC | `3e2210e1184b45b64c8a434c0a7e7b23cc04ea7eb7a6c3c32520d03d4afcb8af` | Real stablecoin proof run. Faucet: 20 USDC per address every 2 hours, CAPTCHA (human only). |
 | Day One Test USD (DTUSD) | deployed by us, e.g. `dtusd.token.primitives.testnet` via the token factory, or the global FT contract | Demo POs at realistic dollar amounts. Name "Day One Test USD", symbol DTUSD, 6 decimals, our own icon, never the USDC logo. |
 
-**Default plan** (pending the human's answer in OPEN_QUESTIONS):
+**Decided Oct 25** (OPEN_QUESTIONS #22):
 - The main demo deployment settles in **DTUSD**, so PO-1042 can be a real $5,150.00.
-- A second deployment of the same wasm, initialized with **Circle USDC**, runs one complete small PO end to end (for example pH buffer ×2 at $9.50, total $19.00). It is recorded in replay mode.
-- If Circle grants a larger testnet allowance before Nov 4, the main deployment switches to USDC and DTUSD is dropped.
+- **Bonus, never a gate:** a second deployment of the same wasm, initialized with **Circle USDC**, runs one complete small PO end to end (pH buffer ×2 at $9.50, total $19.00), recorded in replay mode, once Tony has collected testnet USDC.
+- If Circle grants a larger testnet allowance, the main deployment may switch to USDC and DTUSD is dropped.
 - The README and the behind-the-curtain view name the token on every transfer. Amounts are never scaled.
 
-Every account that holds tokens is registered with `storage_deposit` (0.00125 NEAR each) by the setup script: spend-policy, po-escrow, all suppliers, the treasury.
+Every account that holds tokens is registered with `storage_deposit` (0.00125 NEAR each) by the setup script: spend-policy, all suppliers, the treasury.
 
 ---
 
@@ -71,8 +72,9 @@ pub struct SpendPolicy {
     owner: AccountId,                       // acme-holdings: config, pause, withdraw
     treasury: AccountId,                    // only allowed funder via ft_on_transfer
     token: AccountId,                       // USDC or DTUSD, set at init
-    escrow: AccountId,                      // po-escrow
     budget: u128,                           // unallocated token units held here
+    escrowed: u128,                         // sum of funds held for open POs (budget + escrowed = token balance)
+    roles: LookupMap<AccountId, PlantRoles>,// per plant: receiving and QC accounts
     agents: LookupMap<AccountId, AgentPolicy>,
     category_caps: LookupMap<String, u128>, // monthly cap per category
     spent_agent: LookupMap<(AccountId, u32), u128>,
@@ -89,7 +91,10 @@ pub struct AgentPolicy {
     active: bool,
 }
 pub struct Approval { supplier, amount, category, po_hash, approved_by, approved_at, expires_at }
-pub struct PoRecord { agent, supplier, amount, category, po_hash, period, status, approved_by: Option<AccountId> }
+pub struct PoRecord { agent, supplier, amount, category, po_hash, period, status: PoStatus, approved_by: Option<AccountId>,
+                      supplier_lot: Option<String>, funded_at, accepted_at, shipped_at, received_at, released_at }
+pub enum PoStatus { Funded, Accepted, Shipped, Received, Paying, Released, Refunding, Refunded, Cancelled }
+pub struct PlantRoles { receiver: AccountId, qc: AccountId }
 pub struct Anchor { kind, hash: [u8; 32], prev: Option<[u8; 32]>, by: AccountId, at: u64 }
 ```
 
@@ -99,21 +104,27 @@ pub struct Anchor { kind, hash: [u8; 32], prev: Option<[u8; 32]>, by: AccountId,
 
 | Method | Caller | Deposit | Effect |
 |---|---|---|---|
-| `new(owner, treasury, token, escrow)` | init | — | — |
+| `new(owner, treasury, token)` | init | — | — |
+| `set_roles(plant, receiver, qc)` | owner | 1 yocto | which staff accounts confirm receipt and release for a plant |
 | `set_agent_policy(agent, per_po_limit, monthly_limit, categories, approver)` | owner | 1 yocto | emits `agent_policy_set` |
 | `set_category_cap(category, monthly_cap)` | owner | 1 yocto | `category_cap_set` |
 | `pause_agent(agent)` / `resume_agent(agent)` | owner | 1 yocto | `agent_paused` / `agent_resumed` |
 | `ft_on_transfer(sender_id, amount, msg)` | token, with `sender_id == treasury` | — | `budget += amount`, `budget_funded`; any other token or sender is refunded |
-| `submit_po(po_id, supplier, amount, category, po_hash)` | a registered agent | none | checks below; on pass, record PO, update counters, `budget -= amount`, emit `po_authorized`, call `token.ft_transfer_call(escrow, amount, msg)` with 1 yocto and a callback. On fail, **panic** with a plain-language reason. |
-| `on_escrow_funded(po_id)` | private callback | — | if the escrow did not keep the full amount, restore counters and budget, `escrow_funding_failed`; else `escrow_funded` |
+| `submit_po(po_id, supplier, amount, category, po_hash)` | a registered agent | none | checks below; on pass, record the PO as `Funded`, update counters, `budget -= amount`, `escrowed += amount`, emit `po_authorized` and `po_funded`. No cross-contract call. On fail, **panic** with a plain-language reason. |
+| `accept_po(po_id)` | the PO's supplier | none | `Funded → Accepted`; `po_accepted` (decision #23) |
+| `mark_shipped(po_id, supplier_lot)` | the PO's supplier | none | `Accepted → Shipped`, stores the supplier lot the packing slip must match; `po_shipped` |
+| `confirm_receipt(po_id)` | the plant's `receiver` role | none | `Shipped → Received`; `po_received` |
+| `qc_release(po_id)` | the plant's `qc` role | none | `Received → Paying`; `ft_transfer(supplier, amount)` with 1 yocto from the contract's balance; callback `on_payout` |
+| `on_payout(po_id)` | private callback | — | success: `Released`, `escrowed -= amount`, `po_released`; failure (e.g. supplier not registered): back to `Received`, `payout_failed` |
+| `qc_reject(po_id, reason)` | the plant's `qc` role | none | `Received → Refunded`: `escrowed -= amount`, `budget += amount` (internal, no transfer); `po_refunded` |
+| `cancel(po_id)` | owner, before `Received` | 1 yocto | same internal refund; `po_cancelled` |
 | `approve_po(po_id, supplier, amount, category, po_hash, refused_tx)` | the agent's `approver` | none | stores a one-time approval (expires in 24 h); emits `po_approved` with `refused_tx`. Moves no money. |
 | `reject_po(po_id, reason)` | approver | none | deletes any approval; `po_rejected` |
-| `cancel_po(po_id)` | agent of record, while funding | none | optional |
 | `anchor(kind, ref_id, hash, prev)` / `anchor_batch(items)` (≤50) | a registered agent | none | append-only; re-anchoring an existing `ref_id` panics; emits `record_anchored` |
-| `withdraw_budget(amount)` | owner | 1 yocto | returns tokens to treasury (demo reset) |
-| Views: `get_agent_policy`, `get_spent`, `get_category_spent`, `get_po`, `get_approval`, `get_budget`, `get_config`, `get_period`, `get_anchor` | anyone | — | — |
+| `withdraw_budget(amount)` | owner | 1 yocto | returns unallocated tokens to treasury (demo reset) |
+| Views: `get_agent_policy`, `get_spent`, `get_category_spent`, `get_po`, `list_pos(from, limit)`, `get_approval`, `get_budget`, `get_config`, `get_period`, `get_anchor` | anyone | — | — |
 
-`submit_po` needs about 100–150 TGas prepaid because of the cross-contract hop and callback.
+`submit_po` is a single-contract state change (about 10–20 TGas). `qc_release` needs about 50 TGas for the transfer and callback.
 
 ### `submit_po` checks (first failure panics with its message)
 
@@ -134,54 +145,27 @@ A `po_refused` event is logged immediately before the panic. Logs from aborted c
 
 ---
 
-## 4. `po-escrow`
+## 4. Escrow (inside `spend-policy`)
 
-Money only. Kept small so it is easy to audit.
+There is no separate escrow contract (decision of Oct 25, OPEN_QUESTIONS #21). Escrow is the `PoStatus` state machine in §3:
 
-### State
+`Funded → Accepted → Shipped → Received → Paying → Released`, with `Received → Refunded` on QC reject and `Funded | Accepted | Shipped → Cancelled` by the owner.
 
-```rust
-pub struct PoEscrow {
-    owner: AccountId,
-    token: AccountId,
-    policies: LookupSet<AccountId>,   // allowed funders (spend-policy deployments)
-    pos: LookupMap<String, Po>,
-}
-pub struct Po {
-    po_id, buyer_policy, agent, supplier, amount,
-    receiver_role: AccountId,         // receiving.plant-b…
-    qc_role: AccountId,               // qc.plant-b…
-    status: Funded | Received | Paying | Released | Refunding | Refunded | Cancelled,
-    funded_at, received_at, released_at,
-}
-```
+- Funding is internal: `budget` decreases and `escrowed` increases in the same `submit_po` call that passes the policy checks. Nothing can fail between "authorized" and "funded".
+- The supplier's agent signs `accept_po` and `mark_shipped` from its own account. Before shipping it reads `get_po` to see the funds are held (BUILD_ANALYSIS §4.3–4.4).
+- Payout is the only outbound token transfer on the happy path: `ft_transfer(supplier, amount)` with 1 yocto from the contract's NEAR balance, followed by an `on_payout` callback that rolls back to `Received` if the transfer fails. A `Paying` status prevents a double release while the promise is in flight.
+- Refunds on QC reject or cancel are internal (`escrowed → budget`); `withdraw_budget` returns tokens to the treasury.
+- Invariant, asserted in tests: the contract's token balance equals `budget + escrowed` after every method.
 
-### Methods
-
-| Method | Caller | Effect |
-|---|---|---|
-| `new(owner, token)` | init | — |
-| `add_policy(account)` | owner, 1 yocto | allow a spend-policy deployment to fund POs |
-| `set_roles(plant, receiver_role, qc_role)` | owner, 1 yocto | which staff accounts confirm receipt and release |
-| `ft_on_transfer(sender_id, amount, msg)` | token, with `sender_id ∈ policies` | parse `msg = {po_id, supplier, agent, plant}`; create the PO as `Funded`; return `"0"`. On a business-rule refusal (duplicate PO, bad msg), **return the full amount** so the token refunds; do not panic. |
-| `confirm_receipt(po_id)` | `receiver_role` | `Funded → Received`; `po_received` |
-| `qc_release(po_id)` | `qc_role` | `Received → Paying`; `ft_transfer(supplier, amount)` with 1 yocto; callback `on_payout` sets `Released` or reverts to `Received` and emits `payout_failed` |
-| `qc_reject(po_id, reason)` | `qc_role` | `Received → Refunding`; `ft_transfer` back to the funding policy; callback sets `Refunded` |
-| `cancel(po_id)` | owner, only before receipt | refund as above; `Cancelled` |
-| Views: `get_po`, `list_pos(from, limit)`, `get_config` | anyone | — |
-
-Creating the PO inside `ft_on_transfer` (instead of a separate `create_po` call) saves one cross-contract hop (research 08).
-
-**Fallback** if the cross-contract funding hop slips: merge escrow into spend-policy (`budget → escrowed[po_id]` internally). Refusal and approval semantics stay the same. Decide by end of Nov 4.
+The two-contract design (policy funds a separate escrow with `ft_transfer_call`) is kept in research 04 and 08 as history only.
 
 ---
 
 ## 5. Events (NEP-297)
 
-One standard per contract, version `1.0.0`, via `#[near(event_json(standard = …))]`:
+One standard, version `1.0.0`, via `#[near(event_json(standard = …))]`:
 
-- `dayone_spend_policy`: `budget_funded`, `agent_policy_set`, `category_cap_set`, `agent_paused`, `agent_resumed`, `po_refused`, `po_authorized`, `po_approved`, `po_rejected`, `escrow_funded`, `escrow_funding_failed`, `record_anchored`
-- `dayone_po_escrow`: `po_funded`, `po_received`, `po_released`, `payout_failed`, `po_refunded`, `po_cancelled`
+- `dayone_spend_policy`: `budget_funded`, `agent_policy_set`, `category_cap_set`, `roles_set`, `agent_paused`, `agent_resumed`, `po_refused`, `po_authorized`, `po_approved`, `po_rejected`, `po_funded`, `po_accepted`, `po_shipped`, `po_received`, `po_released`, `payout_failed`, `po_refunded`, `po_cancelled`, `record_anchored`
 
 The behind-the-curtain view and the demo transcript print these events with explorer links.
 
@@ -203,7 +187,7 @@ Judge verification (no keys): `npm run verify -- <record>` canonicalizes, hashes
 ## 7. Tests (minimum set, all must pass by Nov 7)
 
 spend-policy:
-- within-limit `submit_po` funds escrow (sandbox, with FT wasm)
+- within-limit `submit_po` moves funds from budget to escrow; token balance = budget + escrowed
 - over per-PO limit panics with the exact message; state unchanged
 - monthly cap and category cap panic
 - paused agent panics; unauthorized category panics
@@ -212,17 +196,15 @@ spend-policy:
 - mismatched amount or supplier after approval panics; expired approval panics
 - relayed `approve_po` (signer = relayer, predecessor = director) passes
 - `ft_on_transfer` from wrong token or wrong sender refunds
-- escrow refusing the transfer rolls back counters and budget
 - anchor stores and emits; re-anchor panics; non-agent anchor panics
 - confirm that `po_refused` log survives the panic (informational)
 
-po-escrow:
-- funding from an allowed policy creates a `Funded` PO
-- funding from anyone else is refunded
-- receipt then QC release pays supplier
+escrow (same contract):
+- `accept_po` and `mark_shipped` only from the PO's supplier; anyone else panics; wrong order panics
+- full path funded → accepted → shipped → received → released pays the supplier (sandbox, with FT wasm)
 - release before receipt panics; wrong role panics; double release impossible
 - payout to an unregistered supplier rolls back to `Received`
-- QC reject refunds the policy contract
+- QC reject returns the amount to `budget`; cancel before receipt does the same
 
 Commands are added to `AGENTS.md` when they first pass.
 
@@ -231,6 +213,6 @@ Commands are added to `AGENTS.md` when they first pass.
 ## 8. Deploy and reset
 
 - `scripts/setup-testnet`: idempotent; creates sub-accounts, adds FC keys, registers storage, writes public account ids to `config/testnet-accounts.json` (committed) and private keys to gitignored credentials.
-- `scripts/deploy`: builds in WSL2, deploys both contracts, calls `new`, `add_policy`, `set_roles`, `set_agent_policy` (Kevin: per-PO $2,500; monthly $60,000 across `raw_material`, `packaging`, `lab_chemical`; approver `director.plant-b…`), `set_category_cap` (`lab_chemical` $2,000), funds the budget from treasury.
+- `scripts/deploy`: builds in WSL2, deploys `spend-policy`, calls `new`, `set_roles`, `set_agent_policy` (Kevin: per-PO $2,500; monthly $60,000 across `raw_material`, `packaging`, `lab_chemical`; approver `director.plant-b…`), `set_category_cap` (`lab_chemical` $2,000), funds the budget from treasury.
 - `scripts/reset`: `withdraw_budget`, suppliers return tokens to treasury so the float recycles, new PO id prefix per run so `po_id` uniqueness holds.
 - Contract accounts keep their full-access keys during the hackathon for redeploys. Deleting them to prove immutability is a post-hackathon step and is noted in the README.

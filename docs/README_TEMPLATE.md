@@ -58,7 +58,7 @@ Kevin doesn't need crypto. The acquirer, the plant and the supplier do: one spen
 | Only the director can approve, and only exact terms | `approve_po` | `approve_from_non_director_panics`, `mismatched_terms_after_approval_panics` | {approve tx} |
 | Kevin's key cannot move tokens | key layout in `scripts/setup-testnet` | — | {view_access_key_list output} |
 | Staff actions are relayer-paid | `server/relayer/` | `relayed_approval_passes_predecessor_check` | {relayed tx} |
-| Funds release only after QC | `contracts/po-escrow` `qc_release` | `release_before_receipt_panics` | {release tx} |
+| Funds release only after QC | `contracts/spend-policy` `qc_release` | `release_before_receipt_panics` | {release tx} |
 | Records are anchored and verifiable | `anchor_batch`, `scripts/verify` | `anchor_is_append_only` | {anchor tx} |
 | Same contracts settle in Circle USDC | USDC deployment | — | {PO-1047 txs} |
 | Inference runs in an attested TEE {if tagged} | `server/attestation/` | `verify_attestation_fixture` | {report fixture} |
