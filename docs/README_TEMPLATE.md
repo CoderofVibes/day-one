@@ -99,4 +99,12 @@ ERP connectors (NetSuite first); real SMS; NEAR Auth login for staff; NEAR Inten
 
 ## Built with
 
-Built by {name} with Claude Code. Planning docs: `docs/`. Conventions for coding agents: `AGENTS.md`.
+Built by DadMod (Tony Langford, solo entrant) with Claude Code. Planning docs: `docs/`. Conventions for coding agents: `AGENTS.md`.
+
+### About the team (approved by Tony, Oct 26)
+
+DadMod is one human and two AI collaborators. Tony Langford is a chemical engineer with ten years on manufacturing floors, now a system engineer at an advanced nuclear reactor startup, building this between feedings of a newborn (hence the name: dad bod, but for shipping code). Muse, an AI project manager, keeps the plan honest. Claude, an AI engineer, writes the code. Kevin, the AI assistant in the product, does the paperwork. Tony runs the plant.
+
+One-liner: DadMod: a chemical engineer on paternity leave, two AI teammates, and an AI assistant named Kevin who does the paperwork so the plant can keep running.
+
+Rule: never name Tony's employer anywhere; "an advanced nuclear reactor startup" only.

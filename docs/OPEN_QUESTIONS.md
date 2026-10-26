@@ -32,7 +32,7 @@ Each question has a recommendation. Reply with the number and "yes" to accept it
 
 13. **Quoting a judge.** The judge research suggests building the "Why NEAR" line on Haseeb Qureshi's "your agent does not need crypto; you need crypto". Recommend using the idea without quoting him, since he is on the panel.
 14. **NEAR Intents.** Recommend roadmap only. The alternative is a human-signed mainnet transfer of about 1 USDC shown in the video.
-15. **Credit line.** What name goes in "Built by" and in the form's team lead field?
+15. **Credit line.** What name goes in "Built by" and in the form's team lead field? **Answered Oct 26:** team name **DadMod**; lead Tony Langford, solo entry (one human, two AI collaborators, stated plainly). Never name his employer; "an advanced nuclear reactor startup" only. Blurbs in `README_TEMPLATE.md` and `DEMO_STORYBOARD.md`.
 16. **Disk budget.** C: has about 50 GB free, not the ~100 GB in the brief. Recommend capping this project at 15 GB. OK?
 
 ## Added Oct 25 — from `docs/BUILD_ANALYSIS.md` (answer before Nov 2)

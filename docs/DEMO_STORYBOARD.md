@@ -39,6 +39,10 @@ If the privacy track is tagged, add a 3-second inset at 1:40: "Kevin's reasoning
 
 ---
 
+## Team credit (end card or voiceover, approved by Tony, Oct 26)
+
+> Built by DadMod: one nuclear-startup engineer running on newborn hours, a project manager that never sleeps, and an engineer that never gets tired of tests. Kevin is the only one of us allowed near the purchase orders.
+
 ## X post (draft, ≤280 characters)
 
 > Day One: Kevin is an AI purchasing assistant for small plants that just got acquired. He reads batch records, gets quotes and drafts POs. Spending limits live on NEAR, approvals come by text, suppliers get paid on delivery. No wallets on the floor. Built at NEAR HACKATHON. 🧵
