@@ -74,3 +74,15 @@ The new factor is AI judges. Published AI-judging pipelines from 2026 treat the 
 - https://devfolio.co/blog/the-discerning-machine/ — AI evidence-layer judging: claims verified against code with file:line citations (2026-05-18) (accessed 2026-10-22)
 - https://github.com/schroneko/automated-hachathon-judge — Codex-SDK judge: pinned commit, no code execution, self-reports earn nothing, injection detector (accessed 2026-10-22)
 - https://www.coindesk.com/business/2026/02/23/kraken-s-arjun-sethi-could-trust-ai-with-100-of-his-crypto-dragonfly-s-haseeb-qureshi-isn-t-convinced — Qureshi: "works with money 90% of the time is unusable" (accessed 2026-10-22)
+
+## Addendum 2026-10-25 — closest prior art found (acknowledge in the README)
+
+Nobody found has shipped spend policy + per-PO director approval + QC-released escrow + record anchoring together. Closest:
+- **Porthmos** (2026 Shenzhen International FinTechathon, Base Sepolia): agent proposes supplier payments, deterministic checks, contract re-checks caps, reserve floor and allowlists and reverts; milestone escrow released on signed proofs; approval tiers. https://github.com/Xavrir/porthmos
+- **Circle's 2025 AI-escrow experiment:** PDF contract → USDC escrow on Base → AI verifies the deliverable, human approves. https://www.zenml.io/llmops-database/ai-powered-escrow-agent-for-programmable-money-settlement
+- **dareskro** (XRPL Commons, Oct 24–25, 2026): AI proposes, human signs on a hardware device, a named oracle releases escrow. https://github.com/LeDenti/dareskro
+- **PolicyVault** (Polkadot hackathon, Mar 2026): per-tx limit, daily cap, blacklist, escalation queue, every decision an event. https://github.com/helmutdeving/policy-vault
+- **HexaNode** (Chainlink Convergence 2026): autonomous procurement with no policy layer; the cautionary twin. https://chain.link/hack-26/projects/hexanode
+- **Coinbase Spend Permissions** (on-chain per-token allowance on Base and others) and **Circle Arc Portal** agent spend limits are the products a judge will name. Both cap a wallet, not a purchase order. Crosswalk of 14 providers and their controls: https://github.com/Pink-Agentic-Payments/agent-spending-controls-crosswalk (v1.2.0, 2026-10-02).
+
+Market sources added for the pitch (primary): PitchBook 2025 Annual US PE Breakdown (add-ons 72.9% of buyouts by count); McKinsey Institute for Economic Mobility, "The Great Ownership Transfer" (2026-02-26: about six million SMB ownership transitions by 2035, https://www.mckinsey.com/institute-for-economic-mobility/our-insights/the-great-ownership-transfer-a-new-era-of-business-stewardship). Against: Bluevine 2026 (82% of SMBs cite an AI barrier, https://www.bluevine.com/blog/small-business-ai-trends-report-2026). No manufacturing-specific succession stat and no SMB survey on letting agents spend exist; do not claim either.

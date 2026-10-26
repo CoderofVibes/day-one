@@ -80,3 +80,7 @@ js.fastnear.com/meta-transactions contains lines addressed to AI agents (e.g. "A
 - https://raw.githubusercontent.com/near/near-cli-rs/main/src/config/mod.rs — `meta_transaction_relayer_url: None` for testnet (accessed 2026-10-22)
 - https://registry.npmjs.org — near-api-js 7.3.1, @fastnear/api 2.5.0, near-kit 0.20.2, @near-relay/server 0.1.8 (2024-10-30), @near-relay/client 0.1.6 (accessed 2026-10-22)
 - RPC `EXPERIMENTAL_protocol_config` (testnet) — `delegate_cost`, `min_gas_purchase_price`, `gas_price` (accessed 2026-10-22)
+
+## Addendum 2026-10-25
+
+near-api-js latest is now **7.4.0** (npm). Its type declarations still expose `createMetaTransaction`, `createSignedMetaTransaction`, `relayMetaTransaction`, `Signer.signDelegateAction`, `actions.signedDelegate` and `encodeSignedDelegate`; the flow above is unchanged. Pin 7.4.0 on Nov 1. The docs.near.org relayer tutorial still pins near-api-js 3.0.4 and is stale. Relayer nonce collisions under concurrency: serialise relays through one queue (already planned) or give the relayer several full-access keys.

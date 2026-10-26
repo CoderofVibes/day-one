@@ -111,3 +111,11 @@ Server side (Windows/Node): `npm i near-api-js@7.3.1`; read calls go through `pr
 - https://github.com/near-examples/auctions-tutorial/tree/main/contract-rs/03-bid-with-fts — `ft_on_transfer` template; sandbox + near-api test pattern (accessed 2026-10-22)
 - https://docs.rs/near-sdk/5.29.1/near_sdk/attr.near.html — `#[near(event_json(...))]`, store collections (accessed 2026-10-22)
 - RPC `EXPERIMENTAL_protocol_config` on testnet — protocol 88, 1,000 Tgas limits, storage price (accessed 2026-10-22)
+
+## Addendum 2026-10-25
+
+- **RPC:** the docs.near.org provider table no longer lists `rpc.testnet.near.org`, and marks `*.near.org` endpoints deprecated; it still answers today (protocol 88). Primary stays `test.rpc.fastnear.com` (FastNear docs also name `rpc.testnet.fastnear.com`; API key optional). Add `near-testnet.drpc.org` as a second fallback.
+- **Versions:** near-sdk 5.29.1 still stable (5.30.0-rc.1 on Oct 19); cargo-near 0.22.0 (0.23.0-rc.2); near-sandbox 0.3.16 (0.4.0-rc.2). The NEAR devtools status post marks near-workspaces-rs "deprecating" in favour of near-sandbox + near-api, which is our choice. Do not take rc lines mid-hackathon.
+- **Merge decision:** BUILD_ANALYSIS §4.2 recommends merging escrow into the policy contract now rather than on Nov 4 (OPEN_QUESTIONS #21).
+- **Test FT:** the global FT contract `ft.globals.primitives.testnet` exists (hash `3vaopJ7aRoivvzZLngPQRBEd8VJr2zPLTxQfnRCoFgNX`, 275 KB); `new_default_meta` decimals are undocumented, so check `ft_metadata` after deploy and redeploy with 6 if it differs.
+- nearcore 2.14 also set `burnt_gas_reward` to 0 and rejects an empty `method_name`; neither affects this design.

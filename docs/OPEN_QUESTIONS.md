@@ -34,3 +34,15 @@ Each question has a recommendation. Reply with the number and "yes" to accept it
 14. **NEAR Intents.** Recommend roadmap only. The alternative is a human-signed mainnet transfer of about 1 USDC shown in the video.
 15. **Credit line.** What name goes in "Built by" and in the form's team lead field?
 16. **Disk budget.** C: has about 50 GB free, not the ~100 GB in the brief. Recommend capping this project at 15 GB. OK?
+
+## Added Oct 25 — from `docs/BUILD_ANALYSIS.md` (answer before Nov 2)
+
+21. **One contract instead of two.** Merge `po-escrow` into `spend-policy` now (escrow state lives inside the policy contract; same refusal, approval, release and refund semantics; one deployment). Recommend **yes**: the cross-contract funding hop is the riskiest code on the hero beat and buys only legibility (analysis §4.2). Alternative: keep two contracts and decide on Nov 4 as planned.
+22. **USDC proof optional.** Run PO-1047 in Circle testnet USDC only if your first faucet claim has landed by Nov 4 and the contract is already on testnet; otherwise drop it and state so in Limitations. Recommend **yes** (analysis §4.2).
+23. **Supplier agents as active counterparties.** Add `accept_po` and `mark_shipped` (with the supplier lot) signed from each supplier's own account in Tier 1, so the supplier verifies escrow before shipping. Recommend **yes** (analysis §4.4).
+24. **Plan v2 reorder.** Bookkeeper pack to Nov 8; spreadsheet import wizard to Nov 10 [IF]; transfer suggestions reduced to one line in the forecast output. Recommend **yes** (analysis §4.5). Muse has been asked to challenge this.
+25. **Unattended runs from Nov 1** (supersedes #19). Scheduled "continue-plan" sessions may write code, tests and docs and run replay; live testnet runs happen only in a session you opened. Recommend **yes** (analysis §4.7).
+
+**Muse on #21–24 (bridge message 14, Oct 25):** #21 agree. #22 agree that the USDC proof must not gate Nov 8 work, but keep it as a Nov 7 stretch item rather than dropping it, since a real stablecoin settlement is the strongest realworld evidence. #23 no objection raised. #24 disagree: the spreadsheet wizard is the lived pain point and fits in 15 seconds of video (upload, flags, confirm); compromise is wizard first, hard time-boxed to Nov 8 with no Nov 9 polish, dropping below the bookkeeper pack automatically if it slips. Claude can live with either; Tony picks.
+
+26. **Discord, Telegram and X monitoring.** Neither agent can read those channels. Recommend: Tony spends ten minutes in the NEAR Discord and on @NEARProtocol before Nov 1 (ask the two prep questions in #8, note any rubric, credits or workshop announcements) and pastes anything relevant into chat.

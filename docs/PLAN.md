@@ -132,7 +132,7 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 
 ---
 
-## Cut list (cut from the bottom first)
+## Cut list (cut from the top: item 1 is cut first, item 11 last)
 
 The three Plan v2 features sit behind their own gates and are cut before anything on this list if their gate is red on the day.
 

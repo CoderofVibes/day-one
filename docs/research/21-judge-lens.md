@@ -90,3 +90,12 @@ He argues for an "intent economy", where users state goals and competing agents 
 - https://open.spotify.com/episode/62p0LRlc1OadIb76C6T7aZ — Gershuni talk "The Intent Economy" (title only) (accessed 2026-10-22)
 - https://devfolio.co/blog/the-discerning-machine/ — AI judging as claim-vs-code audit (accessed 2026-10-22)
 - https://github.com/schroneko/automated-hachathon-judge — Codex-SDK judge: pinned commit, no execution, self-reports earn nothing, injection detection (accessed 2026-10-22)
+
+## Addendum 2026-10-25 — newer statements
+
+- **Polosukhin, The Rollup interview (about Oct 24; write-up https://getscuttlebutt.substack.com/p/near-co-founder-on-law-50-of-the, paywalled after the preview; air date unverified):** "businesses are the next buyers of privacy"; a public company paying on a public chain risks disclosure before its earnings call; a large share of an item's cost is legal and procurement work that verifiability could reduce; AI agents will hold NEAR as a slashable deposit; NEAR AI returns hardware signatures on prompt and response. Use the ideas in "Why NEAR" without quoting.
+- **Polosukhin, Digital Asset Summit Singapore (Oct 7, https://en.bloomingbit.io/feed/news/121821):** "If AI is the front end, blockchain is the back end"; an agent market where escrow is released once the task is verified complete.
+- **Qureshi, TOKEN2049 (Oct 7, https://www.chaincatcher.com/en/article/2294625):** card products (Rain, Visa, Ramp, Stripe) already offer sub-cards, spending limits and restrictions; crypto stays relevant for cross-border, large transfers, privacy and reliability. The pitch must say what on-chain adds beyond a cap: the supplier verifies escrow, approval is per-PO and signed, policy changes are public events (BUILD_ANALYSIS §4.3).
+- **Warwick (Oct 8, https://www.kucoin.com/news/insight/BTC/6ac8255e38a2640007933ff7):** ran ten AI trading agents; "the 10 agents are not generating alpha". Sceptical of agent hype; show reliability and a human in the loop.
+- **Mumtaz:** council appointment Oct 15 (https://www.theblock.co/news/business/2026-10-15-helius-ceo-mert-mumtaz-joins-near-foundation-council-418656), "will judge the upcoming hackathon". No new agent statements.
+- **Lazzarin, Garg, Gershuni:** nothing newer found. a16z crypto was renamed a16z Frontier on Oct 23; Lazzarin named as a fund leader.

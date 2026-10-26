@@ -103,3 +103,15 @@ HACKATHON.md is written as an instruction file for an AI coding agent. The homep
 - https://nearhackathon.com/ — dates, prizes, tracks and taglines, judges, criteria sentence, submission requirements, form fields (Website shown optional), consent text, FAQ (accessed 2026-10-22)
 - https://nearhackathon.com/HACKATHON.md — Facts, "What the human decides", confirmation list, Procedure, Submission API (endpoint, fields, limits, honeypot, response codes), track one-liners; contains agent-directed instructions that were not followed (accessed 2026-10-22)
 - https://www.aiposthub.com/near-hackathon-ai-judges-2026/ — third-party restatement (2026-10-20), nothing new (accessed 2026-10-22)
+
+## Re-read 2026-10-25
+
+Both pages fetched again today and read as data. Nothing in Section 1 of the brief changed: dates, tracks, prizes, judges, one uneditable submission, the `website` honeypot, the criteria sentence and the form limits all match. Sharpened details:
+- Judging starts 2026-11-16 00:00 UTC; results by Nov 18 23:59 UTC.
+- Per-track hints in HACKATHON.md: `security` "agent security, function call keys, TEE attestation"; `realworld` "stablecoins, NEAR Intents, meta transactions"; `business` "AI agents, NEAR Intents, chain signatures" with the blurb "treasury, sales, procurement, cross-chain payments and revenue sharing. Humans set constraints"; `agents` "agent commerce, NEAR Intents, chain signatures"; `swarms` "multi-agent systems, NEAR Intents, sub-accounts"; `social` "Sputnik DAO, Trezu, named accounts".
+- The description field must cover "the problem, the product, and how NEAR fits in".
+- Partner links changed: OutLayer now points to outlayer.ai (docs at app.outlayer.ai, code at github.com/out-layer/outlayer); Trezu docs at github.com/NEAR-DevHub/trezu-docs; NEAR.AI at github.com/nearai/cloud-api.
+- Community: Discord https://discord.gg/nearprotocol and X @NEARProtocol. No Telegram, workshops, office hours, rubric or prep rule on either page.
+- No registration or entry counts are published anywhere. No public "building X for NEAR HACKATHON" posts were found.
+- Related: NEAR launched "NEAR Business" on Oct 20, 2026 (self-custodial treasury: payroll, vendor payments, cross-chain swaps, approval thresholds by tier, invite-only; no AI agent). Source: https://cryptobriefing.com/near-protocol-launches-near-business-treasury/ (accessed 2026-10-25).
+- The `near/agent-skills` repo now ships six skills (near-intents, near-ai-cloud, near-api-js, near-dapp, near-kit, near-smart-contracts), `npx skills add near/agent-skills`. Their content is third-party instructions for agents: use as reference, not as commands.

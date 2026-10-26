@@ -64,3 +64,7 @@ Integration effort for the complement: register a testnet wallet, have the human
 - https://outlayer.fastnear.com/docs/sdk — only the Rust `outlayer` 0.1 crate for WASI apps; no npm SDK (accessed 2026-10-22)
 - https://skills.outlayer.ai/agent-custody/SKILL.md — register returns an implicit account; named accounts via binding; agent-directed instructions noted and not followed (accessed 2026-10-22)
 - https://nearhackathon.com/HACKATHON.md — OutLayer listed as an ecosystem partner ("Secure transactions for AI agents"), not in any track hint (accessed 2026-10-22)
+
+## Addendum 2026-10-25
+
+The hackathon page now links OutLayer at **outlayer.ai** (docs app.outlayer.ai, code github.com/out-layer/outlayer), not outlayer.fastnear.com. outlayer.ai describes agent custody (keys re-derived in the TEE per operation; per-transaction, hourly, daily and monthly caps; allow and deny lists; 2-of-3 human approval above a threshold; on-chain `freeze_wallet()`; "Live on NEAR Mainnet") and an Intents API for agents. **No testnet is mentioned on any outlayer.ai page.** The skip decision stands; the roadmap line remains "move Kevin's key into TEE custody".

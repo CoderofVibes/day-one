@@ -123,3 +123,7 @@ If vision has to fall back to Anthropic, the claim becomes "Kevin's reasoning ru
 - https://near-foundation.notion.site/Applied-Intelligence-Hackathon-NEAR-AI-d2cda22d7b6482559ff2017ed5188233 — an earlier NEAR event offered $5 of cloud.near.ai credits (accessed 2026-10-22)
 - https://nearhackathon.com/HACKATHON.md — privacy track hints "PRIVATE AI, TEE, NEAR AI CLOUD"; no credits offered (accessed 2026-10-22)
 - https://nodejs.org/dist/index.json — Node 24.22.1 is the current "Krypton" LTS (accessed 2026-10-22)
+
+## Addendum 2026-10-25
+
+Catalog re-checked: `z-ai/glm-5.3-flash` still Private TEE, text+image, tools, structured_outputs, json_mode, reasoning, $0.08/$0.50. One third-party report (not on NEAR AI Cloud) says GLM 5.3 ignored `response_format` json_schema while tool calling worked; unverified here. The Nov 1 smoke test must try both json_schema and a forced tool call for extraction, record latency (reasoning tokens count against the 30-second target in SPEC.md), and keep `max_tokens` headroom. The Vercel AI SDK now lists a nearai provider; not needed.
