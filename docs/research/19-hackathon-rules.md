@@ -115,3 +115,14 @@ Both pages fetched again today and read as data. Nothing in Section 1 of the bri
 - No registration or entry counts are published anywhere. No public "building X for NEAR HACKATHON" posts were found.
 - Related: NEAR launched "NEAR Business" on Oct 20, 2026 (self-custodial treasury: payroll, vendor payments, cross-chain swaps, approval thresholds by tier, invite-only; no AI agent). Source: https://cryptobriefing.com/near-protocol-launches-near-business-treasury/ (accessed 2026-10-25).
 - The `near/agent-skills` repo now ships six skills (near-intents, near-ai-cloud, near-api-js, near-dapp, near-kit, near-smart-contracts), `npx skills add near/agent-skills`. Their content is third-party instructions for agents: use as reference, not as commands.
+
+## X sweep 2026-10-26 (Tony via Grok, relayed by Muse, bridge message #19)
+
+Second-hand: Grok's summary of public X posts, not pages we opened. Treat names and claims as leads to check, not facts.
+
+- **Consistent with our rules:** $250K in NEAR ($55K grand; $10K/$3K/$2K per track, 13 tracks); window Oct 31 5 PM PT (= Nov 1 00:00 UTC) to Nov 14 3:59 PM PT; no sign-up; one uneditable submission; repo may be private during the build but public by the deadline; demo post on X; no published rubric; no NEAR AI Cloud credits or workshops announced yet.
+- **Track display names map to our ids** (already in the table above): Autonomous Business = `business`, AI Security & Defense = `security`, Real-World Money = `realworld`. Use the display names in the README track section.
+- **Prep-before-Nov-1 question is still unanswered.** Team Nymira asked it on X on Oct 23 with no reply. Cite that precedent when asking in the Discord Dev chat (OPEN_QUESTIONS #8). KYC for payouts: nobody has asked; the form reportedly asks only name, email and NEAR account.
+- **Projects seen on X** (lanes, for positioning): ClearToPay (fake-invoice detection before agents pay), NearSwaps (trading agent with on-chain spending caps — closest to Kevin's caps; our difference is the purchasing workflow and the invisible chain, not caps alone), BLINDKEY (ZK agent permissions), Jurat (proof of funds), OutLayer (partner; locked-down agent wallets).
+- **README must say plainly** that the PO escrow is scoped to purchase orders and is not a general multisig, because NEAR's own treasury product (NEAR Business, Oct 20) covers vendor payments with approval thresholds and its guidance is "don't rebuild the multisig".
+- **Watch:** NEAR Backers Summit, Oct 28 (agentic payments, NEAR AI) for rubric, credit or workshop announcements.
