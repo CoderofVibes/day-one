@@ -20,7 +20,7 @@
 - **Cross-sheet disagreement is a natural discrepancy type.** The ledger already has `discrepancies.kind`; a "the same number differs between two sheets" flag fits the same model as the transfer discrepancy in FICTIONAL_DATA §8.
 - **Waste entered wrong poisons output.** This supports the existing design choice that yield and waste are recomputed from the batch record's own numbers and checked against the formula (research 14), instead of being trusted as typed.
 
-## Proposed fixture change (pending Tony's yes)
+## Fixture change (approved by Tony Oct 27, OPEN_QUESTIONS #28)
 
 Add a second sheet, "Sales by customer", to the import-wizard workbook (FICTIONAL_DATA §12), using invented retailers and SKUs: SKUs grouped by retailer, mixed pack counts (60, 100, 120, 216, 256 ct, plus an EU pack with a different label), monthly unit columns, and one value retyped differently on a summary sheet. Kevin converts it to tablets and kilograms of ascorbic acid for the forecast and flags the mismatched value. Scope: a fixture and a parser rule set, built only when the import wizard is built (Nov 9–10), not a new feature.
 
@@ -39,6 +39,6 @@ Add a second sheet, "Sales by customer", to the import-wizard workbook (FICTIONA
 - **Anchoring makes the numbers hard to fix after the fact.** Batch records and lot events are fingerprinted on-chain (CONTRACTS §6). A plant cannot quietly lower last month's waste once HQ has seen it; a correction is a new, visible event.
 - **It answers the executive buyer.** The acquirer's integration lead (Jordan Pike in FICTIONAL_DATA) wants comparable cost and yield across plants. This is the sustainability story: Acme pays for Day One because it makes every plant's numbers comparable and honest, not only because it saves typing.
 
-## Proposed fixture and feature (pending Tony's yes)
+## Fixture and feature (approved by Tony Oct 27, OPEN_QUESTIONS #27)
 
 A planted case at Plant A (Acme Riverside), which records in pounds: the same product, P-CMD, shows a better yield at Plant A than at Plant B because Plant A's batch records under-state waste. Kevin's reconciliation for P-CMD over the 30-day history shows material issued at Plant A exceeding output plus claimed waste by a few percent, flags it as unaccounted material on the HQ view, and states that the unit system is not the cause. Scope: a reconciliation query over ledger data that already exists, plus seeded history numbers; about half a day, alongside the three-facility view on Nov 8. Exact numbers go into FICTIONAL_DATA once approved.
