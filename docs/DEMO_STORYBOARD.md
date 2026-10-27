@@ -55,6 +55,7 @@ Attach the video. Reply in thread with the repo link and the refused-transaction
 
 - **Project name:** Day One: AI Purchasing for Acquired Plants
 - **Team size:** 1
+- **NEAR wallet address (payout):** `Tony's prize account` (Meteor Wallet, created by Tony Oct 27; agents never touch it)
 - **Tracks:** `realworld`, `business`, `security`, `agents` (+ `privacy` and `swarms` only if their features exist on Nov 13)
 - **Website field:** leave empty. HACKATHON.md says it is a spam honeypot and any value is rejected (research 19).
 - **Description (draft, ≤2000 characters):**
