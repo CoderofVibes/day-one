@@ -126,3 +126,12 @@ Second-hand: Grok's summary of public X posts, not pages we opened. Treat names 
 - **Projects seen on X** (lanes, for positioning): ClearToPay (fake-invoice detection before agents pay), NearSwaps (trading agent with on-chain spending caps — closest to Kevin's caps; our difference is the purchasing workflow and the invisible chain, not caps alone), BLINDKEY (ZK agent permissions), Jurat (proof of funds), OutLayer (partner; locked-down agent wallets).
 - **README must say plainly** that the PO escrow is scoped to purchase orders and is not a general multisig, because NEAR's own treasury product (NEAR Business, Oct 20) covers vendor payments with approval thresholds and its guidance is "don't rebuild the multisig".
 - **Watch:** NEAR Backers Summit, Oct 28 (agentic payments, NEAR AI) for rubric, credit or workshop announcements.
+
+## Discord #dev-chat sweep 2026-10-26 and X check 2026-10-27 (Muse, bridge #21–24, #33; second-hand, read-only, nothing posted)
+
+- **Prep before Nov 1:** asked many times in #dev-chat with mixed signals. One moderator said on Oct 21 that starting before Nov 1 is fine; another said research and setup (testnet accounts, docs, mockups) is fine if all product code is written Nov 1–14; a user quoted the "From November 1–14, build…" rule in reply. No ruling. Moderators say answers will come in a blog post "coming soon" (Oct 23). Tony's exact wording (docs, specs, empty skeleton, zero feature code) has not been asked. Our conservative rule stands.
+- **KYC for payouts:** asked once, Oct 20 (country exclusions and KYC before payment); no answer. Correction to the Oct 26 X sweep, which said nobody had asked.
+- **Rubric, workshops:** none found. **AI Cloud credits:** asked three times, no organizer reply visible.
+- **Field size:** 23 unique hackathon posters in #dev-chat, Oct 19–26 (about 16 look like builders; most projects unnamed). Named: Nymira, Scrim, Tidepool. Visible field is small; Discord posters are not entrants.
+- **Not official:** near.army and @NEAR_hckthn. Only nearhackathon.com and its HACKATHON.md count for submission.
+- **Posting decision (Tony, Oct 26):** HOLD, do not post the two questions; Muse watches #dev-chat daily and near.org/blog every 12 hours for the answer.

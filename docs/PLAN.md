@@ -84,7 +84,10 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 - [ ] [I] Anchoring job (`anchor_batch`); `npm run verify` with MATCH/MISMATCH.
 - [ ] [I] Purchaser, receiving, QC and accounting screens (plain, functional).
 
+- [ ] [I] **Attack suite** (Muse #34, for the `security` track; cut first if this day slips): `npm run test:attacks` shows each of four attacks failing, using existing fixtures: a lookalike vendor (refused by qualification, contract allowlist), an inflated invoice (amount above the PO, refused), a fake "payment failed, retry" message (Kevin does not re-pay), and hidden-text instructions in an invoice (Kevin ignores them and flags the document). Output is plain pass/fail lines that the README can quote.
+
 ### Sat Nov 7 — spine complete
+- [ ] [I] **CLI and machine-readable output** (Muse #34, from the judges' interest in agent-operable tools): the existing `npm run` commands (`demo`, `demo:live`, `verify`, seed and reset, show escrow state) each accept `--json` and print one final JSON line besides the readable text. No new CLI framework.
 - [ ] [I] `npm run demo:live -- --record` end to end on testnet; fixtures committed.
 - [ ] [I] Replay mode; transcript test; behind-the-curtain view as a transaction log with explorer links.
 - [ ] [I] **Bonus, never a gate (decision #22):** USDC deployment and PO-1047 recorded in Circle testnet USDC, once Tony has collected some. Week 2 never waits for it.

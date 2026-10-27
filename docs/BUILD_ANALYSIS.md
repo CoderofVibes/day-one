@@ -153,6 +153,9 @@ Nobody found has shipped the combination. Closest prior art, to acknowledge in t
 - **Circle's 2025 AI-escrow experiment**: PDF contract → USDC escrow on Base → AI verifies the deliverable, human approves.
 - **dareskro** (XRPL Commons, Oct 24–25, 2026): AI proposes, human signs on a hardware device, a named oracle releases escrow.
 - **NEAR Business** (Oct 20): treasury with approval tiers, no agent.
+- **Clearance** (@Selliks, live on NEAR AI Agent Market, reported Oct 27, second-hand via X): a crash test for agents that hold money (lookalike merchants, inflated invoices, payee allowlist, per-transfer cap), with a free run offered to hackathon builders. Closest overlap with Kevin's limits, but it is a test harness, not a purchasing agent. README line: Kevin is the purchasing agent; limits are one enforced layer inside the loop (escrow, approval chain, inventory, settlement), not the product.
+- **Bloom** (@bloom_directory, X, second-hand): agents paying suppliers through Intents with quote, policy check and approval. High overlap with the payment half only.
+- **NearSwaps** (trading agent with on-chain caps), **ClearToPay** (fake-invoice detection), **BLINDKEY**, **Jurat**, **OutLayer**, **Nymira**, **Scrim**, **Tidepool** (see research 19): different lanes. Muse keeps the daily list; Claude records material ones here.
 
 Objections and the honest answers:
 - *"Coinbase Spend Permissions or Circle Arc already cap agent spend."* They cap a wallet, not a purchase order. Neither binds approval to one PO signed by a named director, escrows per PO, or releases on a QC event.

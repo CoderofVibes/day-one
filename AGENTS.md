@@ -62,4 +62,4 @@ Muse and Claude talk through the **muse-claude-bridge**: a hosted relay with a l
 
 ## README rules
 
-The final `README.md` is written from `docs/README_TEMPLATE.md` for machine and human judges: what it is, the problem, NEAR features used, at most five "do X → see Y" steps that run from a clean clone with no secrets, an on-chain vs off-chain table, sustainability, and limitations. No marketing language.
+The final `README.md` is written from `docs/README_TEMPLATE.md` for machine and human judges: what it is, the problem, NEAR features used, at most five "do X → see Y" steps that run from a clean clone with no secrets, an on-chain vs off-chain table, sustainability, and limitations. No marketing language. Lead with the human benefit (the ops lead sets budgets once and Kevin buys within them), give machine-readable output (Markdown plus JSON) for agent judges, state that the PO escrow is scoped to purchase orders and is not a general multisig, and say that Kevin is the purchasing agent and the limits are one enforced layer, not the whole product.
