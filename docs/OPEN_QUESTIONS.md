@@ -11,7 +11,7 @@ Each question has a recommendation. Reply with the number and "yes" to accept it
 5. **Testnet NEAR.** Can you collect about 40 testnet NEAR before Nov 1? The faucet publishes no limit; NEAR Discord can help.
 6. **LLM accounts.** Recommend both: a NEAR AI Cloud key with about $5 of credit (Kevin's default, for the privacy story), and linking your Max plan to a Claude Console organization to claim the $200/month API credit (fallback). The Console link is one-time and can't be changed without support.
 7. **Who runs the testnet setup script.** It creates sub-accounts and keys on testnet from your local credentials. Recommend: Claude runs it on Nov 4 after you say yes in chat. **Superseded by #25 (Oct 25): Claude runs it unattended.**
-8. **NEAR Discord.** Please ask: "Do research docs, specs and an empty repo skeleton made before Nov 1 count as allowed prep?" and "Is KYC required to receive a prize?"
+8. **NEAR Discord.** Please ask: "Do research docs, specs and an empty repo skeleton made before Nov 1 count as allowed prep?" and "Is KYC required to receive a prize?" **Checked Oct 27 (Tony):** the prep question has been asked many times in the NEAR Discord; the answer so far is only "see blog post coming out soon". Until that post appears, the conservative rule stands: docs and accounts before Nov 1, no code. Muse watches for the post.
 
 ## Before Nov 1 — added Oct 25 (workflow)
 
@@ -45,4 +45,4 @@ Each question has a recommendation. Reply with the number and "yes" to accept it
 
 **Muse on #21–24 (bridge message 14, Oct 25):** #21 agree. #22 agree that the USDC proof must not gate Nov 8 work, but keep it as a Nov 7 stretch item rather than dropping it, since a real stablecoin settlement is the strongest realworld evidence. #23 no objection raised. #24 disagree: the spreadsheet wizard is the lived pain point and fits in 15 seconds of video (upload, flags, confirm); compromise is wizard first, hard time-boxed to Nov 8 with no Nov 9 polish, dropping below the bookkeeper pack automatically if it slips. Claude can live with either; Tony picks.
 
-26. **Discord, Telegram and X monitoring.** Neither agent can read those channels. Recommend: Tony spends ten minutes in the NEAR Discord and on @NEARProtocol before Nov 1 (ask the two prep questions in #8, note any rubric, credits or workshop announcements) and pastes anything relevant into chat.
+26. **Discord, Telegram and X monitoring.** Neither agent can read those channels. Recommend: Tony spends ten minutes in the NEAR Discord and on @NEARProtocol before Nov 1 (ask the two prep questions in #8, note any rubric, credits or workshop announcements) and pastes anything relevant into chat. **Done Oct 27:** see #8.

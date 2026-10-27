@@ -37,7 +37,7 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 6. **Collect Circle testnet USDC:** faucet.circle.com, "Near Testnet", 20 USDC per address every 2 hours, CAPTCHA. Register the account with the USDC contract first (research 01). Target 100 USDC. **Ask in Circle's Discord** for a larger testnet grant. After the **first** claim, tell Claude which account you used, so Claude can confirm on-chain that the balance landed in Circle's contract (`3e22…b8af`); the faucet's delivery to NEAR is the one thing not yet proven (research 01, re-verified Oct 25).
 7. ~~**NEAR AI Cloud**~~ Done Oct 27: key in `.env` (gitignored); verified with a free attestation call for `z-ai/glm-5.3-flash` (HTTP 200).
 8. ~~**Anthropic API (fallback)**~~ Done Oct 27: Console org linked to the Max plan ($200/month credit), key in `.env`; verified with the free models list (HTTP 200, `claude-sonnet-5-5` available).
-9. **NEAR Discord:** ask what counts as prep (OPEN_QUESTIONS).
+9. ~~**NEAR Discord**~~ Done Oct 27: prep question already asked by many; organizers say a blog post is coming (OPEN_QUESTIONS #8).
 10. **Mainnet payout account:** create it; note whether acquiring NEAR needs exchange KYC.
 11. **X account:** confirm it can post video.
 
