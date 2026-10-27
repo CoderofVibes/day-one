@@ -54,6 +54,8 @@ Attach the video. Reply in thread with the repo link and the refused-transaction
 ## Submission form drafts (human confirms on Nov 14)
 
 - **Project name:** Day One: AI Purchasing for Acquired Plants
+- **Team lead name:** Anthony Langford (Tony, Oct 27)
+- **Email:** given by Tony Oct 27; kept out of the repo because it goes public. Tony enters it himself on Nov 14.
 - **Team size:** 1
 - **NEAR wallet address (payout):** `Tony's prize account` (Meteor Wallet, created by Tony Oct 27; agents never touch it)
 - **Tracks:** `realworld`, `business`, `security`, `agents` (+ `privacy` and `swarms` only if their features exist on Nov 13)
