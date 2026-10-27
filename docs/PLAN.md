@@ -98,13 +98,14 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 ### Sun Nov 8 — supplier agents
 - [ ] [I] `agents/suppliers/`: rule-based `SupplierAgent` per vendor with its own account; RFQ over the bus; quote hashes anchored from supplier accounts; QuickChem excluded with a reason. **Active counterparty (decision #23):** the supplier signs `accept_po` before funding, reads the escrow with a view call, then signs `mark_shipped(po_id, supplier_lot)`; the packing slip must match that lot. Escrow pays the supplier's own account.
 - [ ] [I] Three-facility view and the ASC-261009-01 discrepancy flow with a proposed adjustment.
+- [ ] [I] **Mass balance** (Tony, Oct 27, OPEN_QUESTIONS #27): per batch and per plant-material-period reconciliation of issued, output, waste, QC samples and stock; flag unaccounted material over 0.5%. Seeded case: Riverside under-records waste on P-CMD (FICTIONAL_DATA §15). Shown on the HQ view with Kevin's one-line explanation that units are not the cause. A query over existing ledger data; about half a day.
 - [ ] [I] **Bookkeeper pack** (Plan v2, `FEATURES_V2.md` §2; first of the Plan v2 features, decision #24). Gate: settlement works end to end on testnet. QuickBooks-friendly CSV export of settled POs from the accounting view, plus duplicate-invoice and price-drift alert queries shown there.
 
 ### Mon Nov 9 — map and privacy
 - [ ] [I] 2D plant map (React + SVG) driven by `deriveTwinState(events, t)`: departments come online, quarantine distinct, money and material flows.
 - [ ] [I] Attestation: fetch and verify the NEAR AI Cloud report and per-response signatures; show them behind the curtain; keyless `verify-attestation` for replay.
 - [ ] [I] HQ policy view (read-only display of on-chain limits and spend), with the policy history from `agent_policy_set` events, including the seeded trust ramp ($1,000 on day one, raised to $2,500 after five clean POs).
-- [ ] [I] **Spreadsheet import wizard** (Plan v2, `FEATURES_V2.md` §1; second, decision #24). Gate: ledger and seed path green since Nov 1. Messy CSV/XLSX → column mapping → junk, duplicate and unit-mismatch flags → purchaser confirms → opening inventory posts through the seed path. Anything outside the defined mess patterns goes to review, never guessed. If it slips past Nov 10, it moves to Nov 12.
+- [ ] [I] **Spreadsheet import wizard** (Plan v2, `FEATURES_V2.md` §1; second, decision #24). Gate: ledger and seed path green since Nov 1. Messy CSV/XLSX → column mapping → junk, duplicate and unit-mismatch flags → purchaser confirms → opening inventory posts through the seed path. Anything outside the defined mess patterns goes to review, never guessed. Includes the second tab, "Sales by customer" (FICTIONAL_DATA §14, OPEN_QUESTIONS #28): customer SKUs to tablets to kilograms, and the retyped Summary mismatch flagged. If it slips past Nov 10, it moves to Nov 12.
 
 ### Tue Nov 10 — cut decision and README
 - [ ] **Morning cut decision.** Spine flawless in live and replay, T1 done → start T2. Otherwise T2 is cut and the rest of the week is spine, README and demo.
@@ -156,6 +157,7 @@ The three Plan v2 features sit behind their own gates and are cut before anythin
 11. Attestation panel (`privacy` tag dropped)
 12. Supplier agents with their own accounts (static quotes; `agents` tag weakens)
 13. 2D map (behind-the-curtain log and plain screens only)
+14. Mass balance (cut last of all; Tony wants it in the build)
 
 (Reordered Oct 25 per BUILD_ANALYSIS §7. The bookkeeper pack is not on this list: it is half a day and runs on Nov 8.)
 

@@ -46,3 +46,6 @@ Each question has a recommendation. Reply with the number and "yes" to accept it
 **Muse on #21–24 (bridge message 14, Oct 25):** #21 agree. #22 agree that the USDC proof must not gate Nov 8 work, but keep it as a Nov 7 stretch item rather than dropping it, since a real stablecoin settlement is the strongest realworld evidence. #23 no objection raised. #24 disagree: the spreadsheet wizard is the lived pain point and fits in 15 seconds of video (upload, flags, confirm); compromise is wizard first, hard time-boxed to Nov 8 with no Nov 9 polish, dropping below the bookkeeper pack automatically if it slips. Claude can live with either; Tony picks.
 
 26. **Discord, Telegram and X monitoring.** Neither agent can read those channels. Recommend: Tony spends ten minutes in the NEAR Discord and on @NEARProtocol before Nov 1 (ask the two prep questions in #8, note any rubric, credits or workshop announcements) and pastes anything relevant into chat. **Done Oct 27:** see #8.
+
+27. **Mass balance and the planted waste case.** Reconcile issued, output, waste and stock per batch and per plant; plant a Riverside under-recorded-waste case. **Answered Oct 27: yes, include it in the build** (research 23, FICTIONAL_DATA §15, PLAN Nov 8).
+28. **"Sales by customer" tab in the import workbook.** **Answered Oct 27: yes** (research 23, FICTIONAL_DATA §14, PLAN import wizard task).

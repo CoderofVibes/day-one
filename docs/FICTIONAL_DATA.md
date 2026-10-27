@@ -395,3 +395,64 @@ The two planted problems:
 - **Price drift:** PEC-55388 bills magnesium stearate at $9.35/kg against the $8.20/kg trailing price on PEC-55120, up 14.0%. The alert threshold is 10%. Kevin flags it with both prices; it is still exported, because it was a real, received order.
 
 Export totals (settled POs only): the history invoices excluding the duplicate sum to **$9,632.50**; with PO-1041 and PO-1042 settled after the demo, **$15,394.50**.
+
+---
+
+## 14. "Sales by customer" sheet (second tab of the §12 workbook)
+
+Approved by Tony Oct 27 (OPEN_QUESTIONS #28). Pattern from research 23: SKUs grouped by customer rather than by product, odd pack counts, monthly unit columns, numbers retyped between tabs. Every customer and SKU here is invented.
+
+Tab `Sales by customer`, product VC500 (Hollow Pine Vitamin C 500 mg Chewable), units sold per month:
+
+| Customer | Customer SKU | Pack | Aug | Sep | Oct |
+|---|---|---|---|---|---|
+| Cardinal Mart | CM-448120 | 60 ct | 4,610 | 4,700 | 4,820 |
+| Cardinal Mart | CM-448121 | 120 ct | 2,020 | 2,090 | 2,150 |
+| PillBox Pharmacy | PB-7731-06 | 100 ct | 3,150 | 3,240 | 3,300 |
+| Brightway Grocers | BW-20-0915 | 60 ct | 1,880 | 1,910 | 1,940 |
+| Online store | HP-E216 | 216 ct | 540 | 575 | 610 |
+| Online store | HP-E256 | 256 ct | 400 | 430 | 455 |
+| EU distributor | EU-VC500-90 "Vitamine C 500 mg à croquer" | 90 ct | 1,100 | 1,150 | 1,200 |
+
+A third tab, `Summary`, retypes the October column by hand and has one transposed figure: Cardinal Mart 60 ct shows **4,280** instead of 4,820.
+
+What Kevin does (deterministic parsing, no LLM guessing):
+- Maps every customer SKU to product P-VC500 and its pack count, so tablets = units × count.
+- October tablets: **1,349,840** (289,200 + 258,000 + 330,000 + 116,400 + 131,760 + 116,480 + 108,000).
+- Ascorbic acid in those tablets at 515.0 mg each: **695.168 kg**; at the 90% expected yield, **772.408 kg** issued.
+- Flags the Summary mismatch: "Cardinal Mart 60 ct for October is 4,820 on the customer tab and 4,280 on Summary. That is 540 bottles, 32,400 tablets, about 16.7 kg of ascorbic acid. Which one is right?" It uses neither until a person answers.
+- The sheet informs the forecast as history; it never overrides the ledger's actual usage from batch records.
+
+---
+
+## 15. Mass balance: under-reported waste at Plant A
+
+Approved by Tony Oct 27 (OPEN_QUESTIONS #27). Pattern from research 23: a sister plant using US units under-reported waste, which made its cost of goods look better; the unit system was blamed but was not the cause. All numbers here are invented.
+
+**Rule.** For each batch: material issued = tablets × tablet weight + recorded waste + QC samples. For each plant, material and period: opening + received + transferred in − transferred out − issued = closing. Anything that does not balance is **unaccounted material**. Kevin flags a batch or a product-period when unaccounted material exceeds **0.5%** of material issued.
+
+**The planted case: P-CMD (Cal-Mag + D3), Oct 10 to Nov 8.** Standard batch 500,000 tablets, 842.500 kg of blend, tablet weight 1,685 mg; QC samples 0.500 kg per batch at both plants.
+
+Plant A (Acme Riverside) records in pounds. Three batches, each identical on paper:
+
+| Batch | Issued (as written) | Issued (kg) | Tablets | Output (kg) | Waste written | Waste (kg) | Unaccounted |
+|---|---|---|---|---|---|---|---|
+| BR-A-2201 | 1,857.4 lb | 842.503 | 450,500 | 759.093 | 55.8 lb | 25.311 | **57.600 kg (6.84%)** |
+| BR-A-2204 | 1,857.4 lb | 842.503 | 450,500 | 759.093 | 55.8 lb | 25.311 | **57.600 kg (6.84%)** |
+| BR-A-2207 | 1,857.4 lb | 842.503 | 450,500 | 759.093 | 55.8 lb | 25.311 | **57.600 kg (6.84%)** |
+
+Exact values in mg: issued 842,502,468; output 759,092,500; waste 25,310,454; unaccounted 57,599,514 per batch, **172,798,542 mg** over the three. BR-A-2207 is the same record listed in §7 (90.1% yield).
+
+Plant B (Hollow Pine) records in kilograms and balances:
+
+| Batch | Issued | Tablets | Output | QC | Waste written | Unaccounted |
+|---|---|---|---|---|---|---|
+| BR-B-1038 (history) | 842.500 kg | 450,000 | 758.250 kg | 0.500 | 83.750 kg | 0 |
+| BR-B-1042 | 842.500 kg | 447,500 | 754.038 kg | 0.500 | 87.962 kg | 0 |
+| BR-B-1046 | 842.500 kg | 449,500 | 757.408 kg | 0.500 | 84.592 kg | 0 |
+
+Plant B's written waste is about 10% of the blend, as expected (§3). Plant A claims 3% waste with the same yield, which is arithmetically impossible: the missing 6.84% is still on Plant A's books as inventory that no longer exists, so Plant A's cost per bottle looks about 7% lower.
+
+**Units are not the cause.** Rounding 842.5 kg to 1,857.4 lb moves 0.0025 kg per batch (0.0074 kg over three). Kevin says so.
+
+**What Kevin shows on the HQ view:** "P-CMD at Riverside: 172.8 kg of material issued over three batches is in neither the tablets nor the recorded waste (6.84%). Hollow Pine balances to the gram. Pounds versus kilograms explains 0.0074 kg of it. Riverside's waste looks under-recorded, which also makes its cost per bottle look lower." The adjustment is proposed for Plant A to review, never applied silently, and the batch records stay anchored, so last month's waste cannot be quietly edited.
