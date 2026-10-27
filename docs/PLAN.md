@@ -39,7 +39,7 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 8. ~~**Anthropic API (fallback)**~~ Done Oct 27: Console org linked to the Max plan ($200/month credit), key in `.env`; verified with the free models list (HTTP 200, `claude-sonnet-5-5` available).
 9. ~~**NEAR Discord**~~ Done Oct 27: prep question already asked by many; organizers say a blog post is coming (OPEN_QUESTIONS #8).
 10. ~~**Payout account**~~ Done Oct 27: `Tony's prize account` in Meteor Wallet; recovery phrase kept offline by Tony.
-11. **X account:** confirm it can post video.
+11. ~~**X account**~~ Done Oct 27: Tony confirmed it can post video. Keep the export ≤2:20 (standard-account limit) as planned.
 
 ### Claude tasks in prep (tooling only, once the human approves installs)
 - [x] [I] In WSL2: rustup stable 1.99.1, `wasm32-unknown-unknown`, cargo-near 0.22.0 installed Oct 25. Disk recorded in RISKS.md.
