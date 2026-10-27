@@ -272,3 +272,126 @@ Kevin's policy for Plant B, set by Acme (Jordan Pike):
 ## 10. Pre-demo history
 
 Seed 30 days of history so the forecast and the map have something to show: about 12 batch records at Plants A and B (summarized, not rendered), 6 received POs, 4 transfers from Plant C, and one past QC rejection (a CCS lot `wasted`, returned to vendor).
+
+---
+
+## 11. Packing slip for PO-1042 (Tommy's photo)
+
+Rendered from Nov 1 like the batch records: a printed form, slightly creased, photographed at the dock. The layout follows a common industrial packing list (header block with ship-from at top left, a boxed title grid at top right, ship-to and bill-to blocks, a line table, a notes strip, and a receiving signature line). It uses no logo or wording copied from any real company's form. **Packing slips carry no prices**, as in real B2B shipping.
+
+| Field | Value |
+|---|---|
+| Ship from | Northgate Ingredients, 410 Mill Race Road, Northgate |
+| Title box | "PACKING LIST", Packing slip no. **NG-PS-60417**, Page 1 of 1 |
+| Your PO # | **PO-1042** |
+| Sales order | NG-SO-24190 |
+| Ship date | 11/13/26 |
+| Ship via | Ridgeline Freight LTL, PRO # 7720-4418-03 |
+| FOB | Origin |
+| Ship to | Hollow Pine Tablet Co., Receiving Dock 2, 18 Quarry Lane, Hollow Pine |
+| Bill to | Acme Holdings, Accounts Payable (Hollow Pine Tablet Co.) |
+
+Line table:
+
+| Item | Description | Ordered | Shipped | Back-ordered | Packaging | Supplier lot | Mfg / Retest |
+|---|---|---|---|---|---|---|---|
+| NG-ASC-FG | Ascorbic acid, fine granular | 700 kg | 700 kg | 0 | 28 bags × 25 kg, 1 pallet | **NG-24-8812** | 09/2026 / 09/2028 |
+
+Footer: net weight 700.0 kg, gross weight 734.2 kg; "Certificate of analysis enclosed ☑"; "Report shortages within 48 hours".
+
+Handwritten by Tommy in the receiving box (blue ink, different hand from the form): **"Rec'd 28 bags / 1 plt. Seals OK. T.R. 11/16"**.
+
+What Kevin checks against the PO and the supplier's `mark_shipped` record: vendor, PO number, material, quantity shipped, and supplier lot. All match, so the receipt posts and the lot becomes `ASC-261116-01` in quarantine.
+
+**Mismatch variant (tests only, not in the video):** `NG-PS-60417-X`, identical except Shipped **675 kg**, Back-ordered **25 kg**, "27 bags", and Tommy's note "Rec'd 27 bags". Kevin flags "Short 25 kg against PO-1042; supplier shows 1 bag back-ordered" and does not confirm receipt until a person decides.
+
+---
+
+## 12. The messy inventory spreadsheet (import wizard fixture)
+
+File name: **`INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx`**, one sheet, the way Ray kept Hollow Pine's stock before the acquisition. It is a snapshot "as of 10/01/26" and is **self-contained**: the import test runs it into an empty Plant B ledger and compares against the expected result below. (Whether the seeded Plant B history should start from this import is a Nov 9 decision; default no.)
+
+Sheet quirks: a title row ("HOLLOW PINE INVENTORY — DO NOT SORT") above the header row, a blank row after the header, column headers `Item | Lot # | Qty | Unit | Where | Exp | Notes`.
+
+| Row | Item (as typed) | Lot # | Qty | Unit | Where | Exp | Notes |
+|---|---|---|---|---|---|---|---|
+| 1 | Ascorbic Acid | ASC-260815-01 | 412.5 | kg | Cage 2 | 08/2028 | |
+| 2 | Vit C (ascorbic) fine powder | ASC-260815-01 | 412.5 | kg | Cage 2 | 08/2028 | |
+| 3 | ASC | ASC-260702-03 | 150 | kg | Cage 2 | 07/2028 | partial |
+| 4 | Sorbitol | SOR-260810-01 | 620 | kg | Rack A | 08/2028 | |
+| 5 | Microcrystalline Cellulose 102 | MCC-260901-01 | 300 | kg | Rack B | 09/2029 | |
+| 6 | MCC PH102 | MCC-260820-02 | 110.2 | lb | Rack B | 08/2029 | |
+| 7 | Citric Acid Anhyd. | CTA-260905-01 | 200 | kg | Rack C | 09/2028 | |
+| 8 | Citric acid | CTA-260611-02 | 55.1 | lb | Rack C | 06/2028 | |
+| 9 | Orange flavor nat. | FOR-260301-01 | 18 | kg | Flavor rm | 03/2026 | |
+| 10 | Orange flavor nat. | FOR-260915-02 | 25 | kg | Flavor rm | 09/2027 | |
+| 11 | Mag Stearate | MGS-260822-01 | 40 | kg | Rack B | 08/2028 | |
+| 12 | Silicon dioxide | SIO-260710-01 | 12 | kg | Rack B | 07/2029 | |
+| 13 | Sucralose | SUC-260601-01 | ~6 kg | | Flavor rm | 06/2028 | weigh it |
+| 14 | Calcium carbonate | CAC-260815-01 | 900 | kg | Rack D | 08/2029 | |
+| 15 | Mag oxide | MGO-260818-01 | 180 | kg | Rack D | 08/2029 | |
+| 16 | Croscarmellose | CCS-260720-01 | 30 | kg | Rack B | 07/2028 | |
+| 17 | Stearic acid | | 22 | kg | Rack B | 05/2028 | lot label torn |
+| 18 | Xanthan Gum | XG-0412 | 10 | kg | Cage 1 | 04/2027 | from old product |
+| 19 | TOTAL | | 3497.3 | | | | |
+
+The TOTAL row is Ray's own `=SUM()` and is meaningless: it adds pounds to kilograms and counts the duplicate.
+
+**Kevin's opening message:** "Found 19 rows. 9 need your eyes: 1 looks like the same Vitamin C lot entered twice, 1 uses a short name for ascorbic acid, 2 are in pounds, 1 lot expired in March, 1 quantity isn't a number, 1 has no lot number, 1 material (Xanthan Gum) isn't on your material list, and the last row is a total."
+
+| Flag | Row | Kind | Kevin proposes | Expected resolution in the fixture |
+|---|---|---|---|---|
+| F1 | 2 | Duplicate: same lot and quantity as row 1 under another name | Count once | Ray merges |
+| F2 | 3 | Name not on master list; best match Ascorbic acid (ASC) | Map to ASC | Ray confirms |
+| F3 | 6 | Pounds | 110.2 lb = 49.985 879 kg | Ray confirms |
+| F4 | 8 | Pounds | 55.1 lb = 24.992 940 kg | Ray confirms |
+| F5 | 9 | Expired 03/2026, before the snapshot date | Import as `quarantine`, note "expired, hold for disposal" | Ray confirms |
+| F6 | 13 | Quantity is text ("~6 kg") | Nothing; asks for a weighed number | Ray types **5.8 kg** |
+| F7 | 17 | No lot number | Assign internal lot `STA-261001-01`, note "lot assigned at import" | Ray confirms |
+| F8 | 18 | Material not on master list | `needs_review`, not imported | Stays in review |
+| F9 | 19 | Totals row | Skip | Skipped |
+
+Pound conversion uses exactly 0.45359237 kg/lb; quantities are stored in mg (DATA_MODEL §1), so 110.2 lb = 49 985 879 mg and 55.1 lb = 24 992 940 mg.
+
+**Expected opening inventory after import** (the test compares to the milligram):
+
+| Material | Lots | Available | Quarantine |
+|---|---|---|---|
+| ASC | ASC-260815-01, ASC-260702-03 | 562.500 kg | |
+| SOR | SOR-260810-01 | 620.000 kg | |
+| MCC | MCC-260901-01, MCC-260820-02 | 349.985 879 kg | |
+| CTA | CTA-260905-01, CTA-260611-02 | 224.992 940 kg | |
+| FOR | FOR-260915-02, FOR-260301-01 | 25.000 kg | 18.000 kg |
+| MGS | MGS-260822-01 | 40.000 kg | |
+| SIO | SIO-260710-01 | 12.000 kg | |
+| SUC | SUC-260601-01 | 5.800 kg | |
+| CAC | CAC-260815-01 | 900.000 kg | |
+| MGO | MGO-260818-01 | 180.000 kg | |
+| CCS | CCS-260720-01 | 30.000 kg | |
+| STA | STA-261001-01 | 22.000 kg | |
+
+Re-importing the same file changes nothing (idempotent per file hash and plant). Xanthan Gum stays in the review queue.
+
+---
+
+## 13. Supplier invoices (bookkeeper pack fixture)
+
+Invoices for the six received POs in the pre-demo history (§10), plus the two demo POs. Each invoice references its PO; the bookkeeper export matches invoice, PO, receipt and payment. Invoice layout: vendor block top right, "INVOICE" title, bill-to block, invoice number, date and due date, a line table with quantity, unit price and amount, and a total box. Terms are net-30 on the history invoices (paid by check before Day One) and "Paid on QC release" on the Day One POs.
+
+| Invoice | Vendor | PO | Date | Lines | Total |
+|---|---|---|---|---|---|
+| PEC-55120 | Pacific Excipient Co. | PO-1035 | 10/02/26 | MGS 50 kg @ $8.20 = $410.00; MCC 500 kg @ $3.40 = $1,700.00 | **$2,110.00** |
+| FP-2026-0912 | Fennimore Polyols | PO-1036 | 10/05/26 | SOR 1,000 kg @ $2.15 | **$2,150.00** |
+| LP-88231 | Lowell Packaging | PO-1037 | 10/08/26 | BTL 100,000 ea @ $0.021 | **$2,100.00** |
+| OFH-3317 | Orchard Flavor House | PO-1038 | 10/12/26 | FOR 25 kg @ $46.00 | **$1,150.00** |
+| SMS-10442 | Sierra Mineral Supply | PO-1039 | 10/15/26 | CAC 1,500 kg @ $0.62 = $930.00; MGO 250 kg @ $2.90 = $725.00 | **$1,655.00** |
+| PEC-55388 | Pacific Excipient Co. | PO-1040 | 10/22/26 | MGS 50 kg @ **$9.35** | **$467.50** |
+| **OFH-3317-R** | Orchard Flavor House | PO-1038 | 10/19/26 | FOR 25 kg @ $46.00 ("Reissued") | **$1,150.00** |
+| BLS-7781 | Bayfront Lab Supply | PO-1041 | demo | ACN ×4 @ $128.00; BUF ×4 @ $25.00 | **$612.00** |
+| NG-INV-24190 | Northgate Ingredients | PO-1042 | demo | ASC 700 kg @ $7.10 = $4,970.00; freight $180.00 | **$5,150.00** |
+
+The two planted problems:
+- **Duplicate invoice:** OFH-3317-R is the same vendor, same PO, same amount as OFH-3317, seven days later, marked "Reissued". Kevin holds it out of the export: "One invoice from Orchard Flavor House looks like a copy of OFH-3317, already paid on PO-1038. I held it out of this export."
+- **Price drift:** PEC-55388 bills magnesium stearate at $9.35/kg against the $8.20/kg trailing price on PEC-55120, up 14.0%. The alert threshold is 10%. Kevin flags it with both prices; it is still exported, because it was a real, received order.
+
+Export totals (settled POs only): the history invoices excluding the duplicate sum to **$9,632.50**; with PO-1041 and PO-1042 settled after the demo, **$15,394.50**.
