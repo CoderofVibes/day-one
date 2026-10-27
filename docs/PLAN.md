@@ -83,7 +83,6 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 - [ ] [I] Packing-slip match; `confirm_receipt` and `qc_release` relayed; payout callback; `qc_reject` refund path.
 - [ ] [I] Anchoring job (`anchor_batch`); `npm run verify` with MATCH/MISMATCH.
 - [ ] [I] Purchaser, receiving, QC and accounting screens (plain, functional).
-
 - [ ] [I] **Attack suite** (Muse #34, for the `security` track; cut first if this day slips): `npm run test:attacks` shows each of four attacks failing, using existing fixtures: a lookalike vendor (refused by qualification, contract allowlist), an inflated invoice (amount above the PO, refused), a fake "payment failed, retry" message (Kevin does not re-pay), and hidden-text instructions in an invoice (Kevin ignores them and flags the document). Output is plain pass/fail lines that the README can quote.
 
 ### Sat Nov 7 — spine complete
