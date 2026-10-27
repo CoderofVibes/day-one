@@ -23,3 +23,22 @@
 ## Proposed fixture change (pending Tony's yes)
 
 Add a second sheet, "Sales by customer", to the import-wizard workbook (FICTIONAL_DATA §12), using invented retailers and SKUs: SKUs grouped by retailer, mixed pack counts (60, 100, 120, 216, 256 ct, plus an EU pack with a different label), monthly unit columns, and one value retyped differently on a summary sheet. Kevin converts it to tablets and kilograms of ascorbic acid for the forecast and flags the mismatched value. Scope: a fixture and a parser rule set, built only when the import wizard is built (Nov 9–10), not a new feature.
+
+## More from Tony, Oct 27 (same conversation)
+
+7. **Batch records were keyed into the ERP by a separate person**, by hand, after the fact.
+8. **Tracking was attempted per tablet** for a brand selling over 300 million tablets a year across 100+ SKUs, with high error rates.
+9. **Two sister plants used different units:** one insisted on US customary units, the other used metric.
+10. **The same product had a different cost of goods at each plant.** The other plant blamed the unit system. That is not how arithmetic works, and Tony's team disproved it quickly. The real cause: that plant was **under-reporting waste**, which made its margins look better.
+11. **His conclusion, as an executive:** that should never be possible. The easy catch is one system where raw material received, raw material on hand, batches produced, output and claimed waste all **reconcile**. If they don't add up, someone is told.
+
+## What this adds for Day One
+
+- **Mass balance is the feature behind "one truth".** For each plant, material and period: opening stock + received + transferred in − transferred out − consumed by batches = closing stock. For each batch: material issued = tablets produced × tablet weight + recorded waste + QC samples. Whatever does not balance is **unaccounted material**, and it is flagged. Under-reported waste shows up exactly there, because output plus claimed waste falls short of what was issued.
+- **Units cannot hide anything.** The ledger already stores every quantity in one base unit (mg) and converts on entry (DATA_MODEL §1), so a pounds plant and a kilograms plant reconcile on the same scale. Kevin can say so in one line.
+- **Anchoring makes the numbers hard to fix after the fact.** Batch records and lot events are fingerprinted on-chain (CONTRACTS §6). A plant cannot quietly lower last month's waste once HQ has seen it; a correction is a new, visible event.
+- **It answers the executive buyer.** The acquirer's integration lead (Jordan Pike in FICTIONAL_DATA) wants comparable cost and yield across plants. This is the sustainability story: Acme pays for Day One because it makes every plant's numbers comparable and honest, not only because it saves typing.
+
+## Proposed fixture and feature (pending Tony's yes)
+
+A planted case at Plant A (Acme Riverside), which records in pounds: the same product, P-CMD, shows a better yield at Plant A than at Plant B because Plant A's batch records under-state waste. Kevin's reconciliation for P-CMD over the 30-day history shows material issued at Plant A exceeding output plus claimed waste by a few percent, flags it as unaccounted material on the HQ view, and states that the unit system is not the cause. Scope: a reconciliation query over ledger data that already exists, plus seeded history numbers; about half a day, alongside the three-facility view on Nov 8. Exact numbers go into FICTIONAL_DATA once approved.
