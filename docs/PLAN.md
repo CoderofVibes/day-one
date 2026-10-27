@@ -35,7 +35,7 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 4. ~~**Install Node 24 LTS** and **near-cli-rs 0.30.1**~~ Done Oct 25: Node 24.22.1; near-cli-rs 0.30.1 at `C:\Users\antho\.cargo\bin\near.exe` (the npm route fails on this PC because Git's `tar` misreads `C:\` paths; the PowerShell installer works).
 5. ~~**Collect testnet NEAR**~~ Done Oct 27: 40 NEAR in `acme-holdings.testnet` (faucet gives 5 per request), 10 in `dayone-relayer.testnet` (verified by RPC).
 6. **Collect Circle testnet USDC:** faucet.circle.com, "Near Testnet", 20 USDC per address every 2 hours, CAPTCHA. Register the account with the USDC contract first (research 01). Target 100 USDC. **Ask in Circle's Discord** for a larger testnet grant. After the **first** claim, tell Claude which account you used, so Claude can confirm on-chain that the balance landed in Circle's contract (`3e22…b8af`); the faucet's delivery to NEAR is the one thing not yet proven (research 01, re-verified Oct 25).
-7. **NEAR AI Cloud:** create an account, an API key, and add about $5 of credit.
+7. ~~**NEAR AI Cloud**~~ Done Oct 27: key in `.env` (gitignored); verified with a free attestation call for `z-ai/glm-5.3-flash` (HTTP 200).
 8. **Anthropic API (fallback):** link a Console organization to the Max plan to claim the $200/month API credit; create a dedicated workspace with a spend limit and an API key.
 9. **NEAR Discord:** ask what counts as prep (OPEN_QUESTIONS).
 10. **Mainnet payout account:** create it; note whether acquiring NEAR needs exchange KYC.
