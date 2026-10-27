@@ -72,3 +72,7 @@ Only Circle's is "native USDC". For a "Real-World Money" story, the Circle contr
 - https://docs.near.org/getting-started/faucet — near-faucet.io and testnet Ref Finance swap as FT sources (accessed 2026-10-22)
 - https://docs.near.org/protocol/access-keys — function-call keys "do not allow to attach NEAR tokens to the call" (accessed 2026-10-22)
 - https://github.com/near-examples/auctions-tutorial/blob/main/contract-rs/03-bid-with-fts/src/lib.rs — reference `ft_on_transfer` with a predecessor check and `ft_transfer` + 1 yocto (accessed 2026-10-22)
+
+## Proven 2026-10-27: Circle's faucet delivers to a NEAR testnet account
+
+Claude registered `acme-holdings.testnet` with the Circle USDC contract (`storage_deposit`, 0.00125 NEAR, signed with the account's keychain key). Tony then claimed once at faucet.circle.com (USDC, "Near Testnet", address `acme-holdings.testnet`). Within about a minute `ft_balance_of` on `3e2210e1184b45b64c8a434c0a7e7b23cc04ea7eb7a6c3c32520d03d4afcb8af` returned 20 USDC (20000000 base units). So the faucet funds Circle's own NEAR testnet contract, the one the bonus PO-1047 deployment will use. Register storage before claiming; whether the faucet registers it for you is still untested.
