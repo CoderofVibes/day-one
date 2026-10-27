@@ -58,7 +58,7 @@ Muse and Claude talk through the **muse-claude-bridge**: a hosted relay with a l
 - **Enforced, not logged.** Spending limits and approvals are contract rules. Never add an off-chain check that duplicates or replaces a contract rule.
 - **Invisible chain in the UI.** Staff-facing screens show dollars, POs and approvals. Wallets, keys, gas and tokens appear only in the behind-the-curtain view.
 - **No stubs for unbuilt features.** If a feature is not built by Nov 13, delete its folder and any references. AI judges read the whole repo.
-- **Verify before you assume.** NEAR APIs change. Check `docs/research/` first, then current docs. Record any new finding in the relevant research file.
+- **Verify before you assume.** NEAR APIs change. Check `docs/research/` first, then current docs: the `near-docs` MCP server (https://docs.near.org/mcp, live docs search, read-only, added Oct 27) or https://docs.near.org/llms.txt. Never use the NEAR MCP Server (github.com/nearai/near-mcp): it holds private keys. Record any new finding in the relevant research file.
 
 ## README rules
 
