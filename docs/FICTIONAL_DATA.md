@@ -2,7 +2,7 @@
 
 Everything in this file is invented. No company, person, product, formula, price or lot is taken from a real business, including the human's former employer. Any resemblance to a real company name is coincidental; if one is found, rename it.
 
-This is a **specification**. Seed files (`data/seed/`) and rendered batch records (`data/batch-records/`) are produced from it starting 2026-11-01.
+This is a **specification**. The seed is code in `server/src/seed/` (`npm run seed` writes `data/dayone.db`); rendered batch records (`data/batch-records/`) are produced from it starting 2026-11-01.
 
 Dollar amounts here are what plant staff see. How dollars map to on-chain token amounts is decided in `CONTRACTS.md`.
 
@@ -240,6 +240,8 @@ Story: Plant A transferred ascorbic acid lot `ASC-261009-01` to Plant B.
 - Plant B weighed it in at **187.450 kg**: one bag was a partial bag left over from Plant A's dispensing.
 - Plant A's inventory still shows **12.550 kg** of the lot on hand at Plant A, but that material is physically in Plant B's partial bag and has already been counted there. It is phantom stock.
 - Effect: shared inventory overstates ASC by 12.550 kg, which would delay the reorder.
+
+How the seed books it: the lot was received at Plant A as 225 kg (9 bags), Plant A recorded a 12.450 kg dispensing draw, then booked the transfer out as 200 kg (`TR-A-B-261102`, Nov 2); Plant B booked it in at 187.450 kg (Nov 3). Plant A's book is left at 12.550 kg.
 
 Kevin flags it when processing BR-B-1045: "Plant A shows 12.55 kg of lot ASC-261009-01 that Plant B weighed in at 187.45 kg. I think the 12.55 kg at Plant A isn't really there. Want me to send Plant A an adjustment for review?" The adjustment itself is a movement record, and its fingerprint is anchored.
 

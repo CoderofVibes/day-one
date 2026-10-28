@@ -28,6 +28,7 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Tests only | `npm test` |
 | Format | `npm run format` |
 | Generate a ledger migration after a schema change | `npm run db:generate -w server`, then add `STRICT` to each new `CREATE TABLE` (verified Oct 28) |
+| Rebuild the demo database from the fictional seed | `npm run seed` → `data/dayone.db` (verified Oct 28) |
 | _(more commands are added as they first work)_ | |
 
 ## Team and working protocol

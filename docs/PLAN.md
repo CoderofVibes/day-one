@@ -2,7 +2,7 @@
 
 ## In progress
 
-_(One line here when a session is interrupted mid-task: what, where, next step.)_
+Seed (Nov 1, item 3), split Oct 28: reference data and demo-start lots are done in `server/src/seed/` (`npm run seed`). Next: FICTIONAL_DATA §10 history as events (about 12 summarized batches at A and B, 6 received POs, 4 transfers from Plant C, the CCS QC rejection), and tie `ASC-260921-02`'s 165.1 kg draw to one of those batches.
 
 ---
 

@@ -11,6 +11,7 @@
     "node": ">=22.13"
   },
   "scripts": {
+    "seed": "tsx server/src/seed/cli.ts",
     "test": "vitest run",
     "typecheck": "tsc -b",
     "lint": "biome check .",
