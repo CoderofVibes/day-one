@@ -33,6 +33,9 @@ recordings/
 *.mp4
 *.mov
 
+# Other sessions' git worktrees (branch erp-mock)
+.claude/worktrees/
+
 # OS / editors
 .DS_Store
 Thumbs.db

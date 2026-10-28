@@ -6,4 +6,4 @@ Built so far: a replay of the recorded testnet run (`src/data/demo-run.json`, wr
 
 `npm run web:build` writes a static site to `web/dist/` with relative paths, so it can be hosted from any static host.
 
-Not built yet: the live purchaser, receiving, QC and accounting screens, the plant map and the HQ policy view.
+The HTTP API for the live screens exists (`npm run api`, `api/`): it serves this built folder at `/` and the run at `/api/run`; in development `npm run web` proxies `/api` to it. Not built yet: the live purchaser, receiving, QC and accounting screens on that API, the plant map and the HQ policy view.

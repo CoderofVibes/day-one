@@ -83,7 +83,7 @@ flowchart LR
 | Component | Responsibility | Never does |
 |---|---|---|
 | `web/` | Purchaser UI, phone mock, receiving and QC screens, plant map, behind-the-curtain view, HQ policy view | Hold keys; talk to NEAR directly |
-| `server/api` | Routes for uploads, confirmations, approvals, receipts, QC; serves demo state | Enforce spend limits (the contract does) |
+| `api/` (own workspace, since it depends on both `server/` and `agents/kevin`) | Routes for uploads, confirmations, approvals, receipts, QC; serves demo state and the built web UI | Enforce spend limits (the contract does) |
 | `server/ledger` | Inventory truth: reference data, `lot_events` append-only log with hash chain, projections | Store secrets; mutate past events |
 | `agents/kevin` | Extraction, validation, discrepancy detection, forecast, RFQ, ranking, PO drafting, chain calls with Kevin's key | Approve his own POs; move tokens directly |
 | `agents/suppliers` (Tier 1) | Respond to RFQs with quotes; each signs with its own account | Bypass escrow |
@@ -139,7 +139,7 @@ Revocation has two layers: `pause_agent` in the policy contract (rule level) and
 ## 5. Main flows
 
 ### 5.1 Batch record → inventory
-1. Ray uploads BR-B-1045. `server/api` stores the file and its sha256.
+1. Ray uploads BR-B-1045. `api/` stores the file and its sha256.
 2. Kevin calls the vision route of `LlmClient`. The model **transcribes** fields and gives a legibility label per field; it does no arithmetic (research 14).
 3. Kevin's code normalizes units, computes yield and waste, validates against the active formula (±0.5%), and flags low-confidence fields.
 4. Ray confirms. `ledger.appendLotEvent` writes `issued`/`consumed` events with genealogy (`batch_inputs`), all in one SQLite transaction, extending the hash chain.
@@ -201,8 +201,9 @@ contracts/              Cargo workspace (built in WSL2)
 agents/
   kevin/                workflow, tools, prompts
   suppliers/            created when Tier 1 starts
+api/                    HTTP routes and the demo session (Node http; depends on server/ and agents/)
 server/
-  api/  ledger/  llm/  chain/  relayer/  keys/  attestation/  sms/
+  ledger/  llm/  chain/  relayer/  keys/  attestation/  sms/
 web/
   src/  (purchaser, phone, receiving, qc, hq, map, curtain; twin3d/ only if Tier 2 ships)
 data/

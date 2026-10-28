@@ -4,11 +4,16 @@
 // The chain and the models come in as a ChainClient and an LlmClient, so the same run goes
 // live on testnet (recording fixtures) or replays them with no keys.
 //
+// The run is a machine of phases that staff actions advance (`startDemo`): Ray uploads and
+// confirms, Kevin buys, Linda texts, Tommy photographs the slip, Priya decides. The scripted
+// demo (`runDemo`, npm run demo) plays the phases in the recorded order; the HTTP API (api/)
+// plays them one click at a time. Both print the same lines.
+//
 // Steps not built yet are left out rather than faked: the step 3 discrepancy (PLAN Nov 8), the
 // tier-1 quote anchors on step 5, the USDC proof on step 13 (bonus) and the departments count
 // on step 14 (the plant map). They join the run when their features exist.
 
-import type { ChainClient, LoggedOutcome } from "@day-one/server/chain/client";
+import { type ChainClient, explorerUrl, type LoggedOutcome } from "@day-one/server/chain/client";
 import type { Ledger } from "@day-one/server/ledger/db";
 import {
   batchRecords,
@@ -35,7 +40,13 @@ import {
 import { forecastMaterial } from "./forecast.ts";
 import { matchInvoice, readInvoice } from "./invoices.ts";
 import { draftPo, draftPoFromRanking, rankQuotes, requestQuotes } from "./purchasing.ts";
-import { decideQc, type PackingSlip, receiptAnchorItem, receiveDelivery } from "./receiving.ts";
+import {
+  decideQc,
+  type PackingSlip,
+  type ReceiveResult,
+  receiptAnchorItem,
+  receiveDelivery,
+} from "./receiving.ts";
 import { submitPo } from "./submit.ts";
 
 /** The demo clock (DEMO_SCRIPT §2) for each step. */
@@ -66,6 +77,12 @@ export type ShipFn = (shipment: {
   supplierLot: string;
 }) => Promise<{ status: string; reason?: string; outcomes: LoggedOutcome[] }>;
 
+export interface BatchRecordPage {
+  file: string;
+  sha256: string;
+  image: LlmImage;
+}
+
 export interface DemoDeps {
   db: Ledger;
   chain: ChainClient;
@@ -78,7 +95,7 @@ export interface DemoDeps {
   relayer: string;
   tokenSymbol: string;
   /** The photographed BR-B-1045 page and its SHA-256. */
-  batchRecord: { file: string; sha256: string; image: LlmImage };
+  batchRecord: BatchRecordPage;
   /** How many batch records the plant handed over (FICTIONAL_DATA §7). */
   batchRecordCount: number;
   slip: PackingSlip;
@@ -102,339 +119,547 @@ export interface DemoResult {
   ok: boolean;
 }
 
+/** The phases of the run, in order. Each staff action advances one of them. */
+export const DEMO_PHASES = [
+  "load",
+  "upload",
+  "confirm",
+  "purchase",
+  "reply",
+  "receive",
+  "qc",
+  "finish",
+  "done",
+] as const;
+export type DemoPhase = (typeof DEMO_PHASES)[number];
+
+/** A phase was asked for out of turn. */
+export class DemoOrderError extends Error {
+  override name = "DemoOrderError";
+  constructor(
+    readonly expected: DemoPhase,
+    readonly asked: DemoPhase,
+  ) {
+    super(`the run is at "${expected}", not "${asked}"`);
+  }
+}
+
+export interface DemoMachine {
+  readonly steps: DemoStep[];
+  /** The phase the run is waiting for. */
+  readonly next: DemoPhase;
+  /** Why the run stopped early, if it did. */
+  readonly stopped: string | null;
+  /** The draft Kevin read and the purchaser has not confirmed yet. */
+  readonly draft: { batchId: number; batchNo: string } | null;
+  /** The lot waiting for QC, once the delivery is in. */
+  readonly quarantined: string | null;
+  /** 0. Seed counts and the contract's budget. */
+  load(): Promise<DemoStep[]>;
+  /** 1. Kevin reads the page (the recorded BR-B-1045 unless another is given). */
+  upload(page?: BatchRecordPage): Promise<DemoStep[]>;
+  /** 2. The purchaser confirms; Kevin anchors the record. */
+  confirm(staffName?: string): Promise<DemoStep[]>;
+  /** 4–7. Forecast, quotes, the small PO funds, the big PO is refused. */
+  purchase(): Promise<DemoStep[]>;
+  /** 8–9. The approver texts back; Kevin retries; the supplier accepts and ships. */
+  reply(fromStaffName: string, text: string): Promise<DemoStep[]>;
+  /** 10. Receiving photographs the packing slip. */
+  receive(slip?: PackingSlip, receiverName?: string): Promise<DemoStep[]>;
+  /** 11–12. QC decides; a release pays the supplier and Kevin matches the invoice. */
+  qc(decision: "release" | "reject", lotCode?: string, qcName?: string): Promise<DemoStep[]>;
+  /** 14. The chain summary and the proof file. */
+  finish(): DemoResult;
+}
+
 const NEEDS_APPROVAL = "director approval required.";
 const DAY_MS = 86_400_000;
+const PURCHASER = "Ray Delgado";
+const RECEIVER = "Tommy Reyes";
+const QC = "Priya Natarajan";
+const APPROVER = "Linda Park";
 
 /** Stops the run with the step's own words when a step does not land. */
 class DemoStopped extends Error {
   override name = "DemoStopped";
 }
 
+export function startDemo(deps: DemoDeps): DemoMachine {
+  return new Demo(deps);
+}
+
+/** The scripted run: every phase in the recorded order (DEMO_SCRIPT §2). */
 export async function runDemo(deps: DemoDeps): Promise<DemoResult> {
-  const { db, chain } = deps;
-  const steps: DemoStep[] = [];
-  const add = (step: number, title: string, staffLines: string[], chainLines: string[] = []) => {
-    const s = { step, title, staff: staffLines, chain: chainLines };
-    steps.push(s);
-    return s;
-  };
-  const amount = (units: bigint | number) =>
-    `${formatUsd(BigInt(units)).replace("$", "")} ${deps.tokenSymbol}`;
-  const ctx = { kevin: deps.kevin, policyContract: deps.policyContract };
-  const escrowed = (o: LoggedOutcome, total: number) =>
-    o.status === "success" ? `escrow funded ${amount(total)}` : undefined;
-  const relayed = (account: string | null) =>
-    `signed by ${account ?? "unknown"}, paid by ${deps.relayer}`;
-  const staffBy = (where: ReturnType<typeof eq>) => {
-    const row = db.select().from(staff).where(where).get();
-    if (!row) throw new Error("demo: staff member missing from the seed");
-    return row;
-  };
-  const expect = (ok: boolean, why: string) => {
-    if (!ok) throw new DemoStopped(why);
-  };
+  const demo = startDemo(deps);
+  const phases = [
+    () => demo.load(),
+    () => demo.upload(),
+    () => demo.confirm(),
+    () => demo.purchase(),
+    () => demo.reply(APPROVER, "YES 1042"),
+    () => demo.receive(),
+    () => demo.qc("release"),
+  ];
+  for (const phase of phases) {
+    if (demo.stopped) break;
+    await phase();
+  }
+  return demo.finish();
+}
 
-  let ok = true;
-  let anchoredTx: string | null = null;
-  let batchId = 0;
-  try {
-    // 0. Seed and the contract's budget.
-    deps.setClock(DEMO_CLOCK.start);
-    const n = (table: SQLiteTable) => db.select({ n: count() }).from(table).get()?.n ?? 0;
-    // History starts with the first seeded batch; opening lots were received earlier.
-    const first = db
-      .select({ at: min(batchRecords.startedAt) })
-      .from(batchRecords)
-      .get()?.at;
-    const plants = db
-      .select({ n: count() })
-      .from(facilities)
-      .where(ne(facilities.role, "hq"))
-      .get()?.n;
-    const historyDays = first
-      ? Math.round((Date.parse(DEMO_CLOCK.start) - Date.parse(first)) / DAY_MS)
-      : 0;
-    const budget = (await chain.view({
-      contractId: deps.policyContract,
-      method: "get_budget",
-    })) as { budget: string; escrowed: string };
-    add(
-      0,
-      "Load seed",
-      [
-        `Loaded ${plants ?? 0} facilities, ${n(materials)} materials, ${n(vendors)} vendors, ` +
-          `${deps.batchRecordCount} batch records, ${historyDays} days of history.`,
-      ],
-      [
-        `chain: spend-policy budget ${amount(BigInt(budget.budget))}, ` +
-          `escrowed ${amount(BigInt(budget.escrowed))}`,
-      ],
-    );
+class Demo implements DemoMachine {
+  readonly steps: DemoStep[] = [];
+  next: DemoPhase = "load";
+  stopped: string | null = null;
+  draft: { batchId: number; batchNo: string } | null = null;
+  quarantined: string | null = null;
 
-    // 1. Kevin reads BR-B-1045.
-    const { extraction, model } = await transcribeBatchRecord(deps.llm, deps.batchRecord.image);
-    const draft = saveBatchDraft(db, extraction, {
-      file: deps.batchRecord.file,
-      sha256: deps.batchRecord.sha256,
-      model,
-    });
-    batchId = draft.batchId;
-    add(1, "Upload BR-B-1045", [draft.review.sentence]);
-    expect(
-      !draft.review.flags.some((f) => f.blocking),
-      "BR-B-1045 has blocking flags; Ray must answer them before the run can go on.",
-    );
+  private batchId = 0;
+  private anchoredTx: string | null = null;
+  private po1042: ReturnType<typeof draftPoFromRanking> | null = null;
+  private received: ReceiveResult | null = null;
+  private result: DemoResult | null = null;
 
-    // 2. Ray confirms; Kevin anchors the record's fingerprint.
-    deps.setClock(DEMO_CLOCK.confirm);
-    const ray = staffBy(eq(staff.name, "Ray Delgado"));
-    const confirmed = confirmBatchRecord(db, batchId, {
-      staffId: ray.id,
-      now: DEMO_CLOCK.confirm,
-      salt: deps.salts.batch,
-    });
-    const batchAnchor = await anchorBatch(db, chain, [batchRecordAnchorItem(db, batchId)], {
-      ...ctx,
-      now: DEMO_CLOCK.confirm,
-    });
-    anchoredTx = batchAnchor.txHash;
-    add(
-      2,
-      "Ray confirms",
-      [confirmed.sentence],
-      [
-        chainLine(
-          `anchored ${confirmed.review.batchNo} 0x${confirmed.recordHash.slice(0, 8)}…`,
-          batchAnchor,
-        ),
-      ],
-    );
-    expect(batchAnchor.status === "success", `anchoring BR-B-1045 ${batchAnchor.status}`);
+  constructor(private readonly deps: DemoDeps) {}
 
-    // 4. Forecast.
-    deps.setClock(DEMO_CLOCK.purchase);
-    const forecast = forecastMaterial(db, {
-      facility: "B",
-      material: "ASC",
-      now: DEMO_CLOCK.start,
-    });
-    add(4, "Forecast", [forecast.sentence]);
-
-    // 5. Quotes.
-    const rfq = requestQuotes(db, forecast, "RFQ-2611-01", DEMO_QUOTES.ASC ?? []);
-    const ranking = rankQuotes(db, rfq, DEMO_CLOCK.start);
-    add(5, "Quotes", [ranking.sentence]);
-
-    // 6. The small PO funds in one call.
-    const plantB = db.select().from(facilities).where(eq(facilities.code, "B")).get();
-    if (!plantB) throw new Error("demo: Plant B missing from the seed");
-    const po1041 = draftPo(db, {
-      poNo: "PO-1041",
-      vendor: "BLS",
-      facilityId: plantB.id,
-      lines: [
-        { material: "ACN", qtyBase: 4, unitPriceUsdc: 128_000_000 },
-        { material: "BUF", qtyBase: 4, unitPriceUsdc: 25_000_000 },
-      ],
-      needBy: null,
-      salt: deps.salts.po1041,
-    });
-    const small = await submitPo(db, chain, po1041, {
-      ...ctx,
-      summary: "lab chemicals",
-      now: DEMO_CLOCK.purchase,
-    });
-    add(
-      6,
-      "Small PO",
-      [small.sentence],
-      [
-        chainLine(
-          `submit_po ${po1041.poNo}`,
-          small.outcome,
-          escrowed(small.outcome, po1041.totalUsdc),
-        ),
-      ],
-    );
-    expect(small.status === "funded", `${po1041.poNo} was not funded`);
-
-    // 7. The big PO: the contract refuses it and Kevin asks the approver in his policy.
-    const po1042 = draftPoFromRanking(db, ranking, "PO-1042", deps.salts.po1042);
-    const big = await submitPo(db, chain, po1042, {
-      ...ctx,
-      summary: "700 kg ascorbic acid",
-      now: DEMO_CLOCK.purchase,
-    });
-    add(7, "Big PO", [big.sentence], [chainLine(`submit_po ${po1042.poNo}`, big.outcome)]);
-    expect(big.status === "awaiting_approval", `${po1042.poNo} did not go to approval`);
-
-    // 8–9. Linda texts YES 1042; the approval is relayed and Kevin retries.
-    deps.setClock(DEMO_CLOCK.approve);
-    const linda = staffBy(eq(staff.name, "Linda Park"));
-    const reply = await handleApprovalReply(
-      db,
-      chain,
-      { fromStaffId: linda.id, text: "YES 1042" },
-      { ...ctx, now: DEMO_CLOCK.approve },
-    );
-    const [approvedLine, sentLine, ...rest] = reply.sentences;
-    add(
-      8,
-      "Linda texts",
-      [`Linda: YES 1042 → ${approvedLine ?? ""}`],
-      reply.approval
-        ? [chainLine(`approve_po ${po1042.poNo}`, reply.approval, relayed(linda.nearAccountId))]
-        : [],
-    );
-    expect(reply.approval?.status === "success", "the approval did not go through");
-    add(
-      9,
-      "Kevin retries",
-      [sentLine ?? "", ...rest].filter(Boolean),
-      reply.retry
-        ? [
-            chainLine(
-              `submit_po ${po1042.poNo}`,
-              reply.retry.outcome,
-              escrowed(reply.retry.outcome, po1042.totalUsdc),
-            ),
-          ]
-        : [],
-    );
-    expect(reply.retry?.status === "funded", `${po1042.poNo} was not funded on retry`);
-
-    // The supplier accepts and ships from its own account (no staff line in the script).
-    deps.setClock(DEMO_CLOCK.ship);
-    const slipLot = deps.slip.lines[0]?.supplierLot ?? "";
-    const shipped = await deps.ship({
-      poNo: po1042.poNo,
-      poId: po1042.id,
-      supplierAccount: po1042.vendor.account ?? "",
-      amount: BigInt(po1042.totalUsdc),
-      supplierLot: slipLot,
-    });
-    add(
-      9,
-      "Supplier ships",
-      [],
-      shipped.outcomes.map((o) =>
-        chainLine(`${methodOf(db, o.id)} ${po1042.poNo}`, o, `signed by ${po1042.vendor.account}`),
-      ),
-    );
-    expect(shipped.status === "shipped", `Northgate did not ship: ${shipped.reason ?? ""}`);
-
-    // 10. Tommy's packing slip.
-    deps.setClock(DEMO_CLOCK.receive);
-    const tommy = staffBy(eq(staff.name, "Tommy Reyes"));
-    const received = await receiveDelivery(
-      db,
-      chain,
-      { slip: deps.slip, receiverStaffId: tommy.id },
-      { policyContract: deps.policyContract, now: DEMO_CLOCK.receive },
-    );
-    add(
-      10,
-      "Delivery",
-      received.sentences,
-      received.outcome
-        ? [
-            chainLine(
-              `confirm_receipt ${po1042.poNo}`,
-              received.outcome,
-              relayed(tommy.nearAccountId),
-            ),
-          ]
-        : [],
-    );
-    expect(received.status === "received", `the delivery was not received (${received.status})`);
-
-    // 11. Priya releases the lot; the escrow pays Northgate in the same transaction.
-    deps.setClock(DEMO_CLOCK.release);
-    const priya = staffBy(eq(staff.name, "Priya Natarajan"));
-    const lotCode = received.lotCodes[0] ?? "";
-    const qc = await decideQc(
-      db,
-      chain,
-      { lotCode, decision: "release", qcStaffId: priya.id },
-      { policyContract: deps.policyContract, now: DEMO_CLOCK.release },
-    );
-    const [releasedLine, paidLine] = qc.sentences;
-    add(
-      11,
-      "QC release",
-      [releasedLine ?? ""],
-      qc.outcome
-        ? [
-            chainLine(
-              `qc_release ${po1042.poNo}`,
-              qc.outcome,
-              qc.status === "released"
-                ? `${amount(po1042.totalUsdc)} → ${po1042.vendor.account}`
-                : undefined,
-            ),
-          ]
-        : [],
-    );
-    expect(qc.status === "released", `QC release ended ${qc.status}`);
-
-    // 12. Paid; the invoice matches; Kevin anchors the receipt.
-    const reading = await readInvoice(deps.llm, deps.invoiceText);
-    const invoice = matchInvoice(db, reading, deps.invoiceText);
-    const receiptAnchor = await anchorBatch(
-      db,
-      chain,
-      [receiptAnchorItem(db, received.receiptId ?? 0, deps.salts.receipt)],
-      { ...ctx, now: DEMO_CLOCK.release },
-    );
-    add(
-      12,
-      "Paid",
-      [
-        invoice.status === "matched"
-          ? `${paidLine ?? ""} Invoice matched to PO and receipt.`
-          : `${paidLine ?? ""} ${invoice.sentence}`,
-      ],
-      [chainLine(`anchored receipt ${po1042.poNo}`, receiptAnchor)],
-    );
-    expect(invoice.status === "matched", invoice.sentence);
-    expect(receiptAnchor.status === "success", `anchoring the receipt ${receiptAnchor.status}`);
-  } catch (error) {
-    if (!(error instanceof DemoStopped)) throw error;
-    ok = false;
-    add(-1, "Stopped", [`The demo stopped: ${error.message}`]);
+  private get db() {
+    return this.deps.db;
+  }
+  private get chain() {
+    return this.deps.chain;
+  }
+  private get ctx() {
+    return { kevin: this.deps.kevin, policyContract: this.deps.policyContract };
   }
 
-  // 14. What happened on chain.
-  const rows = db.select().from(chainTx).all();
-  const refused = rows.filter((r) => r.status === "refused");
-  const summary = {
-    transactions: rows.length,
-    refusedByDesign: refused.filter((r) => r.errorMessage?.endsWith(NEEDS_APPROVAL)).length,
-    refusedOther: refused.filter((r) => !r.errorMessage?.endsWith(NEEDS_APPROVAL)).length,
-    failed: rows.filter((r) => r.status === "failed").length,
-  };
-  add(
-    14,
-    "Summary",
-    [],
-    [
-      `chain: ${summary.transactions} transactions, ${summary.refusedByDesign} refused by design, ` +
-        (summary.refusedOther ? `${summary.refusedOther} refused otherwise, ` : "") +
-        `${summary.failed} failed.`,
-    ],
-  );
-  ok &&= summary.failed === 0 && summary.refusedOther === 0;
+  private add(step: number, title: string, staffLines: string[], chainLines: string[] = []) {
+    const s = { step, title, staff: staffLines, chain: chainLines };
+    this.steps.push(s);
+    return s;
+  }
+  private amount(units: bigint | number) {
+    return `${formatUsd(BigInt(units)).replace("$", "")} ${this.deps.tokenSymbol}`;
+  }
+  private escrowed(o: LoggedOutcome, total: number) {
+    return o.status === "success" ? `escrow funded ${this.amount(total)}` : undefined;
+  }
+  private relayed(account: string | null) {
+    return `signed by ${account ?? "unknown"}, paid by ${this.deps.relayer}`;
+  }
+  private staffBy(name: string) {
+    const row = this.db.select().from(staff).where(eq(staff.name, name)).get();
+    if (!row) throw new DemoStopped(`${name} is not on the staff list`);
+    return row;
+  }
+  private expect(ok: boolean, why: string) {
+    if (!ok) throw new DemoStopped(why);
+  }
 
-  const confirmed = db.select().from(batchRecords).where(eq(batchRecords.id, batchId)).get();
-  return {
-    steps,
-    batchProof:
-      confirmed?.status === "confirmed"
-        ? { ...batchRecordProof(db, batchId), anchored_tx: anchoredTx }
-        : (null as unknown as DemoResult["batchProof"]),
-    summary,
-    ok,
-  };
+  /** Runs one phase in turn; a step that does not land stops the run with its own words. */
+  private async phase(name: DemoPhase, after: DemoPhase, body: () => Promise<void>) {
+    if (this.next !== name) throw new DemoOrderError(this.next, name);
+    const from = this.steps.length;
+    try {
+      await body();
+      this.next = after;
+    } catch (error) {
+      if (!(error instanceof DemoStopped)) throw error;
+      this.stopped = error.message;
+      this.add(-1, "Stopped", [`The demo stopped: ${error.message}`]);
+      this.next = "finish";
+    }
+    return this.steps.slice(from);
+  }
+
+  load() {
+    return this.phase("load", "upload", async () => {
+      const { db, deps } = this;
+      deps.setClock(DEMO_CLOCK.start);
+      const n = (table: SQLiteTable) => db.select({ n: count() }).from(table).get()?.n ?? 0;
+      // History starts with the first seeded batch; opening lots were received earlier.
+      const first = db
+        .select({ at: min(batchRecords.startedAt) })
+        .from(batchRecords)
+        .get()?.at;
+      const plants = db
+        .select({ n: count() })
+        .from(facilities)
+        .where(ne(facilities.role, "hq"))
+        .get()?.n;
+      const historyDays = first
+        ? Math.round((Date.parse(DEMO_CLOCK.start) - Date.parse(first)) / DAY_MS)
+        : 0;
+      const budget = (await this.chain.view({
+        contractId: deps.policyContract,
+        method: "get_budget",
+      })) as { budget: string; escrowed: string };
+      this.add(
+        0,
+        "Load seed",
+        [
+          `Loaded ${plants ?? 0} facilities, ${n(materials)} materials, ${n(vendors)} vendors, ` +
+            `${deps.batchRecordCount} batch records, ${historyDays} days of history.`,
+        ],
+        [
+          `chain: spend-policy budget ${this.amount(BigInt(budget.budget))}, ` +
+            `escrowed ${this.amount(BigInt(budget.escrowed))}`,
+        ],
+      );
+    });
+  }
+
+  upload(page: BatchRecordPage = this.deps.batchRecord) {
+    return this.phase("upload", "confirm", async () => {
+      const { extraction, model } = await transcribeBatchRecord(this.deps.llm, page.image);
+      const draft = saveBatchDraft(this.db, extraction, {
+        file: page.file,
+        sha256: page.sha256,
+        model,
+      });
+      this.batchId = draft.batchId;
+      this.draft = { batchId: draft.batchId, batchNo: draft.review.batchNo };
+      this.add(1, `Upload ${draft.review.batchNo}`, [draft.review.sentence]);
+      this.expect(
+        !draft.review.flags.some((f) => f.blocking),
+        `${draft.review.batchNo} has blocking flags; Ray must answer them before the run can go on.`,
+      );
+    });
+  }
+
+  confirm(staffName = PURCHASER) {
+    return this.phase("confirm", "purchase", async () => {
+      this.deps.setClock(DEMO_CLOCK.confirm);
+      const who = this.staffBy(staffName);
+      const confirmed = confirmBatchRecord(this.db, this.batchId, {
+        staffId: who.id,
+        now: DEMO_CLOCK.confirm,
+        salt: this.deps.salts.batch,
+      });
+      this.draft = null;
+      const batchAnchor = await anchorBatch(
+        this.db,
+        this.chain,
+        [batchRecordAnchorItem(this.db, this.batchId)],
+        { ...this.ctx, now: DEMO_CLOCK.confirm },
+      );
+      this.anchoredTx = batchAnchor.txHash;
+      this.add(
+        2,
+        `${firstName(who.name)} confirms`,
+        [confirmed.sentence],
+        [
+          chainLine(
+            `anchored ${confirmed.review.batchNo} 0x${confirmed.recordHash.slice(0, 8)}…`,
+            batchAnchor,
+          ),
+        ],
+      );
+      this.expect(
+        batchAnchor.status === "success",
+        `anchoring ${confirmed.review.batchNo} ${batchAnchor.status}`,
+      );
+    });
+  }
+
+  purchase() {
+    return this.phase("purchase", "reply", async () => {
+      const { db, chain, deps } = this;
+      // 4. Forecast.
+      deps.setClock(DEMO_CLOCK.purchase);
+      const forecast = forecastMaterial(db, {
+        facility: "B",
+        material: "ASC",
+        now: DEMO_CLOCK.start,
+      });
+      this.add(4, "Forecast", [forecast.sentence]);
+
+      // 5. Quotes.
+      const rfq = requestQuotes(db, forecast, "RFQ-2611-01", DEMO_QUOTES.ASC ?? []);
+      const ranking = rankQuotes(db, rfq, DEMO_CLOCK.start);
+      this.add(5, "Quotes", [ranking.sentence]);
+
+      // 6. The small PO funds in one call.
+      const plantB = db.select().from(facilities).where(eq(facilities.code, "B")).get();
+      if (!plantB) throw new Error("demo: Plant B missing from the seed");
+      const po1041 = draftPo(db, {
+        poNo: "PO-1041",
+        vendor: "BLS",
+        facilityId: plantB.id,
+        lines: [
+          { material: "ACN", qtyBase: 4, unitPriceUsdc: 128_000_000 },
+          { material: "BUF", qtyBase: 4, unitPriceUsdc: 25_000_000 },
+        ],
+        needBy: null,
+        salt: deps.salts.po1041,
+      });
+      const small = await submitPo(db, chain, po1041, {
+        ...this.ctx,
+        summary: "lab chemicals",
+        now: DEMO_CLOCK.purchase,
+      });
+      this.add(
+        6,
+        "Small PO",
+        [small.sentence],
+        [
+          chainLine(
+            `submit_po ${po1041.poNo}`,
+            small.outcome,
+            this.escrowed(small.outcome, po1041.totalUsdc),
+          ),
+        ],
+      );
+      this.expect(small.status === "funded", `${po1041.poNo} was not funded`);
+
+      // 7. The big PO: the contract refuses it and Kevin asks the approver in his policy.
+      const po1042 = draftPoFromRanking(db, ranking, "PO-1042", deps.salts.po1042);
+      this.po1042 = po1042;
+      const big = await submitPo(db, chain, po1042, {
+        ...this.ctx,
+        summary: "700 kg ascorbic acid",
+        now: DEMO_CLOCK.purchase,
+      });
+      this.add(7, "Big PO", [big.sentence], [chainLine(`submit_po ${po1042.poNo}`, big.outcome)]);
+      this.expect(big.status === "awaiting_approval", `${po1042.poNo} did not go to approval`);
+    });
+  }
+
+  reply(fromStaffName: string, text: string) {
+    return this.phase("reply", "receive", async () => {
+      const { db, chain, deps } = this;
+      const po1042 = this.po1042;
+      if (!po1042) throw new Error("demo: reply before the big PO");
+      // 8–9. The approver texts back; the approval is relayed and Kevin retries.
+      deps.setClock(DEMO_CLOCK.approve);
+      const approver = this.staffBy(fromStaffName);
+      const first = firstName(approver.name);
+      const reply = await handleApprovalReply(
+        db,
+        chain,
+        { fromStaffId: approver.id, text },
+        { ...this.ctx, now: DEMO_CLOCK.approve },
+      );
+      const [approvedLine, sentLine, ...rest] = reply.sentences;
+      this.add(
+        8,
+        `${first} texts`,
+        [`${first}: ${text} → ${approvedLine ?? ""}`],
+        reply.approval
+          ? [
+              chainLine(
+                `approve_po ${po1042.poNo}`,
+                reply.approval,
+                this.relayed(approver.nearAccountId),
+              ),
+            ]
+          : [],
+      );
+      this.expect(reply.approval?.status === "success", "the approval did not go through");
+      this.add(
+        9,
+        "Kevin retries",
+        [sentLine ?? "", ...rest].filter(Boolean),
+        reply.retry
+          ? [
+              chainLine(
+                `submit_po ${po1042.poNo}`,
+                reply.retry.outcome,
+                this.escrowed(reply.retry.outcome, po1042.totalUsdc),
+              ),
+            ]
+          : [],
+      );
+      this.expect(reply.retry?.status === "funded", `${po1042.poNo} was not funded on retry`);
+
+      // The supplier accepts and ships from its own account (no staff line in the script).
+      deps.setClock(DEMO_CLOCK.ship);
+      const slipLot = deps.slip.lines[0]?.supplierLot ?? "";
+      const shipped = await deps.ship({
+        poNo: po1042.poNo,
+        poId: po1042.id,
+        supplierAccount: po1042.vendor.account ?? "",
+        amount: BigInt(po1042.totalUsdc),
+        supplierLot: slipLot,
+      });
+      this.add(
+        9,
+        "Supplier ships",
+        [],
+        shipped.outcomes.map((o) =>
+          chainLine(
+            `${methodOf(db, o.id)} ${po1042.poNo}`,
+            o,
+            `signed by ${po1042.vendor.account}`,
+          ),
+        ),
+      );
+      this.expect(
+        shipped.status === "shipped",
+        `${po1042.vendor.name.split(" ")[0]} did not ship: ${shipped.reason ?? ""}`,
+      );
+    });
+  }
+
+  receive(slip: PackingSlip = this.deps.slip, receiverName = RECEIVER) {
+    return this.phase("receive", "qc", async () => {
+      const po1042 = this.po1042;
+      if (!po1042) throw new Error("demo: delivery before the big PO");
+      this.deps.setClock(DEMO_CLOCK.receive);
+      const receiver = this.staffBy(receiverName);
+      const received = await receiveDelivery(
+        this.db,
+        this.chain,
+        { slip, receiverStaffId: receiver.id },
+        { policyContract: this.deps.policyContract, now: DEMO_CLOCK.receive },
+      );
+      this.received = received;
+      this.quarantined = received.lotCodes[0] ?? null;
+      this.add(
+        10,
+        "Delivery",
+        received.sentences,
+        received.outcome
+          ? [
+              chainLine(
+                `confirm_receipt ${po1042.poNo}`,
+                received.outcome,
+                this.relayed(receiver.nearAccountId),
+              ),
+            ]
+          : [],
+      );
+      this.expect(
+        received.status === "received",
+        `the delivery was not received (${received.status})`,
+      );
+    });
+  }
+
+  qc(decision: "release" | "reject", lotCode = this.quarantined ?? "", qcName = QC) {
+    return this.phase("qc", "finish", async () => {
+      const { db, chain, deps } = this;
+      const po1042 = this.po1042;
+      const received = this.received;
+      if (!po1042 || !received) throw new Error("demo: QC before the delivery");
+      // 11. QC decides; a release pays the supplier in the same transaction.
+      deps.setClock(DEMO_CLOCK.release);
+      const inspector = this.staffBy(qcName);
+      const qc = await decideQc(
+        db,
+        chain,
+        { lotCode, decision, qcStaffId: inspector.id },
+        { policyContract: deps.policyContract, now: DEMO_CLOCK.release },
+      );
+      const [decidedLine, paidLine] = qc.sentences;
+      const method = decision === "release" ? "qc_release" : "qc_reject";
+      this.quarantined = null;
+      this.add(
+        11,
+        decision === "release" ? "QC release" : "QC reject",
+        [decidedLine ?? ""],
+        qc.outcome
+          ? [
+              chainLine(
+                `${method} ${po1042.poNo}`,
+                qc.outcome,
+                qc.status === "released"
+                  ? `${this.amount(po1042.totalUsdc)} → ${po1042.vendor.account}`
+                  : undefined,
+              ),
+            ]
+          : [],
+      );
+      if (decision === "reject") {
+        this.expect(qc.status === "rejected", `QC reject ended ${qc.status}`);
+        return;
+      }
+      this.expect(qc.status === "released", `QC release ended ${qc.status}`);
+
+      // 12. Paid; the invoice matches; Kevin anchors the receipt.
+      const reading = await readInvoice(deps.llm, deps.invoiceText);
+      const invoice = matchInvoice(db, reading, deps.invoiceText);
+      const receiptAnchor = await anchorBatch(
+        db,
+        chain,
+        [receiptAnchorItem(db, received.receiptId ?? 0, deps.salts.receipt)],
+        { ...this.ctx, now: DEMO_CLOCK.release },
+      );
+      this.add(
+        12,
+        "Paid",
+        [
+          invoice.status === "matched"
+            ? `${paidLine ?? ""} Invoice matched to PO and receipt.`
+            : `${paidLine ?? ""} ${invoice.sentence}`,
+        ],
+        [chainLine(`anchored receipt ${po1042.poNo}`, receiptAnchor)],
+      );
+      this.expect(invoice.status === "matched", invoice.sentence);
+      this.expect(
+        receiptAnchor.status === "success",
+        `anchoring the receipt ${receiptAnchor.status}`,
+      );
+    });
+  }
+
+  finish(): DemoResult {
+    if (this.result) return this.result;
+    if (this.next !== "finish") throw new DemoOrderError(this.next, "finish");
+    const { db } = this;
+    // 14. What happened on chain.
+    const rows = db.select().from(chainTx).all();
+    const refused = rows.filter((r) => r.status === "refused");
+    const summary = {
+      transactions: rows.length,
+      refusedByDesign: refused.filter((r) => r.errorMessage?.endsWith(NEEDS_APPROVAL)).length,
+      refusedOther: refused.filter((r) => !r.errorMessage?.endsWith(NEEDS_APPROVAL)).length,
+      failed: rows.filter((r) => r.status === "failed").length,
+    };
+    this.add(
+      14,
+      "Summary",
+      [],
+      [
+        `chain: ${summary.transactions} transactions, ${summary.refusedByDesign} refused by design, ` +
+          (summary.refusedOther ? `${summary.refusedOther} refused otherwise, ` : "") +
+          `${summary.failed} failed.`,
+      ],
+    );
+    const ok = !this.stopped && summary.failed === 0 && summary.refusedOther === 0;
+
+    const confirmed = db.select().from(batchRecords).where(eq(batchRecords.id, this.batchId)).get();
+    this.next = "done";
+    this.result = {
+      steps: this.steps,
+      batchProof:
+        confirmed?.status === "confirmed"
+          ? { ...batchRecordProof(db, this.batchId), anchored_tx: this.anchoredTx }
+          : (null as unknown as DemoResult["batchProof"]),
+      summary,
+      ok,
+    };
+    return this.result;
+  }
+}
+
+/** The transcript npm run demo prints and checks: every line, then the explorer links. */
+export function formatTranscript(db: Ledger, steps: DemoStep[]): string {
+  const lines: string[] = [];
+  for (const step of steps) {
+    for (const text of step.staff) lines.push(text);
+    for (const text of step.chain) lines.push(`  ${text}`);
+  }
+  const txs = db
+    .select()
+    .from(chainTx)
+    .all()
+    .filter((r) => r.txHash)
+    .map((r) => `  ${r.method} ${explorerUrl(r.network, r.txHash)}`);
+  return `${[...lines, "", "Explorer links:", ...txs].join("\n")}\n`;
+}
+
+function firstName(name: string) {
+  return name.split(" ")[0] ?? name;
 }
 
 /** `chain: submit_po PO-1042 ✓ (tx …) · extra` or `✗ REFUSED "reason" (tx …)`. */

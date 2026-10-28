@@ -7,4 +7,6 @@
 | `rehearse.ts` | `npm run rehearse` | Before a live recording: runs the relayed half of the demo on a throwaway PO-90xx (refused, Linda's relayed YES, funded retry, Northgate accepts and ships, Tommy's relayed receipt, Priya's relayed QC reject). The reject refunds the escrow, so the budget and spend counters end where they began. |
 | `escrow.ts` | `npm run escrow` | Reads the spend-policy contract with view calls only: the budget, the amount in escrow, Kevin's spend this month and every PO with its status. No keys; `--json` for one JSON line. |
 
+`demo.ts` (`npm run demo`, `npm run demo:live`) builds its run from `api/src/env.ts`, the same environment the HTTP API (`npm run api`) uses, so the scripted run and the click-by-click run cannot drift apart.
+
 Spec for the rest (deploy, demo, replay, reset): docs/DEMO_SCRIPT.md.
