@@ -19,6 +19,8 @@
 | AI-judge text form | Failure message is in `status.Failure` of `tx` RPC; easy to print | Must parse logs |
 | Gas | Kevin pays for the failed call (tiny) | Same |
 
+**Verified on testnet Oct 28** (tx `6vtp7awcZLFtxA5sygNa372JaJUaJyUiwvofa481z7jR`, an over-limit `submit_po` from Kevin's FC key through `server/src/chain`): the RPC final outcome has `status.Failure.ActionError.kind.FunctionCallError.ExecutionError = "Smart contract panicked: <message>"`, and the `po_refused` `EVENT_JSON` log is present in `receipts_outcome[].outcome.logs`. near-api-js 7.3.1 `signAndSendTransaction` throws on any failure unless `throwOnFailure: false`, which the chain client passes so it can read the outcome itself.
+
 The panic version is the "Enforced, not logged" money shot, so pick it. Keep the trail linkable: the server records the failed tx hash on the off-chain approval request and passes it into `approve_po` as an optional `refused_tx` memo string, which is emitted in the `po_approved` event. The explorer trail then links refused → approved. Optionally `log` a NEP-297 `po_refused` event immediately before panicking, so indexers that read failed-receipt logs see structured data. Per nearcore source, logs are kept on aborted calls; verify in tests.
 
 ### Why `predecessor_account_id`, not `signer_account_id`
