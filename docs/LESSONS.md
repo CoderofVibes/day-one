@@ -8,6 +8,7 @@ _(none yet)_
 
 ## Lessons
 
+- **2026-10-28** — Receiving tests asserted on the first `receipts` and `qc_decisions` row and got the seeded history instead of the new PO. Rule: in tests on a seeded ledger, filter every query by the id under test; never take `.get()` of a whole table.
 - **2026-10-28** — A stray `cat > file` with no heredoc in a Bash call waited on stdin until the 2-minute timeout, and the next command in the line never ran. Rule: write scratch files with the Write tool; never leave a bare `cat >` in a command.
 - **2026-10-28** — A one-off `.ts` script outside the repo failed in tsx with "Top-level await is not supported with the cjs output format", because only the repo's `package.json` sets `"type": "module"`. Rule: name scratch scripts `.mts` (or put them under the repo) when they use top-level await.
 - **2026-10-28** — Two sessions shared the working tree: Tony's session committed its one-line AGENTS.md change with `git add -A` and swept the unattended run's half-done supplier-rule work into `b7698cd` ("Add the 12-hour review task…"). Rule: stage files by path (`git add <files>`), never `-A`, and check `git status` for files you did not touch before every commit.
