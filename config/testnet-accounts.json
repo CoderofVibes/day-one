@@ -71,6 +71,11 @@
         "ed25519:JCxyhnQuzfUsHnSQeMmucnJ4UK4VWE73NkmtU1vQ3XDX",
         "ed25519:HUsLL4qPoqCxdGvPDy7Goz7Ti6qJEwB9QwvNeWjNRsSU"
       ]
+    },
+    "dayone-relayer.testnet": {
+      "publicKeys": [
+        "ed25519:5UYLqw36WhoU8LYcgCsQJMWatpcC8uaKcAMrRe9AdBsg"
+      ]
     }
   }
 }
