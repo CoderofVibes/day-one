@@ -97,6 +97,7 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(status).toBe(200);
     expect(body.steps.map((s) => s.title)).toEqual([
       "Ray confirms",
+      "Discrepancy",
       "Forecast",
       "Quotes",
       "Small PO",

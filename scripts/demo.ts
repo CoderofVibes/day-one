@@ -5,6 +5,9 @@
 //   npm run demo:live -- --record   the same, and rewrite the fixtures, the transcript and
 //                                   data/batch-records/BR-B-1045.json for npm run verify
 //   --json                          print one JSON line after the readable text
+//   --accept                        replay only: rewrite transcript.txt when the words changed
+//                                   but no chain call or model answer did (the replay still
+//                                   consumes every recorded call)
 //
 // The run itself (the phases, the clients, the records) is shared with the HTTP API: api/src/env.ts.
 
@@ -22,6 +25,7 @@ const args = process.argv.slice(2);
 const live = args.includes("--live");
 const record = args.includes("--record");
 const json = args.includes("--json");
+const accept = args.includes("--accept") && !live;
 const FIX = fixtureFiles(root);
 
 const env = await openDemoEnv({ root, live, record }).catch((error: unknown) => {
@@ -48,11 +52,17 @@ if (record && run.ok && transport instanceof RecordingTransport && llm instanceo
 } else if (transport instanceof ReplayTransport) {
   transport.assertDone();
   matches = transcript === readFileSync(FIX.transcript, "utf8");
-  console.log(
-    matches
-      ? "\nTranscript matches data/replay/transcript.txt."
-      : "\nTranscript DIFFERS from data/replay/transcript.txt: the demo changed since the recording.",
-  );
+  if (!matches && accept && run.ok) {
+    writeFileSync(FIX.transcript, transcript);
+    matches = true;
+    console.log("\nRewrote data/replay/transcript.txt from this replay (--accept).");
+  } else {
+    console.log(
+      matches
+        ? "\nTranscript matches data/replay/transcript.txt."
+        : "\nTranscript DIFFERS from data/replay/transcript.txt: the demo changed since the recording.",
+    );
+  }
 }
 
 if (json) {

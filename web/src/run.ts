@@ -69,6 +69,7 @@ export const AUDIENCE: Record<string, Audience> = {
   "Load seed": SYSTEM,
   "Upload BR-B-1045": RAY,
   "Ray confirms": RAY,
+  Discrepancy: RAY,
   Forecast: RAY,
   Quotes: RAY,
   "Small PO": RAY,

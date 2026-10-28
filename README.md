@@ -38,15 +38,16 @@ Also without keys: `npm run test:attacks` (four attacks on Kevin, each shown fai
 From `data/replay/transcript.txt` (recorded live on testnet, Oct 28, 2026):
 
 1. Kevin reads the photo of batch record BR-B-1045: 8 materials, all within tolerance, yield 90.8%. Ray, the purchaser, confirms; inventory updates and the record's fingerprint is anchored on chain.
-2. Kevin forecasts the next two batches, finds ascorbic acid about 514 kg short and recommends 700 kg.
-3. Three quotes come in. QuickChem is excluded as unqualified; Northgate is selected at $7.10/kg.
-4. PO-1041 ($612.00, lab supplies) is within Kevin's limit: the contract funds escrow from the plant budget.
-5. PO-1042 ($5,150.00) is over Kevin's $2,500.00 limit: the contract refuses it, and Kevin texts Linda, the director.
-6. Linda replies "YES 1042". Her approval is signed with her own key and paid for by Day One's relayer; Kevin's identical retry funds escrow.
-7. Northgate accepts and ships from its own account, naming its supplier lot.
-8. Tommy photographs the packing slip; it matches the PO and the lot, and the receipt is confirmed on chain. The lot goes to quarantine.
-9. Priya releases the lot in QC; the contract pays Northgate $5,150.00 from escrow.
-10. Kevin matches the invoice to the PO and receipt and anchors the receipt record.
+2. Consuming the lot Plant A transferred exposes a discrepancy: Plant A still books 12.55 kg that Plant B never weighed in. Kevin proposes the write-off to Plant A for review.
+3. Kevin forecasts the next two batches, finds ascorbic acid about 514 kg short and recommends 700 kg.
+4. Three quotes come in. QuickChem is excluded as unqualified; Northgate is selected at $7.10/kg.
+5. PO-1041 ($612.00, lab supplies) is within Kevin's limit: the contract funds escrow from the plant budget.
+6. PO-1042 ($5,150.00) is over Kevin's $2,500.00 limit: the contract refuses it, and Kevin texts Linda, the director.
+7. Linda replies "YES 1042". Her approval is signed with her own key and paid for by Day One's relayer; Kevin's identical retry funds escrow.
+8. Northgate accepts and ships from its own account, naming its supplier lot.
+9. Tommy photographs the packing slip; it matches the PO and the lot, and the receipt is confirmed on chain. The lot goes to quarantine.
+10. Priya releases the lot in QC; the contract pays Northgate $5,150.00 from escrow.
+11. Kevin matches the invoice to the PO and receipt and anchors the receipt record.
 
 Ten transactions, one refused by design, none failed.
 

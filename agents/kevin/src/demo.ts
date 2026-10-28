@@ -9,8 +9,7 @@
 // demo (`runDemo`, npm run demo) plays the phases in the recorded order; the HTTP API (api/)
 // plays them one click at a time. Both print the same lines.
 //
-// Steps not built yet are left out rather than faked: the step 3 discrepancy (PLAN Nov 8), the
-// tier-1 quote anchors on step 5, the USDC proof on step 13 (bonus) and the departments count
+// Steps not built yet are left out rather than faked: the tier-1 quote anchors on step 5, the USDC proof on step 13 (bonus) and the departments count
 // on step 14 (the plant map). They join the run when their features exist.
 
 import { type ChainClient, explorerUrl, type LoggedOutcome } from "@day-one/server/chain/client";
@@ -30,6 +29,7 @@ import { DEMO_QUOTES } from "@day-one/server/seed/quotes";
 import { count, eq, min, ne } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import { handleApprovalReply } from "./approval.ts";
+import { checkTransfers } from "./discrepancies.ts";
 import {
   batchRecordAnchorItem,
   batchRecordProof,
@@ -358,6 +358,11 @@ class Demo implements DemoMachine {
         batchAnchor.status === "success",
         `anchoring ${confirmed.review.batchNo} ${batchAnchor.status}`,
       );
+
+      // 3. Consuming a transferred lot is what exposes a transfer discrepancy (SPEC step 3).
+      for (const found of checkTransfers(this.db, { now: DEMO_CLOCK.confirm })) {
+        this.add(3, "Discrepancy", [found.sentence]);
+      }
     });
   }
 
