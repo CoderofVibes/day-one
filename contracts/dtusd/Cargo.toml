@@ -1,0 +1,14 @@
+[package]
+name = "dtusd"
+description = "Day One Test USD: the testnet stand-in for USDC that the demo POs settle in"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk = "=5.29.1"
+near-contract-standards = "=5.29.1"

@@ -49,7 +49,7 @@ The contracts are **token-agnostic**: the token account id is set at `new()` and
 | Token | Account | Use |
 |---|---|---|
 | Circle testnet USDC | `3e2210e1184b45b64c8a434c0a7e7b23cc04ea7eb7a6c3c32520d03d4afcb8af` | Real stablecoin proof run. Faucet: 20 USDC per address every 2 hours, CAPTCHA (human only). |
-| Day One Test USD (DTUSD) | deployed by us, e.g. `dtusd.token.primitives.testnet` via the token factory, or the global FT contract | Demo POs at realistic dollar amounts. Name "Day One Test USD", symbol DTUSD, 6 decimals, our own icon, never the USDC logo. |
+| Day One Test USD (DTUSD) | our own NEP-141 contract, `contracts/dtusd` (built Oct 28 from `near-contract-standards`; whole supply minted to the treasury at init, no later minting), deployed to e.g. `dtusd.acme-holdings.testnet`. The same wasm is the token in the sandbox test. | Demo POs at realistic dollar amounts. Name "Day One Test USD", symbol DTUSD, 6 decimals, our own icon, never the USDC logo. |
 
 **Decided Oct 25** (OPEN_QUESTIONS #22):
 - The main demo deployment settles in **DTUSD**, so PO-1042 can be a real $5,150.00.
@@ -143,7 +143,7 @@ The retry after approval is the identical call. Within-limit and approved POs sh
 
 **Separation of duties:** the director's key can only approve or reject. Only an agent can trigger funding, and only within rules or a matching approval. Neither can move tokens directly.
 
-A `po_refused` event is logged immediately before the panic. Logs from aborted calls appear to be kept (nearcore source); the first integration test confirms it. Nothing depends on it, because the panic message itself is in the failed transaction's status.
+A `po_refused` event is logged immediately before the panic. Logs from aborted calls are kept: confirmed Oct 28 in the sandbox test (the refused `submit_po` outcome carries the `po_refused` log). Nothing depends on it, because the panic message itself is in the failed transaction's status.
 
 ---
 
@@ -199,7 +199,7 @@ spend-policy:
 - relayed `approve_po` (signer = relayer, predecessor = director) passes
 - `ft_on_transfer` from wrong token or wrong sender refunds
 - anchor stores and emits; re-anchor panics; non-agent anchor panics
-- confirm that `po_refused` log survives the panic (informational)
+- confirm that `po_refused` log survives the panic (informational; confirmed Oct 28)
 
 escrow (same contract):
 - `accept_po` and `mark_shipped` only from the PO's supplier; anyone else panics; wrong order panics

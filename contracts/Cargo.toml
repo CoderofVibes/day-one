@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["spend-policy"]
+members = ["dtusd", "spend-policy"]
 
 [profile.release]
 codegen-units = 1

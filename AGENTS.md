@@ -29,7 +29,7 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Format | `npm run format` |
 | Generate a ledger migration after a schema change | `npm run db:generate -w server`, then add `STRICT` to each new `CREATE TABLE` (verified Oct 28) |
 | Rebuild the demo database from the fictional seed | `npm run seed` → `data/dayone.db` (verified Oct 28) |
-| Test the contract (WSL, from `contracts/`) | `CARGO_TARGET_DIR=$HOME/dayone-target cargo test` → 38 unit tests (verified Oct 28; the target dir outside `/mnt/c` keeps builds fast) |
+| Test the contract (WSL, from `contracts/`) | `CARGO_TARGET_DIR=$HOME/dayone-target cargo test` → 38 unit tests and the sandbox test, about 30 s on a local node (verified Oct 28; the target dir outside `/mnt/c` keeps builds fast; it grows to ~5 GB, so `cargo clean` at session end) |
 | Lint the contract (WSL, from `contracts/`) | `cargo fmt --all --check && CARGO_TARGET_DIR=$HOME/dayone-target cargo clippy --all-targets -- -D warnings` (verified Oct 28) |
 | Build the contract wasm (WSL, from `contracts/spend-policy/`) | `CARGO_TARGET_DIR=$HOME/dayone-target cargo near build non-reproducible-wasm` → `~/dayone-target/near/spend_policy/spend_policy.wasm`, 246 KB (verified Oct 28) |
 | _(more commands are added as they first work)_ | |

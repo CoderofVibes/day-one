@@ -69,7 +69,7 @@ _(none)_
 - [ ] [I] Vision bake-off: GLM 5.3 Flash vs Qwen3.8-27B vs `claude-sonnet-5-5` on the 7 records. Record field accuracy in `docs/research/13-llm-access.md`. **Decide the vision route.**
 
 ### Tue Nov 3 — escrow and extraction
-- [ ] [I] Sandbox integration tests for `spend-policy` with an FT wasm (the full minimum set in CONTRACTS §7): fund, refuse, approve, retry, receive, release, refund, anchor.
+- [x] [I] Sandbox integration tests for `spend-policy` with an FT wasm (the full minimum set in CONTRACTS §7): fund, refuse, approve, retry, receive, release, refund, anchor. Done Oct 28: `contracts/spend-policy/tests/sandbox.rs` runs the demo loop on a local node with our own DTUSD token (`contracts/dtusd`), checking token balance = budget + escrowed after every step, plus wrong-sender refund, failed payout rollback and withdrawal; anchoring and the remaining §7 cases are unit tests. A real relayed meta-transaction is tested with the relayer (Nov 5).
 - [ ] [I] `LlmClient` with `nearai`, `anthropic`, `replay` adapters; fixture recorder.
 - [ ] [I] Extraction pipeline: transcribe → normalize units → validate against formula → flags → confirm → ledger events + genealogy.
 
