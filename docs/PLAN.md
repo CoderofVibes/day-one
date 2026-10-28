@@ -82,7 +82,7 @@ _(none)_
 
 ### Thu Nov 5 — purchasing loop
 - [x] [I] Kevin workflow: forecast (shortfall computed from formula and usage, explained in one sentence; no LLM forecasting), RFQ (static quotes from seed in T0), ranking with qualification rules, PO draft and `po_hash`. Done Oct 28: `agents/kevin/src/forecast.ts` and `purchasing.ts` print DEMO_SCRIPT steps 4 and 5 word for word and draft PO-1042 at $5,150.00 (freight now a column, migration 0003) and PO-1041 at $612.00; a `production_plan` table (migration 0002) holds BR-B-1047 (Nov 17) and BR-B-1048 (Nov 19); 15 tests.
-- [ ] [I] `submit_po` within limit (PO-1041) and over limit (PO-1042 refused) on testnet.
+- [x] [I] `submit_po` within limit (PO-1041) and over limit (PO-1042 refused) on testnet. Done Oct 28: `agents/kevin/src/submit.ts` sends the draft's terms as Kevin through the chain client; funded → PO `funded` (step 6 line); a refusal ending "director approval required." → an `approvals` row for the approver in Kevin's on-chain policy with the §9 text, PO `awaiting_approval` (step 7 line); other refusals have no approval path. Checked live with throwaway ids: PO-T1041 funded (tx `8NCdN2WwhVMuFbMJX5AAkzrsMVUGHVoP3FPKb7oNPBEW`), PO-T1042 refused (tx `HBP1ifWVpdEkJb9biew9DHU7maw2AJdD21UhnCB3didj`), then HQ cancelled PO-T1041 so the budget is back to 25,000 DTUSD. Demo ids PO-1041 and PO-1042 are still unused on chain.
 - [ ] [I] Relayer (`server/relayer`) + server-held staff FC keys; phone mock UI with "YES 1042"; `approve_po` relayed; Kevin's retry funds escrow.
 
 ### Fri Nov 6 — receipt, release, records

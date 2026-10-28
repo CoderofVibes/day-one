@@ -34,7 +34,7 @@ The demo clock starts at `2026-11-09T13:00:00Z`. Each step prints a plain-langua
 | 4 | Forecast | `Two more VC500 batches in the next 10 days need about 824 kg. Short about 514 kg. Recommend ordering 700 kg.` | — |
 | 5 | Quotes | `3 quotes. QuickChem Direct $5.90/kg excluded: vendor not qualified. Northgate $7.10/kg, 7 days — selected. Ridgeway $7.35/kg, 5 days — runner-up.` | Tier 1: `chain: 3 quote hashes anchored by supplier accounts` |
 | 6 | Small PO | `PO-1041 to Bayfront Lab Supply, $612.00 — approved automatically and funded.` | `chain: submit_po PO-1041 ✓ (tx …) · escrow funded 612.00 DTUSD` |
-| 7 | Big PO | `PO-1042 to Northgate, $5,150.00 is over Kevin's $2,500.00 limit. Sent to Linda for approval.` | `chain: submit_po PO-1042 ✗ REFUSED "PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required" (tx …)` |
+| 7 | Big PO | `PO-1042 to Northgate Ingredients, $5,150.00 is over Kevin's $2,500.00 limit. Sent to Linda for approval.` | `chain: submit_po PO-1042 ✗ REFUSED "PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required" (tx …)` |
 | 8 | Linda texts | `Linda: YES 1042` → `Approved by Linda Park.` | `chain: approve_po PO-1042 ✓ signed by director.plant-b…, paid by dayone-relayer.testnet (tx …)` |
 | 9 | Kevin retries | `PO-1042 sent to Northgate. Funds held until delivery passes QC.` | `chain: submit_po PO-1042 ✓ (tx …) · escrow funded 5,150.00 DTUSD` |
 | 10 | Delivery | `Tommy photographed the packing slip. Matches PO-1042: 700 kg ascorbic acid, supplier lot NG-24-8812. Lot ASC-261116-01 is in quarantine.` | `chain: confirm_receipt PO-1042 ✓ signed by receiving.plant-b…, relayed (tx …)` |

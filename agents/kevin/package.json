@@ -4,7 +4,8 @@
   "type": "module",
   "exports": {
     "./forecast": "./src/forecast.ts",
-    "./purchasing": "./src/purchasing.ts"
+    "./purchasing": "./src/purchasing.ts",
+    "./submit": "./src/submit.ts"
   },
   "dependencies": {
     "@day-one/server": "*",
