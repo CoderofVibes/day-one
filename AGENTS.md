@@ -28,7 +28,7 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Tests only | `npm test` |
 | Format | `npm run format` |
 | Generate a ledger migration after a schema change | `npm run db:generate -w server`, then add `STRICT` to each new `CREATE TABLE` (verified Oct 28) |
-| Rebuild the demo database from the fictional seed | `npm run seed` → `data/dayone.db` (verified Oct 28) |
+| Rebuild the demo database from the fictional seed | `npm run seed` (`-- --json`) → `data/dayone.db` (verified Oct 28) |
 | Test the contract (WSL, from `contracts/`) | `CARGO_TARGET_DIR=$HOME/dayone-target cargo test` → 42 unit tests and the sandbox test, about 30 s on a local node (verified Oct 28; the target dir outside `/mnt/c` keeps builds fast; it grows to ~5 GB, so `cargo clean` at session end) |
 | Lint the contract (WSL, from `contracts/`) | `cargo fmt --all --check && CARGO_TARGET_DIR=$HOME/dayone-target cargo clippy --all-targets -- -D warnings` (verified Oct 28) |
 | Build the contract wasm (WSL, from `contracts/spend-policy/`) | `CARGO_TARGET_DIR=$HOME/dayone-target cargo near build non-reproducible-wasm` → `~/dayone-target/near/spend_policy/spend_policy.wasm`, 246 KB (verified Oct 28) |
@@ -41,6 +41,7 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Run the attack suite (Windows, repo root; no keys) | `npm run test:attacks` (`-- --json` for one JSON line) → PASS for four attacks from the recorded testnet run; `-- --record` re-runs it live on testnet and NEAR AI Cloud (verified Oct 28) |
 | Replay the whole demo loop (Windows, repo root; no keys, no network) | `npm run demo` (`-- --json`) → the recorded testnet run and "Transcript matches data/replay/transcript.txt.", exit 0 (verified Oct 28) |
 | Record the demo live (Windows, repo root; keys, unused PO-1041/PO-1042 on the contract) | `npm run demo:live -- --record` → rewrites `data/replay/demo-*.json`, `transcript.txt`, `data/batch-records/BR-B-1045.json` (verified Oct 28; run `npm run rehearse` first) |
+| Show the contract's escrow state (Windows, repo root; no keys) | `npm run escrow` (`-- --json`) → budget, escrow, Kevin's spend this month, every PO with its status (verified Oct 28) |
 | Rehearse the relayed steps live on a throwaway PO (Windows, repo root; keys in `.near-credentials`) | `npm run rehearse` (`-- <n>` for PO-<n>, `--json`) → refused, relayed approval, funded, shipped, relayed receipt, relayed QC reject; PASS when the budget is back where it began; a PO left shipped by a stopped run resumes with `-- <n>` (verified Oct 28 on PO-9043) |
 | _(more commands are added as they first work)_ | |
 

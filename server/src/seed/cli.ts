@@ -17,8 +17,18 @@ seedLedger(db);
 const count = (table: string) =>
   db.get<{ n: number }>(sql.raw(`select count(*) as n from ${table}`)).n;
 const chain = verifyChain(db);
+const summary = {
+  file,
+  materials: count("materials"),
+  vendors: count("vendors"),
+  lots: count("lots"),
+  lotEvents: count("lot_events"),
+  hashChainIntact: chain.ok,
+};
 console.log(
-  `Seeded ${file}: ${count("materials")} materials, ${count("vendors")} vendors, ` +
-    `${count("lots")} lots, ${count("lot_events")} lot events; hash chain ${chain.ok ? "intact" : "BROKEN"}.`,
+  `Seeded ${file}: ${summary.materials} materials, ${summary.vendors} vendors, ` +
+    `${summary.lots} lots, ${summary.lotEvents} lot events; hash chain ${chain.ok ? "intact" : "BROKEN"}.`,
 );
+if (process.argv.includes("--json")) console.log(JSON.stringify(summary));
 db.$client.close();
+process.exitCode = chain.ok ? 0 : 1;
