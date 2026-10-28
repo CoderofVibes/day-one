@@ -2,7 +2,7 @@
 
 ## In progress
 
-Testnet suppliers: create the four supplier accounts (`northgate-ingredients`, `ridgeway-ascorbics`, `quickchem-direct`, `bayfront-labsupply` .testnet, 1 NEAR each) and register their DTUSD storage, so the Nov 5 payouts have somewhere to land. Everything else in the Nov 4 testnet item is done.
+_(none)_
 
 ---
 
@@ -74,7 +74,7 @@ Testnet suppliers: create the four supplier accounts (`northgate-ingredients`, `
 - [ ] [I] Extraction pipeline: transcribe → normalize units → validate against formula → flags → confirm → ledger events + genealogy.
 
 ### Wed Nov 4 — testnet
-- [x] [I] `scripts/setup-testnet`, `scripts/deploy`; DTUSD token deployed; `spend-policy` on testnet; budget funded. Done Oct 28: `npm run setup:testnet` and `npm run deploy:testnet`, both idempotent; `dtusd.acme-holdings.testnet` (1,000,000 DTUSD at the treasury) and `spend-policy.acme-holdings.testnet` with Kevin's policy and a 25,000 DTUSD budget. Supplier accounts are the In-progress line. Approved to run unattended (OPEN_QUESTIONS #25 supersedes #7). Needs the two top-level accounts and testnet NEAR from Tony (prep tasks 2 and 5).
+- [x] [I] `scripts/setup-testnet`, `scripts/deploy`; DTUSD token deployed; `spend-policy` on testnet; budget funded. Done Oct 28: `npm run setup:testnet` and `npm run deploy:testnet`, both idempotent; `dtusd.acme-holdings.testnet` (1,000,000 DTUSD at the treasury) and `spend-policy.acme-holdings.testnet` with Kevin's policy and a 25,000 DTUSD budget. The four supplier accounts exist with DTUSD storage; the contract now enforces the supplier list (unlisted: refused with no approval path; conditional: always needs the director). Approved to run unattended (OPEN_QUESTIONS #25 supersedes #7). Needs the two top-level accounts and testnet NEAR from Tony (prep tasks 2 and 5).
 - [ ] [I] `server/chain`: every call logged to `chain_tx`, including refusals with the panic message. The replay fixture recorder is part of the chain client from the first call.
 
 ### Checkpoint by end of Thu Nov 5 — minimum submittable (BUILD_ANALYSIS §4.1)

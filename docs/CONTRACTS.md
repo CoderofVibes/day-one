@@ -82,7 +82,9 @@ pub struct SpendPolicy {
     approvals: LookupMap<String, Approval>, // po_id -> one-time approval
     pos: LookupMap<String, PoRecord>,       // po_id -> authorized PO
     anchors: LookupMap<String, Anchor>,     // ref_id -> record fingerprint
+    suppliers: LookupMap<AccountId, SupplierStatus>, // who Kevin may pay
 }
+pub enum SupplierStatus { Qualified, Conditional } // no entry = cannot be paid
 pub struct AgentPolicy {
     name: String,                           // how refusals name the agent ("Kevin")
     plant: AccountId,                       // whose receiving and QC roles handle its POs
@@ -110,6 +112,7 @@ pub struct Anchor { kind, hash: String /* 64 lowercase hex */, prev: Option<Stri
 | `set_roles(plant, receiver, qc)` | owner | 1 yocto | which staff accounts confirm receipt and release for a plant |
 | `set_agent_policy(agent, name, plant, per_po_limit, monthly_limit, categories, approver)` | owner | 1 yocto | emits `agent_policy_set`; the approver may not be the agent; replacing the approver revokes the old one's right to approve |
 | `set_category_cap(category, monthly_cap)` | owner | 1 yocto | `category_cap_set` |
+| `set_supplier(supplier, status)` | owner | 1 yocto | `Qualified`, `Conditional` or `null` (removes); `supplier_set` (added Oct 28: FICTIONAL_DATA §9 and the Nov 6 attack suite need the vendor rule enforced, not just Kevin's ranking) |
 | `pause_agent(agent)` / `resume_agent(agent)` | owner | 1 yocto | `agent_paused` / `agent_resumed` |
 | `ft_on_transfer(sender_id, amount, msg)` | token, with `sender_id == treasury` | — | `budget += amount`, `budget_funded`; any other token or sender is refunded |
 | `submit_po(po_id, supplier, amount, category, po_hash)` | a registered agent | none | checks below; on pass, record the PO as `Funded`, update counters, `budget -= amount`, `escrowed += amount`, emit `po_authorized` and `po_funded`. No cross-contract call. On fail, **panic** with a plain-language reason. |
@@ -124,7 +127,7 @@ pub struct Anchor { kind, hash: String /* 64 lowercase hex */, prev: Option<Stri
 | `reject_po(po_id, reason)` | approver | none | deletes any approval; `po_rejected` |
 | `anchor(kind, ref_id, hash, prev)` / `anchor_batch(items)` (≤50) | a registered agent | none | append-only; re-anchoring an existing `ref_id` panics; emits `record_anchored` |
 | `withdraw_budget(amount)` | owner | 1 yocto | returns unallocated tokens to treasury (demo reset) |
-| Views: `get_agent_policy`, `get_spent`, `get_category_spent`, `get_po`, `list_pos(from, limit)`, `get_approval`, `get_budget`, `get_config`, `get_period`, `get_anchor`, `get_roles`, `get_category_cap` | anyone | — | — |
+| Views: `get_agent_policy`, `get_spent`, `get_category_spent`, `get_po`, `list_pos(from, limit)`, `get_approval`, `get_budget`, `get_config`, `get_period`, `get_anchor`, `get_roles`, `get_category_cap`, `get_supplier` | anyone | — | — |
 
 `submit_po` is a single-contract state change (about 10–20 TGas). `qc_release` needs about 50 TGas for the transfer and callback.
 
@@ -133,8 +136,10 @@ pub struct Anchor { kind, hash: String /* 64 lowercase hex */, prev: Option<Stri
 1. Agent registered and active — "Kevin is paused by HQ."
 2. Category allowed — "Kevin isn't authorized to buy equipment."
 3. `po_id` not already used.
+3a. Supplier has a status — "quickchem-direct.testnet is not an approved supplier; no approval can override this."
 4. Amount ≤ budget — "Plant budget is short by $X." No approval can override this.
-5. If a matching, unexpired approval exists (same supplier, amount, category, po_hash): consume it, skip steps 6–8, record `approved_by`.
+5. If a matching, unexpired approval exists (same supplier, amount, category, po_hash): consume it, skip steps 5a–8, record `approved_by`.
+5a. Conditional supplier — "PO-1043: delta-d-nutrition.testnet is a conditional supplier; director approval required."
 6. Amount ≤ per-PO limit — "PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required."
 7. Agent monthly spend + amount ≤ monthly limit.
 8. Category monthly spend + amount ≤ category cap.
@@ -167,7 +172,7 @@ The two-contract design (policy funds a separate escrow with `ft_transfer_call`)
 
 One standard, version `1.0.0`, via `#[near(event_json(standard = …))]`:
 
-- `dayone_spend_policy`: `budget_funded`, `agent_policy_set`, `category_cap_set`, `roles_set`, `agent_paused`, `agent_resumed`, `po_refused`, `po_authorized`, `po_approved`, `po_rejected`, `po_funded`, `po_accepted`, `po_shipped`, `po_received`, `po_released`, `payout_failed`, `po_refunded`, `po_cancelled`, `record_anchored`
+- `dayone_spend_policy`: `budget_funded`, `agent_policy_set`, `category_cap_set`, `supplier_set`, `roles_set`, `agent_paused`, `agent_resumed`, `po_refused`, `po_authorized`, `po_approved`, `po_rejected`, `po_funded`, `po_accepted`, `po_shipped`, `po_received`, `po_released`, `payout_failed`, `po_refunded`, `po_cancelled`, `record_anchored`
 
 The behind-the-curtain view and the demo transcript print these events with explorer links.
 
@@ -215,6 +220,6 @@ Commands are added to `AGENTS.md` when they first pass.
 ## 8. Deploy and reset
 
 - `scripts/setup-testnet`: idempotent; creates sub-accounts, adds FC keys, registers storage, writes public account ids to `config/testnet-accounts.json` (committed) and private keys to gitignored credentials.
-- `scripts/deploy`: builds in WSL2, deploys `spend-policy`, calls `new`, `set_roles`, `set_agent_policy` (Kevin: per-PO $2,500; monthly $60,000 across `raw_material`, `packaging`, `lab_chemical`; approver `director.plant-b…`), `set_category_cap` (`lab_chemical` $2,000), funds the budget from treasury.
+- `scripts/deploy`: builds in WSL2, deploys `spend-policy`, calls `new`, `set_roles`, `set_agent_policy` (Kevin: per-PO $2,500; monthly $60,000 across `raw_material`, `packaging`, `lab_chemical`; approver `director.plant-b…`), `set_category_cap` (`lab_chemical` $2,000), `set_supplier` (Northgate, Ridgeway, Bayfront qualified; QuickChem left off), registers token storage for the contract and the four suppliers, funds the budget from treasury.
 - `scripts/reset`: `withdraw_budget`, suppliers return tokens to treasury so the float recycles, new PO id prefix per run so `po_id` uniqueness holds.
 - Contract accounts keep their full-access keys during the hackathon for redeploys. Deleting them to prove immutability is a post-hackathon step and is noted in the README.

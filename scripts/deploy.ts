@@ -170,6 +170,17 @@ async function main() {
   if ((await view(POLICY, "get_category_cap", { category: "lab_chemical" })) !== labCap) {
     asAcme(POLICY, "set_category_cap", { category: "lab_chemical", monthly_cap: labCap }, oneYocto);
   }
+  // Suppliers Kevin may pay (FICTIONAL_DATA §5). QuickChem Direct is unqualified and is left
+  // off, so the contract refuses it with no approval path.
+  for (const supplier of [
+    "northgate-ingredients.testnet",
+    "ridgeway-ascorbics.testnet",
+    "bayfront-labsupply.testnet",
+  ]) {
+    if ((await view(POLICY, "get_supplier", { supplier })) !== "Qualified") {
+      asAcme(POLICY, "set_supplier", { supplier, status: "Qualified" }, oneYocto);
+    }
+  }
 
   const { budget } = await view<{ budget: string }>(POLICY, "get_budget");
   if (BigInt(budget) === 0n) {
