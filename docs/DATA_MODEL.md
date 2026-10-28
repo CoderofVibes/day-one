@@ -78,7 +78,7 @@ The seeded `ASC-261009-01` case: shipped 200,000,000 mg, received 187,450,000 mg
 | `batch_records` | `batch_no`, `product_id`, `formula_id`, `facility_id`, `started_at`, `completed_at`, `theoretical_tablets`, `actual_tablets`, `yield_bp` (derived), `waste_base`, `source_file`, `source_sha256`, `extraction_json`, `extraction_model`, `status` (`draft`, `confirmed`, `rejected`), `confirmed_by`, `confirmed_at`, `record_hash`, `salt` |
 | `batch_inputs` | `batch_id`, `lot_id`, `material_id`, `expected_base`, `actual_base`, `field_confidence`, `issue_event_id` — **backward genealogy** |
 | `batch_outputs` | `batch_id`, `output_lot_id` — **forward genealogy** |
-| `extraction_flags` | `batch_id`, `field_path`, `kind` (`low_confidence`, `out_of_tolerance`, `unit_mismatch`, `unknown_lot`, `correction_detected`), `message`, `resolved_by`, `resolved_value` |
+| `extraction_flags` | `batch_id`, `field_path`, `kind` (`low_confidence`, `out_of_tolerance`, `unit_mismatch`, `unknown_lot`, `correction_detected`, `yield_variance`; migration 0005), `message`, `resolved_by`, `resolved_value` |
 
 ## 7. Purchasing
 

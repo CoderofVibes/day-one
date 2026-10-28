@@ -487,6 +487,7 @@ export const FLAG_KINDS = [
   "unit_mismatch",
   "unknown_lot",
   "correction_detected",
+  "yield_variance",
 ] as const;
 
 export const extractionFlags = sqliteTable(

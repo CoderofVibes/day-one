@@ -8,6 +8,7 @@ _(none yet)_
 
 ## Lessons
 
+- **2026-10-28** — Three guessed test numbers for the extraction were wrong (BR-B-1046 has 7 materials, not 8; MGO is line 3; 1,377.9 lb is 625,004,927 mg), and ASC-261009-01 stays "released" after Plant B empties it because Plant A still books 12.550 kg. Rule: take expected values from the bake-off files and the ledger, never from memory of the story; a lot's state follows its total balance across plants.
 - **2026-10-28** — Anthropic structured outputs refused the extraction schema twice: more than 16 union-typed (nullable) fields, then "compiled grammar is too large" for a nested 11-field-per-row array. NEAR AI's strict json_schema took both. Rule: for Anthropic, use "" instead of null and keep each call's schema small; test a new schema against every provider on the route before relying on it.
 - **2026-10-28** — Playwright's usual setup downloads a few hundred MB of Chromium; `playwright-core` with `channel: "msedge"` drives the Edge every Windows PC already has, for 14 MB, and renders byte-identical JPEGs. Rule: on this PC, browser automation uses playwright-core and the installed Edge; never `npx playwright install`.
 - **2026-10-28** — A read-only better-sqlite3 query on `data/dayone.db` left `-wal` and `-shm` files that `*.db` in `.gitignore` did not cover. Rule: ignore `*.db-wal` and `*.db-shm` too, and stage by path.
