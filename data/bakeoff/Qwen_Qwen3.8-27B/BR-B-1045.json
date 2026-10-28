@@ -1,0 +1,471 @@
+{
+  "model": "nearai:Qwen/Qwen3.8-27B",
+  "seconds": 56.302,
+  "usage": {
+    "inputTokens": 3885,
+    "outputTokens": 3444
+  },
+  "answer": {
+    "document_type": "batch_record",
+    "batch_number": {
+      "raw": "BR-B-1045",
+      "legibility": "clear"
+    },
+    "product_code": {
+      "raw": "P-VC500",
+      "legibility": "clear"
+    },
+    "product_name": {
+      "raw": "Hollow Pine Vitamin C 500 mg Chewable",
+      "legibility": "clear"
+    },
+    "batch_size": {
+      "raw": "800,000",
+      "legibility": "clear"
+    },
+    "manufacture_date": {
+      "raw": "11/06/26",
+      "legibility": "clear"
+    },
+    "facility": {
+      "raw": "Rm 104 Weigh & Dispense",
+      "legibility": "clear"
+    },
+    "materials": [
+      {
+        "line_no": 1,
+        "material_name": {
+          "raw": "Ascorbic acid",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "ASC",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "ASC-261009-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "NGI-26100901",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "412.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "187.450",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "JM",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "DW",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 2,
+        "material_name": {
+          "raw": "Ascorbic acid",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "ASC",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "ASC-260921-02",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "RWA-26092102",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "224.900",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "JM",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "DW",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 3,
+        "material_name": {
+          "raw": "Sorbitol",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "SOR",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "SOR-260901-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "FPO-26090101",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "416.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "416.200",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "JM",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "DW",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 4,
+        "material_name": {
+          "raw": "Microcrystalline cellulose 102",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "MCC",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "MCC-260901-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "PEC-26090101",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "120.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "119.880",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "JM",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "DW",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 5,
+        "material_name": {
+          "raw": "Citric acid anhydrous",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "CTA",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "CTA-260901-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "NGI-26090101",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "20.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "20.040",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "JM",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "DW",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 6,
+        "material_name": {
+          "raw": "Natural orange flavor",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "FOR",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "FOR-260901-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "OFH-26090101",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "12.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "11.980",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "JM",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "DW",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 7,
+        "material_name": {
+          "raw": "Magnesium stearate",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "MGS",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "MGS-261001-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "PEC-26100101",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "12.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "12.030",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "JM",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "DW",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 8,
+        "material_name": {
+          "raw": "Silicon dioxide",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "SIO",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "SIO-260901-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "PEC-26090101",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "6.400",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "6.410",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "JM",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "DW",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 9,
+        "material_name": {
+          "raw": "Sucralose",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "SUC",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "SUC-260901-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "OFH-26090101",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "1.600",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "1.602",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "JM",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "DW",
+          "legibility": "clear"
+        }
+      }
+    ],
+    "theoretical_yield": {
+      "raw": "800,000",
+      "legibility": "clear"
+    },
+    "actual_yield": {
+      "raw": "726,400",
+      "legibility": "clear"
+    },
+    "yield_percent": {
+      "raw": "90.8",
+      "legibility": "clear"
+    },
+    "waste_qty": {
+      "raw": "91.992",
+      "legibility": "clear"
+    },
+    "waste_unit": {
+      "raw": "kg",
+      "legibility": "clear"
+    },
+    "signatures": [
+      {
+        "role": "production",
+        "name": "Linda Park",
+        "date": "11/06/26"
+      },
+      {
+        "role": "qa_review",
+        "name": "Priya Natarajan",
+        "date": "11/07/26"
+      }
+    ],
+    "margin_notes": [
+      {
+        "text": "QA REVIEWED 11/07/26",
+        "legibility": "clear"
+      }
+    ]
+  }
+}

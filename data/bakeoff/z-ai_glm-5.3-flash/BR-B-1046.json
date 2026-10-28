@@ -1,0 +1,378 @@
+{
+  "model": "nearai:z-ai/glm-5.3-flash",
+  "seconds": 42.855,
+  "usage": {
+    "inputTokens": 5028,
+    "outputTokens": 1760
+  },
+  "answer": {
+    "document_type": "batch_record",
+    "batch_number": {
+      "raw": "BR-B-1046",
+      "legibility": "clear"
+    },
+    "product_code": {
+      "raw": "P-CMD",
+      "legibility": "clear"
+    },
+    "product_name": {
+      "raw": "Hollow Pine Cal-Mag + D3 Tablet",
+      "legibility": "clear"
+    },
+    "batch_size": {
+      "raw": "500,000 tablets",
+      "legibility": "clear"
+    },
+    "manufacture_date": {
+      "raw": "11/07/26",
+      "legibility": "clear"
+    },
+    "facility": {
+      "raw": "Hollow Pine Tablet Co. · Rm 104 Weigh & Dispense",
+      "legibility": "clear"
+    },
+    "materials": [
+      {
+        "line_no": 1,
+        "material_name": {
+          "raw": "Calcium carbonate CAC",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "CAC",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "CAC-261014-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "SMS-26101401",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "625.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "624.786",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 2,
+        "material_name": {
+          "raw": "Microcrystalline cellulose 102 MCC",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "MCC",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "MCC-261001-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "PEC-26100101",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "100.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "100.150",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 3,
+        "material_name": {
+          "raw": "Magnesium oxide MGO",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "MGO",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "MGO-261014-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "SMS-26101401",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "83.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "",
+          "legibility": "illegible"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 4,
+        "material_name": {
+          "raw": "Croscarmellose sodium CCS",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "CCS",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "CCS-260915-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "PEC-26091501",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "15.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "15.020",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 5,
+        "material_name": {
+          "raw": "Stearic acid STA",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "STA",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "STA-260915-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "PEC-26091501",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "10.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "9.990",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 6,
+        "material_name": {
+          "raw": "Magnesium stearate MGS",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "MGS",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "MGS-261001-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "PEC-26100101",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "7.500",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "7.510",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 7,
+        "material_name": {
+          "raw": "Vitamin D3 beadlet 100,000 IU/g VD3",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "VD3",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "VD3-260920-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "DDN-26092001",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "2.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "2.004",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      }
+    ],
+    "theoretical_yield": {
+      "raw": "500,000 tablets",
+      "legibility": "clear"
+    },
+    "actual_yield": {
+      "raw": "449,500 tablets",
+      "legibility": "clear"
+    },
+    "yield_percent": {
+      "raw": "89.9",
+      "legibility": "clear"
+    },
+    "waste_qty": {
+      "raw": "84.592",
+      "legibility": "clear"
+    },
+    "waste_unit": {
+      "raw": "kg",
+      "legibility": "clear"
+    },
+    "signatures": [
+      {
+        "role": "production",
+        "name": "Linda Park",
+        "date": "11/07/26"
+      },
+      {
+        "role": "qa_review",
+        "name": "Priya Natarajan",
+        "date": "11/08/26"
+      }
+    ],
+    "margin_notes": []
+  }
+}

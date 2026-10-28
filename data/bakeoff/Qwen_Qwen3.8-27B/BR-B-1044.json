@@ -1,0 +1,431 @@
+{
+  "model": "nearai:Qwen/Qwen3.8-27B",
+  "seconds": 52.615,
+  "usage": {
+    "inputTokens": 3885,
+    "outputTokens": 3176
+  },
+  "answer": {
+    "document_type": "batch_record",
+    "batch_number": {
+      "raw": "BR-B-1044",
+      "legibility": "clear"
+    },
+    "product_code": {
+      "raw": "P-ELX",
+      "legibility": "clear"
+    },
+    "product_name": {
+      "raw": "Hollow Pine Electrolyte Effervescent",
+      "legibility": "clear"
+    },
+    "batch_size": {
+      "raw": "300,000",
+      "legibility": "clear"
+    },
+    "manufacture_date": {
+      "raw": "11/05/26",
+      "legibility": "clear"
+    },
+    "facility": {
+      "raw": "Hollow Pine Tablet Co.",
+      "legibility": "clear"
+    },
+    "materials": [
+      {
+        "line_no": 1,
+        "material_name": {
+          "raw": "Citric acid anhydrous",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "CTA",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "CTA-260901-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "NGI-26090101",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "210.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "210.300",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 2,
+        "material_name": {
+          "raw": "Sodium bicarbonate",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "SBC",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "SBC-260918-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "SMS-26091801",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "180.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "180.150",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 3,
+        "material_name": {
+          "raw": "Mannitol",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "MAN",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "MAN-260918-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "FPO-26091801",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "156.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "155.900",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 4,
+        "material_name": {
+          "raw": "Potassium citrate",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "KCT",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "KCT-260918-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "NGI-26091801",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "90.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "90.200",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 5,
+        "material_name": {
+          "raw": "PEG 6000",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "PEG",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "PEG-260918-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "PEC-26091801",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "18.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "18.050",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 6,
+        "material_name": {
+          "raw": "Lemon-lime flavor",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "FLL",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "FLL-260918-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "OFH-26091801",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "12.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "11.980",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 7,
+        "material_name": {
+          "raw": "Sodium chloride",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "NAC",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "NAC-260918-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "SMS-26091801",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "6.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "6.010",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      },
+      {
+        "line_no": 8,
+        "material_name": {
+          "raw": "Sucralose",
+          "legibility": "clear"
+        },
+        "material_code": {
+          "raw": "SUC",
+          "legibility": "clear"
+        },
+        "internal_lot": {
+          "raw": "SUC-260901-01",
+          "legibility": "clear"
+        },
+        "supplier_lot": {
+          "raw": "OFH-26090101",
+          "legibility": "clear"
+        },
+        "target_qty": {
+          "raw": "3.000",
+          "legibility": "clear"
+        },
+        "actual_qty": {
+          "raw": "3.010",
+          "legibility": "clear"
+        },
+        "unit": {
+          "raw": "kg",
+          "legibility": "clear"
+        },
+        "correction": {
+          "present": false,
+          "struck_value": "",
+          "initials": ""
+        },
+        "weighed_by": {
+          "raw": "KO",
+          "legibility": "clear"
+        },
+        "verified_by": {
+          "raw": "AR",
+          "legibility": "clear"
+        }
+      }
+    ],
+    "theoretical_yield": {
+      "raw": "300,000",
+      "legibility": "clear"
+    },
+    "actual_yield": {
+      "raw": "258,600",
+      "legibility": "clear"
+    },
+    "yield_percent": {
+      "raw": "86.2",
+      "legibility": "clear"
+    },
+    "waste_qty": {
+      "raw": "93.250",
+      "legibility": "clear"
+    },
+    "waste_unit": {
+      "raw": "kg",
+      "legibility": "clear"
+    },
+    "signatures": [
+      {
+        "role": "production",
+        "name": "Linda Park",
+        "date": "11/05/26"
+      },
+      {
+        "role": "qa_review",
+        "name": "Priya Natarajan",
+        "date": "11/06/26"
+      }
+    ],
+    "margin_notes": [
+      {
+        "text": "Compression sticking, stn 3. Punches cleaned 2x. -KO",
+        "legibility": "clear"
+      },
+      {
+        "text": "Line clearance: Room and equipment clear AR",
+        "legibility": "clear"
+      }
+    ]
+  }
+}

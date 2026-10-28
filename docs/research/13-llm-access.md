@@ -66,6 +66,20 @@ interface LlmClient { complete(task: Task, req: LlmRequest): Promise<LlmResult>;
 ### Bake-off (Nov 1–2, ≤ 2 hours, ≈ $1)
 Ground truth = the FICTIONAL_DATA spec values for BR-B-1041…1046. Metric: per-field exact match after unit normalization on material lines (lot, actual qty, unit) + yield; pass bar ≥ 95% field accuracy on typed fields, ≥ 85% on handwritten quantities, **and** the smudged BR-B-1046 field reported low-confidence. Candidates: `z-ai/glm-5.3-flash`, `Qwen/Qwen3.8-27B`, `claude-sonnet-5-5` (control). Pick the cheapest TEE model that passes; otherwise vision → Sonnet 5.5.
 
+### Bake-off result (2026-10-28, `npm run bakeoff`, raw answers in `data/bakeoff/`)
+Seven rendered records (`data/batch-records/`, clean typed look with blue-ink handwritten values), one call per record, schema `server/src/extraction/schema.ts`, scored by `server/src/extraction/score.ts` against `server/src/seed/batchRecords.ts`. 290 typed fields (codes, lots, supplier lots, targets, units, batch number, product, batch size) and 190 handwritten ones (actuals, initials, date, yield, waste, the BR-B-1043 struck value); the BR-B-1046 smudge is scored on whether it is flagged.
+
+| Model | Typed | Handwritten | Smudge flagged | Tokens in / out (7 records) | Median s per record | Pass |
+|---|---|---|---|---|---|---|
+| `nearai:z-ai/glm-5.3-flash` | 290/290 | 190/190 | yes | 35,196 / 12,830 | 40.7 | **yes** |
+| `nearai:Qwen/Qwen3.8-27B` | 290/290 | 190/190 | yes | 27,195 / 21,167 | 52.0 | yes |
+| `anthropic:claude-sonnet-5-5` | — | — | — | refused (400) | — | no |
+
+- **Decision (by the rule above): vision stays on `nearai:z-ai/glm-5.3-flash`**, the cheapest TEE model that passes, and it is also the faster one. No config change; `LLM_ROUTE_VISION` already points there.
+- **Qwen is less stable.** In the first run (nullable schema) it shifted every column of BR-B-1046 one place left (code ← lot, lot ← supplier lot, …): 87.9% typed, smudge read as clear. The second run was perfect. GLM was perfect in both runs.
+- **Anthropic refused both schemas.** First: "too many parameters with union types (24 …; limit: 16)", so nullable fields became `""` (no unions). Second: "The compiled grammar is too large". The Claude fallback therefore cannot use this schema through `output_config.format`; it needs a smaller per-call schema (for example the material table alone) or plain JSON in the prompt. Not needed while GLM passes; fix it before relying on the fallback.
+- **Caveat:** these are clean renders. Re-run `npm run bakeoff` when scan grain, jitter and handwriting fonts are added, and keep the bar.
+
 ### Smoke test (2026-10-28, `z-ai/glm-5.3-flash`, OpenAI-compatible `/v1/chat/completions`)
 All three calls returned HTTP 200; total under 2K tokens (well under $0.01).
 - **Text:** correct answer, 6.8 s.

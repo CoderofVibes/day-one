@@ -1,0 +1,85 @@
+[
+  {
+    "model": "nearai:z-ai/glm-5.3-flash",
+    "typed": {
+      "correct": 290,
+      "total": 290
+    },
+    "handwritten": {
+      "correct": 190,
+      "total": 190
+    },
+    "smudgeFlagged": true,
+    "failures": [],
+    "misses": [],
+    "inputTokens": 35196,
+    "outputTokens": 12830,
+    "medianSeconds": 40.686,
+    "pass": true
+  },
+  {
+    "model": "nearai:Qwen/Qwen3.8-27B",
+    "typed": {
+      "correct": 290,
+      "total": 290
+    },
+    "handwritten": {
+      "correct": 190,
+      "total": 190
+    },
+    "smudgeFlagged": true,
+    "failures": [],
+    "misses": [],
+    "inputTokens": 27195,
+    "outputTokens": 21167,
+    "medianSeconds": 52.012,
+    "pass": true
+  },
+  {
+    "model": "anthropic:claude-sonnet-5-5",
+    "typed": {
+      "correct": 0,
+      "total": 0
+    },
+    "handwritten": {
+      "correct": 0,
+      "total": 0
+    },
+    "smudgeFlagged": null,
+    "failures": [
+      {
+        "batchNo": "BR-B-1042",
+        "error": "Error: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"The compiled grammar is too large, which would cause performance issues. Simplify your tool schemas or reduce the number of strict tools.\"},\"request_id\":\"req_011CgVGvZyok36Z3wKS752iy\"}"
+      },
+      {
+        "batchNo": "BR-B-1043",
+        "error": "Error: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"The compiled grammar is too large, which would cause performance issues. Simplify your tool schemas or reduce the number of strict tools.\"},\"request_id\":\"req_011CgVGvZvphvQSwHRht9SyF\"}"
+      },
+      {
+        "batchNo": "BR-B-1041",
+        "error": "Error: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"The compiled grammar is too large, which would cause performance issues. Simplify your tool schemas or reduce the number of strict tools.\"},\"request_id\":\"req_011CgVGvZvLT5JWg9vhjpgbm\"}"
+      },
+      {
+        "batchNo": "BR-A-2207",
+        "error": "Error: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"The compiled grammar is too large, which would cause performance issues. Simplify your tool schemas or reduce the number of strict tools.\"},\"request_id\":\"req_011CgVGvZyJqJL9S116KYmds\"}"
+      },
+      {
+        "batchNo": "BR-B-1046",
+        "error": "Error: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"The compiled grammar is too large, which would cause performance issues. Simplify your tool schemas or reduce the number of strict tools.\"},\"request_id\":\"req_011CgVGvZxZPFBZKKEKNv6te\"}"
+      },
+      {
+        "batchNo": "BR-B-1045",
+        "error": "Error: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"The compiled grammar is too large, which would cause performance issues. Simplify your tool schemas or reduce the number of strict tools.\"},\"request_id\":\"req_011CgVGvZx5AquB4rmSq6CKa\"}"
+      },
+      {
+        "batchNo": "BR-B-1044",
+        "error": "Error: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"The compiled grammar is too large, which would cause performance issues. Simplify your tool schemas or reduce the number of strict tools.\"},\"request_id\":\"req_011CgVGvZxoeHyCTuuspHEdB\"}"
+      }
+    ],
+    "misses": [],
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "medianSeconds": null,
+    "pass": false
+  }
+]
