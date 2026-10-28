@@ -1,0 +1,65 @@
+{
+  "kind": "batch_record",
+  "ref_id": "BR-B-1045",
+  "salt": "072602fdb94e0a66b3f9ed068fc95020",
+  "record": {
+    "batch_no": "BR-B-1045",
+    "product": "P-VC500",
+    "facility": "B",
+    "date": "2026-11-06",
+    "theoretical_tablets": 800000,
+    "actual_tablets": 726400,
+    "waste_mg": 91992000,
+    "inputs": [
+      {
+        "lot": "ASC-261009-01",
+        "material": "ASC",
+        "actual_mg": 187450000
+      },
+      {
+        "lot": "ASC-260921-02",
+        "material": "ASC",
+        "actual_mg": 224900000
+      },
+      {
+        "lot": "SOR-260901-01",
+        "material": "SOR",
+        "actual_mg": 416200000
+      },
+      {
+        "lot": "MCC-260901-01",
+        "material": "MCC",
+        "actual_mg": 119880000
+      },
+      {
+        "lot": "CTA-260901-01",
+        "material": "CTA",
+        "actual_mg": 20040000
+      },
+      {
+        "lot": "FOR-260901-01",
+        "material": "FOR",
+        "actual_mg": 11980000
+      },
+      {
+        "lot": "MGS-261001-01",
+        "material": "MGS",
+        "actual_mg": 12030000
+      },
+      {
+        "lot": "SIO-260901-01",
+        "material": "SIO",
+        "actual_mg": 6410000
+      },
+      {
+        "lot": "SUC-260901-01",
+        "material": "SUC",
+        "actual_mg": 1602000
+      }
+    ],
+    "source_sha256": "61467002474c5766bb6c3abf1c17e8354d80db4f9a21759b71bd0bf0d3c1fc09",
+    "confirmed_by": "Ray Delgado"
+  },
+  "hash": "d7de24f4802cb1bc7d79f6d931d59b2d72e8fa23f2affd30547fbb91e87d7be8",
+  "anchored_tx": "Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN"
+}

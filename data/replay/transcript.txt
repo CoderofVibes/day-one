@@ -1,0 +1,36 @@
+Loaded 3 facilities, 33 materials, 12 vendors, 7 batch records, 56 days of history.
+  chain: spend-policy budget 25,000.00 DTUSD, escrowed 0.00 DTUSD
+Kevin read BR-B-1045 (VC500, 800,000 tablets). 8 materials, all within tolerance. Yield 90.8%.
+Inventory updated. Ascorbic acid at Plant B: 722.4 kg → 310.0 kg (reorder point 500 kg).
+  chain: anchored BR-B-1045 0xd7de24f4… ✓ (tx Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN)
+Two more VC500 batches in the next 10 days need about 824 kg. Short about 514 kg. Recommend ordering 700 kg.
+3 quotes. QuickChem Direct $5.90/kg excluded: vendor not qualified. Northgate $7.10/kg, 7 days — selected. Ridgeway $7.35/kg, 5 days — runner-up.
+PO-1041 to Bayfront Lab Supply, $612.00 — approved automatically and funded.
+  chain: submit_po PO-1041 ✓ (tx DYHsrENhyw2N12D2v9eVcX4kspFrChBM4pbuh42SfS8x) · escrow funded 612.00 DTUSD
+PO-1042 to Northgate Ingredients, $5,150.00 is over Kevin's $2,500.00 limit. Sent to Linda for approval.
+  chain: submit_po PO-1042 ✗ REFUSED "PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required." (tx DZx3MwK8DxAghCAC7uRHor4jFVRsqPfjSCErGukrwwPW)
+Linda: YES 1042 → Approved by Linda Park.
+  chain: approve_po PO-1042 ✓ signed by director.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx 3pC54Z3zQJtxpYRBa3jAtzeWHmnstXft84YzWoPpYP8e)
+PO-1042 sent to Northgate Ingredients. Funds held until delivery passes QC.
+  chain: submit_po PO-1042 ✓ (tx B3Hnh7CCwrrYiqbEDdSr3YuNTgk1NeqgZw3rJjGoUsTx) · escrow funded 5,150.00 DTUSD
+  chain: accept_po PO-1042 ✓ signed by northgate-ingredients.testnet (tx FG8ETbHUfQBGTJq1zV3EbjDCnBH8JeqaZoSLihy2iJZg)
+  chain: mark_shipped PO-1042 ✓ signed by northgate-ingredients.testnet (tx HG1DD9fEb1A2cwM8c68SrjZ4AydFWPxUJcsj3PPwSVtQ)
+Tommy photographed the packing slip. Matches PO-1042: 700 kg ascorbic acid, supplier lot NG-24-8812. Lot ASC-261116-01 is in quarantine.
+  chain: confirm_receipt PO-1042 ✓ signed by receiving.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx 3vK7eacZDkDdW6YtC1bkt4vbToiFB1Tn9WEUM5gbNPEr)
+Priya released lot ASC-261116-01.
+  chain: qc_release PO-1042 ✓ (tx 14QHzV9PisQz7TqhnT6WRZ9QmmPfeaTSnbuZLiWVMC4d) · 5,150.00 DTUSD → northgate-ingredients.testnet
+PO-1042 — paid $5,150.00. Invoice matched to PO and receipt.
+  chain: anchored receipt PO-1042 ✓ (tx ETfe8JQbV4NNkzAAtBMfNi5Wef77zivsDgTFcKwjHivP)
+  chain: 10 transactions, 1 refused by design, 0 failed.
+
+Explorer links:
+  anchor_batch https://testnet.nearblocks.io/txns/Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN
+  submit_po https://testnet.nearblocks.io/txns/DYHsrENhyw2N12D2v9eVcX4kspFrChBM4pbuh42SfS8x
+  submit_po https://testnet.nearblocks.io/txns/DZx3MwK8DxAghCAC7uRHor4jFVRsqPfjSCErGukrwwPW
+  approve_po https://testnet.nearblocks.io/txns/3pC54Z3zQJtxpYRBa3jAtzeWHmnstXft84YzWoPpYP8e
+  submit_po https://testnet.nearblocks.io/txns/B3Hnh7CCwrrYiqbEDdSr3YuNTgk1NeqgZw3rJjGoUsTx
+  accept_po https://testnet.nearblocks.io/txns/FG8ETbHUfQBGTJq1zV3EbjDCnBH8JeqaZoSLihy2iJZg
+  mark_shipped https://testnet.nearblocks.io/txns/HG1DD9fEb1A2cwM8c68SrjZ4AydFWPxUJcsj3PPwSVtQ
+  confirm_receipt https://testnet.nearblocks.io/txns/3vK7eacZDkDdW6YtC1bkt4vbToiFB1Tn9WEUM5gbNPEr
+  qc_release https://testnet.nearblocks.io/txns/14QHzV9PisQz7TqhnT6WRZ9QmmPfeaTSnbuZLiWVMC4d
+  anchor_batch https://testnet.nearblocks.io/txns/ETfe8JQbV4NNkzAAtBMfNi5Wef77zivsDgTFcKwjHivP

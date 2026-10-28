@@ -39,6 +39,8 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Render the fictional batch records and packing slips (Windows, repo root) | `npm install --prefix tools/render` once, then `npm run render:records` → `data/batch-records/*.jpg` + `*.truth.json`, `data/packing-slips/`; uses the installed Edge (`RENDER_BROWSER=chrome` for Chrome) (verified Oct 28) |
 | Run the vision bake-off (Windows, repo root; live, needs both LLM keys in `.env`, a few cents) | `npm run bakeoff` (or `npm run bakeoff -- nearai:<model>`) → table for research 13, answers in `data/bakeoff/` (verified Oct 28) |
 | Run the attack suite (Windows, repo root; no keys) | `npm run test:attacks` (`-- --json` for one JSON line) → PASS for four attacks from the recorded testnet run; `-- --record` re-runs it live on testnet and NEAR AI Cloud (verified Oct 28) |
+| Replay the whole demo loop (Windows, repo root; no keys, no network) | `npm run demo` (`-- --json`) → the recorded testnet run and "Transcript matches data/replay/transcript.txt.", exit 0 (verified Oct 28) |
+| Record the demo live (Windows, repo root; keys, unused PO-1041/PO-1042 on the contract) | `npm run demo:live -- --record` → rewrites `data/replay/demo-*.json`, `transcript.txt`, `data/batch-records/BR-B-1045.json` (verified Oct 28; run `npm run rehearse` first) |
 | Rehearse the relayed steps live on a throwaway PO (Windows, repo root; keys in `.near-credentials`) | `npm run rehearse` (`-- <n>` for PO-<n>, `--json`) → refused, relayed approval, funded, shipped, relayed receipt, relayed QC reject; PASS when the budget is back where it began; a PO left shipped by a stopped run resumes with `-- <n>` (verified Oct 28 on PO-9043) |
 | _(more commands are added as they first work)_ | |
 
