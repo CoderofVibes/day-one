@@ -43,6 +43,9 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Record the demo live (Windows, repo root; keys, unused PO-1041/PO-1042 on the contract) | `npm run demo:live -- --record` → rewrites `data/replay/demo-*.json`, `transcript.txt`, `data/batch-records/BR-B-1045.json` (verified Oct 28; run `npm run rehearse` first) |
 | Show the contract's escrow state (Windows, repo root; no keys) | `npm run escrow` (`-- --json`) → budget, escrow, Kevin's spend this month, every PO with its status (verified Oct 28) |
 | Rehearse the relayed steps live on a throwaway PO (Windows, repo root; keys in `.near-credentials`) | `npm run rehearse` (`-- <n>` for PO-<n>, `--json`) → refused, relayed approval, funded, shipped, relayed receipt, relayed QC reject; PASS when the budget is back where it began; a PO left shipped by a stopped run resumes with `-- <n>` (verified Oct 28 on PO-9043) |
+| Export the recorded run for the web UI (Windows, repo root; no keys) | `npm run web:data` (`-- --check` exits 1 if `web/src/data/demo-run.json` is stale) → 14 steps, 10 transactions (verified Oct 28) |
+| Build the web UI (Windows, repo root) | `npm run web:build` → static files in `web/dist/`, about 230 KB of JS (verified Oct 28) |
+| Screenshot the built web UI (Windows, repo root; `npm install --prefix tools/render` once) | `npm run web:shot -- <out dir>` → `wide.png` (light) and `phone.png` (dark, 390 px), console errors and sideways-scroll check; `STEPS=<n>` picks the step (verified Oct 28) |
 | _(more commands are added as they first work)_ | |
 
 ## Team and working protocol

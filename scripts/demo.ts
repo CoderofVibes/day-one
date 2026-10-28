@@ -19,7 +19,7 @@ import { ChainClient, explorerUrl } from "../server/src/chain/client.ts";
 import { LiveTransport } from "../server/src/chain/live.ts";
 import { RecordingTransport, ReplayTransport } from "../server/src/chain/replay.ts";
 import { openLedger } from "../server/src/ledger/db.ts";
-import { chainTx } from "../server/src/ledger/schema.ts";
+import { approvals, chainTx } from "../server/src/ledger/schema.ts";
 import { createLlm, RecordingLlm, ReplayLlm } from "../server/src/llm/client.ts";
 import { plantBStaff } from "../server/src/relayer/relayer.ts";
 import { seedLedger } from "../server/src/seed/index.ts";
@@ -211,6 +211,10 @@ if (json) {
           tx: r.txHash,
           url: explorerUrl(r.network, r.txHash),
         })),
+      approvals: db
+        .select({ request: approvals.requestText, response: approvals.responseText })
+        .from(approvals)
+        .all(),
     }),
   );
 }

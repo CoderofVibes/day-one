@@ -27,7 +27,11 @@
     "demo": "tsx scripts/demo.ts",
     "demo:live": "tsx scripts/demo.ts --live",
     "rehearse": "tsx scripts/rehearse.ts",
-    "escrow": "tsx scripts/escrow.ts"
+    "escrow": "tsx scripts/escrow.ts",
+    "web": "npm run dev -w web",
+    "web:build": "npm run build -w web",
+    "web:data": "tsx scripts/web-data.ts",
+    "web:shot": "tsx tools/render/src/shot.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.3",

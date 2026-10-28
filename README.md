@@ -29,6 +29,8 @@ Requires Node 24 (`.nvmrc`). Step 5 requires Rust in Linux, macOS or WSL2.
 4. Add 1 g (`1000` mg) to any `actual_mg` in that file and repeat step 3 → `MISMATCH`, exit code 1.
 5. `cd contracts && cargo test` → 42 unit tests and one sandbox test that runs the whole loop on a local NEAR node with our own test token (`purchasing_loop_on_sandbox`).
 
+To see the same run in a browser: `npm run web:build`, then open `web/dist/` from any static file server; the "Behind the curtain" switch shows each transaction with its signer, who paid the gas and an explorer link.
+
 Also without keys: `npm run test:attacks` (four attacks on Kevin, each shown failing) and `npm run escrow` (the contract's budget, escrow and every PO, read live from testnet). Each takes `-- --json` for one machine-readable line.
 
 ## What happens in the demo
@@ -97,7 +99,7 @@ Kevin is the purchasing agent. The contract limits are one enforced layer around
 - The demo settles in DTUSD, a test token we deployed, because the Circle testnet faucet gives 20 USDC per two hours.
 - Staff keys are held by the server because the phone is simulated. Production would have each person hold their own key through a login provider.
 - PO totals and supplier accounts are visible on chain; line items and prices are not.
-- No web screens yet; the demo is a command-line run.
+- The web UI replays the recorded run; the live staff screens are not built yet.
 - Contract accounts still hold full-access keys so we can redeploy.
 - Audit-friendly records, not a compliance claim.
 - Commits before the `pre-hackathon` tag are planning documents only (`docs/`).
@@ -113,5 +115,7 @@ Built by DadMod (Tony Langford, solo entrant) with Claude Code; the code was wri
 | near-api-js | 7.3.1 | chain client and relayer |
 | better-sqlite3, drizzle-orm, drizzle-kit | 13.0.3, 0.45.4, 0.31.11 | ledger |
 | @anthropic-ai/sdk | 1.1.0 | fallback model route |
-| playwright-core (dev, `tools/render`) | 1.64.1 | rendering the fictional batch records |
+| React, React DOM | 19.3.1 | web UI |
+| Vite, @vitejs/plugin-react | 8.3.5, 6.1.2 | web UI build |
+| playwright-core (dev, `tools/render`) | 1.64.1 | rendering the fictional batch records, UI screenshots |
 | TypeScript, tsx, Vitest, Biome | 7.0.2, 4.23.15, 5.0.5, 2.6.3 | build and test |

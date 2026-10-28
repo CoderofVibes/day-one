@@ -7,10 +7,12 @@
       "**/*.json",
       "!**/node_modules",
       "!**/dist",
+      "!**/build",
       "!**/target",
       "!.claude",
       "!docs",
       "!data",
+      "!web/src/data",
       "!package-lock.json",
       "!config/testnet-accounts.json"
     ]
