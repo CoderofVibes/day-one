@@ -39,6 +39,7 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Render the fictional batch records and packing slips (Windows, repo root) | `npm install --prefix tools/render` once, then `npm run render:records` → `data/batch-records/*.jpg` + `*.truth.json`, `data/packing-slips/`; uses the installed Edge (`RENDER_BROWSER=chrome` for Chrome) (verified Oct 28) |
 | Run the vision bake-off (Windows, repo root; live, needs both LLM keys in `.env`, a few cents) | `npm run bakeoff` (or `npm run bakeoff -- nearai:<model>`) → table for research 13, answers in `data/bakeoff/` (verified Oct 28) |
 | Run the attack suite (Windows, repo root; no keys) | `npm run test:attacks` (`-- --json` for one JSON line) → PASS for four attacks from the recorded testnet run; `-- --record` re-runs it live on testnet and NEAR AI Cloud (verified Oct 28) |
+| Rehearse the relayed steps live on a throwaway PO (Windows, repo root; keys in `.near-credentials`) | `npm run rehearse` (`-- <n>` for PO-<n>, `--json`) → refused, relayed approval, funded, shipped, relayed receipt, relayed QC reject; PASS when the budget is back where it began; a PO left shipped by a stopped run resumes with `-- <n>` (verified Oct 28 on PO-9043) |
 | _(more commands are added as they first work)_ | |
 
 ## Team and working protocol

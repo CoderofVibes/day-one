@@ -25,7 +25,8 @@
     "bakeoff": "tsx scripts/bakeoff.ts",
     "test:attacks": "tsx scripts/attacks.ts",
     "demo": "tsx scripts/demo.ts",
-    "demo:live": "tsx scripts/demo.ts --live"
+    "demo:live": "tsx scripts/demo.ts --live",
+    "rehearse": "tsx scripts/rehearse.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.3",
