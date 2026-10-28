@@ -130,3 +130,9 @@ Kysely is the better query builder purists' choice, but Drizzle's schema file is
 - https://kysely.dev/docs/dialects — core dialects incl. SQLite; node:sqlite only via community `kysely-node-native-sqlite` (accessed 2026-10-22)
 - https://registry.npmjs.org/@electric-sql/pglite/latest — 0.5.11, ~26 MB unpacked (accessed 2026-10-22)
 - https://registry.npmjs.org/vite/latest — engines `^20.19.0 || >=22.12.0` (accessed 2026-10-22)
+
+## Verified Oct 28, 2026 (Windows 11, Node 24.22.1)
+
+- `npm install better-sqlite3@13.0.3` worked with no compiler. The package does declare an install script (`node-gyp rebuild`); npm skipped it (not in `allowScripts`) and the bundled prebuild loaded anyway: `sqlite_version()` = 3.53.4.
+- drizzle-orm 0.45.4 + drizzle-kit 0.31.11 generate the tables, CHECK constraints and unique indexes. drizzle-kit does not emit `STRICT`, triggers or plain views: `STRICT` is added by hand to each generated `CREATE TABLE`, and the triggers plus the `lot_balances` view live in a custom migration (`drizzle-kit generate --custom`). A test fails if any table is not STRICT.
+- drizzle-kit pulls an old esbuild with 4 moderate `npm audit` findings; dev-only, not shipped.

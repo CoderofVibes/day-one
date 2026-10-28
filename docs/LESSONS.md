@@ -8,6 +8,10 @@ _(none yet)_
 
 ## Lessons
 
+- **2026-10-28** — Drizzle wraps errors from `db.run(sql...)` as "Failed to run the query", hiding the SQLite message (a trigger's RAISE text). Rule: when a test checks a database error message, run the statement on `db.$client` or match `error.cause`.
+- **2026-10-28** — npm 11 skips package install scripts unless allowed (`allowScripts`); better-sqlite3 13 still loaded because its prebuilt binary ships in the package. Rule: after adding a native package, load it once (`node -e`) before relying on it; the clean-clone test does the same.
+- **2026-10-28** — A bare `python` in Git Bash on this PC hangs (Windows Store stub) until the tool times out. Rule: script with `node`, never `python`.
+
 - **2026-10-25** — Python's default `urllib` user-agent got HTTP 403 from the Cloudflare relay (bot filter) while curl, PowerShell and Node succeeded. Rule: scripts that call the bridge directly set a `User-Agent` header.
 - **2026-10-25** — Claude's shell runs in a sandbox: a global `npm install -g` and a PowerShell `Set-Content` both landed in a virtual overlay the human could not see, and nobody noticed until a command failed on his side. Rule: after installing or writing anything outside the repo, verify from an independent vantage point (`wsl -d Ubuntu -- ls /mnt/c/...` sees the real disk) before telling the human it exists.
 - **2026-10-25** — Piping a string from PowerShell into `wrangler secret put` stored the token with a trailing newline, so every request got 401. Rule: upload secrets with `wrangler secret bulk <json file>`, then test one authenticated request before declaring the deploy done.

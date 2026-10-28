@@ -3,6 +3,21 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./money": "./src/money.ts"
+    "./money": "./src/money.ts",
+    "./canonical": "./src/canonical.ts",
+    "./ledger/db": "./src/ledger/db.ts",
+    "./ledger/events": "./src/ledger/events.ts",
+    "./ledger/schema": "./src/ledger/schema.ts"
+  },
+  "scripts": {
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "better-sqlite3": "13.0.3",
+    "drizzle-orm": "0.45.4"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "drizzle-kit": "0.31.11"
   }
 }

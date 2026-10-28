@@ -27,6 +27,7 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Lint + typecheck + tests (Windows) | `npm run check` (Biome, `tsc -b`, Vitest; verified Oct 28) |
 | Tests only | `npm test` |
 | Format | `npm run format` |
+| Generate a ledger migration after a schema change | `npm run db:generate -w server`, then add `STRICT` to each new `CREATE TABLE` (verified Oct 28) |
 | _(more commands are added as they first work)_ | |
 
 ## Team and working protocol

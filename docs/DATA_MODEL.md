@@ -1,6 +1,6 @@
 # Data model — Day One
 
-The off-chain ledger is SQLite (`data/dayone.db`, gitignored, rebuilt by the demo command) via better-sqlite3 13.0.3 and Drizzle 0.45.4. The Drizzle schema in `server/ledger/schema.ts` is the code form of this document and must stay in sync with it. Rationale: research 18.
+The off-chain ledger is SQLite (`data/dayone.db`, gitignored, rebuilt by the demo command) via better-sqlite3 13.0.3 and Drizzle 0.45.4. The Drizzle schema in `server/src/ledger/schema.ts` (migrations in `server/src/ledger/migrations/`, writer in `events.ts`) is the code form of this document and must stay in sync with it. Rationale: research 18.
 
 ---
 
@@ -56,6 +56,10 @@ Kevin's purchase rules read `qualification_status`: `unqualified` and `suspended
 3. Corrections are compensating events (`count_adjust` with a reason). Nothing is edited.
 4. `rebuildProjections()` replays all events; a test asserts it matches the cached projection.
 5. Available inventory excludes `quarantine`, `rejected`, `on_order` and `en_route`.
+6. Quantity is booked when a lot is received: `ordered`, `shipped` and the QC state changes carry a zero delta. A lot created without a PO (opening stock) starts with `received`. `lots.state` is null until the first event.
+7. `consumed` and `wasted` subtract quantity; the lot moves to that terminal state only when its total reaches zero, so partial use keeps it `in_use` (or `released`). `returned` moves `in_use` back to `released`.
+8. `transfer_out` (negative, at the sending plant) and `transfer_in` (positive, at the receiving plant) keep the state; the lot's facility changes on `transfer_in`. A short receipt leaves the gap in the balances for the discrepancy check. No lot may go below zero at any facility.
+9. `event_hash` covers seq, lot, kind, states, quantity, facility, department, ref, actor, reason and both timestamps; the first event links to 64 zeros. `verifyChain()` recomputes the chain.
 
 ## 5. Transfers and discrepancies
 
