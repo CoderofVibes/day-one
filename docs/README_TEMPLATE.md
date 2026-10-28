@@ -101,6 +101,8 @@ ERP connectors (NetSuite first); real SMS; NEAR Auth login for staff; NEAR Inten
 
 Built by DadMod (Tony Langford, solo entrant) with Claude Code. Planning docs: `docs/`. Conventions for coding agents: `AGENTS.md`.
 
+**Hackathon window and baseline (organizer Q-001, Q-003, Q-005).** The window runs from the Oct 19 announcement to Nov 14. Commits before the `pre-hackathon` tag are baseline (planning docs only); `pre-hackathon...hackathon-submission` is the judged diff. Libraries, templates and AI-generated code are listed here: {table of npm and crate dependencies with versions; note that code was written with Claude Code}. License: MIT (`LICENSE`).
+
 ### About the team (approved by Tony, Oct 26)
 
 DadMod is one human and two AI collaborators. Tony Langford is a chemical engineer with ten years on manufacturing floors, now a system engineer at an advanced nuclear reactor startup, building this between feedings of a newborn (hence the name: dad bod, but for shipping code). Muse, an AI project manager, keeps the plan honest. Claude, an AI engineer, writes the code. Kevin, the AI assistant in the product, does the paperwork. Tony runs the plant.
