@@ -13,7 +13,11 @@ import {
   decideVendorBill,
   receiptsFor,
 } from "./posting/payables.ts";
-import { postInventoryAdjustment, postInventoryTransfer } from "./posting/inventory.ts";
+import {
+  postInventoryAdjustment,
+  postInventoryStatusChange,
+  postInventoryTransfer,
+} from "./posting/inventory.ts";
 import { trialBalance } from "./posting/journal.ts";
 import {
   closePurchaseOrder,
@@ -141,6 +145,8 @@ const status = (id: string) => ({
   refName: id.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase()),
 });
 const pct = (bp: number | null) => (bp === null ? null : bp / 100);
+/** Unit prices and costs keep six decimals: a bottle costs $0.021, not $0.02. */
+const rate = (units: number) => units / 1_000_000;
 
 type Row<T extends { $inferSelect: unknown }> = T["$inferSelect"];
 
@@ -198,7 +204,7 @@ export function serializeItem(db: ErpDb, i: Row<typeof items>) {
     custitem_item_class: status(i.itemClass),
     unitsType: i.unitsType,
     assetAccount: accountRef(db, i.assetAccountId),
-    cost: dollars(i.costUsdc),
+    cost: rate(i.costUsdc),
     isInactive: i.isInactive,
     custitem_dayone_material: i.itemId,
   };
@@ -250,7 +256,7 @@ export function serializePurchaseOrder(db: ErpDb, po: Row<typeof purchaseOrders>
         description: item.displayName,
         quantity: quantity(line.quantityBase, item.baseUnitsPerUnit),
         units: item.unitsType,
-        rate: dollars(line.rateUsdc),
+        rate: rate(line.rateUsdc),
         amount: dollars(line.amountUsdc),
         quantityReceived: quantity(line.quantityReceivedBase, item.baseUnitsPerUnit),
         quantityBilled: quantity(line.quantityBilledBase, item.baseUnitsPerUnit),
@@ -292,7 +298,7 @@ export function serializeItemReceipt(db: ErpDb, r: Row<typeof itemReceipts>) {
           item: itemR,
           quantity: qtyOf(item, l.quantityBase),
           units: item?.unitsType,
-          rate: dollars(l.rateUsdc),
+          rate: rate(l.rateUsdc),
           amount: dollars(l.amountUsdc),
           inventoryDetail: {
             inventoryAssignment: {
@@ -337,7 +343,7 @@ export function serializeInventoryAdjustment(db: ErpDb, a: Row<typeof inventoryA
           item: itemR,
           adjustQtyBy: qtyOf(item, l.adjustQtyBase),
           units: item?.unitsType,
-          unitCost: dollars(l.unitCostUsdc),
+          unitCost: rate(l.unitCostUsdc),
           amount: dollars(l.amountUsdc),
           inventoryDetail: {
             inventoryAssignment: {
@@ -480,7 +486,7 @@ export function serializeVendorBill(db: ErpDb, b: Row<typeof vendorBills>) {
           description: l.description,
           quantity: qtyOf(item, l.quantityBase),
           units: item?.unitsType,
-          rate: dollars(l.rateUsdc),
+          rate: rate(l.rateUsdc),
           amount: dollars(l.amountUsdc),
           orderLine: l.poLineId,
         };
@@ -606,7 +612,7 @@ export function inventoryBalanceRows(
         averageCost:
           b.quantityOnHandBase === 0 || !item
             ? null
-            : dollars(Math.round((b.valueUsdc * item.baseUnitsPerUnit) / b.quantityOnHandBase)),
+            : rate(Math.round((b.valueUsdc * item.baseUnitsPerUnit) / b.quantityOnHandBase)),
         quantityOnHandBase: b.quantityOnHandBase,
         valueUsdc: b.valueUsdc,
       };
@@ -847,9 +853,44 @@ export function createInventoryStatusChange(
   clock: Clock,
 ) {
   require(principal, "write:inventory");
-  const poTranId = need(refCode(body.createdFrom), "createdFrom");
   const lot = need(str(body.receiptInventoryNumber), "receiptInventoryNumber");
   const revised = refCode(body.revisedStatus);
+  const poTranId = refCode(body.createdFrom);
+  if (poTranId === null) {
+    // A lot that came without a purchase order (opening stock): a plain status change.
+    const location = locationByCode(db, need(refCode(body.location), "location"));
+    const item = itemByCode(db, need(refCode(body.item), "item"));
+    const previous = refCode(body.previousStatus) ?? "quarantine";
+    if (
+      !["quarantine", "good", "rejected"].includes(previous) ||
+      !revised ||
+      !["quarantine", "good", "rejected"].includes(revised)
+    ) {
+      throw new ApiError(
+        400,
+        "INVALID_BODY",
+        "previousStatus and revisedStatus must be quarantine, good or rejected.",
+      );
+    }
+    return refusalToApi(() =>
+      postInventoryStatusChange(db, {
+        externalId: need(str(body.externalId), "externalId"),
+        locationId: location.id,
+        tranDate: need(str(body.tranDate), "tranDate"),
+        memo: str(body.memo) ?? undefined,
+        lines: [
+          {
+            itemId: item.id,
+            lotNumber: lot,
+            previousStatus: previous as "quarantine" | "good" | "rejected",
+            revisedStatus: revised as "quarantine" | "good" | "rejected",
+          },
+        ],
+        userId: principal.id,
+        at: clock.now(),
+      }),
+    );
+  }
   const common = {
     externalId: need(str(body.externalId), "externalId"),
     poTranId,

@@ -19,7 +19,10 @@
     "./relayer": "./src/relayer/relayer.ts",
     "./records/anchors": "./src/records/anchors.ts",
     "./extraction/schema": "./src/extraction/schema.ts",
-    "./seed/batchRecords": "./src/seed/batchRecords.ts"
+    "./seed/batchRecords": "./src/seed/batchRecords.ts",
+    "./erp-connector/types": "./src/erp-connector/types.ts",
+    "./erp-connector/mock-netsuite": "./src/erp-connector/mock-netsuite.ts",
+    "./erp-connector/sync": "./src/erp-connector/sync.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate"
@@ -28,7 +31,8 @@
     "@anthropic-ai/sdk": "1.1.0",
     "better-sqlite3": "13.0.3",
     "drizzle-orm": "0.45.4",
-    "near-api-js": "^7.3.1"
+    "near-api-js": "^7.3.1",
+    "@day-one/erp": "*"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^9.6.0",

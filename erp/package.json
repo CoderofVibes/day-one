@@ -13,7 +13,8 @@
     "./approval": "./src/approval.ts",
     "./api": "./src/api.ts",
     "./http/router": "./src/http/router.ts",
-    "./server": "./src/server.ts"
+    "./server": "./src/server.ts",
+    "./seed/history": "./src/seed/history.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate"

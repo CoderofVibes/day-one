@@ -73,7 +73,9 @@ function verdictDecision(input: PoApprovalInput, rule: Rule): Decision {
         approvalStatus: "approved",
         note: input.approvalTx
           ? `Approved on chain by ${input.approvedBy ?? "the director"} (tx ${input.approvalTx}); funded in tx ${input.fundingTx ?? "?"}.`
-          : `Within the agent's limits; funded by the contract in tx ${input.fundingTx ?? "?"}.`,
+          : input.fundingTx
+            ? `Within the agent's limits; funded by the contract in tx ${input.fundingTx}.`
+            : `${input.reason ?? "Settled before Day One (migrated history)"}.`,
       };
     case "awaitingApproval":
       return {
