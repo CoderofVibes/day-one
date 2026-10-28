@@ -1,0 +1,15 @@
+{
+  "account": "kevin.plant-b.acme-holdings.testnet",
+  "publicKey": "ed25519:AXiQ36MSjmHXkdK57s9uEcX1s9SXCkhtQczWDX5VbYKW",
+  "permission": {
+    "FunctionCall": {
+      "allowance": "1998141133577849000000000",
+      "method_names": [
+        "submit_po",
+        "anchor",
+        "anchor_batch"
+      ],
+      "receiver_id": "spend-policy.acme-holdings.testnet"
+    }
+  }
+}

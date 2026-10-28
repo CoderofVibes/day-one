@@ -38,6 +38,7 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Cancel a throwaway testnet PO as HQ (Windows; keychain) | `near contract call-function as-transaction spend-policy.acme-holdings.testnet cancel json-args '{"po_id":"PO-T…"}' prepaid-gas '30 Tgas' attached-deposit '1 yoctoNEAR' sign-as acme-holdings.testnet network-config testnet sign-with-keychain send` → escrow back to the budget (verified Oct 28 on PO-T1043) |
 | Render the fictional batch records and packing slips (Windows, repo root) | `npm install --prefix tools/render` once, then `npm run render:records` → `data/batch-records/*.jpg` + `*.truth.json`, `data/packing-slips/`; uses the installed Edge (`RENDER_BROWSER=chrome` for Chrome) (verified Oct 28) |
 | Run the vision bake-off (Windows, repo root; live, needs both LLM keys in `.env`, a few cents) | `npm run bakeoff` (or `npm run bakeoff -- nearai:<model>`) → table for research 13, answers in `data/bakeoff/` (verified Oct 28) |
+| Run the attack suite (Windows, repo root; no keys) | `npm run test:attacks` (`-- --json` for one JSON line) → PASS for four attacks from the recorded testnet run; `-- --record` re-runs it live on testnet and NEAR AI Cloud (verified Oct 28) |
 | _(more commands are added as they first work)_ | |
 
 ## Team and working protocol

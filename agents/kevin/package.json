@@ -8,7 +8,10 @@
     "./submit": "./src/submit.ts",
     "./approval": "./src/approval.ts",
     "./receiving": "./src/receiving.ts",
-    "./extraction": "./src/extraction.ts"
+    "./extraction": "./src/extraction.ts",
+    "./invoices": "./src/invoices.ts",
+    "./payments": "./src/payments.ts",
+    "./attacks": "./src/attacks.ts"
   },
   "dependencies": {
     "@day-one/server": "*",

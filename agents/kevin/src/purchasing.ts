@@ -39,6 +39,16 @@ function baseUnitsPerUnit(dimension: string) {
   return dimension === "mass" ? 1_000_000 : 1;
 }
 
+/** An answer Kevin did not record as a quote, with the reason staff see. */
+export interface IgnoredQuote {
+  vendor: string;
+  name: string | null;
+  account: string | null;
+  /** The listed vendor the sender imitates, when its name or account is a near copy. */
+  imitates: { code: string; name: string; account: string | null } | null;
+  reason: string;
+}
+
 export interface Rfq {
   id: number;
   rfqNo: string;
@@ -46,11 +56,60 @@ export interface Rfq {
   facilityId: number;
   qtyBase: number;
   needBy: string;
+  ignored: IgnoredQuote[];
+}
+
+/**
+ * A name or account reduced to what a reader sees: lower case, letters and digits only, and
+ * the usual stand-ins folded (l and 1 for i, 0 for o, rn for m).
+ */
+export function skeleton(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/\.(testnet|near)$/, "")
+    .replace(/rn/g, "m")
+    .replace(/[l1|]/g, "i")
+    .replace(/0/g, "o")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function editDistance(a: string, b: string) {
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const row = [i];
+    for (let j = 1; j <= b.length; j++) {
+      row[j] = Math.min(
+        (prev[j] ?? 0) + 1,
+        (row[j - 1] ?? 0) + 1,
+        (prev[j - 1] ?? 0) + (a[i - 1] === b[j - 1] ? 0 : 1),
+      );
+    }
+    prev = row;
+  }
+  return prev[b.length] ?? 0;
+}
+
+/** The listed vendor whose name or account the sender's is a near copy of (but not equal to). */
+export function lookalikeOf(
+  sender: { name?: string; account?: string },
+  listed: readonly { code: string; name: string; nearAccountId: string | null }[],
+) {
+  const close = (a: string | undefined, b: string | null) => {
+    if (!a || !b || a === b) return false;
+    const [x, y] = [skeleton(a), skeleton(b)];
+    return x === y || editDistance(x, y) <= 2;
+  };
+  const match = listed.find(
+    (v) => close(sender.name, v.name) || close(sender.account, v.nearAccountId),
+  );
+  return match ? { code: match.code, name: match.name, account: match.nearAccountId } : null;
 }
 
 /**
  * Opens an RFQ for the forecast's recommended quantity and records one quote per answering
- * vendor. Only vendors listed for the material are asked; `answers` are their replies.
+ * vendor. Only vendors listed for the material are asked; `answers` are their replies. An
+ * answer from anyone else is not recorded: it lands in `ignored` with the reason, and a
+ * sender whose name or account imitates a vendor on the list is called out as a lookalike.
  */
 export function requestQuotes(
   db: Ledger,
@@ -82,10 +141,38 @@ export function requestQuotes(
       .all()
       .map((v) => v.code),
   );
+  const allVendors = db.select().from(vendors).all();
+  const ignored: IgnoredQuote[] = [];
   for (const answer of answers) {
-    if (!listed.has(answer.vendor)) continue;
-    const vendor = db.select().from(vendors).where(eq(vendors.code, answer.vendor)).get();
-    if (!vendor) continue;
+    const vendor = allVendors.find((v) => v.code === answer.vendor);
+    // A known code is not enough: the answer must also come from that vendor's account.
+    const sameSender =
+      vendor &&
+      (!answer.account || answer.account === vendor.nearAccountId) &&
+      (!answer.name || answer.name === vendor.name);
+    if (!vendor || !sameSender || !listed.has(vendor.code)) {
+      // Using a listed vendor's code from another account is imitation too, however unlike.
+      const claimed =
+        vendor && !sameSender
+          ? { code: vendor.code, name: vendor.name, account: vendor.nearAccountId }
+          : null;
+      const imitates = lookalikeOf(answer, allVendors) ?? claimed;
+      const who = answer.name ?? vendor?.name ?? answer.vendor;
+      ignored.push({
+        vendor: answer.vendor,
+        name: answer.name ?? null,
+        account: answer.account ?? null,
+        imitates,
+        reason: imitates
+          ? `${who}${answer.account ? ` (${answer.account})` : ""} is not on the supplier list; ` +
+            `it ${imitates === claimed ? "claims to be" : "looks like"} ${imitates.name}` +
+            `${imitates.account ? ` (${imitates.account})` : ""}`
+          : vendor && sameSender
+            ? `${who} is not listed for this material`
+            : `${who} is not on the supplier list`,
+      });
+      continue;
+    }
     const terms = {
       rfq: rfqNo,
       vendor: vendor.code,
@@ -112,6 +199,7 @@ export function requestQuotes(
     facilityId: rfq.facilityId,
     qtyBase: rfq.qtyBase,
     needBy: rfq.needBy,
+    ignored,
   };
 }
 

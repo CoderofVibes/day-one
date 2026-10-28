@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "network": "testnet",
+  "recordedAt": "2026-10-28T20:57:26.335Z",
+  "entries": [
+    {
+      "type": "call",
+      "request": {
+        "kind": "submit_po",
+        "signerId": "kevin.plant-b.acme-holdings.testnet",
+        "receiverId": "spend-policy.acme-holdings.testnet",
+        "method": "submit_po",
+        "args": {
+          "po_id": "PO-T9001",
+          "supplier": "northgate-lngredients.testnet",
+          "amount": "1000000000",
+          "category": "raw_material",
+          "po_hash": "5aa6abaf2cbceb015e24de6af017b9d3737d92e1585978fff92b90ac5e6aab34"
+        },
+        "depositYocto": "0",
+        "viaRelayer": false
+      },
+      "outcome": {
+        "status": "refused",
+        "errorMessage": "northgate-lngredients.testnet is not an approved supplier; no approval can override this.",
+        "returnValue": null,
+        "txHash": "CHCktaMzsEpppfsCeH3uDY3T9KvsKYZegwetsDsJH7Wt",
+        "events": [
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_refused",
+            "data": {
+              "po_id": "PO-T9001",
+              "agent": "kevin.plant-b.acme-holdings.testnet",
+              "supplier": "northgate-lngredients.testnet",
+              "amount": "1000000000",
+              "category": "raw_material",
+              "reason": "northgate-lngredients.testnet is not an approved supplier; no approval can override this."
+            }
+          }
+        ],
+        "blockHeight": 275202881
+      }
+    },
+    {
+      "type": "view",
+      "request": {
+        "contractId": "spend-policy.acme-holdings.testnet",
+        "method": "get_po",
+        "args": {
+          "po_id": "PO-T1043"
+        }
+      },
+      "result": {
+        "po_id": "PO-T1043",
+        "agent": "kevin.plant-b.acme-holdings.testnet",
+        "plant": "plant-b.acme-holdings.testnet",
+        "supplier": "northgate-ingredients.testnet",
+        "amount": "10000000",
+        "category": "raw_material",
+        "po_hash": "7e577e577e577e577e577e577e577e577e577e577e577e577e577e577e577e57",
+        "period": 202610,
+        "status": "Cancelled",
+        "approved_by": null,
+        "supplier_lot": "NG-TEST-0001",
+        "funded_at": "1793218671035012915",
+        "accepted_at": "1793218673470260163",
+        "shipped_at": "1793218675852499106",
+        "received_at": null,
+        "released_at": null
+      }
+    },
+    {
+      "type": "view",
+      "request": {
+        "contractId": "dtusd.acme-holdings.testnet",
+        "method": "ft_balance_of",
+        "args": {
+          "account_id": "kevin.plant-b.acme-holdings.testnet"
+        }
+      },
+      "result": "0"
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "submit_po",
+        "signerId": "kevin.plant-b.acme-holdings.testnet",
+        "receiverId": "spend-policy.acme-holdings.testnet",
+        "method": "submit_po",
+        "args": {
+          "po_id": "PO-T1043",
+          "supplier": "northgate-ingredients.testnet",
+          "amount": "1000000000",
+          "category": "raw_material",
+          "po_hash": "73830ca760feed0bee36282bb2891bafd00b100b615f0d0b3f403f4a2b5b68bc"
+        },
+        "depositYocto": "0",
+        "viaRelayer": false
+      },
+      "outcome": {
+        "status": "refused",
+        "errorMessage": "PO-T1043 was already submitted.",
+        "returnValue": null,
+        "txHash": "FWcSEZCP8iUkdJvbr6ypuRVePrt7JPmA3np4fiMtcmt4",
+        "events": [
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_refused",
+            "data": {
+              "po_id": "PO-T1043",
+              "agent": "kevin.plant-b.acme-holdings.testnet",
+              "supplier": "northgate-ingredients.testnet",
+              "amount": "1000000000",
+              "category": "raw_material",
+              "reason": "PO-T1043 was already submitted."
+            }
+          }
+        ],
+        "blockHeight": 275202899
+      }
+    }
+  ]
+}

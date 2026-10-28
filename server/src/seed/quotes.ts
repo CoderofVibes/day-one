@@ -3,7 +3,11 @@
 // supplier agents will compute and sign the same figures from their own accounts.
 
 export interface QuoteSpec {
+  /** The vendor code the answer claims; an unknown code is a sender not on the vendor list. */
   vendor: string;
+  /** The sender's name and NEAR account as the answer gives them, when it gives them. */
+  name?: string;
+  account?: string;
   /** Dollars per inventory unit (kg). */
   unitPrice: number;
   leadTimeDays: number;

@@ -90,6 +90,10 @@ All three calls returned HTTP 200; total under 2K tokens (well under $0.01).
 ### First call through `server/src/llm` (2026-10-28)
 `NearAiAdapter` with `chat_template_kwargs: {enable_thinking: false}`, `x-no-aliasing: true` and a strict `json_schema` response format: one extraction-style call returned valid JSON in 3.2 s (59 in / 39 out tokens). The response `id` is a 32-hex chat id with no `chatcmpl-` prefix (`4b59f7bf73ee4bea91fead800d7987d6`); the adapter keeps it with SHA-256 hashes of the exact request and response bodies for the attestation check (research 10). Built with plain fetch rather than the `openai` SDK so those bytes are available unchanged.
 
+### Invoice reading on the reasoning route (2026-10-28, `npm run test:attacks -- --record`)
+
+GLM 5.3 Flash with thinking off reads plain-text invoices into `INVOICE_SCHEMA` (`agents/kevin/src/invoices.ts`) correctly once the prompt names each field; with a bare "Transcribe this invoice." it returned empty fields, notes inside `freight`, and once an invented vendor and PO. In the recorded run it still wrote `"..."` for the inflated invoice's freight, which Kevin holds as unreadable. It did not follow the planted instruction line (remit-to stayed the supplier's account). Three calls, a few hundred tokens each.
+
 ## Open questions for the human
 - **Anthropic API key for the app:** Is your plan Max 5x ($100/month API credit) or Max 20x ($200)? To use it, link a Claude Console organization in claude.ai → Settings → Billing → API credits (one-time, can't be relinked yourself), then create an API key in a dedicated workspace with a spend limit. Pro is not eligible. Credits do not cover Claude Code itself. OK to do this?
 - NEAR AI Cloud account + small credit purchase (see 10).

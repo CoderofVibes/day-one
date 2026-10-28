@@ -22,7 +22,8 @@
     "deploy:testnet": "tsx scripts/deploy.ts",
     "verify": "tsx scripts/verify.ts",
     "render:records": "tsx tools/render/src/render.ts",
-    "bakeoff": "tsx scripts/bakeoff.ts"
+    "bakeoff": "tsx scripts/bakeoff.ts",
+    "test:attacks": "tsx scripts/attacks.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.3",
