@@ -54,7 +54,7 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 ### Organizer rules that add tasks (HACKATHON.md Q-001–Q-017, published Oct 28, read by Muse)
 - Code counts from Oct 19 (Q-001); the Nov 1 start in AGENTS.md hard rule 7 is ours. Lifting it waits for Tony in Claude's chat (OPEN_QUESTIONS #30).
 - [ ] Tag the last docs-only commit `pre-hackathon` before the first feature commit; tag `hackathon-submission` on Nov 14 (Q-003). Local tags; push them with the repo.
-- [ ] Add an MIT `LICENSE` file and the libraries table in the README (Q-005, Q-014). Nov 13 at the latest.
+- [ ] Add an MIT `LICENSE` file (done Oct 28) and the libraries table in the README (Q-005, Q-014). Nov 13 at the latest.
 - [ ] Keep any hosted demo up to Nov 18, ideally Nov 25 (Q-012). Video stays the primary X demo; screenshots alone are not enough.
 
 ### Sun Nov 1 — monorepo and ledger
