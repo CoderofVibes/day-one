@@ -18,7 +18,8 @@
     "format": "biome format --write .",
     "check": "npm run lint && npm run typecheck && npm test",
     "setup:testnet": "tsx scripts/setup-testnet.ts",
-    "deploy:testnet": "tsx scripts/deploy.ts"
+    "deploy:testnet": "tsx scripts/deploy.ts",
+    "verify": "tsx scripts/verify.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.3",

@@ -88,7 +88,7 @@ _(none)_
 
 ### Fri Nov 6 — receipt, release, records
 - [ ] [I] Packing-slip match; `confirm_receipt` and `qc_release` relayed; payout callback; `qc_reject` refund path.
-- [ ] [I] Anchoring job (`anchor_batch`); `npm run verify` with MATCH/MISMATCH.
+- [x] [I] Anchoring job (`anchor_batch`); `npm run verify` with MATCH/MISMATCH. Done Oct 28: `server/src/records/anchors.ts` (salted canonical fingerprints, lot event ranges anchored by their head hash with `prev` linking ranges, `anchorBatch` records rows only on success, `verifyAnchor`) and `scripts/verify.ts` (`--json` too); 5 tests. Checked live: test anchor `TEST-ANCHOR-2610-1` (tx `G7k2cBzGUnzH6tXEK3asVmyJ4xkX2EEs6R31Hy1m3NBm`) gives MATCH, one gram edited gives MISMATCH. Batch-record files in `data/batch-records/` come with the extraction task.
 - [ ] [I] Purchaser, receiving, QC and accounting screens (plain, functional).
 - [ ] [I] **Attack suite** (Muse #34, for the `security` track; cut first if this day slips): `npm run test:attacks` shows each of four attacks failing, using existing fixtures: a lookalike vendor (refused by qualification, contract allowlist), an inflated invoice (amount above the PO, refused), a fake "payment failed, retry" message (Kevin does not re-pay), and hidden-text instructions in an invoice (Kevin ignores them and flags the document). Output is plain pass/fail lines that the README can quote.
 
