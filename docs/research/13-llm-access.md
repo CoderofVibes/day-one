@@ -73,6 +73,9 @@ All three calls returned HTTP 200; total under 2K tokens (well under $0.01).
 - **JSON schema** (`response_format: {type: "json_schema", json_schema: {strict: true, ...}}`): valid JSON matching the schema.
 - **The model reasons by default, and reasoning tokens count against `max_tokens`.** With `max_tokens: 400` the first JSON call spent all 400 on reasoning and returned no content. `reasoning_effort: "low"` still used 213 reasoning tokens (10 s). `chat_template_kwargs: {enable_thinking: false}` used none: 30 tokens, 2.4 s, same answer. Rule for the `nearai` adapter: set `enable_thinking: false` for extraction and routine calls, keep a generous `max_tokens` when thinking is on, and treat an empty `content` with `finish_reason` at the limit as a retryable error, not a blank answer.
 
+### First call through `server/src/llm` (2026-10-28)
+`NearAiAdapter` with `chat_template_kwargs: {enable_thinking: false}`, `x-no-aliasing: true` and a strict `json_schema` response format: one extraction-style call returned valid JSON in 3.2 s (59 in / 39 out tokens). The response `id` is a 32-hex chat id with no `chatcmpl-` prefix (`4b59f7bf73ee4bea91fead800d7987d6`); the adapter keeps it with SHA-256 hashes of the exact request and response bodies for the attestation check (research 10). Built with plain fetch rather than the `openai` SDK so those bytes are available unchanged.
+
 ## Open questions for the human
 - **Anthropic API key for the app:** Is your plan Max 5x ($100/month API credit) or Max 20x ($200)? To use it, link a Claude Console organization in claude.ai → Settings → Billing → API credits (one-time, can't be relinked yourself), then create an API key in a dedicated workspace with a spend limit. Pro is not eligible. Credits do not cover Claude Code itself. OK to do this?
 - NEAR AI Cloud account + small credit purchase (see 10).

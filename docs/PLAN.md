@@ -70,7 +70,7 @@ _(none)_
 
 ### Tue Nov 3 — escrow and extraction
 - [x] [I] Sandbox integration tests for `spend-policy` with an FT wasm (the full minimum set in CONTRACTS §7): fund, refuse, approve, retry, receive, release, refund, anchor. Done Oct 28: `contracts/spend-policy/tests/sandbox.rs` runs the demo loop on a local node with our own DTUSD token (`contracts/dtusd`), checking token balance = budget + escrowed after every step, plus wrong-sender refund, failed payout rollback and withdrawal; anchoring and the remaining §7 cases are unit tests. A real relayed meta-transaction is tested with the relayer (Nov 5).
-- [ ] [I] `LlmClient` with `nearai`, `anthropic`, `replay` adapters; fixture recorder.
+- [x] [I] `LlmClient` with `nearai`, `anthropic`, `replay` adapters; fixture recorder. Done Oct 28: `server/src/llm/` (`RoutedLlm` from `LLM_ROUTE_*`, `NearAiAdapter` on fetch with thinking off and a receipt over the exact bytes, `AnthropicAdapter` on `@anthropic-ai/sdk` 1.1.0 with low effort, JSON format and default refusal fallbacks, `RecordingLlm`/`ReplayLlm` keyed by request hash; replay is the default mode), 14 tests. One live GLM 5.3 Flash JSON call passed and replayed identically; the Anthropic adapter is tested against a mocked client only and gets its first live call in the bake-off.
 - [ ] [I] Extraction pipeline: transcribe → normalize units → validate against formula → flags → confirm → ledger events + genealogy.
 
 ### Wed Nov 4 — testnet
