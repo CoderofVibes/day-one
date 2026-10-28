@@ -11,7 +11,8 @@
       "!.claude",
       "!docs",
       "!data",
-      "!package-lock.json"
+      "!package-lock.json",
+      "!config/testnet-accounts.json"
     ]
   },
   "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },

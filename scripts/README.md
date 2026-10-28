@@ -1,5 +1,7 @@
 # scripts
 
-Setup, seed, deploy-to-testnet, demo, demo-replay and reset scripts. Spec: docs/DEMO_SCRIPT.md.
+| Script | Command | What it does |
+|---|---|---|
+| `setup-testnet.ts` | `npm run setup:testnet` | Creates Acme's testnet accounts (CONTRACTS.md §1). Idempotent. Needs Tony's `acme-holdings.testnet` key in the near-cli-rs keychain; writes new private keys to the git-ignored `.near-credentials/testnet/` and public ids to `config/testnet-accounts.json`. |
 
-Empty until build work starts on 2026-11-01 (see PROJECT_BRIEF.md, pre-hackathon rule). Delete this folder before Nov 13 if nothing is built here.
+Spec for the rest (deploy, demo, replay, reset): docs/DEMO_SCRIPT.md.

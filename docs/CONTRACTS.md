@@ -14,15 +14,15 @@ The escrow lives inside the policy contract: approved funds move from `budget` t
 
 ## 1. Accounts
 
-Root: `acme-holdings.testnet` (free on 2026-10-22; the human creates it before Nov 1 to avoid squatting). Everything below except suppliers and the relayer is created by `scripts/setup-testnet` from Nov 1.
+Root: `acme-holdings.testnet` (created by Tony Oct 27). Everything below except suppliers and the relayer is created by `npm run setup:testnet` (`scripts/setup-testnet.ts`; done Oct 28 for the Acme tree). Root-signed steps go through near-cli-rs `sign-with-keychain`, so the root key stays in Tony's OS keychain; new private keys go to the git-ignored `.near-credentials/testnet/` in the repo (`<account>.json` full access, `<account>.fc.json` function call), public ids and keys to `config/testnet-accounts.json`. Staff accounts are created by Plant B with both keys in one transaction, because a 0-NEAR account cannot pay to add its own key.
 
 | Account | Role | Online key | Initial NEAR |
 |---|---|---|---|
 | `acme-holdings.testnet` | Acquirer, treasury, contract owner | none (human's local credentials) | rest of float |
 | `plant-a.acme-holdings.testnet` | Facility A | none | 0.2 |
-| `plant-b.acme-holdings.testnet` | Facility B (acquired) | none | 0.2 |
+| `plant-b.acme-holdings.testnet` | Facility B (acquired); creates and funds the four accounts below | none | 1.5 |
 | `plant-c.acme-holdings.testnet` | Facility C | none | 0.2 |
-| `kevin.plant-b.acme-holdings.testnet` | Kevin | FC: spend-policy `submit_po`, `cancel_po`, `anchor`, `anchor_batch`; allowance ~2 NEAR | 1 |
+| `kevin.plant-b.acme-holdings.testnet` | Kevin | FC: spend-policy `submit_po`, `anchor`, `anchor_batch`; allowance 2 NEAR (cancelling is HQ's `cancel`, not Kevin's) | 1 |
 | `director.plant-b.acme-holdings.testnet` | Linda, ops director | FC: spend-policy `approve_po`, `reject_po` | 0 |
 | `receiving.plant-b.acme-holdings.testnet` | Tommy, receiving | FC: spend-policy `confirm_receipt` | 0 |
 | `qc.plant-b.acme-holdings.testnet` | Priya, QC | FC: spend-policy `qc_release`, `qc_reject` | 0 |

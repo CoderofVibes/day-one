@@ -1,0 +1,56 @@
+{
+  "network": "testnet",
+  "root": "acme-holdings.testnet",
+  "spendPolicy": "spend-policy.acme-holdings.testnet",
+  "accounts": {
+    "plant-a.acme-holdings.testnet": {
+      "publicKeys": [
+        "ed25519:HDN41cNx8HwoDLUFGNsLc45PxRgBexgiKs7rtvU9U162"
+      ]
+    },
+    "plant-b.acme-holdings.testnet": {
+      "publicKeys": [
+        "ed25519:4zre2umRriTsU6kgAUe3Y9Tu8xxd7sPMYDrwarsMWM5t"
+      ]
+    },
+    "plant-c.acme-holdings.testnet": {
+      "publicKeys": [
+        "ed25519:5qYpY2QqD34Q6oS5Gu3JHN6zEqeHnXzL2pEhmdfBXAEA"
+      ]
+    },
+    "spend-policy.acme-holdings.testnet": {
+      "publicKeys": [
+        "ed25519:23qwFbjjADD8XHwy8acE1FAC3iZKXYdfFMwJ7UdUBEsF"
+      ]
+    },
+    "dtusd.acme-holdings.testnet": {
+      "publicKeys": [
+        "ed25519:4gKTbKa3q4GyeWkFDCpNb4frKZkPcXnAZMNBbSZwgtF9"
+      ]
+    },
+    "kevin.plant-b.acme-holdings.testnet": {
+      "publicKeys": [
+        "ed25519:VmAfDJHAsvDTKWcCYaGULvfySU7PhHy31hPfJbeQBR7",
+        "ed25519:AXiQ36MSjmHXkdK57s9uEcX1s9SXCkhtQczWDX5VbYKW"
+      ]
+    },
+    "director.plant-b.acme-holdings.testnet": {
+      "publicKeys": [
+        "ed25519:7tXPre84tpRX532v1MYeVZdjy7vjDA9nTerdGGpZDpPy",
+        "ed25519:BtECmMJBu6yPJBRxxSptK9GpBibUMTWHLYTSqiZgUVMH"
+      ]
+    },
+    "receiving.plant-b.acme-holdings.testnet": {
+      "publicKeys": [
+        "ed25519:H2Po1BCMydwmPBHmCZR14iryRrSyBMqPPLCoNbE5cENC",
+        "ed25519:8xw5k7HP4BNpaLudHrjzbL3eUo1T3V5nX73cnBcq58uC"
+      ]
+    },
+    "qc.plant-b.acme-holdings.testnet": {
+      "publicKeys": [
+        "ed25519:JCxyhnQuzfUsHnSQeMmucnJ4UK4VWE73NkmtU1vQ3XDX",
+        "ed25519:HUsLL4qPoqCxdGvPDy7Goz7Ti6qJEwB9QwvNeWjNRsSU"
+      ]
+    }
+  }
+}

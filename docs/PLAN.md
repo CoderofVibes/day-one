@@ -2,7 +2,7 @@
 
 ## In progress
 
-_(none)_
+Testnet (Nov 4, item 1), split Oct 28: `npm run setup:testnet` has created the Acme tree (plants, Kevin, director, receiving, QC, `spend-policy` and `dtusd` accounts, FC keys on chain). Next: `scripts/deploy` (build both wasms in WSL, deploy DTUSD with the supply minted to the treasury, deploy and configure `spend-policy` per CONTRACTS §8, storage registration, fund the budget), then the four supplier accounts.
 
 ---
 
