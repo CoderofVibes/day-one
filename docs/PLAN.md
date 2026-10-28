@@ -64,7 +64,7 @@ _(none)_
 - [x] [H] Smoke-test NEAR AI Cloud with the key: one text call, one image call, one JSON-schema call (about $0.05). Done Oct 28 unattended (allowed by OPEN_QUESTIONS #25): all three pass on GLM 5.3 Flash; turn thinking off for extraction (research 13, "Smoke test").
 
 ### Mon Nov 2 — contracts and documents
-- [ ] [I] `contracts/` Cargo workspace in WSL2 with **one** contract, `spend-policy`, escrow included (CONTRACTS.md, decision #21). Unit tests: limits, caps, approvals, pause, anchors, refusal messages, escrow state machine.
+- [x] [I] `contracts/` Cargo workspace in WSL2 with **one** contract, `spend-policy`, escrow included (CONTRACTS.md, decision #21). Unit tests: limits, caps, approvals, pause, anchors, refusal messages, escrow state machine. Done Oct 28: 38 unit tests, clippy clean, 246 KB wasm; `set_agent_policy` gained `name` and `plant`, refunds reverse the month's spend (CONTRACTS.md updated).
 - [ ] [I] Batch-record renderer: HTML templates + Playwright → JPEG for the 7 records in FICTIONAL_DATA §7, plus 1 packing slip. Clean typed look first; handwriting, jitter and smudges only once extraction works (BUILD_ANALYSIS §4.1). Renderer lives in its own dev-only workspace; rendered images are committed.
 - [ ] [I] Vision bake-off: GLM 5.3 Flash vs Qwen3.8-27B vs `claude-sonnet-5-5` on the 7 records. Record field accuracy in `docs/research/13-llm-access.md`. **Decide the vision route.**
 

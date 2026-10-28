@@ -4,7 +4,7 @@
 
 The escrow lives inside the policy contract: approved funds move from `budget` to `escrowed[po_id]` internally, so there is no cross-contract funding hop. The only token transfers out are the payout to the supplier and the refund to the treasury. Separation of duties is unchanged: each account's key reaches only its own methods, and no key can move tokens.
 
-- `near-sdk` 5.29.1 (Rust ≥1.95), `cargo-near` 0.22.0, `near-contract-standards` 5.29.1
+- `near-sdk` 5.29.1 (Rust ≥1.95), `cargo-near` 0.22.0, `near-contract-standards` 5.29.1, pinned with `=` in `contracts/spend-policy/Cargo.toml` (a caret range resolves to 5.30.0)
 - Build: `cargo near build non-reproducible-wasm` (reproducible Docker builds are skipped to save disk)
 - Tests: near-sdk unit tests (`testing_env!`) + near-sandbox 0.3.16 integration tests with a prebuilt FT wasm standing in for the token
 - All amounts are `U128` strings in token base units (6 decimals). `$5,150.00` = `"5150000000"`.
@@ -84,6 +84,8 @@ pub struct SpendPolicy {
     anchors: LookupMap<String, Anchor>,     // ref_id -> record fingerprint
 }
 pub struct AgentPolicy {
+    name: String,                           // how refusals name the agent ("Kevin")
+    plant: AccountId,                       // whose receiving and QC roles handle its POs
     per_po_limit: u128,
     monthly_limit: u128,
     categories: Vec<String>,
@@ -95,7 +97,7 @@ pub struct PoRecord { agent, supplier, amount, category, po_hash, period, status
                       supplier_lot: Option<String>, funded_at, accepted_at, shipped_at, received_at, released_at }
 pub enum PoStatus { Funded, Accepted, Shipped, Received, Paying, Released, Refunding, Refunded, Cancelled }
 pub struct PlantRoles { receiver: AccountId, qc: AccountId }
-pub struct Anchor { kind, hash: [u8; 32], prev: Option<[u8; 32]>, by: AccountId, at: u64 }
+pub struct Anchor { kind, hash: String /* 64 lowercase hex */, prev: Option<String>, by: AccountId, at: u64 }
 ```
 
 `approver` is per agent rather than a single contract-wide director, so Tier 1 can add Kevin agents for Plants A and C without a new contract. Period = calendar month `YYYYMM` from `block_timestamp`; exposed as `get_period()`.
@@ -106,7 +108,7 @@ pub struct Anchor { kind, hash: [u8; 32], prev: Option<[u8; 32]>, by: AccountId,
 |---|---|---|---|
 | `new(owner, treasury, token)` | init | — | — |
 | `set_roles(plant, receiver, qc)` | owner | 1 yocto | which staff accounts confirm receipt and release for a plant |
-| `set_agent_policy(agent, per_po_limit, monthly_limit, categories, approver)` | owner | 1 yocto | emits `agent_policy_set` |
+| `set_agent_policy(agent, name, plant, per_po_limit, monthly_limit, categories, approver)` | owner | 1 yocto | emits `agent_policy_set`; the approver may not be the agent; replacing the approver revokes the old one's right to approve |
 | `set_category_cap(category, monthly_cap)` | owner | 1 yocto | `category_cap_set` |
 | `pause_agent(agent)` / `resume_agent(agent)` | owner | 1 yocto | `agent_paused` / `agent_resumed` |
 | `ft_on_transfer(sender_id, amount, msg)` | token, with `sender_id == treasury` | — | `budget += amount`, `budget_funded`; any other token or sender is refunded |
@@ -116,13 +118,13 @@ pub struct Anchor { kind, hash: [u8; 32], prev: Option<[u8; 32]>, by: AccountId,
 | `confirm_receipt(po_id)` | the plant's `receiver` role | none | `Shipped → Received`; `po_received` |
 | `qc_release(po_id)` | the plant's `qc` role | none | `Received → Paying`; `ft_transfer(supplier, amount)` with 1 yocto from the contract's balance; callback `on_payout` |
 | `on_payout(po_id)` | private callback | — | success: `Released`, `escrowed -= amount`, `po_released`; failure (e.g. supplier not registered): back to `Received`, `payout_failed` |
-| `qc_reject(po_id, reason)` | the plant's `qc` role | none | `Received → Refunded`: `escrowed -= amount`, `budget += amount` (internal, no transfer); `po_refunded` |
-| `cancel(po_id)` | owner, before `Received` | 1 yocto | same internal refund; `po_cancelled` |
-| `approve_po(po_id, supplier, amount, category, po_hash, refused_tx)` | the agent's `approver` | none | stores a one-time approval (expires in 24 h); emits `po_approved` with `refused_tx`. Moves no money. |
+| `qc_reject(po_id, reason)` | the plant's `qc` role | none | `Received → Refunded`: `escrowed -= amount`, `budget += amount` (internal, no transfer); the PO stops counting against its month's agent and category spend; `po_refunded` |
+| `cancel(po_id)` | owner, before `Received` | 1 yocto | same internal refund and spend reversal; `po_cancelled` |
+| `approve_po(po_id, supplier, amount, category, po_hash, refused_tx)` | an account named as `approver` in some agent's policy | none | stores a one-time approval (expires in 24 h); emits `po_approved` with `refused_tx`. Moves no money. `submit_po` accepts it only if `approved_by` is that agent's approver. |
 | `reject_po(po_id, reason)` | approver | none | deletes any approval; `po_rejected` |
 | `anchor(kind, ref_id, hash, prev)` / `anchor_batch(items)` (≤50) | a registered agent | none | append-only; re-anchoring an existing `ref_id` panics; emits `record_anchored` |
 | `withdraw_budget(amount)` | owner | 1 yocto | returns unallocated tokens to treasury (demo reset) |
-| Views: `get_agent_policy`, `get_spent`, `get_category_spent`, `get_po`, `list_pos(from, limit)`, `get_approval`, `get_budget`, `get_config`, `get_period`, `get_anchor` | anyone | — | — |
+| Views: `get_agent_policy`, `get_spent`, `get_category_spent`, `get_po`, `list_pos(from, limit)`, `get_approval`, `get_budget`, `get_config`, `get_period`, `get_anchor`, `get_roles`, `get_category_cap` | anyone | — | — |
 
 `submit_po` is a single-contract state change (about 10–20 TGas). `qc_release` needs about 50 TGas for the transfer and callback.
 
