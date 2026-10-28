@@ -545,3 +545,25 @@ button {
   font-size: 0.82rem;
   font-weight: 400;
 }
+
+.mass {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.mass h3 {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.kevin-line {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--warn);
+  background: var(--bg);
+  border-radius: 0 8px 8px 0;
+}

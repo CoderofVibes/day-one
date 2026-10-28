@@ -3,7 +3,7 @@
 // STEPS steps in (default 8). Files are served by request interception, so no server runs.
 // With URL=http://localhost:8787/ it opens a running API instead (npm run api) and clicks the
 // primary action STEPS times, so the live screens get the same check; PLANTS=1 also opens the
-// three-plant view.
+// three-plant view. FULL=1 captures the whole page instead of the first screen.
 // Prints console errors and whether the page scrolls sideways.
 
 import { existsSync, readFileSync } from "node:fs";
@@ -70,13 +70,13 @@ for (const [name, width, scheme] of [
     }
     if (process.env.PLANTS) {
       await page.getByText("Three plants").first().click();
-      await page.getByRole("region", { name: "Three plants" }).getByRole("table").waitFor();
+      await page.getByRole("region", { name: "Three plants" }).getByRole("table").first().waitFor();
     }
   } else {
     for (let i = 0; i < steps; i++) await page.keyboard.press("ArrowRight");
   }
   await page.waitForTimeout(600);
-  await page.screenshot({ path: join(out, `${name}.png`), fullPage: false });
+  await page.screenshot({ path: join(out, `${name}.png`), fullPage: Boolean(process.env.FULL) });
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
   );

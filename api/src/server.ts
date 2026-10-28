@@ -13,6 +13,7 @@
 //   POST /api/qc-decisions                     JSON {"lotCode": "ASC-…", "decision": "release" | "reject"}
 //   GET  /api/transcript                       text/plain, the same lines npm run demo prints
 //   GET  /api/inventory                        stock by plant and material, transfer discrepancies
+//   GET  /api/mass-balance                     issued vs tablets, QC and waste per batch and period
 //   POST /api/discrepancies/:id/review         JSON {"decision": "apply" | "dismiss", "staff"?: …}
 //
 // Anything else is served from the built web UI (web/dist) when it exists.
@@ -81,6 +82,8 @@ async function route(
 
   if (method === "GET" && path === "/api/run") return reply(res, 200, session.state());
   if (method === "GET" && path === "/api/inventory") return reply(res, 200, session.inventory());
+  if (method === "GET" && path === "/api/mass-balance")
+    return reply(res, 200, session.massBalance());
   if (method === "GET" && path === "/api/transcript") {
     res.writeHead(200, { "content-type": "text/plain; charset=utf-8" });
     return res.end(session.transcript());

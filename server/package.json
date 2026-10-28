@@ -17,6 +17,7 @@
     "./llm/types": "./src/llm/types.ts",
     "./seed": "./src/seed/index.ts",
     "./seed/quotes": "./src/seed/quotes.ts",
+    "./seed/history": "./src/seed/history.ts",
     "./relayer": "./src/relayer/relayer.ts",
     "./records/anchors": "./src/records/anchors.ts",
     "./extraction/schema": "./src/extraction/schema.ts",

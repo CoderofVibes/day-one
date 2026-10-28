@@ -61,6 +61,40 @@ export interface PlantInventory {
   discrepancies: DiscrepancyView[];
 }
 
+export interface BatchBalance {
+  batchNo: string;
+  facility: string;
+  product: string;
+  completedAt: string | null;
+  issuedBase: number;
+  tablets: number;
+  tabletsBase: number;
+  qcBase: number;
+  wasteBase: number;
+  unaccountedBase: number;
+  unaccountedBp: number;
+  unitEffectBase: number;
+  flagged: boolean;
+}
+export interface ProductPeriodBalance {
+  facility: string;
+  facilityName: string;
+  product: string;
+  from: string | null;
+  to: string | null;
+  batches: number;
+  issuedBase: number;
+  unaccountedBase: number;
+  unaccountedBp: number;
+  unitEffectBase: number;
+  flagged: boolean;
+}
+export interface MassBalance {
+  batches: BatchBalance[];
+  periods: ProductPeriodBalance[];
+  sentences: string[];
+}
+
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -92,6 +126,10 @@ export function getState(): Promise<LiveState> {
 
 export function getInventory(): Promise<PlantInventory> {
   return request<PlantInventory>("GET", "api/inventory");
+}
+
+export function getMassBalance(): Promise<MassBalance> {
+  return request<MassBalance>("GET", "api/mass-balance");
 }
 
 export function postReview(

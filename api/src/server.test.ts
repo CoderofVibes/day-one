@@ -56,6 +56,9 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(asc.byPlant.B.onHandBase).toBe(722_350_000);
     expect(asc.byPlant.A.onHandBase).toBe(12_550_000);
     expect(inv.discrepancies).toEqual([]);
+    const mass = (await api("GET", "/api/mass-balance")).body;
+    expect(mass.periods.filter((p: { flagged: boolean }) => p.flagged)).toHaveLength(1);
+    expect(mass.sentences[0]).toMatch(/^P-CMD at Riverside: 115.2 kg/);
   });
 
   it("refuses an action out of turn with 409 and says whose turn it is", async () => {

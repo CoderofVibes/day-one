@@ -7,6 +7,7 @@ import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { type DemoPhase, type DemoStep, formatTranscript, startDemo } from "@day-one/kevin/demo";
 import { reviewDiscrepancy } from "@day-one/kevin/discrepancies";
+import { massBalance } from "@day-one/kevin/massBalance";
 import { explorerUrl } from "@day-one/server/chain/client";
 import { plantInventory } from "@day-one/server/ledger/inventory";
 import { approvals, chainTx, staff } from "@day-one/server/ledger/schema";
@@ -149,6 +150,11 @@ export class DemoSession {
   /** What each plant holds and every transfer discrepancy: the three-facility view. */
   inventory() {
     return plantInventory(this.env.db);
+  }
+
+  /** Issued against tablets, QC samples and waste for every confirmed batch, with Kevin's line. */
+  massBalance() {
+    return massBalance(this.env.db);
   }
 
   /**

@@ -2,8 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ApiError,
   getInventory,
+  getMassBalance,
   getState,
   type LiveState,
+  type MassBalance,
   type PlantInventory,
   postImage,
   postJson,
@@ -124,6 +126,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const [error, setError] = useState<{ message: string; hint?: string } | null>(null);
   const [plants, setPlants] = useState(false);
   const [inventory, setInventory] = useState<PlantInventory | null>(null);
+  const [mass, setMass] = useState<MassBalance | null>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: refresh whenever the run (state) moves
   useEffect(() => {
@@ -131,6 +134,9 @@ function LiveApp({ initial }: { initial: LiveState }) {
     let stale = false;
     getInventory().then((inv) => {
       if (!stale) setInventory(inv);
+    });
+    getMassBalance().then((m) => {
+      if (!stale) setMass(m);
     });
     return () => {
       stale = true;
@@ -188,7 +194,9 @@ function LiveApp({ initial }: { initial: LiveState }) {
       />
 
       <main className="panes">
-        {plants && <PlantsPane inventory={inventory} busy={busy !== null} onReview={review} />}
+        {plants && (
+          <PlantsPane inventory={inventory} mass={mass} busy={busy !== null} onReview={review} />
+        )}
         <StaffFeed data={state} upTo={last} curtain={curtain} />
         {curtain && <Curtain data={state} upTo={last} />}
       </main>
@@ -314,10 +322,12 @@ function ActionButton({
 /** Three facilities, one truth: stock by plant, and the transfer discrepancies with their review. */
 function PlantsPane({
   inventory,
+  mass,
   busy,
   onReview,
 }: {
   inventory: PlantInventory | null;
+  mass: MassBalance | null;
   busy: boolean;
   onReview: (id: number, decision: "apply" | "dismiss") => void;
 }) {
@@ -401,7 +411,61 @@ function PlantsPane({
           </tbody>
         </table>
       </div>
+      {mass && <MassBalanceBlock mass={mass} plants={plants} />}
     </section>
+  );
+}
+
+/** Issued against tablets, QC samples and recorded waste, per plant and product (§15). */
+function MassBalanceBlock({
+  mass,
+  plants,
+}: {
+  mass: MassBalance;
+  plants: PlantInventory["facilities"];
+}) {
+  const name = (code: string) => plants.find((p) => p.code === code)?.name ?? `Plant ${code}`;
+  const pct = (bp: number) => `${(bp / 100).toFixed(2)}%`;
+  return (
+    <div className="mass">
+      <h3>Mass balance · issued against tablets, QC samples and recorded waste</h3>
+      {mass.sentences.length === 0 ? (
+        <p className="muted">Every batch balances within 0.5%.</p>
+      ) : (
+        mass.sentences.map((s) => (
+          <p key={s} className="kevin-line">
+            {s}
+          </p>
+        ))
+      )}
+      <div className="table-wrap">
+        <table className="stock">
+          <thead>
+            <tr>
+              <th>Plant · product</th>
+              <th>Batches</th>
+              <th>Issued</th>
+              <th>Unaccounted</th>
+            </tr>
+          </thead>
+          <tbody>
+            {mass.periods.map((p) => (
+              <tr key={`${p.facility}-${p.product}`}>
+                <th scope="row">
+                  {name(p.facility)} <span className="muted">{p.product}</span>
+                </th>
+                <td>{p.batches}</td>
+                <td>{quantity(p.issuedBase, "mass")}</td>
+                <td className={p.flagged ? "low" : undefined}>
+                  {quantity(p.unaccountedBase, "mass")}{" "}
+                  <span className="small">({pct(p.unaccountedBp)})</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 
