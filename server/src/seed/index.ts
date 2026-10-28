@@ -17,6 +17,7 @@ import {
   materials,
   materialUnitConversions,
   poLines,
+  productionPlan,
   products,
   purchaseOrders,
   qcDecisions,
@@ -27,7 +28,13 @@ import {
   vendorMaterials,
   vendors,
 } from "../ledger/schema.ts";
-import { type BatchSpec, HISTORY_BATCHES, HISTORY_POS, QC_SAMPLE_MG } from "./history.ts";
+import {
+  type BatchSpec,
+  HISTORY_BATCHES,
+  HISTORY_POS,
+  PLANNED_BATCHES,
+  QC_SAMPLE_MG,
+} from "./history.ts";
 import { LOTS, TRANSFERS, t } from "./lots.ts";
 import {
   DEPARTMENTS_BY_FACILITY,
@@ -487,5 +494,20 @@ export function seedLedger(db: Ledger) {
       .forEach((item) => {
         item.apply();
       });
+
+    tx.insert(productionPlan)
+      .values(
+        PLANNED_BATCHES.map((p) => {
+          const product = idOf(productInfo, p.product);
+          return {
+            batchNo: p.batchNo,
+            productId: product.productId,
+            facilityId: idOf(facilityId, p.facility),
+            plannedFor: p.plannedFor,
+            batchTablets: product.batchTablets,
+          };
+        }),
+      )
+      .run();
   });
 }

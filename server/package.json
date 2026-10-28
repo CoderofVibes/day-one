@@ -13,7 +13,8 @@
     "./chain/live": "./src/chain/live.ts",
     "./chain/replay": "./src/chain/replay.ts",
     "./llm/client": "./src/llm/client.ts",
-    "./llm/types": "./src/llm/types.ts"
+    "./llm/types": "./src/llm/types.ts",
+    "./seed": "./src/seed/index.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate"

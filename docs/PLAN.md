@@ -2,7 +2,7 @@
 
 ## In progress
 
-_(none)_
+- Kevin workflow (Thu Nov 5, first item): forecast done Oct 28 (`agents/kevin/src/forecast.ts`). Next: RFQ with the static ASC quote set (FICTIONAL_DATA §5), ranking with qualification rules, PO draft with `po_hash`. Freight ($180 on PO-1042) needs a column on `quotes` and `purchase_orders` first.
 
 ---
 

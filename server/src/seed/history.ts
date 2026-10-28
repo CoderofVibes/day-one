@@ -112,3 +112,17 @@ export const HISTORY_BATCHES: readonly BatchSpec[] = [
   { batchNo: "BR-A-2204", date: "2026-10-27", ...PLANT_A_CMD },
   { batchNo: "BR-B-1040", product: "P-ELX", facility: "B", date: "2026-10-29", tablets: 272_400 },
 ];
+
+/**
+ * The production plan after the demo clock (2026-11-09T13:00Z): the two VC500 batches that
+ * Kevin's 10-day forecast finds after BR-B-1045 (§7, DEMO_SCRIPT step 4).
+ */
+export const PLANNED_BATCHES = [
+  { batchNo: "BR-B-1047", product: "P-VC500", facility: "B", plannedFor: "2026-11-12" },
+  { batchNo: "BR-B-1048", product: "P-VC500", facility: "B", plannedFor: "2026-11-17" },
+] as const satisfies readonly {
+  batchNo: string;
+  product: string;
+  facility: FacilityCode;
+  plannedFor: string;
+}[];

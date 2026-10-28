@@ -1,4 +1,11 @@
 {
   "files": [],
-  "references": [{ "path": "server" }]
+  "references": [
+    {
+      "path": "server"
+    },
+    {
+      "path": "agents/kevin"
+    }
+  ]
 }

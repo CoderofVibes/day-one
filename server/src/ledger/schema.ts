@@ -394,6 +394,27 @@ export const discrepancies = sqliteTable(
 
 // ---------------------------------------------------------------- 6. Production and genealogy
 
+export const PLAN_STATUS = ["planned", "done", "cancelled"] as const;
+
+/** Batches the plant intends to run; Kevin's forecast reads the ones inside its horizon. */
+export const productionPlan = sqliteTable(
+  "production_plan",
+  {
+    id: id(),
+    batchNo: text().notNull().unique(),
+    productId: integer()
+      .notNull()
+      .references(() => products.id),
+    facilityId: integer()
+      .notNull()
+      .references(() => facilities.id),
+    plannedFor: text().notNull(),
+    batchTablets: integer().notNull(),
+    status: text({ enum: PLAN_STATUS }).notNull().default("planned"),
+  },
+  (t) => [oneOf("production_plan_status", t.status, PLAN_STATUS)],
+);
+
 export const BATCH_STATUS = ["draft", "confirmed", "rejected"] as const;
 
 export const batchRecords = sqliteTable(
