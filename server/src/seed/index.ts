@@ -35,7 +35,7 @@ import {
   PLANNED_BATCHES,
   QC_SAMPLE_MG,
 } from "./history.ts";
-import { LOTS, TRANSFERS, t } from "./lots.ts";
+import { LOTS, TRANSFERS, t, vendorLotCode } from "./lots.ts";
 import {
   DEPARTMENTS_BY_FACILITY,
   EXPECTED_YIELD_BP,
@@ -236,7 +236,7 @@ export function seedLedger(db: Ledger) {
           lotCode: lot.code,
           materialId: idOf(materialId, lot.material),
           vendorId: idOf(vendorId, lot.vendor),
-          vendorLotCode: `${lot.vendor}-${lot.code.split("-")[1]}${lot.code.split("-")[2]}`,
+          vendorLotCode: vendorLotCode(lot.vendor, lot.code),
         })
         .returning()
         .get();

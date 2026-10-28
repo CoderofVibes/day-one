@@ -1,0 +1,125 @@
+{
+  "batchNo": "BR-B-1043",
+  "product": "P-VC500",
+  "facility": "B",
+  "date": "11/04/26",
+  "isoDate": "2026-11-04",
+  "room": "Rm 104 Weigh & Dispense",
+  "equipment": [
+    [
+      "V-blender",
+      "BLD-B-02"
+    ],
+    [
+      "Tablet press",
+      "TP-B-03"
+    ]
+  ],
+  "lines": [
+    {
+      "material": "ASC",
+      "lot": "ASC-261030-01",
+      "target": "412.000",
+      "actual": "412.240",
+      "unit": "kg",
+      "weighedBy": "DW",
+      "verifiedBy": "JM",
+      "supplierLot": "NGI-26103001"
+    },
+    {
+      "material": "SOR",
+      "lot": "SOR-260901-01",
+      "target": "416.000",
+      "actual": "416.060",
+      "unit": "kg",
+      "weighedBy": "DW",
+      "verifiedBy": "JM",
+      "supplierLot": "FPO-26090101"
+    },
+    {
+      "material": "MCC",
+      "lot": "MCC-260901-01",
+      "target": "120.000",
+      "actual": "120.100",
+      "unit": "kg",
+      "weighedBy": "DW",
+      "verifiedBy": "JM",
+      "correction": {
+        "struck": "102.100",
+        "initials": "DW"
+      },
+      "supplierLot": "PEC-26090101"
+    },
+    {
+      "material": "CTA",
+      "lot": "CTA-260901-01",
+      "target": "20.000",
+      "actual": "20.030",
+      "unit": "kg",
+      "weighedBy": "DW",
+      "verifiedBy": "JM",
+      "supplierLot": "NGI-26090101"
+    },
+    {
+      "material": "FOR",
+      "lot": "FOR-260901-01",
+      "target": "12.000",
+      "actual": "11.990",
+      "unit": "kg",
+      "weighedBy": "DW",
+      "verifiedBy": "JM",
+      "supplierLot": "OFH-26090101"
+    },
+    {
+      "material": "MGS",
+      "lot": "MGS-261001-01",
+      "target": "12.000",
+      "actual": "12.010",
+      "unit": "kg",
+      "weighedBy": "DW",
+      "verifiedBy": "JM",
+      "supplierLot": "PEC-26100101"
+    },
+    {
+      "material": "SIO",
+      "lot": "SIO-260901-01",
+      "target": "6.400",
+      "actual": "6.400",
+      "unit": "kg",
+      "weighedBy": "DW",
+      "verifiedBy": "JM",
+      "supplierLot": "PEC-26090101"
+    },
+    {
+      "material": "SUC",
+      "lot": "SUC-260901-01",
+      "target": "1.600",
+      "actual": "1.601",
+      "unit": "kg",
+      "weighedBy": "DW",
+      "verifiedBy": "JM",
+      "supplierLot": "OFH-26090101"
+    }
+  ],
+  "theoreticalTablets": "800,000",
+  "actualTablets": "723,200",
+  "yieldPct": "90.4",
+  "waste": "95.931",
+  "wasteUnit": "kg",
+  "marginNotes": [],
+  "signatures": [
+    {
+      "role": "production",
+      "name": "Linda Park",
+      "initials": "LP",
+      "date": "11/04/26"
+    },
+    {
+      "role": "qa_review",
+      "name": "Priya Natarajan",
+      "initials": "PN",
+      "date": "11/05/26"
+    }
+  ],
+  "purpose": "Handwritten correction: one quantity struck through and initialed"
+}

@@ -1,0 +1,121 @@
+{
+  "batchNo": "BR-B-1041",
+  "product": "P-VC500",
+  "facility": "B",
+  "date": "11/02/26",
+  "isoDate": "2026-11-02",
+  "room": "Rm 104 Weigh & Dispense",
+  "equipment": [
+    [
+      "V-blender",
+      "BLD-B-02"
+    ],
+    [
+      "Tablet press",
+      "TP-B-03"
+    ]
+  ],
+  "lines": [
+    {
+      "material": "ASC",
+      "lot": "ASC-261026-01",
+      "target": "412.000",
+      "actual": "412.180",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "NGI-26102601"
+    },
+    {
+      "material": "SOR",
+      "lot": "SOR-260901-01",
+      "target": "416.000",
+      "actual": "415.700",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "FPO-26090101"
+    },
+    {
+      "material": "MCC",
+      "lot": "MCC-260901-01",
+      "target": "120.000",
+      "actual": "120.300",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "PEC-26090101"
+    },
+    {
+      "material": "CTA",
+      "lot": "CTA-260901-01",
+      "target": "20.000",
+      "actual": "19.960",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "NGI-26090101"
+    },
+    {
+      "material": "FOR",
+      "lot": "FOR-260901-01",
+      "target": "12.000",
+      "actual": "12.020",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "OFH-26090101"
+    },
+    {
+      "material": "MGS",
+      "lot": "MGS-261001-01",
+      "target": "12.000",
+      "actual": "11.970",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "PEC-26100101"
+    },
+    {
+      "material": "SIO",
+      "lot": "SIO-260901-01",
+      "target": "6.400",
+      "actual": "6.390",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "PEC-26090101"
+    },
+    {
+      "material": "SUC",
+      "lot": "SUC-260901-01",
+      "target": "1.600",
+      "actual": "1.598",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "OFH-26090101"
+    }
+  ],
+  "theoreticalTablets": "800,000",
+  "actualTablets": "729,600",
+  "yieldPct": "91.2",
+  "waste": "87.618",
+  "wasteUnit": "kg",
+  "marginNotes": [],
+  "signatures": [
+    {
+      "role": "production",
+      "name": "Linda Park",
+      "initials": "LP",
+      "date": "11/02/26"
+    },
+    {
+      "role": "qa_review",
+      "name": "Priya Natarajan",
+      "initials": "PN",
+      "date": "11/03/26"
+    }
+  ],
+  "purpose": "Clean baseline, fully typed"
+}

@@ -232,6 +232,8 @@ Rendered from Nov 1 as scanned-looking PDFs/images: slight rotation, scan noise,
 
 BR-B-1045 numbers (actual vs target 412.000 kg): ASC 412.350 kg in total, drawn as 187.450 kg from `ASC-261009-01` (the lot transferred from Plant A, now fully consumed) and 224.900 kg from `ASC-260921-02`. All other materials within ±0.5%. Plant B ASC on hand goes from 722.350 kg to 310.000 kg, below the 500 kg reorder point. Kevin's forecast (two more VC500 batches in the next 10 days, about 824 kg) shows a shortfall that triggers the reorder. Consuming the transferred lot is also what exposes the discrepancy in Section 8.
 
+As data: `server/src/seed/batchRecords.ts` (every line as written) and the renders in `data/batch-records/`. Signers, all invented: Plant B operators Jesse Morales (JM), Dana Whitfield (DW), Kofi Osei (KO), Ana Ruiz (AR); Plant A operators Brett Laszlo (BL), Sun Tran (ST); production review Linda Park (B) and Owen Brandt (A); QA review Priya Natarajan (B) and Mei Cho (A). BR-B-1043 corrects MCC from 102.100 to 120.100 kg (initialed DW); BR-B-1046 smudges MGO 83.040 kg. BR-B-1041 and BR-B-1043 draw their own ASC lots (`ASC-261026-01`, `ASC-261030-01`) and BR-A-2207 draws `CAC-261030-01`; none of the three is in the seed yet (`NEW_LOTS`).
+
 ---
 
 ## 8. The cross-facility discrepancy

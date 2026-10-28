@@ -1,0 +1,112 @@
+{
+  "batchNo": "BR-B-1046",
+  "product": "P-CMD",
+  "facility": "B",
+  "date": "11/07/26",
+  "isoDate": "2026-11-07",
+  "room": "Rm 104 Weigh & Dispense",
+  "equipment": [
+    [
+      "V-blender",
+      "BLD-B-02"
+    ],
+    [
+      "Tablet press",
+      "TP-B-03"
+    ]
+  ],
+  "lines": [
+    {
+      "material": "CAC",
+      "lot": "CAC-261014-01",
+      "target": "625.000",
+      "actual": "624.786",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "SMS-26101401"
+    },
+    {
+      "material": "MCC",
+      "lot": "MCC-261001-01",
+      "target": "100.000",
+      "actual": "100.150",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "PEC-26100101"
+    },
+    {
+      "material": "MGO",
+      "lot": "MGO-261014-01",
+      "target": "83.000",
+      "actual": "83.040",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "smudged": true,
+      "supplierLot": "SMS-26101401"
+    },
+    {
+      "material": "CCS",
+      "lot": "CCS-260915-01",
+      "target": "15.000",
+      "actual": "15.020",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "PEC-26091501"
+    },
+    {
+      "material": "STA",
+      "lot": "STA-260915-01",
+      "target": "10.000",
+      "actual": "9.990",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "PEC-26091501"
+    },
+    {
+      "material": "MGS",
+      "lot": "MGS-261001-01",
+      "target": "7.500",
+      "actual": "7.510",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "PEC-26100101"
+    },
+    {
+      "material": "VD3",
+      "lot": "VD3-260920-01",
+      "target": "2.000",
+      "actual": "2.004",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "DDN-26092001"
+    }
+  ],
+  "theoreticalTablets": "500,000",
+  "actualTablets": "449,500",
+  "yieldPct": "89.9",
+  "waste": "84.592",
+  "wasteUnit": "kg",
+  "marginNotes": [],
+  "signatures": [
+    {
+      "role": "production",
+      "name": "Linda Park",
+      "initials": "LP",
+      "date": "11/07/26"
+    },
+    {
+      "role": "qa_review",
+      "name": "Priya Natarajan",
+      "initials": "PN",
+      "date": "11/08/26"
+    }
+  ],
+  "purpose": "One smudged quantity; Kevin reports low confidence and asks Ray"
+}

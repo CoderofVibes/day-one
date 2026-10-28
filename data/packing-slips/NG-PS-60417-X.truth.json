@@ -1,0 +1,35 @@
+{
+  "slipNo": "NG-PS-60417-X",
+  "shipFrom": [
+    "Northgate Ingredients",
+    "410 Mill Race Road",
+    "Northgate"
+  ],
+  "poNo": "PO-1042",
+  "salesOrder": "NG-SO-24190",
+  "shipDate": "11/13/26",
+  "shipVia": "Ridgeline Freight LTL, PRO # 7720-4418-03",
+  "fob": "Origin",
+  "shipTo": [
+    "Hollow Pine Tablet Co.",
+    "Receiving Dock 2",
+    "18 Quarry Lane",
+    "Hollow Pine"
+  ],
+  "billTo": [
+    "Acme Holdings",
+    "Accounts Payable",
+    "(Hollow Pine Tablet Co.)"
+  ],
+  "item": "NG-ASC-FG",
+  "description": "Ascorbic acid, fine granular",
+  "ordered": "700 kg",
+  "shipped": "675 kg",
+  "backOrdered": "25 kg",
+  "packaging": "27 bags × 25 kg, 1 pallet",
+  "supplierLot": "NG-24-8812",
+  "mfgRetest": "09/2026 / 09/2028",
+  "netWeight": "675.0 kg",
+  "grossWeight": "709.1 kg",
+  "receivedNote": "Rec'd 27 bags / 1 plt. Seals OK. T.R. 11/16"
+}

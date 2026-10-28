@@ -1,5 +1,8 @@
 # data/batch-records
 
-Fictional, scanned-looking batch records used by the demo. Spec: docs/FICTIONAL_DATA.md. All content is invented.
+Fictional batch records for the demo (docs/FICTIONAL_DATA.md §7). All content is invented.
 
-Empty until build work starts on 2026-11-01 (see PROJECT_BRIEF.md, pre-hackathon rule). Delete this folder before Nov 13 if nothing is built here.
+- `<batch>.jpg`: the rendered page, 1700 × 2200 (Letter at 200 dpi).
+- `<batch>.truth.json`: what is written on it, from `server/src/seed/batchRecords.ts`; the extraction bake-off scores against this.
+
+Regenerate with `npm install --prefix tools/render` (once) and `npm run render:records`. Renders are byte-identical, so a re-render does not change anchored hashes.

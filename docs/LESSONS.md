@@ -8,6 +8,8 @@ _(none yet)_
 
 ## Lessons
 
+- **2026-10-28** — Playwright's usual setup downloads a few hundred MB of Chromium; `playwright-core` with `channel: "msedge"` drives the Edge every Windows PC already has, for 14 MB, and renders byte-identical JPEGs. Rule: on this PC, browser automation uses playwright-core and the installed Edge; never `npx playwright install`.
+- **2026-10-28** — A read-only better-sqlite3 query on `data/dayone.db` left `-wal` and `-shm` files that `*.db` in `.gitignore` did not cover. Rule: ignore `*.db-wal` and `*.db-shm` too, and stage by path.
 - **2026-10-28** — Receiving tests asserted on the first `receipts` and `qc_decisions` row and got the seeded history instead of the new PO. Rule: in tests on a seeded ledger, filter every query by the id under test; never take `.get()` of a whole table.
 - **2026-10-28** — A stray `cat > file` with no heredoc in a Bash call waited on stdin until the 2-minute timeout, and the next command in the line never ran. Rule: write scratch files with the Write tool; never leave a bare `cat >` in a command.
 - **2026-10-28** — A one-off `.ts` script outside the repo failed in tsx with "Top-level await is not supported with the cjs output format", because only the repo's `package.json` sets `"type": "module"`. Rule: name scratch scripts `.mts` (or put them under the repo) when they use top-level await.

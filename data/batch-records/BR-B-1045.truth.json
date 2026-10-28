@@ -1,0 +1,131 @@
+{
+  "batchNo": "BR-B-1045",
+  "product": "P-VC500",
+  "facility": "B",
+  "date": "11/06/26",
+  "isoDate": "2026-11-06",
+  "room": "Rm 104 Weigh & Dispense",
+  "equipment": [
+    [
+      "V-blender",
+      "BLD-B-02"
+    ],
+    [
+      "Tablet press",
+      "TP-B-03"
+    ]
+  ],
+  "lines": [
+    {
+      "material": "ASC",
+      "lot": "ASC-261009-01",
+      "target": "412.000",
+      "actual": "187.450",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "NGI-26100901"
+    },
+    {
+      "material": "ASC",
+      "lot": "ASC-260921-02",
+      "target": "",
+      "actual": "224.900",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "RWA-26092102"
+    },
+    {
+      "material": "SOR",
+      "lot": "SOR-260901-01",
+      "target": "416.000",
+      "actual": "416.200",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "FPO-26090101"
+    },
+    {
+      "material": "MCC",
+      "lot": "MCC-260901-01",
+      "target": "120.000",
+      "actual": "119.880",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "PEC-26090101"
+    },
+    {
+      "material": "CTA",
+      "lot": "CTA-260901-01",
+      "target": "20.000",
+      "actual": "20.040",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "NGI-26090101"
+    },
+    {
+      "material": "FOR",
+      "lot": "FOR-260901-01",
+      "target": "12.000",
+      "actual": "11.980",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "OFH-26090101"
+    },
+    {
+      "material": "MGS",
+      "lot": "MGS-261001-01",
+      "target": "12.000",
+      "actual": "12.030",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "PEC-26100101"
+    },
+    {
+      "material": "SIO",
+      "lot": "SIO-260901-01",
+      "target": "6.400",
+      "actual": "6.410",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "PEC-26090101"
+    },
+    {
+      "material": "SUC",
+      "lot": "SUC-260901-01",
+      "target": "1.600",
+      "actual": "1.602",
+      "unit": "kg",
+      "weighedBy": "JM",
+      "verifiedBy": "DW",
+      "supplierLot": "OFH-26090101"
+    }
+  ],
+  "theoreticalTablets": "800,000",
+  "actualTablets": "726,400",
+  "yieldPct": "90.8",
+  "waste": "91.992",
+  "wasteUnit": "kg",
+  "marginNotes": [],
+  "signatures": [
+    {
+      "role": "production",
+      "name": "Linda Park",
+      "initials": "LP",
+      "date": "11/06/26"
+    },
+    {
+      "role": "qa_review",
+      "name": "Priya Natarajan",
+      "initials": "PN",
+      "date": "11/07/26"
+    }
+  ],
+  "purpose": "The live demo upload; pushes ascorbic acid below the reorder point"
+}

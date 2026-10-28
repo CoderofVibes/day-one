@@ -1,0 +1,12 @@
+{
+  "name": "@day-one/render",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only: renders the fictional batch records and packing slip to JPEG. Not a root workspace, so `npm ci` at the root does not pull a browser driver.",
+  "scripts": {
+    "render": "tsx src/render.ts"
+  },
+  "devDependencies": {
+    "playwright-core": "1.64.1"
+  }
+}

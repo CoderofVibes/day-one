@@ -24,6 +24,8 @@ target/
 *.sqlite3
 *.db
 *.db-journal
+*.db-wal
+*.db-shm
 data/runtime/
 
 # Demo recordings and large media

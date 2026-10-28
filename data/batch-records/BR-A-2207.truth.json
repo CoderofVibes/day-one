@@ -1,0 +1,111 @@
+{
+  "batchNo": "BR-A-2207",
+  "product": "P-CMD",
+  "facility": "A",
+  "date": "11/05/26",
+  "isoDate": "2026-11-05",
+  "room": "Dispensing Rm 2",
+  "equipment": [
+    [
+      "Ribbon blender",
+      "BLD-A-01"
+    ],
+    [
+      "Tablet press",
+      "TP-A-02"
+    ]
+  ],
+  "lines": [
+    {
+      "material": "CAC",
+      "lot": "CAC-261030-01",
+      "target": "1,377.9",
+      "actual": "1,377.9",
+      "unit": "lb",
+      "weighedBy": "BL",
+      "verifiedBy": "ST",
+      "supplierLot": "SMS-26103001"
+    },
+    {
+      "material": "MCC",
+      "lot": "MCC-260925-01",
+      "target": "220.5",
+      "actual": "220.5",
+      "unit": "lb",
+      "weighedBy": "BL",
+      "verifiedBy": "ST",
+      "supplierLot": "PEC-26092501"
+    },
+    {
+      "material": "MGO",
+      "lot": "MGO-260925-01",
+      "target": "183.0",
+      "actual": "183.0",
+      "unit": "lb",
+      "weighedBy": "BL",
+      "verifiedBy": "ST",
+      "supplierLot": "SMS-26092501"
+    },
+    {
+      "material": "CCS",
+      "lot": "CCS-260925-01",
+      "target": "33.1",
+      "actual": "33.1",
+      "unit": "lb",
+      "weighedBy": "BL",
+      "verifiedBy": "ST",
+      "supplierLot": "PEC-26092501"
+    },
+    {
+      "material": "STA",
+      "lot": "STA-260925-01",
+      "target": "22.0",
+      "actual": "22.0",
+      "unit": "lb",
+      "weighedBy": "BL",
+      "verifiedBy": "ST",
+      "supplierLot": "PEC-26092501"
+    },
+    {
+      "material": "MGS",
+      "lot": "MGS-260925-01",
+      "target": "16.5",
+      "actual": "16.5",
+      "unit": "lb",
+      "weighedBy": "BL",
+      "verifiedBy": "ST",
+      "supplierLot": "PEC-26092501"
+    },
+    {
+      "material": "VD3",
+      "lot": "VD3-260920-02",
+      "target": "4.4",
+      "actual": "4.4",
+      "unit": "lb",
+      "weighedBy": "BL",
+      "verifiedBy": "ST",
+      "supplierLot": "DDN-26092002"
+    }
+  ],
+  "theoreticalTablets": "500,000",
+  "actualTablets": "450,500",
+  "yieldPct": "90.1",
+  "waste": "55.8",
+  "wasteUnit": "lb",
+  "marginNotes": [],
+  "signatures": [
+    {
+      "role": "production",
+      "name": "Owen Brandt",
+      "initials": "OB",
+      "date": "11/05/26"
+    },
+    {
+      "role": "qa_review",
+      "name": "Mei Cho",
+      "initials": "MC",
+      "date": "11/06/26"
+    }
+  ],
+  "purpose": "Plant A record in pounds; its waste is under-recorded (§15)"
+}

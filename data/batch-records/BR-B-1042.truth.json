@@ -1,0 +1,111 @@
+{
+  "batchNo": "BR-B-1042",
+  "product": "P-CMD",
+  "facility": "B",
+  "date": "11/03/26",
+  "isoDate": "2026-11-03",
+  "room": "Rm 104 Weigh & Dispense",
+  "equipment": [
+    [
+      "V-blender",
+      "BLD-B-02"
+    ],
+    [
+      "Tablet press",
+      "TP-B-03"
+    ]
+  ],
+  "lines": [
+    {
+      "material": "CAC",
+      "lot": "CAC-261014-01",
+      "target": "625,000",
+      "actual": "625,115",
+      "unit": "g",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "SMS-26101401"
+    },
+    {
+      "material": "MCC",
+      "lot": "MCC-261001-01",
+      "target": "100,000",
+      "actual": "99,870",
+      "unit": "g",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "PEC-26100101"
+    },
+    {
+      "material": "MGO",
+      "lot": "MGO-261014-01",
+      "target": "83,000",
+      "actual": "83,040",
+      "unit": "g",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "SMS-26101401"
+    },
+    {
+      "material": "CCS",
+      "lot": "CCS-260915-01",
+      "target": "15,000",
+      "actual": "14,990",
+      "unit": "g",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "PEC-26091501"
+    },
+    {
+      "material": "STA",
+      "lot": "STA-260915-01",
+      "target": "10,000",
+      "actual": "10,010",
+      "unit": "g",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "PEC-26091501"
+    },
+    {
+      "material": "MGS",
+      "lot": "MGS-261001-01",
+      "target": "7,500",
+      "actual": "7,480",
+      "unit": "g",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "PEC-26100101"
+    },
+    {
+      "material": "VD3",
+      "lot": "VD3-260920-01",
+      "target": "2,000",
+      "actual": "1,995",
+      "unit": "g",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "DDN-26092001"
+    }
+  ],
+  "theoreticalTablets": "500,000",
+  "actualTablets": "447,500",
+  "yieldPct": "89.5",
+  "waste": "87.962",
+  "wasteUnit": "kg",
+  "marginNotes": [],
+  "signatures": [
+    {
+      "role": "production",
+      "name": "Linda Park",
+      "initials": "LP",
+      "date": "11/03/26"
+    },
+    {
+      "role": "qa_review",
+      "name": "Priya Natarajan",
+      "initials": "PN",
+      "date": "11/04/26"
+    }
+  ],
+  "purpose": "Clean baseline; quantities in g on the record, kg in inventory"
+}

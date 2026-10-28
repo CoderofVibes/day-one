@@ -1,0 +1,123 @@
+{
+  "batchNo": "BR-B-1044",
+  "product": "P-ELX",
+  "facility": "B",
+  "date": "11/05/26",
+  "isoDate": "2026-11-05",
+  "room": "Rm 104 Weigh & Dispense",
+  "equipment": [
+    [
+      "V-blender",
+      "BLD-B-01"
+    ],
+    [
+      "Tablet press",
+      "TP-B-01"
+    ]
+  ],
+  "lines": [
+    {
+      "material": "CTA",
+      "lot": "CTA-260901-01",
+      "target": "210.000",
+      "actual": "210.300",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "NGI-26090101"
+    },
+    {
+      "material": "SBC",
+      "lot": "SBC-260918-01",
+      "target": "180.000",
+      "actual": "180.150",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "SMS-26091801"
+    },
+    {
+      "material": "MAN",
+      "lot": "MAN-260918-01",
+      "target": "156.000",
+      "actual": "155.900",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "FPO-26091801"
+    },
+    {
+      "material": "KCT",
+      "lot": "KCT-260918-01",
+      "target": "90.000",
+      "actual": "90.200",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "NGI-26091801"
+    },
+    {
+      "material": "PEG",
+      "lot": "PEG-260918-01",
+      "target": "18.000",
+      "actual": "18.050",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "PEC-26091801"
+    },
+    {
+      "material": "FLL",
+      "lot": "FLL-260918-01",
+      "target": "12.000",
+      "actual": "11.980",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "OFH-26091801"
+    },
+    {
+      "material": "NAC",
+      "lot": "NAC-260918-01",
+      "target": "6.000",
+      "actual": "6.010",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "SMS-26091801"
+    },
+    {
+      "material": "SUC",
+      "lot": "SUC-260901-01",
+      "target": "3.000",
+      "actual": "3.010",
+      "unit": "kg",
+      "weighedBy": "KO",
+      "verifiedBy": "AR",
+      "supplierLot": "OFH-26090101"
+    }
+  ],
+  "theoreticalTablets": "300,000",
+  "actualTablets": "258,600",
+  "yieldPct": "86.2",
+  "waste": "93.250",
+  "wasteUnit": "kg",
+  "marginNotes": [
+    "Compression sticking, stn 3. Punches cleaned 2x. -KO"
+  ],
+  "signatures": [
+    {
+      "role": "production",
+      "name": "Linda Park",
+      "initials": "LP",
+      "date": "11/05/26"
+    },
+    {
+      "role": "qa_review",
+      "name": "Priya Natarajan",
+      "initials": "PN",
+      "date": "11/06/26"
+    }
+  ],
+  "purpose": "High waste (13.8%) with compression sticking noted in the margin"
+}

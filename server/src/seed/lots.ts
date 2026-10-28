@@ -54,6 +54,12 @@ function plusDays(date: string, days: number) {
 
 export const t = (date: string, hhmm: string) => `${date}T${hhmm}:00.000Z`;
 
+/** The supplier's own lot number for a lot: "NGI" + "ASC-261009-01" → "NGI-26100901". */
+export function vendorLotCode(vendor: string, code: string) {
+  const [, yymmdd, seq] = code.split("-");
+  return `${vendor}-${yymmdd}${seq}`;
+}
+
 /** Received, sampled into quarantine, released by QC two days later. */
 function receivedAndReleased(qty: number, date: string): Step[] {
   return [
