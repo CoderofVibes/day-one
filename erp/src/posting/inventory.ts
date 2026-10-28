@@ -8,8 +8,8 @@ import { and, eq, sql } from "drizzle-orm";
 import type { ErpDb } from "../db.ts";
 import { extend, proRata } from "../money.ts";
 import {
-  type InventoryStatus,
   accounts,
+  type InventoryStatus,
   inventoryAdjustmentLines,
   inventoryAdjustments,
   inventoryMovements,
@@ -22,7 +22,7 @@ import {
 } from "../schema.ts";
 import { ADJUSTMENT_ACCOUNT } from "../seed/data.ts";
 import { audit } from "./audit.ts";
-import { PostingError, nextTranId, postJournal } from "./journal.ts";
+import { nextTranId, PostingError, postJournal } from "./journal.ts";
 
 export interface MovementInput {
   sourceType: (typeof inventoryMovements.$inferInsert)["sourceType"];

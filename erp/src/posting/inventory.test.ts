@@ -19,7 +19,10 @@ let plantA: number;
 let plantB: number;
 let kevin: number;
 let n = 0;
-const at = () => `2026-11-0${((n += 1)) % 9 || 1}T10:00:00.000Z`;
+const at = () => {
+  n += 1;
+  return `2026-11-0${n % 9 || 1}T10:00:00.000Z`;
+};
 
 beforeEach(() => {
   db = openErp();

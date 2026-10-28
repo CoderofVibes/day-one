@@ -62,7 +62,8 @@ export type MatchExceptionCode =
   | "QTY_OVER_RECEIPT"
   | "NOT_RECEIVED"
   | "FREIGHT_VS_PO"
-  | "TOTAL_ARITHMETIC";
+  | "TOTAL_ARITHMETIC"
+  | "DUPLICATE_INVOICE";
 
 export interface MatchException {
   code: MatchExceptionCode;

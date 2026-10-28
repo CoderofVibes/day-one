@@ -5,7 +5,7 @@
 
 import { asc, eq } from "drizzle-orm";
 import type { ErpDb } from "./db.ts";
-import { type UserRole, type VendorStatus, approvalRules } from "./schema.ts";
+import { approvalRules, type UserRole, type VendorStatus } from "./schema.ts";
 
 export type ContractVerdict =
   | "funded"
