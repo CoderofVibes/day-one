@@ -36,7 +36,7 @@ The demo clock starts at `2026-11-09T13:00:00Z`. Each step prints a plain-langua
 | 6 | Small PO | `PO-1041 to Bayfront Lab Supply, $612.00 — approved automatically and funded.` | `chain: submit_po PO-1041 ✓ (tx …) · escrow funded 612.00 DTUSD` |
 | 7 | Big PO | `PO-1042 to Northgate Ingredients, $5,150.00 is over Kevin's $2,500.00 limit. Sent to Linda for approval.` | `chain: submit_po PO-1042 ✗ REFUSED "PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required" (tx …)` |
 | 8 | Linda texts | `Linda: YES 1042` → `Approved by Linda Park.` | `chain: approve_po PO-1042 ✓ signed by director.plant-b…, paid by dayone-relayer.testnet (tx …)` |
-| 9 | Kevin retries | `PO-1042 sent to Northgate. Funds held until delivery passes QC.` | `chain: submit_po PO-1042 ✓ (tx …) · escrow funded 5,150.00 DTUSD` |
+| 9 | Kevin retries | `PO-1042 sent to Northgate Ingredients. Funds held until delivery passes QC.` | `chain: submit_po PO-1042 ✓ (tx …) · escrow funded 5,150.00 DTUSD` |
 | 10 | Delivery | `Tommy photographed the packing slip. Matches PO-1042: 700 kg ascorbic acid, supplier lot NG-24-8812. Lot ASC-261116-01 is in quarantine.` | `chain: confirm_receipt PO-1042 ✓ signed by receiving.plant-b…, relayed (tx …)` |
 | 11 | QC release | `Priya released lot ASC-261116-01.` | `chain: qc_release PO-1042 ✓ (tx …) · 5,150.00 DTUSD → northgate-ingredients.testnet` |
 | 12 | Paid | `PO-1042 — paid $5,150.00. Invoice matched to PO and receipt.` | `chain: anchored receipt PO-1042 0x… (tx …)` |

@@ -15,7 +15,8 @@
     "./llm/client": "./src/llm/client.ts",
     "./llm/types": "./src/llm/types.ts",
     "./seed": "./src/seed/index.ts",
-    "./seed/quotes": "./src/seed/quotes.ts"
+    "./seed/quotes": "./src/seed/quotes.ts",
+    "./relayer": "./src/relayer/relayer.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate"

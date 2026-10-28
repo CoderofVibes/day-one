@@ -28,6 +28,12 @@ export interface SubmitResult {
   requestText?: string;
 }
 
+/** What submit needs from a PO: a fresh draft or one loaded back from the ledger. */
+export type SubmittablePo = Pick<
+  PoDraft,
+  "id" | "poNo" | "vendor" | "category" | "totalUsdc" | "poHash"
+>;
+
 export interface SubmitContext {
   kevin: string;
   policyContract: string;
@@ -43,7 +49,7 @@ const usdShort = (units: bigint) => usd(units).replace(/\.00$/, "");
 export async function submitPo(
   db: Ledger,
   chain: ChainClient,
-  po: PoDraft,
+  po: SubmittablePo,
   ctx: SubmitContext,
 ): Promise<SubmitResult> {
   if (!po.vendor.account) throw new Error(`${po.poNo}: ${po.vendor.name} has no NEAR account`);

@@ -141,6 +141,40 @@ async function createUnderPlantB(child: (typeof PLANT_B_CHILDREN)[number]) {
   });
 }
 
+/**
+ * The relayer pays for staff approvals (research 06). Tony created it with its key in his
+ * keychain; the server gets a second full-access key of its own, added once by a
+ * keychain-signed add-key, so the keychain key never leaves the keychain.
+ */
+const RELAYER = "dayone-relayer.testnet";
+
+async function ensureServerKey(accountId: string) {
+  const key = keyFor(accountId, "full");
+  const { keys } = await new Account(accountId, provider).getAccessKeyList();
+  if (keys.some((k) => k.public_key === key.public_key)) {
+    console.log(`has key  ${accountId}`);
+    return key.public_key;
+  }
+  execFileSync(
+    nearCli,
+    [
+      "account",
+      "add-key",
+      accountId,
+      "grant-full-access",
+      "use-manually-provided-public-key",
+      key.public_key,
+      "network-config",
+      "testnet",
+      "sign-with-keychain",
+      "send",
+    ],
+    { stdio: ["ignore", "ignore", "pipe"] },
+  );
+  console.log(`added    server key to ${accountId}`);
+  return key.public_key;
+}
+
 async function main() {
   const accounts: Record<string, { publicKeys: string[] }> = {};
 
@@ -167,6 +201,8 @@ async function main() {
       publicKeys: [keyFor(id, "full").public_key, keyFor(id, "fc").public_key],
     };
   }
+
+  accounts[RELAYER] = { publicKeys: [await ensureServerKey(RELAYER)] };
 
   mkdirSync(join(repo, "config"), { recursive: true });
   writeFileSync(

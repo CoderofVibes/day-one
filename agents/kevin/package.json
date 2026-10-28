@@ -5,7 +5,8 @@
   "exports": {
     "./forecast": "./src/forecast.ts",
     "./purchasing": "./src/purchasing.ts",
-    "./submit": "./src/submit.ts"
+    "./submit": "./src/submit.ts",
+    "./approval": "./src/approval.ts"
   },
   "dependencies": {
     "@day-one/server": "*",

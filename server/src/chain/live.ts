@@ -6,6 +6,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Account, actions, JsonRpcProvider, type KeyPairString, teraToGas } from "near-api-js";
+import { Relayer, type RelayerConfig } from "../relayer/relayer.ts";
 import {
   type ChainCall,
   ChainProgramError,
@@ -37,13 +38,17 @@ export class LiveTransport implements ChainTransport {
   readonly mode = "live" as const;
   private readonly provider: JsonRpcProvider;
   private readonly accounts = new Map<string, Account>();
+  private readonly relayer: Relayer | null;
 
   constructor(
     readonly network = "testnet",
     private readonly keys: KeyLookup = credentialsKeys(network),
     rpcUrl = process.env.NEAR_RPC_URL ?? "https://test.rpc.fastnear.com",
+    /** Staff calls (`viaRelayer`) go through this relayer; without one they are refused. */
+    relayerConfig?: RelayerConfig,
   ) {
     this.provider = new JsonRpcProvider({ url: rpcUrl });
+    this.relayer = relayerConfig ? new Relayer(this.provider, keys, relayerConfig) : null;
   }
 
   private account(accountId: string) {
@@ -56,21 +61,26 @@ export class LiveTransport implements ChainTransport {
   }
 
   async send(call: ChainCall): Promise<ChainOutcome> {
+    let raw: RawOutcome;
     if (call.viaRelayer) {
-      throw new ChainProgramError(`${call.method}: relayed calls go through server/relayer`);
+      if (!this.relayer) {
+        throw new ChainProgramError(`${call.method}: no relayer configured for staff calls`);
+      }
+      raw = await this.relayer.relay(call);
+    } else {
+      raw = (await this.account(call.signerId).signAndSendTransaction({
+        receiverId: call.receiverId,
+        actions: [
+          actions.functionCall(
+            call.method,
+            call.args,
+            teraToGas(call.gasTera ?? DEFAULT_GAS_TERA),
+            call.depositYocto ?? 0n,
+          ),
+        ],
+        throwOnFailure: false,
+      })) as unknown as RawOutcome;
     }
-    const raw = (await this.account(call.signerId).signAndSendTransaction({
-      receiverId: call.receiverId,
-      actions: [
-        actions.functionCall(
-          call.method,
-          call.args,
-          teraToGas(call.gasTera ?? DEFAULT_GAS_TERA),
-          call.depositYocto ?? 0n,
-        ),
-      ],
-      throwOnFailure: false,
-    })) as unknown as RawOutcome;
     const block = await this.provider.viewBlock({ blockId: raw.transaction_outcome.block_hash });
     return parseOutcome(raw, block.header.height);
   }

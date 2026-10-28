@@ -40,6 +40,7 @@ _(none)_
 9. ~~**NEAR Discord**~~ Done Oct 27: prep question already asked by many; organizers say a blog post is coming (OPEN_QUESTIONS #8).
 10. ~~**Payout account**~~ Done Oct 27: `Tony's prize account` in Meteor Wallet; recovery phrase kept offline by Tony.
 11. ~~**X account**~~ Done Oct 27: Tony confirmed it can post video. Keep the export ≤2:20 (standard-account limit) as planned.
+12. **Run `npm run setup:testnet` once in your session** (OPEN_QUESTIONS #31): adds the server's key to `dayone-relayer.testnet` with your keychain. Needed for the live relayed approval (Nov 5). About a minute.
 
 ### Claude tasks in prep (tooling only, once the human approves installs)
 - [x] [I] In WSL2: rustup stable 1.99.1, `wasm32-unknown-unknown`, cargo-near 0.22.0 installed Oct 25. Disk recorded in RISKS.md.
@@ -83,7 +84,7 @@ _(none)_
 ### Thu Nov 5 — purchasing loop
 - [x] [I] Kevin workflow: forecast (shortfall computed from formula and usage, explained in one sentence; no LLM forecasting), RFQ (static quotes from seed in T0), ranking with qualification rules, PO draft and `po_hash`. Done Oct 28: `agents/kevin/src/forecast.ts` and `purchasing.ts` print DEMO_SCRIPT steps 4 and 5 word for word and draft PO-1042 at $5,150.00 (freight now a column, migration 0003) and PO-1041 at $612.00; a `production_plan` table (migration 0002) holds BR-B-1047 (Nov 17) and BR-B-1048 (Nov 19); 15 tests.
 - [x] [I] `submit_po` within limit (PO-1041) and over limit (PO-1042 refused) on testnet. Done Oct 28: `agents/kevin/src/submit.ts` sends the draft's terms as Kevin through the chain client; funded → PO `funded` (step 6 line); a refusal ending "director approval required." → an `approvals` row for the approver in Kevin's on-chain policy with the §9 text, PO `awaiting_approval` (step 7 line); other refusals have no approval path. Checked live with throwaway ids: PO-T1041 funded (tx `8NCdN2WwhVMuFbMJX5AAkzrsMVUGHVoP3FPKb7oNPBEW`), PO-T1042 refused (tx `HBP1ifWVpdEkJb9biew9DHU7maw2AJdD21UhnCB3didj`), then HQ cancelled PO-T1041 so the budget is back to 25,000 DTUSD. Demo ids PO-1041 and PO-1042 are still unused on chain.
-- [ ] [I] Relayer (`server/relayer`) + server-held staff FC keys; phone mock UI with "YES 1042"; `approve_po` relayed; Kevin's retry funds escrow.
+- [ ] [I] Relayer (`server/relayer`) + server-held staff FC keys; phone mock UI with "YES 1042"; `approve_po` relayed; Kevin's retry funds escrow. **Partly done Oct 28:** `server/src/relayer/relayer.ts` (delegate signed with the staff FC key, wrapped and paid by the relayer, allowlist by staff account and method, no deposits) wired into `LiveTransport` for `viaRelayer` calls; `agents/kevin/src/approval.ts` turns "YES 1042" into the relayed `approve_po` with the PO's terms and the refused tx, then Kevin's identical retry (steps 8–9), NO into `reject_po`; unnamed replies ask again. 9 tests, mocks only. **Left:** the live run waits on human task 12 (relayer server key, OPEN_QUESTIONS #31); the phone mock UI comes with the web screens.
 
 ### Fri Nov 6 — receipt, release, records
 - [ ] [I] Packing-slip match; `confirm_receipt` and `qc_release` relayed; payout callback; `qc_reject` refund path.
