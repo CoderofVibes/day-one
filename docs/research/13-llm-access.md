@@ -66,6 +66,13 @@ interface LlmClient { complete(task: Task, req: LlmRequest): Promise<LlmResult>;
 ### Bake-off (Nov 1–2, ≤ 2 hours, ≈ $1)
 Ground truth = the FICTIONAL_DATA spec values for BR-B-1041…1046. Metric: per-field exact match after unit normalization on material lines (lot, actual qty, unit) + yield; pass bar ≥ 95% field accuracy on typed fields, ≥ 85% on handwritten quantities, **and** the smudged BR-B-1046 field reported low-confidence. Candidates: `z-ai/glm-5.3-flash`, `Qwen/Qwen3.8-27B`, `claude-sonnet-5-5` (control). Pick the cheapest TEE model that passes; otherwise vision → Sonnet 5.5.
 
+### Smoke test (2026-10-28, `z-ai/glm-5.3-flash`, OpenAI-compatible `/v1/chat/completions`)
+All three calls returned HTTP 200; total under 2K tokens (well under $0.01).
+- **Text:** correct answer, 6.8 s.
+- **Image** (`image_url` with a base64 PNG data URL, 64×64 px): correct ("Red"), 4.5 s; the 64×64 image counted as 16 image tokens.
+- **JSON schema** (`response_format: {type: "json_schema", json_schema: {strict: true, ...}}`): valid JSON matching the schema.
+- **The model reasons by default, and reasoning tokens count against `max_tokens`.** With `max_tokens: 400` the first JSON call spent all 400 on reasoning and returned no content. `reasoning_effort: "low"` still used 213 reasoning tokens (10 s). `chat_template_kwargs: {enable_thinking: false}` used none: 30 tokens, 2.4 s, same answer. Rule for the `nearai` adapter: set `enable_thinking: false` for extraction and routine calls, keep a generous `max_tokens` when thinking is on, and treat an empty `content` with `finish_reason` at the limit as a retryable error, not a blank answer.
+
 ## Open questions for the human
 - **Anthropic API key for the app:** Is your plan Max 5x ($100/month API credit) or Max 20x ($200)? To use it, link a Claude Console organization in claude.ai → Settings → Billing → API credits (one-time, can't be relinked yourself), then create an API key in a dedicated workspace with a spend limit. Pro is not eligible. Credits do not cover Claude Code itself. OK to do this?
 - NEAR AI Cloud account + small credit purchase (see 10).
