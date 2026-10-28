@@ -68,6 +68,14 @@ export function actionsFor(next: NextAction): Action[] {
   }
 }
 
+/** A stock quantity in the unit people say: kg, L, or a plain count (base units are mg, µL, each). */
+export function quantity(base: number, dimension: string): string {
+  if (dimension === "count") return base.toLocaleString("en-US");
+  const value = Math.round(base / 1_000) / 1_000;
+  const text = value.toLocaleString("en-US", { maximumFractionDigits: 3 });
+  return `${text} ${dimension === "volume" ? "L" : "kg"}`;
+}
+
 /** A short line for the action bar: "Ray Delgado · Purchaser" or "Kevin". */
 export function actorOf(next: NextAction): { name: string; role: string } {
   if (next.who) return { name: next.who, role: roleLabel(next.role) };

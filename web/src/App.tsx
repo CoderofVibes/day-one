@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiError, getState, type LiveState, postImage, postJson, probeApi } from "./api.ts";
-import { type Action, actionsFor, actorOf } from "./live.ts";
+import {
+  ApiError,
+  getInventory,
+  getState,
+  type LiveState,
+  type PlantInventory,
+  postImage,
+  postJson,
+  postReview,
+  probeApi,
+} from "./api.ts";
+import { type Action, actionsFor, actorOf, quantity } from "./live.ts";
 import {
   type Audience,
   audienceOf,
@@ -112,6 +122,20 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const [curtain, setCurtain] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<{ message: string; hint?: string } | null>(null);
+  const [plants, setPlants] = useState(false);
+  const [inventory, setInventory] = useState<PlantInventory | null>(null);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refresh whenever the run (state) moves
+  useEffect(() => {
+    if (!plants) return;
+    let stale = false;
+    getInventory().then((inv) => {
+      if (!stale) setInventory(inv);
+    });
+    return () => {
+      stale = true;
+    };
+  }, [plants, state]);
 
   const send = useCallback(async (label: string, call: () => Promise<unknown>) => {
     setBusy(label);
@@ -136,9 +160,24 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const uploadFile = (file: File) =>
     send(`Upload ${file.name}`, () => postImage("api/batch-records", file, file.name));
 
+  const review = (id: number, decision: "apply" | "dismiss") =>
+    send(decision === "apply" ? "Apply the adjustment" : "Dismiss", async () => {
+      const result = await postReview(id, decision);
+      setInventory(result.inventory);
+    });
+
   const last = state.steps.length - 1;
   return (
-    <Frame curtain={curtain} setCurtain={setCurtain}>
+    <Frame
+      curtain={curtain}
+      setCurtain={setCurtain}
+      extra={
+        <label className="switch">
+          <input type="checkbox" checked={plants} onChange={(e) => setPlants(e.target.checked)} />
+          <span>Three plants</span>
+        </label>
+      }
+    >
       <ActionBar
         state={state}
         busy={busy}
@@ -149,6 +188,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
       />
 
       <main className="panes">
+        {plants && <PlantsPane inventory={inventory} busy={busy !== null} onReview={review} />}
         <StaffFeed data={state} upTo={last} curtain={curtain} />
         {curtain && <Curtain data={state} upTo={last} />}
       </main>
@@ -271,6 +311,100 @@ function ActionButton({
   );
 }
 
+/** Three facilities, one truth: stock by plant, and the transfer discrepancies with their review. */
+function PlantsPane({
+  inventory,
+  busy,
+  onReview,
+}: {
+  inventory: PlantInventory | null;
+  busy: boolean;
+  onReview: (id: number, decision: "apply" | "dismiss") => void;
+}) {
+  if (!inventory) {
+    return (
+      <section className="pane plants" aria-label="Three plants">
+        <h2>Three plants</h2>
+        <p className="muted">Loading…</p>
+      </section>
+    );
+  }
+  const plants = inventory.facilities;
+  return (
+    <section className="pane plants" aria-label="Three plants">
+      <h2>Three plants · stock on hand</h2>
+      {inventory.discrepancies.length > 0 && (
+        <ul className="discrepancies">
+          {inventory.discrepancies.map((d) => (
+            <li key={d.id} className={`disc ${d.status}`}>
+              <p>{d.explanation}</p>
+              {d.status === "proposed_adjustment" && d.proposed ? (
+                <div className="actions">
+                  <button
+                    type="button"
+                    className="primary"
+                    disabled={busy}
+                    onClick={() => onReview(d.id, "apply")}
+                  >
+                    Apply at Plant {d.proposed.facility}
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary"
+                    disabled={busy}
+                    onClick={() => onReview(d.id, "dismiss")}
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              ) : (
+                <span className="tag">{d.status.replace(/_/g, " ")}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="table-wrap">
+        <table className="stock">
+          <thead>
+            <tr>
+              <th>Material</th>
+              {plants.map((p) => (
+                <th key={p.code}>
+                  Plant {p.code} <span className="muted">{p.name}</span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {inventory.materials.map((m) => (
+              <tr key={m.code}>
+                <th scope="row">
+                  {m.name} <span className="muted">{m.code}</span>
+                </th>
+                {plants.map((p) => {
+                  const s = m.byPlant[p.code];
+                  return (
+                    <td key={p.code} className={s?.low ? "low" : undefined}>
+                      {s ? quantity(s.onHandBase, m.dimension) : "—"}
+                      {s?.low && m.reorderPointBase !== null && (
+                        <span className="muted small">
+                          {" "}
+                          · below {quantity(m.reorderPointBase, m.dimension)}
+                        </span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
 function summaryLine(state: LiveState) {
   const s = state.summary;
   if (!s) return "The run is complete.";
@@ -282,10 +416,13 @@ function summaryLine(state: LiveState) {
 function Frame({
   curtain,
   setCurtain,
+  extra,
   children,
 }: {
   curtain: boolean;
   setCurtain: (on: boolean) => void;
+  /** More switches beside "Behind the curtain". */
+  extra?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -300,10 +437,17 @@ function Frame({
             <p className="muted">Purchasing assistant · Hollow Pine Tablet Co. (Plant B)</p>
           </div>
         </div>
-        <label className="switch">
-          <input type="checkbox" checked={curtain} onChange={(e) => setCurtain(e.target.checked)} />
-          <span>Behind the curtain</span>
-        </label>
+        <div className="switches">
+          {extra}
+          <label className="switch">
+            <input
+              type="checkbox"
+              checked={curtain}
+              onChange={(e) => setCurtain(e.target.checked)}
+            />
+            <span>Behind the curtain</span>
+          </label>
+        </div>
       </header>
       {children}
     </div>

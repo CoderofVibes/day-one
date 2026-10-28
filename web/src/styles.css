@@ -13,6 +13,7 @@
   --curtain: #14171c;
   --curtain-ink: #d9dde3;
   --curtain-line: #2a2f37;
+  --warn: #b3261e;
   color-scheme: light;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
@@ -33,6 +34,7 @@
     --curtain: #0b0d10;
     --curtain-ink: #c9ced6;
     --curtain-line: #232830;
+    --warn: #f08a82;
     color-scheme: dark;
   }
 }
@@ -454,4 +456,92 @@ button {
 
 .card.still {
   cursor: default;
+}
+
+/* Header switches. */
+.switches {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* The three-plant view: stock by plant and the discrepancies to review. */
+.plants {
+  grid-column: 1 / -1;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.plants h2 {
+  color: var(--muted);
+}
+
+.discrepancies {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+
+.disc {
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: var(--current);
+}
+
+.disc p {
+  margin: 0 0 8px;
+}
+
+.disc.adjusted,
+.disc.dismissed {
+  border-color: var(--line);
+  background: transparent;
+  opacity: 0.8;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.stock {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.stock th,
+.stock td {
+  text-align: left;
+  padding: 6px 8px;
+  border-top: 1px solid var(--line);
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.stock thead th {
+  border-top: none;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.stock tbody th {
+  font-weight: 500;
+  white-space: normal;
+}
+
+.stock td.low {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.small {
+  font-size: 0.82rem;
+  font-weight: 400;
 }

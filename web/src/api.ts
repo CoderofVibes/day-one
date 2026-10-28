@@ -27,6 +27,40 @@ export interface ActionResult {
   stopped: string | null;
 }
 
+export interface PlantStock {
+  onHandBase: number;
+  usableBase: number;
+  lots: number;
+  low: boolean;
+}
+export interface MaterialStock {
+  code: string;
+  name: string;
+  category: string;
+  dimension: string;
+  baseUnit: string;
+  reorderPointBase: number | null;
+  byPlant: Record<string, PlantStock>;
+}
+export interface DiscrepancyView {
+  id: number;
+  kind: string;
+  status: string;
+  lotCode: string | null;
+  material: string | null;
+  facility: string;
+  expectedBase: number;
+  observedBase: number;
+  explanation: string | null;
+  proposed: { facility: string; qtyDeltaBase: number; reason: string | null } | null;
+  transferNo: string | null;
+}
+export interface PlantInventory {
+  facilities: { code: string; name: string; role: string }[];
+  materials: MaterialStock[];
+  discrepancies: DiscrepancyView[];
+}
+
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -54,6 +88,22 @@ export async function probeApi(timeoutMs = 1500): Promise<LiveState | null> {
 
 export function getState(): Promise<LiveState> {
   return request<LiveState>("GET", "api/run");
+}
+
+export function getInventory(): Promise<PlantInventory> {
+  return request<PlantInventory>("GET", "api/inventory");
+}
+
+export function postReview(
+  id: number,
+  decision: "apply" | "dismiss",
+): Promise<{ status: string; inventory: PlantInventory }> {
+  return request(
+    "POST",
+    `api/discrepancies/${id}/review`,
+    JSON.stringify({ decision }),
+    "application/json",
+  );
 }
 
 export function postJson(path: string, body: unknown = {}): Promise<ActionResult> {

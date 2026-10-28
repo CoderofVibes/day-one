@@ -50,6 +50,12 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(body.next.choices).toContain("BR-B-1045.jpg");
     expect(body.transactions).toEqual([]);
     expect(body.people.map((p: { name: string }) => p.name)).toContain("Linda Park");
+    const inv = (await api("GET", "/api/inventory")).body;
+    expect(inv.facilities.map((f: { code: string }) => f.code)).toEqual(["A", "B", "C"]);
+    const asc = inv.materials.find((m: { code: string }) => m.code === "ASC");
+    expect(asc.byPlant.B.onHandBase).toBe(722_350_000);
+    expect(asc.byPlant.A.onHandBase).toBe(12_550_000);
+    expect(inv.discrepancies).toEqual([]);
   });
 
   it("refuses an action out of turn with 409 and says whose turn it is", async () => {
@@ -103,6 +109,18 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
       "Small PO",
       "Big PO",
     ]);
+    const inv = (await api("GET", "/api/inventory")).body;
+    const asc = inv.materials.find((m: { code: string }) => m.code === "ASC");
+    expect(asc.byPlant.B).toMatchObject({ onHandBase: 310_000_000, low: true });
+    expect(inv.discrepancies).toHaveLength(1);
+    expect(inv.discrepancies[0]).toMatchObject({
+      kind: "transfer_qty",
+      status: "proposed_adjustment",
+      lotCode: "ASC-261009-01",
+      facility: "A",
+      transferNo: "TR-A-B-261102",
+      proposed: { facility: "A", qtyDeltaBase: -12_550_000 },
+    });
     const refused = body.steps.at(-1)?.chain[0];
     expect(refused?.line).toContain("✗ REFUSED");
     expect(refused?.tx).toMatch(/^[1-9A-HJ-NP-Za-km-z]{43,44}$/);
@@ -189,6 +207,24 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
   it("answers 404 for an unknown route and for the unbuilt web UI", async () => {
     expect((await api("GET", "/api/nope")).status).toBe(404);
     expect((await api("GET", "/")).status).toBe(404);
+  });
+
+  it("lets HQ apply the proposed adjustment: Plant A's phantom stock is written off", async () => {
+    const before = (await api("GET", "/api/inventory")).body;
+    const id = before.discrepancies[0].id;
+    expect(
+      (await api("POST", `/api/discrepancies/${id}/review`, { decision: "maybe" })).status,
+    ).toBe(400);
+    const { status, body } = await api("POST", `/api/discrepancies/${id}/review`, {
+      decision: "apply",
+    });
+    expect(status).toBe(200);
+    expect(body.status).toBe("adjusted");
+    const asc = body.inventory.materials.find((m: { code: string }) => m.code === "ASC");
+    expect(asc.byPlant.A).toBeUndefined();
+    expect(body.inventory.discrepancies[0].status).toBe("adjusted");
+    const again = await api("POST", `/api/discrepancies/${id}/review`, { decision: "apply" });
+    expect(again.status).toBe(409);
   });
 
   it("resets to the seed", async () => {

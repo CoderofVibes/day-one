@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { NextAction } from "./api.ts";
-import { actionsFor, actorOf } from "./live.ts";
+import { actionsFor, actorOf, quantity } from "./live.ts";
 
 const next = (partial: Partial<NextAction>): NextAction => ({
   phase: "upload",
@@ -85,6 +85,14 @@ describe("what the live screens offer whoever is up", () => {
       label: "Start over",
       path: "api/run/reset",
     });
+  });
+
+  it("says quantities the way people do", () => {
+    expect(quantity(722_350_000, "mass")).toBe("722.35 kg");
+    expect(quantity(12_550_000, "mass")).toBe("12.55 kg");
+    expect(quantity(200_000_000, "mass")).toBe("200 kg");
+    expect(quantity(24_000, "count")).toBe("24,000");
+    expect(quantity(1_500_000, "volume")).toBe("1.5 L");
   });
 
   it("names the actor in plain words", () => {

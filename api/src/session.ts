@@ -6,7 +6,9 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { type DemoPhase, type DemoStep, formatTranscript, startDemo } from "@day-one/kevin/demo";
+import { reviewDiscrepancy } from "@day-one/kevin/discrepancies";
 import { explorerUrl } from "@day-one/server/chain/client";
+import { plantInventory } from "@day-one/server/ledger/inventory";
 import { approvals, chainTx, staff } from "@day-one/server/ledger/schema";
 import { eq } from "drizzle-orm";
 import {
@@ -142,6 +144,35 @@ export class DemoSession {
 
   transcript() {
     return formatTranscript(this.env.db, this.machine.steps);
+  }
+
+  /** What each plant holds and every transfer discrepancy: the three-facility view. */
+  inventory() {
+    return plantInventory(this.env.db);
+  }
+
+  /**
+   * A review of a proposed adjustment: a ledger event by the reviewer, no chain call, so it
+   * never disturbs a replay. HQ's integration lead reviews unless a name is given.
+   */
+  review(discrepancyId: number, decision: "apply" | "dismiss", staffName = "Jordan Pike") {
+    return this.run(async () => {
+      const reviewer = this.env.db
+        .select({ id: staff.id })
+        .from(staff)
+        .where(eq(staff.name, staffName))
+        .get();
+      if (!reviewer) throw new SessionError(400, `${staffName} is not on the staff list`);
+      try {
+        return reviewDiscrepancy(this.env.db, discrepancyId, {
+          staffId: reviewer.id,
+          decision,
+          now: this.env.clock(),
+        });
+      } catch (error) {
+        throw new SessionError(409, error instanceof Error ? error.message : String(error));
+      }
+    });
   }
 
   state(): RunState {
