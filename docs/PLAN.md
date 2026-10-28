@@ -2,7 +2,7 @@
 
 ## In progress
 
-_(none)_
+- **Acquirer ERP mock (OPEN_QUESTIONS #32) is owned by a separate Fable session on branch `erp-mock` (Tony, Oct 28).** Builder runs: do not start the ERP item and do not edit `erp/` or `server/src/erp-connector/`; carry on with the other work. Remove this line when the branch is merged.
 
 ---
 
