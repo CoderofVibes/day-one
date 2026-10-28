@@ -1,6 +1,6 @@
 # Prompt for the scheduled task "Day One — continue the plan"
 
-Schedule: every 3 hours at minute 7 (cron `7 */3 * * *`, local time). Permission mode: Auto (recommended) or Default with `.claude/settings.json`.
+Schedule: back to back (checked every 15 minutes, Tony Oct 28) at minute 7 (cron `7 */3 * * *`, local time). Permission mode: Auto (recommended) or Default with `.claude/settings.json`.
 
 ---
 
