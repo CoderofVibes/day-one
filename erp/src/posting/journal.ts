@@ -1,7 +1,8 @@
 // General ledger postings. One function writes a journal entry: it refuses an entry that does
 // not balance, numbers it, and records who posted it. Nothing else inserts journal lines.
 
-import { eq, sql } from "drizzle-orm";
+import { count, eq, sql } from "drizzle-orm";
+import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import type { ErpDb } from "../db.ts";
 import { accounts, auditTrail, journalEntries, journalLines } from "../schema.ts";
 
@@ -40,14 +41,8 @@ export function accountIdByNumber(db: ErpDb, number: string): number {
 }
 
 /** "JE-7": the next number for a transaction type. */
-export function nextTranId(
-  db: ErpDb,
-  table: { tranId: typeof journalEntries.tranId },
-  prefix: string,
-) {
-  const row = db.select({ n: sql<number>`count(*)` }).from(table.tranId.table).get() as
-    | { n: number }
-    | undefined;
+export function nextTranId(db: ErpDb, table: SQLiteTable, prefix: string) {
+  const row = db.select({ n: count() }).from(table).get();
   return `${prefix}-${(row?.n ?? 0) + 1}`;
 }
 
