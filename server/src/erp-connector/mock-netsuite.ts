@@ -24,13 +24,11 @@ import {
 
 export const RECORD_BASE = "/services/rest/record/v1";
 
-export interface ErpTransport {
-  (request: {
-    method: string;
-    path: string;
-    body?: unknown;
-  }): Promise<{ status: number; body: unknown }>;
-}
+export type ErpTransport = (request: {
+  method: string;
+  path: string;
+  body?: unknown;
+}) => Promise<{ status: number; body: unknown }>;
 
 /** Calls the ERP's router directly: no sockets, no keys, deterministic. */
 export function inProcessTransport(handle: ErpHandler, token: string): ErpTransport {

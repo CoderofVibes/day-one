@@ -4,15 +4,11 @@
 // POST <record>/<id>/!transform/<record>); collections return full records rather than ids,
 // which NetSuite does not do. Errors use NetSuite's { type, title, status, "o:errorDetails" }.
 
-import type { Erp } from "../db.ts";
 import {
   ApiError,
-  type Clock,
-  type Principal,
-  RECORD_TYPES,
-  type RecordType,
   authenticate,
   billStatusForPo,
+  type Clock,
   createInventoryAdjustment,
   createInventoryStatusChange,
   createInventoryTransfer,
@@ -22,12 +18,16 @@ import {
   createVendorPaymentFromBody,
   findVendorByAccount,
   inventoryBalanceRows,
+  type Principal,
   patchPurchaseOrder,
   patchVendorBill,
+  RECORD_TYPES,
+  type RecordType,
   readers,
   require,
   serializeTrialBalance,
 } from "../api.ts";
+import type { Erp } from "../db.ts";
 import { renderPage } from "./views.ts";
 
 export interface ErpRequest {

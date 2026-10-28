@@ -7,18 +7,18 @@ import { and, asc, desc, eq } from "drizzle-orm";
 import type { ErpDb } from "./db.ts";
 import { dollars, quantity, toBase, usd } from "./money.ts";
 import {
+  postInventoryAdjustment,
+  postInventoryStatusChange,
+  postInventoryTransfer,
+} from "./posting/inventory.ts";
+import { trialBalance } from "./posting/journal.ts";
+import {
   approvedBillFor,
   createVendorBill,
   createVendorPayment,
   decideVendorBill,
   receiptsFor,
 } from "./posting/payables.ts";
-import {
-  postInventoryAdjustment,
-  postInventoryStatusChange,
-  postInventoryTransfer,
-} from "./posting/inventory.ts";
-import { trialBalance } from "./posting/journal.ts";
 import {
   closePurchaseOrder,
   ErpRefusal,
@@ -34,7 +34,6 @@ import {
   vendorByCode,
 } from "./posting/purchasing.ts";
 import {
-  type UserRole,
   accounts,
   approvalRules,
   auditTrail,
@@ -53,6 +52,7 @@ import {
   locations,
   purchaseOrderLines,
   purchaseOrders,
+  type UserRole,
   users,
   vendorBillLines,
   vendorBills,
@@ -1385,4 +1385,4 @@ export function findVendorByAccount(db: ErpDb, account: string) {
   return v ? serializeVendor(v) : null;
 }
 
-export { vendorByCode, and };
+export { and, vendorByCode };

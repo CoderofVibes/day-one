@@ -2,8 +2,8 @@
 // no framework. Dollars, PO numbers, invoice numbers and Day One lot IDs; no wallets, keys,
 // gas or token names. A payment shows its settlement reference and a "verify" link.
 
-import type { Erp } from "../db.ts";
 import { inventoryBalanceRows, readers, serializeTrialBalance } from "../api.ts";
+import type { Erp } from "../db.ts";
 
 const esc = (v: unknown) =>
   String(v ?? "")
