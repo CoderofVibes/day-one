@@ -14,7 +14,7 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 - Tiers: **T0** spine, **T1** economy, **T2** polish (PROJECT_BRIEF §5). Nothing in T1 starts while a T0 item is broken.
 - Plan for half of each day to be lost. Buffers are built in on Nov 7, Nov 12 and Nov 14.
 - **Pull forward (Tony, Oct 23 and Oct 25).** When a day's work finishes early, start the next day's top task; do not wait for a go-ahead. Spine work first, then gated features whose gates are green. Hard gates never move: the Nov 2 vision decision, the Nov 7 spine checkpoint, the Nov 10 cut decision, the Nov 13 freeze, the Nov 14 submission, and every **[H]** confirmation item.
-- **Unattended runs (Tony, Oct 25, OPEN_QUESTIONS #25).** A scheduled "continue-plan" session runs every 3 hours from Nov 1 and works through this plan with nobody at the keyboard, including testnet transactions. Only the hard rules in `AGENTS.md` (mainnet, making the repo public, posting, submitting) wait for Tony in chat.
+- **Unattended runs (Tony, Oct 25, OPEN_QUESTIONS #25).** A scheduled "continue-plan" session runs every 3 hours (working since Oct 28; task set to Auto mode) and works through this plan with nobody at the keyboard, including testnet transactions. Only the hard rules in `AGENTS.md` (mainnet, making the repo public, posting, submitting) wait for Tony in chat.
 - **Decisions of Oct 25** (OPEN_QUESTIONS #21–24): one merged contract; DTUSD for the demo and the Circle USDC order as a bonus; suppliers accept and ship from their own accounts; bookkeeper pack before the import wizard, both planned.
 - **Autonomous by default.** Claude and Muse work through this plan without checking in between tasks. Questions for Tony go into `OPEN_QUESTIONS.md` with a recommendation; work continues on whatever does not depend on the answer. See `AGENTS.md`, "Team and working protocol".
 
@@ -52,8 +52,8 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 ## Week 1 — the spine (T0)
 
 ### Organizer rules that add tasks (HACKATHON.md Q-001–Q-017, published Oct 28, read by Muse)
-- Code counts from Oct 19 (Q-001); the Nov 1 start in AGENTS.md hard rule 7 is ours. Lifting it waits for Tony in Claude's chat (OPEN_QUESTIONS #30).
-- [ ] Tag the last docs-only commit `pre-hackathon` before the first feature commit; tag `hackathon-submission` on Nov 14 (Q-003). Local tags; push them with the repo.
+- Code counts from Oct 19 (Q-001). **Feature code starts Oct 28** (Tony, OPEN_QUESTIONS #30): the Nov 1–4 tasks run early under the pull-forward rule; the dated hard gates do not move.
+- [x] Tag the last docs-only commit `pre-hackathon` before the first feature commit (done Oct 28, `2345975`); tag `hackathon-submission` on Nov 14 (Q-003). Local tags; push them with the repo.
 - [ ] Add an MIT `LICENSE` file (done Oct 28) and the libraries table in the README (Q-005, Q-014). Nov 13 at the latest.
 - [ ] Keep any hosted demo up to Nov 18, ideally Nov 25 (Q-012). Video stays the primary X demo; screenshots alone are not enough.
 
