@@ -6,7 +6,8 @@
     "./forecast": "./src/forecast.ts",
     "./purchasing": "./src/purchasing.ts",
     "./submit": "./src/submit.ts",
-    "./approval": "./src/approval.ts"
+    "./approval": "./src/approval.ts",
+    "./receiving": "./src/receiving.ts"
   },
   "dependencies": {
     "@day-one/server": "*",

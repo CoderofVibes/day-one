@@ -1,0 +1,11 @@
+{
+  "name": "@day-one/suppliers",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./shipping": "./src/shipping.ts"
+  },
+  "dependencies": {
+    "@day-one/server": "*"
+  }
+}

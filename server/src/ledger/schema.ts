@@ -512,6 +512,8 @@ export const CHAIN_TX_KINDS = [
   "submit_po",
   "approve_po",
   "reject_po",
+  "accept_po",
+  "mark_shipped",
   "fund_escrow",
   "confirm_receipt",
   "qc_release",

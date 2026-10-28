@@ -29,6 +29,13 @@
       "when": 1793217254053,
       "tag": "0003_freight",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1793218554818,
+      "tag": "0004_supplier_tx_kinds",
+      "breakpoints": true
     }
   ]
 }

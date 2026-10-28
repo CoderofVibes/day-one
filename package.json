@@ -5,6 +5,7 @@
   "workspaces": [
     "server",
     "agents/kevin",
+    "agents/suppliers",
     "web"
   ],
   "engines": {

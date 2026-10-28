@@ -6,6 +6,9 @@
     },
     {
       "path": "agents/kevin"
+    },
+    {
+      "path": "agents/suppliers"
     }
   ]
 }

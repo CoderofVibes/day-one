@@ -35,6 +35,7 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Create the testnet accounts (Windows, repo root; idempotent) | `npm run setup:testnet` → Acme tree under `acme-holdings.testnet`, keys in `.near-credentials/testnet/`, ids in `config/testnet-accounts.json` (verified Oct 28) |
 | Deploy and configure the contracts on testnet (Windows, repo root; idempotent) | `npm run deploy:testnet` → builds in WSL, deploys `dtusd` and `spend-policy` under `acme-holdings.testnet`, applies CONTRACTS §8, funds a 25,000 DTUSD budget (verified Oct 28) |
 | Verify a record against its on-chain anchor (Windows, repo root; no keys) | `npm run verify -- <record.json> [--json]` → `MATCH` (exit 0) or `MISMATCH` / `NOT_ANCHORED` (exit 1); a record file holds `kind`, `ref_id`, `salt`, `record`, `anchored_tx` (verified Oct 28 on a test anchor) |
+| Cancel a throwaway testnet PO as HQ (Windows; keychain) | `near contract call-function as-transaction spend-policy.acme-holdings.testnet cancel json-args '{"po_id":"PO-T…"}' prepaid-gas '30 Tgas' attached-deposit '1 yoctoNEAR' sign-as acme-holdings.testnet network-config testnet sign-with-keychain send` → escrow back to the budget (verified Oct 28 on PO-T1043) |
 | _(more commands are added as they first work)_ | |
 
 ## Team and working protocol
