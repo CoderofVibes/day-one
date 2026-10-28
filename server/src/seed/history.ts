@@ -118,8 +118,8 @@ export const HISTORY_BATCHES: readonly BatchSpec[] = [
  * Kevin's 10-day forecast finds after BR-B-1045 (§7, DEMO_SCRIPT step 4).
  */
 export const PLANNED_BATCHES = [
-  { batchNo: "BR-B-1047", product: "P-VC500", facility: "B", plannedFor: "2026-11-12" },
-  { batchNo: "BR-B-1048", product: "P-VC500", facility: "B", plannedFor: "2026-11-17" },
+  { batchNo: "BR-B-1047", product: "P-VC500", facility: "B", plannedFor: "2026-11-17" },
+  { batchNo: "BR-B-1048", product: "P-VC500", facility: "B", plannedFor: "2026-11-19" },
 ] as const satisfies readonly {
   batchNo: string;
   product: string;

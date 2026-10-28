@@ -191,11 +191,13 @@ The four vendors in the demo's quote and payment flows (Northgate, Ridgeway, Qui
 
 Demo quote set for ascorbic acid (700 kg):
 
-| Supplier agent | $/kg | Lead time | Kevin's ranking |
-|---|---|---|---|
-| QuickChem Direct | 5.90 | 4 days | Excluded: vendor not qualified |
-| Northgate Ingredients | 7.10 | 7 days | **Selected**: qualified, lowest qualified price, lead time inside 10-day need |
-| Ridgeway Ascorbics | 7.35 | 5 days | Runner-up |
+| Supplier agent | $/kg | Freight | Lead time | Kevin's ranking |
+|---|---|---|---|---|
+| QuickChem Direct | 5.90 | $0 | 4 days | Excluded: vendor not qualified |
+| Northgate Ingredients | 7.10 | $180 | 7 days | **Selected**: qualified, lowest landed cost ($5,150.00), arrives Nov 16, before the Nov 17 batch |
+| Ridgeway Ascorbics | 7.35 | $165 | 5 days | Runner-up ($5,310.00) |
+
+As data: `server/src/seed/quotes.ts` (`DEMO_QUOTES`). Kevin ranks qualified quotes by landed cost (quantity × price + freight) and excludes any quote whose lead time misses the need-by date (the first planned batch that stock cannot cover).
 
 ---
 
@@ -282,7 +284,7 @@ As seeded (`server/src/seed/history.ts`, `lots.ts`):
 - **Transfers from Plant C (4):** TR-C-B-261009 (24,000 bottles), TR-C-B-261010 (24,000 caps), TR-C-A-261012 (15,000 CMD labels), TR-C-B-261020 (20,000 VC500 labels).
 - **QC rejection:** `CCS-261023-01` (50 kg, Pacific) received Oct 23, rejected Oct 24 (loss on drying above limit), returned to the vendor Oct 26 as a `wasted` event.
 - Lots received before Oct 1 are opening stock. Every blend material at Plant B ends at or above its reorder point except ascorbic acid.
-- **Production plan** (`PLANNED_BATCHES`): BR-B-1047 (VC500, Nov 12) and BR-B-1048 (VC500, Nov 17) at Plant B, the two batches inside Kevin's 10-day forecast from the demo clock. Opening stock of sorbitol (`SOR-260901-01`, 1,600 kg), MCC (`MCC-260901-01`, 500 kg) and orange flavor (`FOR-260901-01`, 60 kg) is sized so that after BR-B-1045 and both planned batches every VC500 material except ascorbic acid stays at or above its reorder point; ascorbic acid is the only reorder Kevin proposes.
+- **Production plan** (`PLANNED_BATCHES`): BR-B-1047 (VC500, Nov 17) and BR-B-1048 (VC500, Nov 19) at Plant B, the two batches inside Kevin's 10-day forecast from the demo clock. Opening stock of sorbitol (`SOR-260901-01`, 1,600 kg), MCC (`MCC-260901-01`, 500 kg) and orange flavor (`FOR-260901-01`, 60 kg) is sized so that after BR-B-1045 and both planned batches every VC500 material except ascorbic acid stays at or above its reorder point; ascorbic acid is the only reorder Kevin proposes.
 
 ---
 

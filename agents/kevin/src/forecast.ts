@@ -52,6 +52,8 @@ export interface Forecast {
   reorderPointBase: number;
   /** Set when stock after the horizon would fall below the reorder point. */
   recommendQtyBase: number | null;
+  /** The date of the first planned batch that stock on hand and on order cannot cover. */
+  needBy: string | null;
   sentence: string;
 }
 
@@ -163,6 +165,12 @@ export function forecastMaterial(db: Ledger, input: ForecastInput): Forecast {
   const onOrderBase = stock(INCOMING) + openPoBase;
 
   const afterBase = onHandBase + onOrderBase - needBase;
+  let covered = onHandBase + onOrderBase;
+  const needBy =
+    plannedBatches.find((b) => {
+      covered -= b.needBase;
+      return covered < 0;
+    })?.plannedFor ?? null;
   const shortfallBase = Math.max(0, -afterBase);
   const reorderPointBase = material.reorderPointBase ?? 0;
   const reorderQtyBase = material.reorderQtyBase ?? shortfallBase;
@@ -217,6 +225,7 @@ export function forecastMaterial(db: Ledger, input: ForecastInput): Forecast {
     shortfallBase,
     reorderPointBase,
     recommendQtyBase,
+    needBy,
     sentence,
   };
 }

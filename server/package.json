@@ -14,7 +14,8 @@
     "./chain/replay": "./src/chain/replay.ts",
     "./llm/client": "./src/llm/client.ts",
     "./llm/types": "./src/llm/types.ts",
-    "./seed": "./src/seed/index.ts"
+    "./seed": "./src/seed/index.ts",
+    "./seed/quotes": "./src/seed/quotes.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate"

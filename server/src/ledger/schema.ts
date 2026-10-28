@@ -667,6 +667,7 @@ export const quotes = sqliteTable(
       .notNull()
       .references(() => vendors.id),
     unitPriceUsdc: integer().notNull(),
+    freightUsdc: integer().notNull().default(0),
     leadTimeDays: integer().notNull(),
     validUntil: text(),
     status: text({ enum: QUOTE_STATUS }).notNull(),
@@ -705,6 +706,7 @@ export const purchaseOrders = sqliteTable(
       .notNull()
       .references(() => facilities.id),
     category: text({ enum: PO_CATEGORIES }).notNull(),
+    freightUsdc: integer().notNull().default(0),
     totalUsdc: integer().notNull(),
     status: text({ enum: PO_STATUS }).notNull().default("draft"),
     poHash: text(),

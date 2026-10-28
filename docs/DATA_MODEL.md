@@ -86,8 +86,8 @@ The seeded `ASC-261009-01` case: shipped 200,000,000 mg, received 187,450,000 mg
 |---|---|
 | `forecasts` | `material_id`, `facility_id`, `horizon_days`, `projected_need_base`, `on_hand_base`, `on_order_base`, `shortfall_base`, `method_note`, `created_at` |
 | `rfqs` | `rfq_no`, `material_id`, `qty_base`, `need_by`, `facility_id`, `created_by` |
-| `quotes` | `rfq_id`, `vendor_id`, `unit_price_usdc` (per base-unit multiple, see below), `lead_time_days`, `valid_until`, `status` (`received`, `accepted`, `declined`, `excluded`), `exclusion_reason`, `quote_hash`, `chain_tx_id` |
-| `purchase_orders` | `po_no`, `vendor_id`, `ship_to_facility_id`, `category` (`raw_material`, `packaging`, `lab_chemical`), `total_usdc`, `status`, `po_hash`, `created_by`, `need_by` |
+| `quotes` | `rfq_id`, `vendor_id`, `unit_price_usdc` (per base-unit multiple, see below), `freight_usdc`, `lead_time_days`, `valid_until`, `status` (`received`, `accepted`, `declined`, `excluded`), `exclusion_reason`, `quote_hash`, `chain_tx_id` |
+| `purchase_orders` | `po_no`, `vendor_id`, `ship_to_facility_id`, `category` (`raw_material`, `packaging`, `lab_chemical`), `freight_usdc`, `total_usdc` (lines + freight), `status`, `po_hash`, `created_by`, `need_by` |
 | `po_lines` | `po_id`, `line_no`, `material_id`, `qty_base`, `unit`, `unit_price_usdc`, `extended_usdc`, `quote_id` |
 | `approvals` | `po_id`, `approver_staff_id`, `channel` (`sms_sim`), `request_text`, `response_text`, `state` (`requested`, `approved`, `declined`, `expired`), `requested_at`, `responded_at`, `refused_tx_id`, `approve_tx_id` |
 | `receipts` | `po_id`, `facility_id`, `packing_slip_file`, `packing_slip_sha256`, `match_status` (`matched`, `mismatch`), `mismatch_notes`, `received_by`, `received_at` |
@@ -97,7 +97,7 @@ The seeded `ASC-261009-01` case: shipped 200,000,000 mg, received 187,450,000 mg
 
 **Prices:** store `unit_price_usdc` per the PO line's unit (e.g. per kg) and compute `extended_usdc` with integer math; round half up at the line level only.
 
-**`po_hash`:** sha256 of the canonical PO (vendor, lines, total, need-by, salt). It binds the director's approval to exact terms.
+**`po_hash`:** sha256 of the canonical PO (PO number, vendor account, lines, freight, total, need-by, salt). It binds the director's approval to exact terms.
 
 ## 8. Chain evidence
 
