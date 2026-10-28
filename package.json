@@ -6,7 +6,8 @@
     "server",
     "agents/kevin",
     "agents/suppliers",
-    "web"
+    "web",
+    "erp"
   ],
   "engines": {
     "node": ">=22.13"

@@ -1,0 +1,29 @@
+{
+  "name": "@day-one/erp",
+  "private": true,
+  "type": "module",
+  "description": "A NetSuite-shaped mock of the acquirer's ERP: vendor master, items, locations, purchase orders, item receipts, vendor bills with a 3-way match, payments, inventory and the general ledger. Not NetSuite; see docs/ERP.md.",
+  "exports": {
+    "./db": "./src/db.ts",
+    "./schema": "./src/schema.ts",
+    "./money": "./src/money.ts",
+    "./seed": "./src/seed/index.ts",
+    "./posting": "./src/posting/index.ts",
+    "./match": "./src/match.ts",
+    "./approval": "./src/approval.ts",
+    "./api": "./src/api.ts",
+    "./http/router": "./src/http/router.ts",
+    "./server": "./src/server.ts"
+  },
+  "scripts": {
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "better-sqlite3": "13.0.3",
+    "drizzle-orm": "0.45.4"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "drizzle-kit": "0.31.11"
+  }
+}
