@@ -27,7 +27,7 @@ The demo clock starts at `2026-11-09T13:00:00Z`. Each step prints a plain-langua
 
 | # | Step | Expected staff-facing output | Expected chain output |
 |---|---|---|---|
-| 0 | Load seed | `Loaded 3 facilities, 33 materials, 12 vendors, 7 batch records, 30 days of history.` | `chain: accounts ok (17), spend-policy budget 25,000.00 DTUSD` |
+| 0 | Load seed | `Loaded 3 facilities, 33 materials, 12 vendors, 7 batch records, 56 days of history.` (days since the first seeded batch, BR-B-1033 on Sep 14) | `chain: spend-policy budget 25,000.00 DTUSD, escrowed 0.00 DTUSD` |
 | 1 | Upload BR-B-1045 | `Kevin read BR-B-1045 (VC500, 800,000 tablets). 8 materials, all within tolerance. Yield 90.8%.` | — |
 | 2 | Ray confirms | `Inventory updated. Ascorbic acid at Plant B: 722.4 kg → 310.0 kg (reorder point 500 kg).` | `chain: anchored BR-B-1045 0x… (tx …)` |
 | 3 | Discrepancy | `Plant A still shows 12.55 kg of lot ASC-261009-01, but Plant B weighed in 187.45 kg of the 200 kg sent. Proposed adjustment sent to Plant A for review.` | — |
@@ -37,11 +37,12 @@ The demo clock starts at `2026-11-09T13:00:00Z`. Each step prints a plain-langua
 | 7 | Big PO | `PO-1042 to Northgate Ingredients, $5,150.00 is over Kevin's $2,500.00 limit. Sent to Linda for approval.` | `chain: submit_po PO-1042 ✗ REFUSED "PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required" (tx …)` |
 | 8 | Linda texts | `Linda: YES 1042` → `Approved by Linda Park.` | `chain: approve_po PO-1042 ✓ signed by director.plant-b…, paid by dayone-relayer.testnet (tx …)` |
 | 9 | Kevin retries | `PO-1042 sent to Northgate Ingredients. Funds held until delivery passes QC.` | `chain: submit_po PO-1042 ✓ (tx …) · escrow funded 5,150.00 DTUSD` |
+| 9b | Supplier ships | — | `chain: accept_po PO-1042 ✓ signed by northgate-ingredients.testnet (tx …)`, then `mark_shipped` the same way |
 | 10 | Delivery | `Tommy photographed the packing slip. Matches PO-1042: 700 kg ascorbic acid, supplier lot NG-24-8812. Lot ASC-261116-01 is in quarantine.` | `chain: confirm_receipt PO-1042 ✓ signed by receiving.plant-b…, relayed (tx …)` |
 | 11 | QC release | `Priya released lot ASC-261116-01.` | `chain: qc_release PO-1042 ✓ (tx …) · 5,150.00 DTUSD → northgate-ingredients.testnet` |
 | 12 | Paid | `PO-1042 — paid $5,150.00. Invoice matched to PO and receipt.` | `chain: anchored receipt PO-1042 0x… (tx …)` |
 | 13 | Real USDC proof | `PO-1047 (pH buffer ×2, $19.00) settled in Circle USDC.` | `chain: full cycle on the USDC deployment, 19.00 USDC → bayfront-labsupply.testnet (txs …)` |
-| 14 | Summary | `Plant B: 6 of 9 departments online.` | `chain: 11 transactions, 1 refused by design, 0 failed. Explorer links: data/replay/transcript.txt` |
+| 14 | Summary | `Plant B: 6 of 9 departments online.` | `chain: 10 transactions, 1 refused by design, 0 failed.` (11 with step 13), then the explorer links |
 
 Exact numbers come from `FICTIONAL_DATA.md` and must be recomputed by code, not hard-coded in the script. The replay test asserts that the printed transcript equals the committed one.
 

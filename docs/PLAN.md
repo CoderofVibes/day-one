@@ -40,7 +40,7 @@ _(none)_
 9. ~~**NEAR Discord**~~ Done Oct 27: prep question already asked by many; organizers say a blog post is coming (OPEN_QUESTIONS #8).
 10. ~~**Payout account**~~ Done Oct 27: `Tony's prize account` in Meteor Wallet; recovery phrase kept offline by Tony.
 11. ~~**X account**~~ Done Oct 27: Tony confirmed it can post video. Keep the export ≤2:20 (standard-account limit) as planned.
-12. **Run `npm run setup:testnet` once in your session** (OPEN_QUESTIONS #31): adds the server's key to `dayone-relayer.testnet` with your keychain. Needed for the live relayed approval (Nov 5). About a minute.
+12. ~~**Run `npm run setup:testnet` once in your session**~~ Done Oct 28 (OPEN_QUESTIONS #31): `dayone-relayer.testnet` has the server's key; the live relayed steps can run.
 
 ### Claude tasks in prep (tooling only, once the human approves installs)
 - [x] [I] In WSL2: rustup stable 1.99.1, `wasm32-unknown-unknown`, cargo-near 0.22.0 installed Oct 25. Disk recorded in RISKS.md.
@@ -94,7 +94,7 @@ _(none)_
 
 ### Sat Nov 7 — spine complete
 - [ ] [I] **CLI and machine-readable output** (Muse #34, from the judges' interest in agent-operable tools): the existing `npm run` commands (`demo`, `demo:live`, `verify`, seed and reset, show escrow state) each accept `--json` and print one final JSON line besides the readable text. No new CLI framework.
-- [ ] [I] `npm run demo:live -- --record` end to end on testnet; fixtures committed.
+- [ ] [I] `npm run demo:live -- --record` end to end on testnet; fixtures committed. **Runner built Oct 28:** `agents/kevin/src/demo.ts` (`runDemo`) sequences the real modules on the demo clock (steps 0–2, 4–12, the supplier's accept and ship, 14) and prints each staff line and `chain:` line; 5 tests drive it against an in-memory contract stand-in and match DEMO_SCRIPT word for word (step 0 now reads 56 days of history, step 14 counts 10 transactions). `scripts/demo.ts`: `npm run demo` replays `data/replay/demo-*.json` and checks the transcript; `npm run demo:live` runs live and refuses to start if the relayer key is missing or PO-1041/PO-1042 already exist on chain; `-- --record` writes the fixtures, `transcript.txt` and `data/batch-records/BR-B-1045.json`; `--json` too. Not in the run yet: step 3, step 5's quote anchors, step 13, the departments count; the packing slip is read from its ground-truth file, not the photo. **Left:** the live recording itself. PO ids can be used once per contract, so a failed live run needs the contract reset (LESSONS, Oct 28); rehearse the relayed steps once with throwaway ids first.
 - [ ] [I] Replay mode; transcript test; behind-the-curtain view as a transaction log with explorer links.
 - [ ] [I] **Bonus, never a gate (decision #22):** USDC deployment and PO-1047 recorded in Circle testnet USDC, once Tony has collected some. Week 2 never waits for it.
 - [ ] [I] GitHub Actions workflow (Linux) running `npm test` and `npm run test:contracts`; it runs once the repo is public.
