@@ -257,6 +257,15 @@ async fn purchasing_loop_on_sandbox() {
         json!({ "category": "lab_chemical", "monthly_cap": usd(2_000) }),
     )
     .await;
+    for supplier in ["northgate", "bayfront", "unregistered"] {
+        w.ok(
+            "acme",
+            "policy",
+            "set_supplier",
+            json!({ "supplier": supplier, "status": "Qualified" }),
+        )
+        .await;
+    }
 
     // Fund the budget from the treasury. Tokens from anyone else come back.
     let transfer_call =
@@ -294,6 +303,16 @@ async fn purchasing_loop_on_sandbox() {
         "stranger's tokens returned"
     );
     assert_eq!(w.books().await, (25_000, 0));
+
+    // A supplier HQ has not approved is refused outright.
+    let refused = w
+        .submit("PO-1040", "stranger", 10, "raw_material")
+        .await
+        .unwrap_err();
+    assert!(
+        refused.contains("stranger is not an approved supplier"),
+        "{refused}"
+    );
 
     // PO-1041, within limits: funded straight into escrow.
     w.submit("PO-1041", "bayfront", 612, "lab_chemical")

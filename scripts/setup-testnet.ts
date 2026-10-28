@@ -44,6 +44,12 @@ const ROOT_CHILDREN = [
   { id: `plant-c.${ROOT}`, near: 0.2 },
   { id: SPEND_POLICY, near: 5 },
   { id: `dtusd.${ROOT}`, near: 3 },
+  // Supplier agents are top-level accounts outside Acme's tree (created through the `testnet`
+  // registrar). Acme pays for their creation but holds no say over them afterwards.
+  { id: "northgate-ingredients.testnet", near: 1 },
+  { id: "ridgeway-ascorbics.testnet", near: 1 },
+  { id: "quickchem-direct.testnet", near: 1 },
+  { id: "bayfront-labsupply.testnet", near: 1 },
 ] as const;
 
 /**

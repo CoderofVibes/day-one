@@ -128,9 +128,20 @@ async function main() {
   await deploy(TOKEN, build("dtusd"), { owner_id: ROOT, total_supply: SUPPLY.toString() });
   await deploy(POLICY, build("spend-policy"), { owner: ROOT, treasury: ROOT, token: TOKEN });
 
-  // Token storage for the contract (Acme registered at init as the owner).
-  if ((await view(TOKEN, "storage_balance_of", { account_id: POLICY })) === null) {
-    asAcme(TOKEN, "storage_deposit", { account_id: POLICY }, STORAGE_DEPOSIT);
+  // Token storage for the contract and every supplier agent (Acme registered at init as the
+  // owner). QuickChem is registered too, so a refusal to pay it comes from the policy, not
+  // from missing storage.
+  const holders = [
+    POLICY,
+    "northgate-ingredients.testnet",
+    "ridgeway-ascorbics.testnet",
+    "quickchem-direct.testnet",
+    "bayfront-labsupply.testnet",
+  ];
+  for (const holder of holders) {
+    if ((await view(TOKEN, "storage_balance_of", { account_id: holder })) === null) {
+      asAcme(TOKEN, "storage_deposit", { account_id: holder }, STORAGE_DEPOSIT);
+    }
   }
 
   // CONTRACTS.md §8 configuration. Each call is made only when the chain differs, so re-runs

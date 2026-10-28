@@ -43,6 +43,7 @@ enum StorageKey {
     Pos,
     PoIds,
     Anchors,
+    Suppliers,
 }
 
 #[near(serializers = [borsh, json])]
@@ -57,6 +58,15 @@ pub struct AgentPolicy {
     pub categories: Vec<String>,
     pub approver: AccountId,
     pub active: bool,
+}
+
+/// A supplier Kevin may pay. Conditional suppliers always need the director's approval;
+/// a supplier with no status cannot be paid at all (FICTIONAL_DATA.md §9).
+#[near(serializers = [borsh, json])]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum SupplierStatus {
+    Qualified,
+    Conditional,
 }
 
 #[near(serializers = [borsh, json])]
@@ -167,6 +177,7 @@ pub struct SpendPolicy {
     pos: LookupMap<String, PoRecord>,
     po_ids: Vector<String>,
     anchors: LookupMap<String, Anchor>,
+    suppliers: LookupMap<AccountId, SupplierStatus>,
 }
 
 fn spend_key(who: &str, period: u32) -> String {
@@ -193,6 +204,7 @@ impl SpendPolicy {
             pos: LookupMap::new(StorageKey::Pos),
             po_ids: Vector::new(StorageKey::PoIds),
             anchors: LookupMap::new(StorageKey::Anchors),
+            suppliers: LookupMap::new(StorageKey::Suppliers),
         }
     }
 
@@ -261,6 +273,21 @@ impl SpendPolicy {
             approver,
         }
         .emit();
+    }
+
+    /// Sets a supplier's status; `None` removes it, so it can no longer be paid.
+    #[payable]
+    pub fn set_supplier(&mut self, supplier: AccountId, status: Option<SupplierStatus>) {
+        self.require_owner();
+        match status {
+            Some(s) => {
+                self.suppliers.insert(supplier.clone(), s);
+            }
+            None => {
+                self.suppliers.remove(&supplier);
+            }
+        }
+        Event::SupplierSet { supplier, status }.emit();
     }
 
     #[payable]
@@ -364,6 +391,12 @@ impl SpendPolicy {
         if self.pos.contains_key(&po_id) {
             refuse(format!("{po_id} was already submitted."));
         }
+        let supplier_status = match self.suppliers.get(&supplier) {
+            Some(status) => *status,
+            None => refuse(format!(
+                "{supplier} is not an approved supplier; no approval can override this."
+            )),
+        };
         if amount.0 > self.budget {
             refuse(format!(
                 "Plant budget is short by {}.",
@@ -397,6 +430,11 @@ impl SpendPolicy {
                 Some(a.approved_by)
             }
             None => {
+                if supplier_status == SupplierStatus::Conditional {
+                    refuse(format!(
+                        "{po_id}: {supplier} is a conditional supplier; director approval required."
+                    ));
+                }
                 if amount.0 > policy.per_po_limit.0 {
                     refuse(format!(
                         "{po_id}: {} exceeds {name}'s per-PO limit of {}; director approval required.",
@@ -728,6 +766,10 @@ impl SpendPolicy {
     pub fn get_category_spent(&self, category: String, period: Option<u32>) -> U128 {
         let month = period.unwrap_or_else(|| self.get_period());
         U128(self.spent(&spend_key(&category, month), false))
+    }
+
+    pub fn get_supplier(&self, supplier: AccountId) -> Option<SupplierStatus> {
+        self.suppliers.get(&supplier).copied()
     }
 
     pub fn get_category_cap(&self, category: String) -> Option<U128> {

@@ -3,6 +3,8 @@
 use near_sdk::json_types::U128;
 use near_sdk::{near, AccountId};
 
+use crate::SupplierStatus;
+
 #[near(event_json(standard = "dayone_spend_policy"))]
 pub enum Event {
     #[event_version("1.0.0")]
@@ -24,6 +26,11 @@ pub enum Event {
         plant: AccountId,
         receiver: AccountId,
         qc: AccountId,
+    },
+    #[event_version("1.0.0")]
+    SupplierSet {
+        supplier: AccountId,
+        status: Option<SupplierStatus>,
     },
     #[event_version("1.0.0")]
     AgentPaused { agent: AccountId },

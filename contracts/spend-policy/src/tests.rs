@@ -43,6 +43,9 @@ fn northgate() -> AccountId {
 fn bayfront() -> AccountId {
     acc("bayfront-labsupply.testnet")
 }
+fn delta_d() -> AccountId {
+    acc("delta-d-nutrition.testnet")
+}
 fn hash(n: u8) -> String {
     format!("{n:02x}").repeat(32)
 }
@@ -97,6 +100,9 @@ fn setup() -> SpendPolicy {
         director(),
     );
     c.set_category_cap("lab_chemical".into(), U128(2_000 * DOLLAR));
+    c.set_supplier(northgate(), Some(SupplierStatus::Qualified));
+    c.set_supplier(bayfront(), Some(SupplierStatus::Qualified));
+    c.set_supplier(delta_d(), Some(SupplierStatus::Conditional));
     as_(&token());
     let _ = c.ft_on_transfer(owner(), U128(25_000 * DOLLAR), String::new());
     c
@@ -298,6 +304,71 @@ fn unauthorized_category_is_refused() {
 }
 
 #[test]
+fn unapproved_supplier_is_refused_even_with_an_approval() {
+    let mut c = setup();
+    let quickchem = acc("quickchem-direct.testnet");
+    let msg = panic_message(|| submit(&mut c, "PO-1", quickchem.clone(), 10, "raw_material"));
+    assert_eq!(
+        msg,
+        "quickchem-direct.testnet is not an approved supplier; no approval can override this."
+    );
+    call_as(&director(), &relayer(), DEMO_NS, 0);
+    c.approve_po(
+        "PO-1".into(),
+        quickchem.clone(),
+        U128(10 * DOLLAR),
+        "raw_material".into(),
+        hash(1),
+        "tx".into(),
+    );
+    let again = panic_message(|| submit(&mut c, "PO-1", quickchem.clone(), 10, "raw_material"));
+    assert_eq!(again, msg);
+    assert_eq!(budget(&c), (25_000, 0));
+}
+
+#[test]
+fn removing_a_supplier_stops_new_pos_to_it() {
+    let mut c = setup();
+    as_owner();
+    c.set_supplier(bayfront(), None);
+    assert_eq!(c.get_supplier(bayfront()), None);
+    let msg = panic_message(|| submit(&mut c, "PO-1", bayfront(), 10, "lab_chemical"));
+    assert!(msg.contains("is not an approved supplier"), "{msg}");
+}
+
+#[test]
+fn conditional_supplier_needs_the_director_at_any_amount() {
+    let mut c = setup();
+    let msg = panic_message(|| submit(&mut c, "PO-1043", delta_d(), 1_480, "raw_material"));
+    assert_eq!(
+        msg,
+        "PO-1043: delta-d-nutrition.testnet is a conditional supplier; director approval required."
+    );
+    call_as(&director(), &relayer(), DEMO_NS, 0);
+    c.approve_po(
+        "PO-1043".into(),
+        delta_d(),
+        U128(1_480 * DOLLAR),
+        "raw_material".into(),
+        hash(1),
+        "tx".into(),
+    );
+    submit(&mut c, "PO-1043", delta_d(), 1_480, "raw_material");
+    assert_eq!(
+        c.get_po("PO-1043".into()).unwrap().approved_by,
+        Some(director())
+    );
+}
+
+#[test]
+fn only_hq_sets_suppliers() {
+    let mut c = setup();
+    call_as(&kevin(), &kevin(), DEMO_NS, 1);
+    let msg = panic_message(|| c.set_supplier(kevin(), Some(SupplierStatus::Qualified)));
+    assert_eq!(msg, "Only Acme HQ can change the policy.");
+}
+
+#[test]
 fn budget_shortfall_cannot_be_approved_away() {
     let mut c = setup();
     approve(&mut c, "PO-9", 30_000);
@@ -405,15 +476,7 @@ fn retry_that_differs_from_the_approval_is_refused() {
     approve(&mut c, "PO-1042", 5_150);
     let msg = panic_message(|| submit(&mut c, "PO-1042", northgate(), 5_151, "raw_material"));
     assert_eq!(msg, "PO-1042 does not match what the director approved.");
-    let msg = panic_message(|| {
-        submit(
-            &mut c,
-            "PO-1042",
-            acc("quickchem-direct.testnet"),
-            5_150,
-            "raw_material",
-        )
-    });
+    let msg = panic_message(|| submit(&mut c, "PO-1042", bayfront(), 5_150, "raw_material"));
     assert_eq!(msg, "PO-1042 does not match what the director approved.");
     as_(&kevin());
     let msg = panic_message(|| {

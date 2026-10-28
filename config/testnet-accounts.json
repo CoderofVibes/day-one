@@ -28,6 +28,26 @@
         "ed25519:4gKTbKa3q4GyeWkFDCpNb4frKZkPcXnAZMNBbSZwgtF9"
       ]
     },
+    "northgate-ingredients.testnet": {
+      "publicKeys": [
+        "ed25519:615xvQm5wFkr8X2RNSZbKj6KdHRmDCm95f3b62GGentP"
+      ]
+    },
+    "ridgeway-ascorbics.testnet": {
+      "publicKeys": [
+        "ed25519:FFqh5vqFQ4FhSeX8FUtS7wHf85WYH7dYTNPvhiZhpL2w"
+      ]
+    },
+    "quickchem-direct.testnet": {
+      "publicKeys": [
+        "ed25519:CRmt6KjQTLy2Z8sRRJceapEWVQPfjV4JQzkVWnKKstDv"
+      ]
+    },
+    "bayfront-labsupply.testnet": {
+      "publicKeys": [
+        "ed25519:3rQ25LH7dmGMChVPf9cR7Ukp4tiWuBkegGStfzsBPaPW"
+      ]
+    },
     "kevin.plant-b.acme-holdings.testnet": {
       "publicKeys": [
         "ed25519:VmAfDJHAsvDTKWcCYaGULvfySU7PhHy31hPfJbeQBR7",
