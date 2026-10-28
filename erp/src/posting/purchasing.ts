@@ -230,7 +230,7 @@ export function upsertPurchaseOrder(db: ErpDb, input: PoInput): PoResult {
 /** The HQ controller's signature on a PO the matrix routed to them. */
 export function signPurchaseOrder(
   db: ErpDb,
-  input: { tranId: string; userId: number; note?: string; at: string },
+  input: { tranId: string; userId: number; note?: string | undefined; at: string },
 ) {
   const po = poByTranId(db, input.tranId);
   if (!po) throw new ErpRefusal("PO_NOT_FOUND", `No purchase order ${input.tranId}.`);

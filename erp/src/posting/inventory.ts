@@ -129,7 +129,7 @@ export interface AdjustmentInput {
   locationId: number;
   tranDate: string;
   reason: (typeof inventoryAdjustments.$inferInsert)["reason"];
-  memo?: string;
+  memo?: string | undefined;
   lines: AdjustmentLineInput[];
   userId: number;
   at: string;
@@ -262,7 +262,7 @@ export interface TransferInput {
   fromLocationId: number;
   toLocationId: number;
   tranDate: string;
-  memo?: string;
+  memo?: string | undefined;
   lines: {
     itemId: number;
     lotNumber: string;
@@ -354,7 +354,7 @@ export interface StatusChangeInput {
   externalId: string;
   locationId: number;
   tranDate: string;
-  memo?: string;
+  memo?: string | undefined;
   lines: {
     itemId: number;
     lotNumber: string;
