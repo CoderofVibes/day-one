@@ -25,6 +25,7 @@ import { DEMO_QUOTES } from "@day-one/server/seed/quotes";
 import { count, eq, min, ne } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import { handleApprovalReply } from "./approval.ts";
+import type { KevinErp } from "./erp.ts";
 import {
   batchRecordAnchorItem,
   batchRecordProof,
@@ -85,6 +86,8 @@ export interface DemoDeps {
   invoiceText: string;
   ship: ShipFn;
   salts: DemoSalts;
+  /** The acquirer's ERP, when the run is integrated with it (docs/ERP.md); its lines go to `erp`. */
+  erp?: KevinErp;
 }
 
 export interface DemoStep {
@@ -92,6 +95,8 @@ export interface DemoStep {
   title: string;
   staff: string[];
   chain: string[];
+  /** What the ERP connector posted during the step; absent when no ERP is attached. */
+  erp?: string[];
 }
 
 export interface DemoResult {
@@ -113,8 +118,15 @@ class DemoStopped extends Error {
 export async function runDemo(deps: DemoDeps): Promise<DemoResult> {
   const { db, chain } = deps;
   const steps: DemoStep[] = [];
-  const add = (step: number, title: string, staffLines: string[], chainLines: string[] = []) => {
-    const s = { step, title, staff: staffLines, chain: chainLines };
+  const add = (
+    step: number,
+    title: string,
+    staffLines: string[],
+    chainLines: string[] = [],
+    erpLines: string[] = [],
+  ) => {
+    const s: DemoStep = { step, title, staff: staffLines, chain: chainLines };
+    if (erpLines.length) s.erp = erpLines;
     steps.push(s);
     return s;
   };
@@ -198,6 +210,7 @@ export async function runDemo(deps: DemoDeps): Promise<DemoResult> {
       now: DEMO_CLOCK.confirm,
     });
     anchoredTx = batchAnchor.txHash;
+    const erpBatch = deps.erp ? [await deps.erp.batchConfirmed(db, batchId)] : [];
     add(
       2,
       "Ray confirms",
@@ -208,6 +221,7 @@ export async function runDemo(deps: DemoDeps): Promise<DemoResult> {
           batchAnchor,
         ),
       ],
+      erpBatch,
     );
     expect(batchAnchor.status === "success", `anchoring BR-B-1045 ${batchAnchor.status}`);
 
@@ -239,11 +253,15 @@ export async function runDemo(deps: DemoDeps): Promise<DemoResult> {
       needBy: null,
       salt: deps.salts.po1041,
     });
+    // With an ERP attached, Kevin checks the payee against its vendor master before every
+    // submit and mirrors the PO with the contract's verdict after it.
+    const erp1041 = deps.erp ? [(await deps.erp.checkPayee(po1041)).line] : [];
     const small = await submitPo(db, chain, po1041, {
       ...ctx,
       summary: "lab chemicals",
       now: DEMO_CLOCK.purchase,
     });
+    if (deps.erp) erp1041.push(await deps.erp.poSubmitted(db, po1041.id));
     add(
       6,
       "Small PO",
@@ -255,17 +273,20 @@ export async function runDemo(deps: DemoDeps): Promise<DemoResult> {
           escrowed(small.outcome, po1041.totalUsdc),
         ),
       ],
+      erp1041,
     );
     expect(small.status === "funded", `${po1041.poNo} was not funded`);
 
     // 7. The big PO: the contract refuses it and Kevin asks the approver in his policy.
     const po1042 = draftPoFromRanking(db, ranking, "PO-1042", deps.salts.po1042);
+    const erp1042 = deps.erp ? [(await deps.erp.checkPayee(po1042)).line] : [];
     const big = await submitPo(db, chain, po1042, {
       ...ctx,
       summary: "700 kg ascorbic acid",
       now: DEMO_CLOCK.purchase,
     });
-    add(7, "Big PO", [big.sentence], [chainLine(`submit_po ${po1042.poNo}`, big.outcome)]);
+    if (deps.erp) erp1042.push(await deps.erp.poSubmitted(db, po1042.id));
+    add(7, "Big PO", [big.sentence], [chainLine(`submit_po ${po1042.poNo}`, big.outcome)], erp1042);
     expect(big.status === "awaiting_approval", `${po1042.poNo} did not go to approval`);
 
     // 8–9. Linda texts YES 1042; the approval is relayed and Kevin retries.
@@ -287,6 +308,7 @@ export async function runDemo(deps: DemoDeps): Promise<DemoResult> {
         : [],
     );
     expect(reply.approval?.status === "success", "the approval did not go through");
+    const erpRetry = deps.erp && reply.retry ? [await deps.erp.poSubmitted(db, po1042.id)] : [];
     add(
       9,
       "Kevin retries",
@@ -300,6 +322,7 @@ export async function runDemo(deps: DemoDeps): Promise<DemoResult> {
             ),
           ]
         : [],
+      erpRetry,
     );
     expect(reply.retry?.status === "funded", `${po1042.poNo} was not funded on retry`);
 
@@ -332,6 +355,14 @@ export async function runDemo(deps: DemoDeps): Promise<DemoResult> {
       { slip: deps.slip, receiverStaffId: tommy.id },
       { policyContract: deps.policyContract, now: DEMO_CLOCK.receive },
     );
+    // Northgate's invoice arrives with the delivery. Kevin reads it now so the ERP can match
+    // it to the PO and the receipt before QC's release pays the escrow (docs/ERP.md §3.7).
+    const reading = await readInvoice(deps.llm, deps.invoiceText);
+    const invoice = matchInvoice(db, reading, deps.invoiceText);
+    const erpDelivery =
+      deps.erp && received.receiptId ? [await deps.erp.received(db, received.receiptId)] : [];
+    if (deps.erp && received.receiptId)
+      erpDelivery.push((await deps.erp.invoiceRead(db, reading)).line);
     add(
       10,
       "Delivery",
@@ -345,6 +376,7 @@ export async function runDemo(deps: DemoDeps): Promise<DemoResult> {
             ),
           ]
         : [],
+      erpDelivery,
     );
     expect(received.status === "received", `the delivery was not received (${received.status})`);
 
@@ -359,6 +391,17 @@ export async function runDemo(deps: DemoDeps): Promise<DemoResult> {
       { policyContract: deps.policyContract, now: DEMO_CLOCK.release },
     );
     const [releasedLine, paidLine] = qc.sentences;
+    const erpQc =
+      deps.erp && qc.status === "released"
+        ? await deps.erp.qcDecided(db, {
+            lotCode,
+            poNo: po1042.poNo,
+            decision: "release",
+            txHash: qc.outcome?.txHash ?? null,
+            explorerUrl: qc.outcome?.explorerUrl ?? null,
+            at: DEMO_CLOCK.release,
+          })
+        : [];
     add(
       11,
       "QC release",
@@ -374,12 +417,11 @@ export async function runDemo(deps: DemoDeps): Promise<DemoResult> {
             ),
           ]
         : [],
+      erpQc,
     );
     expect(qc.status === "released", `QC release ended ${qc.status}`);
 
-    // 12. Paid; the invoice matches; Kevin anchors the receipt.
-    const reading = await readInvoice(deps.llm, deps.invoiceText);
-    const invoice = matchInvoice(db, reading, deps.invoiceText);
+    // 12. Paid; the invoice (read at delivery) matches; Kevin anchors the receipt.
     const receiptAnchor = await anchorBatch(
       db,
       chain,

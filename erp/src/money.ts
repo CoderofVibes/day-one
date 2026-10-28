@@ -5,12 +5,15 @@
 export const USD = 1_000_000;
 const CENT = USD / 100;
 
-/** "$5,150.00" from micro-dollars; a negative amount keeps its sign. */
+/**
+ * "$5,150.00" from micro-dollars, rounded half up to the cent: inventory values carry their
+ * micro-dollars (a lot's share of its cost) and only the display rounds. Negative keeps its sign.
+ */
 export function formatUsd(units: number | bigint): string {
   const n = BigInt(units);
-  if (n % BigInt(CENT) !== 0n) throw new RangeError(`amount ${n} has fractions of a cent`);
   const negative = n < 0n;
-  const cents = (negative ? -n : n) / BigInt(CENT);
+  const abs = negative ? -n : n;
+  const cents = (abs + BigInt(CENT) / 2n) / BigInt(CENT);
   const dollars = (cents / 100n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   return `${negative ? "-" : ""}$${dollars}.${(cents % 100n).toString().padStart(2, "0")}`;
 }

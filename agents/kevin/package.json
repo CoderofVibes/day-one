@@ -12,7 +12,8 @@
     "./invoices": "./src/invoices.ts",
     "./payments": "./src/payments.ts",
     "./attacks": "./src/attacks.ts",
-    "./demo": "./src/demo.ts"
+    "./demo": "./src/demo.ts",
+    "./erp": "./src/erp.ts"
   },
   "dependencies": {
     "@day-one/server": "*",

@@ -32,7 +32,10 @@
     "web": "npm run dev -w web",
     "web:build": "npm run build -w web",
     "web:data": "tsx scripts/web-data.ts",
-    "web:shot": "tsx tools/render/src/shot.ts"
+    "web:shot": "tsx tools/render/src/shot.ts",
+    "erp": "tsx erp/src/server.ts",
+    "erp:seed": "tsx scripts/erp-seed.ts",
+    "erp:demo": "tsx scripts/erp-demo.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.3",
