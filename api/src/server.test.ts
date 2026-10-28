@@ -47,6 +47,7 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(body.mode).toBe("replay");
     expect(body.steps.map((s: { title: string }) => s.title)).toEqual(["Load seed"]);
     expect(body.next).toMatchObject({ phase: "upload", who: "Ray Delgado" });
+    expect(body.next.choices).toContain("BR-B-1045.jpg");
     expect(body.transactions).toEqual([]);
     expect(body.people.map((p: { name: string }) => p.name)).toContain("Linda Park");
   });
@@ -104,7 +105,12 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     const refused = body.steps.at(-1)?.chain[0];
     expect(refused?.line).toContain("✗ REFUSED");
     expect(refused?.tx).toMatch(/^[1-9A-HJ-NP-Za-km-z]{43,44}$/);
-    expect(body.next).toMatchObject({ phase: "reply", who: "Linda Park" });
+    expect(body.next).toMatchObject({
+      phase: "reply",
+      who: "Linda Park",
+      subject: "PO-1042",
+      choices: ["YES 1042", "NO 1042"],
+    });
   });
 
   it("Linda texts YES 1042: relayed approval, Kevin's retry, the supplier ships", async () => {
@@ -119,7 +125,11 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
       "Supplier ships",
     ]);
     expect(body.steps[0]?.staff[0]).toBe("Linda: YES 1042 → Approved by Linda Park.");
-    expect(body.next).toMatchObject({ phase: "receive", who: "Tommy Reyes" });
+    expect(body.next).toMatchObject({
+      phase: "receive",
+      who: "Tommy Reyes",
+      choices: ["NG-PS-60417", "NG-PS-60417-X"],
+    });
     const state = (await api("GET", "/api/run")).body;
     const approve = state.transactions.find((t: { method: string }) => t.method === "approve_po");
     expect(approve.paidBy).toBe("dayone-relayer.testnet");
@@ -138,6 +148,8 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
       phase: "qc",
       who: "Priya Natarajan",
       action: "Release or reject lot ASC-261116-01.",
+      subject: "ASC-261116-01",
+      choices: ["release", "reject"],
     });
   });
 

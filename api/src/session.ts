@@ -3,6 +3,8 @@
 // testnet run, no keys); live when started with --live. Actions run one after another, so two
 // clicks at once cannot interleave the run.
 
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
 import { type DemoPhase, type DemoStep, formatTranscript, startDemo } from "@day-one/kevin/demo";
 import { explorerUrl } from "@day-one/server/chain/client";
 import { approvals, chainTx, staff } from "@day-one/server/ledger/schema";
@@ -42,6 +44,10 @@ export interface NextAction {
   role: string | null;
   /** What they do, in their words. */
   action: string;
+  /** What the action is about: the batch number, the PO number or the lot code. */
+  subject: string | null;
+  /** The inputs a screen can offer: photos on file, YES/NO, slip numbers, release/reject. */
+  choices: string[];
 }
 
 export interface RunState {
@@ -192,61 +198,87 @@ export class DemoSession {
     };
   }
 
-  /** Who the run waits for, so a screen can show the right person the right button. */
+  /** Who the run waits for, so a screen can show the right person the right buttons. */
   private nextAction(): NextAction {
     const m = this.machine;
-    const person = (name: string) =>
-      this.env.db.select({ role: staff.role }).from(staff).where(eq(staff.name, name)).get()
-        ?.role ?? null;
+    const db = this.env.db;
+    const role = (name: string) =>
+      db.select({ role: staff.role }).from(staff).where(eq(staff.name, name)).get()?.role ?? null;
+    const files = (dir: string, suffix: string) =>
+      readdirSync(join(this.env.root, dir))
+        .filter((f) => f.endsWith(suffix))
+        .map((f) => f.slice(0, -suffix.length))
+        .sort();
+    const nobody = (phase: DemoPhase, action: string, choices: string[] = []) => ({
+      phase,
+      who: null,
+      role: null,
+      action,
+      subject: null,
+      choices,
+    });
     switch (m.next) {
       case "load":
-        return { phase: "load", who: null, role: null, action: "Loading the plant's records." };
+        return nobody("load", "Loading the plant's records.");
       case "upload":
         return {
           phase: "upload",
           who: "Ray Delgado",
-          role: person("Ray Delgado"),
+          role: role("Ray Delgado"),
           action: "Upload a batch record.",
+          subject: null,
+          choices: files("data/batch-records", ".jpg").map((f) => `${f}.jpg`),
         };
       case "confirm":
         return {
           phase: "confirm",
           who: "Ray Delgado",
-          role: person("Ray Delgado"),
+          role: role("Ray Delgado"),
           action: `Confirm ${m.draft?.batchNo ?? "the batch record"}.`,
+          subject: m.draft?.batchNo ?? null,
+          choices: m.draft ? [m.draft.batchNo] : [],
         };
       case "purchase":
-        return {
-          phase: "purchase",
-          who: null,
-          role: null,
-          action: "Kevin checks stock and orders.",
-        };
-      case "reply":
+        return nobody("purchase", "Kevin checks stock and orders.");
+      case "reply": {
+        const open = db
+          .select({ request: approvals.requestText })
+          .from(approvals)
+          .where(eq(approvals.state, "requested"))
+          .all()
+          .at(-1);
+        const po = /PO-(\d+)/.exec(open?.request ?? "")?.[1];
         return {
           phase: "reply",
           who: "Linda Park",
-          role: person("Linda Park"),
-          action: "Reply YES 1042 or NO 1042.",
+          role: role("Linda Park"),
+          action: po ? `Reply YES ${po} or NO ${po}.` : "Reply to Kevin's text.",
+          subject: po ? `PO-${po}` : null,
+          choices: po ? [`YES ${po}`, `NO ${po}`] : [],
         };
+      }
       case "receive":
         return {
           phase: "receive",
           who: "Tommy Reyes",
-          role: person("Tommy Reyes"),
+          role: role("Tommy Reyes"),
           action: "Photograph the packing slip.",
+          subject: null,
+          choices: files("data/packing-slips", ".truth.json"),
         };
       case "qc":
         return {
           phase: "qc",
           who: "Priya Natarajan",
-          role: person("Priya Natarajan"),
-          action: `Release or reject lot ${m.quarantined ?? ""}.`.replace(" .", "."),
+          role: role("Priya Natarajan"),
+          action: m.quarantined ? `Release or reject lot ${m.quarantined}.` : "Decide on the lot.",
+          subject: m.quarantined,
+          choices: ["release", "reject"],
         };
       case "finish":
-        return { phase: "finish", who: null, role: null, action: "Summing up." };
+        return nobody("finish", "Summing up.");
       default:
-        return { phase: "done", who: null, role: null, action: "The run is complete." };
+        return nobody("done", "The run is complete.", ["reset"]);
     }
   }
 

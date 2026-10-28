@@ -365,3 +365,93 @@ button {
   margin-top: 24px;
   font-size: 0.8rem;
 }
+
+/* Live mode: the action bar for whoever is up next. */
+.action-bar {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.bar-who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bar-text {
+  margin: 0;
+  flex: 1 1 240px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actions button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  cursor: pointer;
+}
+
+.actions button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.actions button.quiet {
+  margin-left: auto;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+
+.actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.file {
+  font-size: 0.9rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.file input {
+  display: none;
+}
+
+.action-bar .phone {
+  margin: 0;
+}
+
+.phone-actions {
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.phone-actions button {
+  border-radius: 16px;
+}
+
+.error {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #f08a82;
+  background: rgba(240, 138, 130, 0.12);
+  font-size: 0.92rem;
+}
+
+.card.still {
+  cursor: default;
+}

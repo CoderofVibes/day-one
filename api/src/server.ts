@@ -34,6 +34,8 @@ export interface ServerOptions {
   maxBodyBytes?: number;
 }
 
+export const API_MARK = '<meta name="day-one-api" content="live" />';
+
 const TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -221,5 +223,7 @@ function serveStatic(res: ServerResponse, staticDir: string | undefined, path: s
   if (!file.startsWith(root + sep) && file !== root) return reply(res, 404, { error: "not found" });
   if (!existsSync(file) || statSync(file).isDirectory()) file = join(root, "index.html");
   res.writeHead(200, { "content-type": TYPES[extname(file)] ?? "application/octet-stream" });
-  res.end(readFileSync(file));
+  if (extname(file) !== ".html") return res.end(readFileSync(file));
+  // The page learns it is served by the API from this tag; on a static host it does not probe.
+  res.end(readFileSync(file, "utf8").replace("<head>", `<head>${API_MARK}`));
 }
