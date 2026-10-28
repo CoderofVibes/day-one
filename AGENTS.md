@@ -33,6 +33,7 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Lint the contract (WSL, from `contracts/`) | `cargo fmt --all --check && CARGO_TARGET_DIR=$HOME/dayone-target cargo clippy --all-targets -- -D warnings` (verified Oct 28) |
 | Build the contract wasm (WSL, from `contracts/spend-policy/`) | `CARGO_TARGET_DIR=$HOME/dayone-target cargo near build non-reproducible-wasm` → `~/dayone-target/near/spend_policy/spend_policy.wasm`, 246 KB (verified Oct 28) |
 | Create the testnet accounts (Windows, repo root; idempotent) | `npm run setup:testnet` → Acme tree under `acme-holdings.testnet`, keys in `.near-credentials/testnet/`, ids in `config/testnet-accounts.json` (verified Oct 28) |
+| Deploy and configure the contracts on testnet (Windows, repo root; idempotent) | `npm run deploy:testnet` → builds in WSL, deploys `dtusd` and `spend-policy` under `acme-holdings.testnet`, applies CONTRACTS §8, funds a 25,000 DTUSD budget (verified Oct 28) |
 | _(more commands are added as they first work)_ | |
 
 ## Team and working protocol
