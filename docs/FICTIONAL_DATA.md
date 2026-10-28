@@ -275,6 +275,14 @@ Kevin's policy for Plant B, set by Acme (Jordan Pike):
 
 Seed 30 days of history so the forecast and the map have something to show: about 12 batch records at Plants A and B (summarized, not rendered), 6 received POs, 4 transfers from Plant C, and one past QC rejection (a CCS lot `wasted`, returned to vendor).
 
+As seeded (`server/src/seed/history.ts`, `lots.ts`):
+
+- **Summarized batches (8), keyed in from paper, no rendered image:** BR-B-1033 (VC500, Sep 14), BR-B-1036 (VC500, Oct 1), BR-B-1037 (ELX, Oct 8), BR-A-2201 (CMD, Oct 13), BR-B-1038 (CMD, Oct 19), BR-B-1039 (ELX, Oct 22), BR-A-2204 (CMD, Oct 27), BR-B-1040 (ELX, Oct 29). Each draws its formula first-in, first-out from released lots at its plant. BR-B-1036 finishes `ASC-260828-01` (246.900 kg) and takes 165.100 kg from `ASC-260921-02`. Plant A's two batches carry the §15 figures. The rendered records of §7 are not seeded; they enter the ledger through extraction.
+- **Received POs (6):** PO-1035 to PO-1040 with the §13 lines and prices, status paid, one matched receipt each; every lot they delivered is booked against its PO.
+- **Transfers from Plant C (4):** TR-C-B-261009 (24,000 bottles), TR-C-B-261010 (24,000 caps), TR-C-A-261012 (15,000 CMD labels), TR-C-B-261020 (20,000 VC500 labels).
+- **QC rejection:** `CCS-261023-01` (50 kg, Pacific) received Oct 23, rejected Oct 24 (loss on drying above limit), returned to the vendor Oct 26 as a `wasted` event.
+- Lots received before Oct 1 are opening stock. Every blend material at Plant B ends at or above its reorder point except ascorbic acid.
+
 ---
 
 ## 11. Packing slip for PO-1042 (Tommy's photo)

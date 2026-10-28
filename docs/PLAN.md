@@ -2,7 +2,7 @@
 
 ## In progress
 
-Seed (Nov 1, item 3), split Oct 28: reference data and demo-start lots are done in `server/src/seed/` (`npm run seed`). Next: FICTIONAL_DATA §10 history as events (about 12 summarized batches at A and B, 6 received POs, 4 transfers from Plant C, the CCS QC rejection), and tie `ASC-260921-02`'s 165.1 kg draw to one of those batches.
+_(none)_
 
 ---
 
@@ -60,7 +60,7 @@ Seed (Nov 1, item 3), split Oct 28: reference data and demo-start lots are done 
 ### Sun Nov 1 — monorepo and ledger
 - [x] [I] Monorepo bootstrap: npm workspaces (`server`, `agents/kevin`, `web`), TypeScript, test runner, lint, `.nvmrc`, `engines`. One `npm test` that passes. Done Oct 28: TypeScript 7.0.2, Vitest 5.0.5, Biome 2.6.3, tsx 4.23.15; first module `server/src/money.ts` (base units ↔ dollars). `kevin` and `web` join `tsconfig.json` references when they get code.
 - [x] [I] Ledger schema in Drizzle per DATA_MODEL; migrations committed; `appendLotEvent` with hash chain and transition rules; triggers blocking edits; `rebuildProjections` test. Done Oct 28: all 31 tables STRICT with enum CHECKs, `server/src/ledger/` (`schema.ts`, `db.ts`, `events.ts` incl. `verifyChain`), 13 tests.
-- [ ] [I] Seed data from FICTIONAL_DATA: facilities, materials, formulas, vendors, lots, 30-day history as events with fixed timestamps.
+- [x] [I] Seed data from FICTIONAL_DATA: facilities, materials, formulas, vendors, lots, 30-day history as events with fixed timestamps. Done Oct 28: `server/src/seed/` (`history.ts`: 6 POs, 8 summarized batches drawn FIFO; 4 Plant C transfers; the CCS rejection), 354 chained events, 41 tests. **Open for the extraction task (Nov 3):** the six §7 records other than BR-B-1045 (1041–1044, 1046, A-2207) still need their lot draws; when they post, Plant B ASC must still read 722.350 kg before BR-B-1045, so give 1041 and 1043 their own ASC lots in the seed when the renderer fixes their lot lines (Nov 2).
 - [ ] [H] Smoke-test NEAR AI Cloud with the key: one text call, one image call, one JSON-schema call (about $0.05).
 
 ### Mon Nov 2 — contracts and documents

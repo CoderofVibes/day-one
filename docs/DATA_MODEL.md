@@ -46,7 +46,7 @@ Kevin's purchase rules read `qualification_status`: `unqualified` and `suspended
 | `lot_events` | `seq` (unique, global), `lot_id`, `kind`, `from_state`, `to_state`, `qty_delta_base`, `facility_id`, `department_id`, `ref_type` (`po`, `transfer`, `batch`, `count`, `qc`), `ref_id`, `actor_type` (`staff`, `kevin`, `supplier_agent`, `system`), `actor_id`, `reason`, `occurred_at`, `recorded_at`, `prev_hash`, `event_hash` |
 | `lot_balances` (view) | `lot_id`, `facility_id`, `on_hand_base = SUM(qty_delta_base)` |
 
-**States:** `on_order → en_route → received → quarantine → released → in_use → consumed | wasted`, plus `quarantine → rejected` and `released → wasted` (expiry or damage). Transfers change facility, not state.
+**States:** `on_order → en_route → received → quarantine → released → in_use → consumed | wasted`, plus `quarantine → rejected → wasted` (returned to the vendor or destroyed) and `released → wasted` (expiry or damage). Transfers change facility, not state.
 
 **Event kinds:** `ordered`, `shipped`, `received`, `quarantined`, `released`, `rejected`, `issued`, `returned`, `consumed`, `wasted`, `transfer_out`, `transfer_in`, `count_adjust`.
 

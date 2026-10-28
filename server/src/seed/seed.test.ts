@@ -143,9 +143,17 @@ describe("lots at demo start (FICTIONAL_DATA §6, §8)", () => {
     expect(lot("VD3-261123-01").state).toBe("on_order");
   });
 
-  it("stocks packaging at Plant C", () => {
-    expect(onHand("BTL", "C")).toBe(120_000);
-    expect(onHand("BTL", "B")).toBe(0);
+  it("stocks packaging at Plant C and has moved some to A and B", () => {
+    expect(onHand("BTL", "C")).toBe(136_000);
+    expect(onHand("BTL", "B")).toBe(24_000);
+    expect(onHand("LCM", "A")).toBe(15_000);
+    const fromC = db
+      .select()
+      .from(transfers)
+      .where(eq(transfers.fromFacilityId, facility("C")))
+      .all();
+    expect(fromC).toHaveLength(4);
+    expect(new Set(fromC.map((tr) => tr.state))).toEqual(new Set(["received"]));
   });
 
   it("writes events before the demo clock, in time order, on an intact chain", () => {

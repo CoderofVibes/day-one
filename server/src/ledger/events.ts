@@ -32,7 +32,8 @@ const HELD: readonly LotState[] = ["received", "quarantine", "released"];
 
 /**
  * Allowed transitions: on_order → en_route → received → quarantine → released → in_use →
- * consumed | wasted, plus quarantine → rejected and released → wasted. Quantity is booked
+ * consumed | wasted, plus quarantine → rejected → wasted (returned or destroyed) and
+ * released → wasted. Quantity is booked
  * when a lot is received; ordering and shipping carry no on-hand quantity. Transfers move a
  * lot between facilities without changing its state.
  */
@@ -46,7 +47,11 @@ export const MOVES: Record<LotEventKind, Move> = {
   issued: { from: ["released"], to: "in_use", qty: "zero" },
   returned: { from: ["in_use"], to: "released", qty: "zero" },
   consumed: { from: ["in_use"], to: { whenEmpty: "consumed" }, qty: "negative" },
-  wasted: { from: ["released", "in_use"], to: { whenEmpty: "wasted" }, qty: "negative" },
+  wasted: {
+    from: ["released", "in_use", "rejected"],
+    to: { whenEmpty: "wasted" },
+    qty: "negative",
+  },
   transfer_out: { from: HELD, to: "same", qty: "negative" },
   transfer_in: { from: HELD, to: "same", qty: "positive" },
   count_adjust: { from: [...HELD, "in_use"], to: "same", qty: "nonzero" },
