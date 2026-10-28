@@ -1,0 +1,8 @@
+{
+  "name": "@day-one/server",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./money": "./src/money.ts"
+  }
+}

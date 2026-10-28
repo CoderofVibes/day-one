@@ -1,0 +1,20 @@
+{
+  "files": {
+    "includes": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.json",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/target",
+      "!.claude",
+      "!docs",
+      "!data",
+      "!package-lock.json"
+    ]
+  },
+  "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
+  "javascript": { "formatter": { "quoteStyle": "double" } },
+  "linter": { "enabled": true, "rules": { "preset": "recommended" } }
+}

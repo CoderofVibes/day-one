@@ -23,7 +23,11 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Check the contract toolchain (WSL) | `wsl -d Ubuntu -- bash -lc 'source ~/.cargo/env; rustc --version; cargo near --version'` → 1.99.1, 0.22.0 |
 | Build a contract (WSL, from its folder) | `cargo near build non-reproducible-wasm` → `target/near/<name>.wasm` (verified Oct 25 on a throwaway template) |
 | Test a contract incl. sandbox (WSL) | `cargo test` (verified Oct 25; then `cargo clean`, target grows to ~2.5 GB) |
-| _(project build commands are added as they first work)_ | |
+| Install (Windows, repo root) | `npm install` |
+| Lint + typecheck + tests (Windows) | `npm run check` (Biome, `tsc -b`, Vitest; verified Oct 28) |
+| Tests only | `npm test` |
+| Format | `npm run format` |
+| _(more commands are added as they first work)_ | |
 
 ## Team and working protocol
 

@@ -58,7 +58,7 @@ _(One line here when a session is interrupted mid-task: what, where, next step.)
 - [ ] Keep any hosted demo up to Nov 18, ideally Nov 25 (Q-012). Video stays the primary X demo; screenshots alone are not enough.
 
 ### Sun Nov 1 — monorepo and ledger
-- [ ] [I] Monorepo bootstrap: npm workspaces (`server`, `agents/kevin`, `web`), TypeScript, test runner, lint, `.nvmrc`, `engines`. One `npm test` that passes.
+- [x] [I] Monorepo bootstrap: npm workspaces (`server`, `agents/kevin`, `web`), TypeScript, test runner, lint, `.nvmrc`, `engines`. One `npm test` that passes. Done Oct 28: TypeScript 7.0.2, Vitest 5.0.5, Biome 2.6.3, tsx 4.23.15; first module `server/src/money.ts` (base units ↔ dollars). `kevin` and `web` join `tsconfig.json` references when they get code.
 - [ ] [I] Ledger schema in Drizzle per DATA_MODEL; migrations committed; `appendLotEvent` with hash chain and transition rules; triggers blocking edits; `rebuildProjections` test.
 - [ ] [I] Seed data from FICTIONAL_DATA: facilities, materials, formulas, vendors, lots, 30-day history as events with fixed timestamps.
 - [ ] [H] Smoke-test NEAR AI Cloud with the key: one text call, one image call, one JSON-schema call (about $0.05).

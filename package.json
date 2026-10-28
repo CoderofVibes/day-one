@@ -1,0 +1,27 @@
+{
+  "name": "day-one",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "server",
+    "agents/kevin",
+    "web"
+  ],
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -b",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "check": "npm run lint && npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.3",
+    "@types/node": "^24.19.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

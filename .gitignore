@@ -36,3 +36,4 @@ recordings/
 Thumbs.db
 .vscode/
 .idea/
+*.tsbuildinfo
