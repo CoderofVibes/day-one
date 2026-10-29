@@ -3,7 +3,7 @@
 // page marked as served by the API (that would make the page call /api), and the page itself.
 
 /** Private-key and token shapes that must never appear in a published file. */
-const SECRET_SHAPES: [string, RegExp][] = [
+export const SECRET_SHAPES: [string, RegExp][] = [
   ["a NEAR private key", /ed25519:[1-9A-HJ-NP-Za-km-z]{80,}/],
   ["a secp256k1 private key", /secp256k1:[1-9A-HJ-NP-Za-km-z]{60,}/],
   ["an Anthropic API key", /sk-ant-[\w-]{20,}/],
