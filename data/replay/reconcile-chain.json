@@ -1,7 +1,7 @@
 {
   "version": 1,
   "network": "testnet",
-  "recordedAt": "2026-10-29T00:30:43.700Z",
+  "recordedAt": "2026-10-29T05:40:48.614Z",
   "entries": [
     {
       "type": "view",
@@ -19,12 +19,12 @@
         "supplier": "bayfront-labsupply.testnet",
         "amount": "612000000",
         "category": "lab_chemical",
-        "po_hash": "70ceace733d213ca8cf51189739dde8017646af38cd57be520d60ccea0f2be4d",
+        "po_hash": "54c8013ce2306a3fa6c7991a2c2761c78607ca246356f1aa1526e5409b8083dc",
         "period": 202610,
         "status": "Funded",
         "approved_by": null,
         "supplier_lot": null,
-        "funded_at": "1793222613797446883",
+        "funded_at": "1793251897665286144",
         "accepted_at": null,
         "shipped_at": null,
         "received_at": null,
@@ -47,16 +47,16 @@
         "supplier": "northgate-ingredients.testnet",
         "amount": "5150000000",
         "category": "raw_material",
-        "po_hash": "f6755772331c88748f4c1b221932be2406be392e8c2f51a385024e79cf0cbef6",
+        "po_hash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3",
         "period": 202610,
         "status": "Released",
         "approved_by": "director.plant-b.acme-holdings.testnet",
         "supplier_lot": "NG-24-8812",
-        "funded_at": "1793222622154284686",
-        "accepted_at": "1793222624675919810",
-        "shipped_at": "1793222626671374927",
-        "received_at": "1793222630329829466",
-        "released_at": "1793222634940479421"
+        "funded_at": "1793251906049083632",
+        "accepted_at": "1793251908478301558",
+        "shipped_at": "1793251910945249317",
+        "received_at": "1793251914576303933",
+        "released_at": "1793251923725205124"
       }
     },
     {
@@ -75,16 +75,16 @@
         "supplier": "northgate-ingredients.testnet",
         "amount": "5150000000",
         "category": "raw_material",
-        "po_hash": "f6755772331c88748f4c1b221932be2406be392e8c2f51a385024e79cf0cbef6",
+        "po_hash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3",
         "period": 202610,
         "status": "Released",
         "approved_by": "director.plant-b.acme-holdings.testnet",
         "supplier_lot": "NG-24-8812",
-        "funded_at": "1793222622154284686",
-        "accepted_at": "1793222624675919810",
-        "shipped_at": "1793222626671374927",
-        "received_at": "1793222630329829466",
-        "released_at": "1793222634940479421"
+        "funded_at": "1793251906049083632",
+        "accepted_at": "1793251908478301558",
+        "shipped_at": "1793251910945249317",
+        "received_at": "1793251914576303933",
+        "released_at": "1793251923725205124"
       }
     },
     {
@@ -95,7 +95,7 @@
         "args": {}
       },
       "result": {
-        "budget": "19238000000",
+        "budget": "9748000000",
         "escrowed": "612000000"
       }
     },
@@ -111,75 +111,21 @@
       },
       "result": [
         {
-          "po_id": "PO-T1041",
-          "agent": "kevin.plant-b.acme-holdings.testnet",
-          "plant": "plant-b.acme-holdings.testnet",
-          "supplier": "bayfront-labsupply.testnet",
-          "amount": "612000000",
-          "category": "lab_chemical",
-          "po_hash": "01b0d1ef62f0e34b29602f8de3790dc46f006085dc80d7292119d4e827d57d2e",
-          "period": 202610,
-          "status": "Cancelled",
-          "approved_by": null,
-          "supplier_lot": null,
-          "funded_at": "1793217608057650117",
-          "accepted_at": null,
-          "shipped_at": null,
-          "received_at": null,
-          "released_at": null
-        },
-        {
-          "po_id": "PO-T1043",
-          "agent": "kevin.plant-b.acme-holdings.testnet",
-          "plant": "plant-b.acme-holdings.testnet",
-          "supplier": "northgate-ingredients.testnet",
-          "amount": "10000000",
-          "category": "raw_material",
-          "po_hash": "7e577e577e577e577e577e577e577e577e577e577e577e577e577e577e577e57",
-          "period": 202610,
-          "status": "Cancelled",
-          "approved_by": null,
-          "supplier_lot": "NG-TEST-0001",
-          "funded_at": "1793218671035012915",
-          "accepted_at": "1793218673470260163",
-          "shipped_at": "1793218675852499106",
-          "received_at": null,
-          "released_at": null
-        },
-        {
           "po_id": "PO-9042",
           "agent": "kevin.plant-b.acme-holdings.testnet",
           "plant": "plant-b.acme-holdings.testnet",
           "supplier": "northgate-ingredients.testnet",
           "amount": "5150000000",
           "category": "raw_material",
-          "po_hash": "e192211291bfd682b885cead64d30ca8daa5d73c595cb5960216517ef39c98d7",
+          "po_hash": "21c1d9df00c19d82b06731d02c6dbfc99f0744bf19f46b352cd9003d35bc5493",
           "period": 202610,
           "status": "Refunded",
           "approved_by": "director.plant-b.acme-holdings.testnet",
           "supplier_lot": "REH-9042-01",
-          "funded_at": "1793222404379466064",
-          "accepted_at": "1793222406735083399",
-          "shipped_at": "1793222409280646921",
-          "received_at": "1793222473797817734",
-          "released_at": null
-        },
-        {
-          "po_id": "PO-9043",
-          "agent": "kevin.plant-b.acme-holdings.testnet",
-          "plant": "plant-b.acme-holdings.testnet",
-          "supplier": "northgate-ingredients.testnet",
-          "amount": "5150000000",
-          "category": "raw_material",
-          "po_hash": "e4c0a3f841ffd0879248a11039c03e09c51cb4047383898ea2d907e68cfae25e",
-          "period": 202610,
-          "status": "Refunded",
-          "approved_by": "director.plant-b.acme-holdings.testnet",
-          "supplier_lot": "REH-9043-01",
-          "funded_at": "1793222491283903814",
-          "accepted_at": "1793222493711313671",
-          "shipped_at": "1793222496214416171",
-          "received_at": "1793222499625860632",
+          "funded_at": "1793251818020125600",
+          "accepted_at": "1793251821017199826",
+          "shipped_at": "1793251823430952622",
+          "received_at": "1793251827119039110",
           "released_at": null
         },
         {
@@ -189,12 +135,12 @@
           "supplier": "bayfront-labsupply.testnet",
           "amount": "612000000",
           "category": "lab_chemical",
-          "po_hash": "70ceace733d213ca8cf51189739dde8017646af38cd57be520d60ccea0f2be4d",
+          "po_hash": "54c8013ce2306a3fa6c7991a2c2761c78607ca246356f1aa1526e5409b8083dc",
           "period": 202610,
           "status": "Funded",
           "approved_by": null,
           "supplier_lot": null,
-          "funded_at": "1793222613797446883",
+          "funded_at": "1793251897665286144",
           "accepted_at": null,
           "shipped_at": null,
           "received_at": null,
@@ -207,16 +153,16 @@
           "supplier": "northgate-ingredients.testnet",
           "amount": "5150000000",
           "category": "raw_material",
-          "po_hash": "f6755772331c88748f4c1b221932be2406be392e8c2f51a385024e79cf0cbef6",
+          "po_hash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3",
           "period": 202610,
           "status": "Released",
           "approved_by": "director.plant-b.acme-holdings.testnet",
           "supplier_lot": "NG-24-8812",
-          "funded_at": "1793222622154284686",
-          "accepted_at": "1793222624675919810",
-          "shipped_at": "1793222626671374927",
-          "received_at": "1793222630329829466",
-          "released_at": "1793222634940479421"
+          "funded_at": "1793251906049083632",
+          "accepted_at": "1793251908478301558",
+          "shipped_at": "1793251910945249317",
+          "received_at": "1793251914576303933",
+          "released_at": "1793251923725205124"
         },
         {
           "po_id": "PO-T9101",
@@ -230,49 +176,189 @@
           "status": "Cancelled",
           "approved_by": null,
           "supplier_lot": null,
-          "funded_at": "1793231890661919936",
+          "funded_at": "1793251986757726425",
           "accepted_at": null,
           "shipped_at": null,
           "received_at": null,
           "released_at": null
         },
         {
-          "po_id": "PO-9044",
+          "po_id": "PO-T9102",
           "agent": "kevin.plant-b.acme-holdings.testnet",
           "plant": "plant-b.acme-holdings.testnet",
-          "supplier": "northgate-ingredients.testnet",
-          "amount": "5150000000",
-          "category": "raw_material",
-          "po_hash": "1755853a9366f32fc6107cf6a3b9dd6e3b7aa9f0f62236868acb85c905a4b586",
+          "supplier": "bayfront-labsupply.testnet",
+          "amount": "347000000",
+          "category": "lab_chemical",
+          "po_hash": "c621b021aa4c23776dc7450f7cf9358c252058fca06f523c72a896e15a4278ef",
           "period": 202610,
-          "status": "Refunded",
-          "approved_by": "director.plant-b.acme-holdings.testnet",
-          "supplier_lot": "REH-9044-01",
-          "funded_at": "1793232397559582016",
-          "accepted_at": "1793232400040557561",
-          "shipped_at": "1793232402428421962",
-          "received_at": "1793232406072207967",
+          "status": "Cancelled",
+          "approved_by": null,
+          "supplier_lot": null,
+          "funded_at": "1793252082244581332",
+          "accepted_at": null,
+          "shipped_at": null,
+          "received_at": null,
           "released_at": null
         },
         {
-          "po_id": "PO-9045",
+          "po_id": "PO-T9103",
+          "agent": "kevin.plant-b.acme-holdings.testnet",
+          "plant": "plant-b.acme-holdings.testnet",
+          "supplier": "bayfront-labsupply.testnet",
+          "amount": "695000000",
+          "category": "lab_chemical",
+          "po_hash": "264b4100327976b02a6036fc40c60f55f18a3f99118706a0fda8daf1a6ad2427",
+          "period": 202610,
+          "status": "Cancelled",
+          "approved_by": null,
+          "supplier_lot": null,
+          "funded_at": "1793252162769551830",
+          "accepted_at": null,
+          "shipped_at": null,
+          "received_at": null,
+          "released_at": null
+        },
+        {
+          "po_id": "PO-G-2001",
           "agent": "kevin.plant-b.acme-holdings.testnet",
           "plant": "plant-b.acme-holdings.testnet",
           "supplier": "northgate-ingredients.testnet",
-          "amount": "5150000000",
+          "amount": "9490000000",
           "category": "raw_material",
-          "po_hash": "8703cb0586bb58e23b12743a526709c1eafacf860dc39302e1d496af30ff048b",
+          "po_hash": "7b11032f4baa62e319e3faf4f2e4c07d76b800739301743150a46956dceca62f",
           "period": 202610,
-          "status": "Refunded",
-          "approved_by": "director.plant-b.acme-holdings.testnet",
-          "supplier_lot": "REH-9045-01",
-          "funded_at": "1793232467226502082",
-          "accepted_at": "1793232469621410426",
-          "shipped_at": "1793232472064346348",
-          "received_at": "1793232475662339127",
-          "released_at": null
+          "status": "Released",
+          "approved_by": null,
+          "supplier_lot": "NG-24-9120",
+          "funded_at": "1793252420289486472",
+          "accepted_at": "1793252422839355533",
+          "shipped_at": "1793252424848710837",
+          "received_at": "1793252427954788497",
+          "released_at": "1793252432574685877"
         }
       ]
+    },
+    {
+      "type": "view",
+      "request": {
+        "contractId": "spend-policy.acme-holdings.testnet",
+        "method": "get_supplier_standing",
+        "args": {
+          "supplier": "bayfront-labsupply.testnet"
+        }
+      },
+      "result": {
+        "supplier": "bayfront-labsupply.testnet",
+        "standing": "Approved",
+        "may_be_paid": true,
+        "status": "Qualified",
+        "credential": {
+          "token": 3,
+          "supplier": "bayfront-labsupply.testnet",
+          "categories": [
+            "lab_chemical"
+          ],
+          "issued_at": "1793251764651543020",
+          "expires_at": "1824940800000000000",
+          "revoked": null,
+          "reputation": {
+            "released": 0,
+            "rejected": 0,
+            "consecutive_rejects": 0,
+            "last_outcome": null,
+            "last_po": null,
+            "last_at": null,
+            "suspended_at": null
+          }
+        }
+      }
+    },
+    {
+      "type": "view",
+      "request": {
+        "contractId": "spend-policy.acme-holdings.testnet",
+        "method": "get_supplier_standing",
+        "args": {
+          "supplier": "northgate-ingredients.testnet"
+        }
+      },
+      "result": {
+        "supplier": "northgate-ingredients.testnet",
+        "standing": "Approved",
+        "may_be_paid": true,
+        "status": "Qualified",
+        "credential": {
+          "token": 1,
+          "supplier": "northgate-ingredients.testnet",
+          "categories": [
+            "raw_material"
+          ],
+          "issued_at": "1793251754825395552",
+          "expires_at": "1824940800000000000",
+          "revoked": null,
+          "reputation": {
+            "released": 2,
+            "rejected": 1,
+            "consecutive_rejects": 0,
+            "last_outcome": "Released",
+            "last_po": "PO-G-2001",
+            "last_at": "1793252432574685877",
+            "suspended_at": null
+          }
+        }
+      }
+    },
+    {
+      "type": "view",
+      "request": {
+        "contractId": "spend-policy.acme-holdings.testnet",
+        "method": "get_supplier_standing",
+        "args": {
+          "supplier": "quickchem-direct.testnet"
+        }
+      },
+      "result": {
+        "supplier": "quickchem-direct.testnet",
+        "standing": "NotListed",
+        "may_be_paid": false,
+        "status": null,
+        "credential": null
+      }
+    },
+    {
+      "type": "view",
+      "request": {
+        "contractId": "spend-policy.acme-holdings.testnet",
+        "method": "get_supplier_standing",
+        "args": {
+          "supplier": "ridgeway-ascorbics.testnet"
+        }
+      },
+      "result": {
+        "supplier": "ridgeway-ascorbics.testnet",
+        "standing": "Approved",
+        "may_be_paid": true,
+        "status": "Qualified",
+        "credential": {
+          "token": 2,
+          "supplier": "ridgeway-ascorbics.testnet",
+          "categories": [
+            "raw_material"
+          ],
+          "issued_at": "1793251759890237786",
+          "expires_at": "1824940800000000000",
+          "revoked": null,
+          "reputation": {
+            "released": 0,
+            "rejected": 0,
+            "consecutive_rejects": 0,
+            "last_outcome": null,
+            "last_po": null,
+            "last_at": null,
+            "suspended_at": null
+          }
+        }
+      }
     }
   ]
 }

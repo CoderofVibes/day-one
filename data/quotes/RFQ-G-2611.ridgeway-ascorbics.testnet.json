@@ -1,0 +1,15 @@
+{
+  "kind": "quote",
+  "ref_id": "RFQ-G-2611/ridgeway-ascorbics.testnet",
+  "salt": "dab27672652dabde212ed179678720bc",
+  "record": {
+    "rfq": "RFQ-G-2611",
+    "supplier": "ridgeway-ascorbics.testnet",
+    "material": "ASC",
+    "qtyBase": 1400000000,
+    "unitPriceUsdc": 6800000,
+    "freightUsdc": 165000000,
+    "leadTimeDays": 5
+  },
+  "anchored_tx": "Ge3TbqWzV7hNLc4vNcR4jvTLgUhR4P3WPpqGfF9eUmqs"
+}

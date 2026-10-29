@@ -7,11 +7,11 @@
 //   --record  --live, and rewrite data/replay/reconcile-chain.json
 //   --json    print one JSON line after the readable text
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { LiveTransport } from "../server/src/chain/live.ts";
 import { type Fixture, RecordingTransport, ReplayTransport } from "../server/src/chain/replay.ts";
-import { reconcile } from "../server/src/erp-connector/reconcile.ts";
+import { groupRunsFromFixture, reconcile } from "../server/src/erp-connector/reconcile.ts";
 import { replayDemoWithErp } from "./lib/erp-demo-run.ts";
 
 const root = resolve(import.meta.dirname, "..");
@@ -38,11 +38,18 @@ if (live) {
   source = `replay of views recorded ${recordedAt.slice(0, 10)}`;
 }
 
+// The group purchasing run pays from the same contract but keeps its own ledger (GROUP_BUY.md).
+const groupFixture = join(root, "data/replay/group-chain.json");
+const groupRuns = existsSync(groupFixture)
+  ? groupRunsFromFixture(JSON.parse(readFileSync(groupFixture, "utf8")), accounts.network)
+  : [];
+
 const result = await reconcile({
   dayOne,
   erpDb,
   erp: connector,
   view: (method, args = {}) => transport.view({ contractId: accounts.spendPolicy, method, args }),
+  groupRuns,
 });
 if (record && transport instanceof RecordingTransport) transport.save(FIXTURE);
 

@@ -2,38 +2,51 @@ Group purchasing for ascorbic acid across Acme's plants.
 Plant A (Acme Riverside): Kevin at Plant A may spend $2,500.00 per PO; over that, Dana Whitfield approves.
 Plant B (Hollow Pine Tablet Co.): Kevin may spend $2,500.00 per PO; over that, Linda Park approves.
 Plant C (Acme Lakeview): Kevin at Plant C may spend $2,500.00 per PO; over that, Omar Haddad approves.
-  chain: spend-policy budget 25,000.00 DTUSD, escrowed 0.00 DTUSD
+  chain: spend-policy budget 19,238.00 DTUSD, escrowed 612.00 DTUSD
 Plant A: One more VC500 batch in the next 10 days needs about 412 kg. Short about 399 kg. Recommend ordering 700 kg.
 Plant B: Two more VC500 batches in the next 10 days need about 824 kg. Short about 102 kg. Recommend ordering 700 kg.
 Plant C: no planned batches use ascorbic acid in the next 10 days; nothing to pool.
 Pooled: 1,400 kg ascorbic acid for Plant B (700 kg) and Plant A (700 kg), each pledging at most its cost alone at the $7.10/kg on file.
 Plant C has no ascorbic acid need and stays out of the pool.
-  chain: open_pool RFQ-G-2611 ✓ signed by kevin.plant-b.acme-holdings.testnet (tx 6jW8DyGsSnJRsFDXrB1gxtLvBqi96KKsP7eaarsBzAS6)
-  chain: join_pool RFQ-G-2611 ✓ signed by kevin.plant-a.acme-holdings.testnet (tx Hj7dDrE1aWB9a4y7bAvtEK8nV1g1tiP8CLiP2CYFz3dM)
+  chain: open_pool RFQ-G-2611 ✓ signed by kevin.plant-b.acme-holdings.testnet (tx 6kDFjyFWzuCfJCiAkhuv5tP3D3nAZuJLzMvefRopd3Ma)
+  chain: join_pool RFQ-G-2611 ✓ signed by kevin.plant-a.acme-holdings.testnet (tx 13CSC6EdwebUFuKNZE813GdNuG4ziHNnxxoJR2xj8Cvy)
 3 quotes. QuickChem Direct $5.40/kg excluded: vendor not qualified. Northgate $6.65/kg, 7 days — selected. Ridgeway $6.80/kg, 5 days — runner-up.
 Northgate Ingredients is the lowest-cost qualified supplier at $9,490.00 delivered in 7 days, before the 2026-11-19 batch. QuickChem Direct was cheaper but is not qualified. Pooled price $6.65/kg against $7.10/kg on file: $810.00 saved across the plants.
-  chain: anchor quote RFQ-G-2611 ✗ REFUSED "Only a registered purchasing agent or an approved supplier can anchor records." (tx 6D2guAxZKJvZb6whHQ9BZSz2AvhQfNp5DBreWYegMraB)
-  chain: anchor quote RFQ-G-2611 ✓ signed by northgate-ingredients.testnet (tx 9HYoSNMgzxubUN8a3RnLfYfi8JSLGUGf8Q4coCEL7qsW)
-  chain: anchor quote RFQ-G-2611 ✓ signed by ridgeway-ascorbics.testnet (tx 9sKNtDunaKS3WiqAhgfSGVcDp5woi3fiaBdaFUxrpyVM)
+  chain: anchor quote RFQ-G-2611 ✗ REFUSED "Only a registered purchasing agent or an approved supplier can anchor records." (tx 68WJ7medhmkXjCoegDTZ1V1Yki1h1SDcrCVDnVmweZ3w)
+  chain: anchor quote RFQ-G-2611 ✓ signed by northgate-ingredients.testnet (tx 42R9MGcavZ4SRrnjw4m7y5QDT98Q4dFhNa5kXa2EoonB)
+  chain: anchor quote RFQ-G-2611 ✓ signed by ridgeway-ascorbics.testnet (tx Ge3TbqWzV7hNLc4vNcR4jvTLgUhR4P3WPpqGfF9eUmqs)
 Allocation: Plant B $4,745.00 (700 kg), Plant A $4,745.00 (700 kg).
 PO-G-2001 to Northgate Ingredients, $9,490.00 pooled for 2 plants: Plant B's $4,745.00 share is over its $2,500.00 limit; Plant A's $4,745.00 share is over its $2,500.00 limit. The whole order waits. Sent to Linda (Plant B) and Dana (Plant A) for approval.
-  chain: submit_pooled_po PO-G-2001 ✗ REFUSED "PO-G-2001: Kevin's $4,745.00 share exceeds its per-PO limit of $2,500.00; Kevin at Plant A's $4,745.00 share exceeds its per-PO limit of $2,500.00; director approval required." (tx F55jd9N3an7beU6AjLuVSQGFPHaysFNhf6nXknoUNzF3)
+  chain: submit_pooled_po PO-G-2001 ✗ REFUSED "PO-G-2001: Kevin's $4,745.00 share exceeds its per-PO limit of $2,500.00; Kevin at Plant A's $4,745.00 share exceeds its per-PO limit of $2,500.00; director approval required." (tx 7Vf5C8G4Y9nv4bgVfii6xx3cN98Bz6ymFHxJHMnqFgkN)
 Linda: YES G2001 → Approved by Linda Park: Plant B's $4,745.00 share.
 Still waiting for Dana.
-  chain: approve_po PO-G-2001/Plant B ✓ signed by director.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx BA1zFEfzmzKPzVPGpbueCFQ2sciEkS3Gdfi8XtXUA7Bt)
+  chain: approve_po PO-G-2001/Plant B ✓ signed by director.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx Brc7mKxP3VQ6UcKZhBZoB3h4qSjHAsWB2AaV13bNnMVk)
 Dana: YES G2001 → Approved by Dana Whitfield: Plant A's $4,745.00 share.
-  chain: approve_po PO-G-2001/Plant A ✓ signed by director.plant-a.acme-holdings.testnet, paid by dayone-relayer.testnet (tx 6w5Y4xDTHUuJSxL9xuPaMo8ZujgZnm2ATp1GSr1pfxNG)
+  chain: approve_po PO-G-2001/Plant A ✓ signed by director.plant-a.acme-holdings.testnet, paid by dayone-relayer.testnet (tx Cm1dyEdK2P5eGZ5Ko8xVCqv5VE5DLcfzQvAM1epXB2LK)
 PO-G-2001 sent to Northgate Ingredients: $9,490.00 held until delivery passes QC; Plant B $4,745.00, Plant A $4,745.00, each charged to its own plant.
-  chain: submit_pooled_po PO-G-2001 ✓ (tx ANfFdAAX4EkMmebRLhQ1KEzJqmnpMAzLEnZuKxRF2pQn) · escrow funded 9,490.00 DTUSD · Plant B 4,745.00 DTUSD · Plant A 4,745.00 DTUSD
-  chain: accept_po PO-G-2001 ✓ signed by northgate-ingredients.testnet (tx 4niqqLEpZKEbrmCP74881SjDoj6w3zjdFTprbzcqj5n5)
-  chain: mark_shipped PO-G-2001 ✓ signed by northgate-ingredients.testnet (tx 5PTawZhvr746KizQ4C4TQ4nm4RFJv5o5xJjx1cihZnCn)
+  chain: submit_pooled_po PO-G-2001 ✓ (tx 9soPwo62c2qoZ5vPF5SKqxTKGSNvLadDMxCP1QY89b7V) · escrow funded 9,490.00 DTUSD · Plant B 4,745.00 DTUSD · Plant A 4,745.00 DTUSD
+  chain: accept_po PO-G-2001 ✓ signed by northgate-ingredients.testnet (tx 3g6tJG5Jm1ncgwvo5yhP5vP5HmBxtFEsRCqQKoN3uHxJ)
+  chain: mark_shipped PO-G-2001 ✓ signed by northgate-ingredients.testnet (tx 53y1oyTVfdCENiFDixXyZwAYsWB5J7us6AjywDsiHwQS)
 Tommy photographed the packing slip. Matches PO-G-2001: 1,400 kg ascorbic acid, supplier lot NG-24-9120. Lot ASC-261117-01 is in quarantine.
 700 kg is earmarked for Plant A (Acme Riverside); it moves on once QC releases the lot.
-  chain: confirm_receipt PO-G-2001 ✓ signed by receiving.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx DNQ9Z1ghXVPH8YruLKDNMcrFE8RYhFfFL4BaNb6eX7fH)
+  chain: confirm_receipt PO-G-2001 ✓ signed by receiving.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx 3pPaLEoasECQuDUuBCxF9aNBRKmxdbeDvQ3sSebKwydq)
 Priya released lot ASC-261117-01.
 PO-G-2001 — paid $9,490.00.
-  chain: qc_release PO-G-2001 ✓ (tx EAF5EjjC3Cnz4jq6UZwPGzTDjmUPTTNvfTKCwCkEcNKo) · 9,490.00 DTUSD → northgate-ingredients.testnet
-On the books this month: Plant A $4,745.00, Plant B $4,745.00, Plant C $0.00 — each counted against its own limits by the contract.
+  chain: qc_release PO-G-2001 ✓ (tx 9XDEo3DpvFe2Tu8t94Hpe45su4AH9cB8JWCLiEnHV3ka) · 9,490.00 DTUSD → northgate-ingredients.testnet
+On the books this month: Plant A $4,745.00, Plant B $10,507.00, Plant C $0.00 — each counted against its own limits by the contract.
   chain: 13 transactions, 2 refused by design, 0 failed.
 
-Recorded on a local NEAR sandbox: the hashes above have no public explorer.
+Explorer links:
+  open_pool https://testnet.nearblocks.io/txns/6kDFjyFWzuCfJCiAkhuv5tP3D3nAZuJLzMvefRopd3Ma
+  join_pool https://testnet.nearblocks.io/txns/13CSC6EdwebUFuKNZE813GdNuG4ziHNnxxoJR2xj8Cvy
+  anchor https://testnet.nearblocks.io/txns/68WJ7medhmkXjCoegDTZ1V1Yki1h1SDcrCVDnVmweZ3w
+  anchor https://testnet.nearblocks.io/txns/42R9MGcavZ4SRrnjw4m7y5QDT98Q4dFhNa5kXa2EoonB
+  anchor https://testnet.nearblocks.io/txns/Ge3TbqWzV7hNLc4vNcR4jvTLgUhR4P3WPpqGfF9eUmqs
+  submit_pooled_po https://testnet.nearblocks.io/txns/7Vf5C8G4Y9nv4bgVfii6xx3cN98Bz6ymFHxJHMnqFgkN
+  approve_po https://testnet.nearblocks.io/txns/Brc7mKxP3VQ6UcKZhBZoB3h4qSjHAsWB2AaV13bNnMVk
+  approve_po https://testnet.nearblocks.io/txns/Cm1dyEdK2P5eGZ5Ko8xVCqv5VE5DLcfzQvAM1epXB2LK
+  submit_pooled_po https://testnet.nearblocks.io/txns/9soPwo62c2qoZ5vPF5SKqxTKGSNvLadDMxCP1QY89b7V
+  accept_po https://testnet.nearblocks.io/txns/3g6tJG5Jm1ncgwvo5yhP5vP5HmBxtFEsRCqQKoN3uHxJ
+  mark_shipped https://testnet.nearblocks.io/txns/53y1oyTVfdCENiFDixXyZwAYsWB5J7us6AjywDsiHwQS
+  confirm_receipt https://testnet.nearblocks.io/txns/3pPaLEoasECQuDUuBCxF9aNBRKmxdbeDvQ3sSebKwydq
+  qc_release https://testnet.nearblocks.io/txns/9XDEo3DpvFe2Tu8t94Hpe45su4AH9cB8JWCLiEnHV3ka

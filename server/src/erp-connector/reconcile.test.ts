@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { ChainStanding, ContractStanding } from "./credentials.ts";
 import { rebuildErp } from "./rebuild.ts";
-import { type ContractPo, type ContractView, reconcile } from "./reconcile.ts";
+import {
+  type ContractPo,
+  type ContractView,
+  groupRunsFromFixture,
+  reconcile,
+} from "./reconcile.ts";
 
 /** The deploy script's credentials: the three approved supplier agents; QuickChem has none. */
 const DEPLOYED: Record<string, ChainStanding> = {
@@ -193,4 +198,31 @@ describe("reconciling Day One, the ERP and the contract", () => {
     expect(check).toMatchObject({ ok: true, skipped: true });
     expect(result.ok).toBe(true);
   }, 20_000);
+});
+
+describe("groupRunsFromFixture", () => {
+  const call = (method: string, args: Record<string, unknown>, status: string, txHash: string) => ({
+    type: "call",
+    request: { method, args },
+    outcome: { status, txHash },
+  });
+  const fixture = {
+    network: "testnet",
+    entries: [
+      call("submit_pooled_po", { po_id: "PO-G-1", amount: "100", supplier: "ng" }, "refused", "t1"),
+      call("submit_pooled_po", { po_id: "PO-G-1", amount: "100", supplier: "ng" }, "success", "t2"),
+      call("qc_release", { po_id: "PO-G-1" }, "success", "t3"),
+      call("submit_pooled_po", { po_id: "PO-G-2", amount: "50", supplier: "ng" }, "success", "t4"),
+    ],
+  };
+
+  it("takes each funded pooled PO with the release that paid it", () => {
+    expect(groupRunsFromFixture(fixture, "testnet")).toEqual([
+      { poNo: "PO-G-1", amount: "100", supplier: "ng", releaseTx: "t3" },
+    ]);
+  });
+
+  it("ignores a recording from another network", () => {
+    expect(groupRunsFromFixture({ ...fixture, network: "sandbox" }, "testnet")).toEqual([]);
+  });
 });

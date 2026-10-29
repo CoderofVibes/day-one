@@ -1,9 +1,9 @@
 {
-  "po": "6e69ff0075745eeaad2b7bd113771588",
+  "po": "a2cd56b0b34992b7def2f9ae91c75b0a",
   "quotes": {
-    "quickchem-direct.testnet": "0d5bcad1c7ec241ed33205a6065c6dff",
-    "northgate-ingredients.testnet": "bce16e99bc87e28652eee41151ea9382",
-    "ridgeway-ascorbics.testnet": "70d8cd109d47dd4d82d7b3f7626863de",
-    "bayfront-labsupply.testnet": "1e4a7dc524657cc299a056c7aa745391"
+    "quickchem-direct.testnet": "28a288711633aef2b92f72f3dbe9e184",
+    "northgate-ingredients.testnet": "e5d02210c71023a4650e709db41e5516",
+    "ridgeway-ascorbics.testnet": "dab27672652dabde212ed179678720bc",
+    "bayfront-labsupply.testnet": "88d06add7d2cd17c88c65c742202a17c"
   }
 }

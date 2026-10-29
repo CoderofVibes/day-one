@@ -1,0 +1,15 @@
+{
+  "kind": "quote",
+  "ref_id": "RFQ-G-2611/northgate-ingredients.testnet",
+  "salt": "e5d02210c71023a4650e709db41e5516",
+  "record": {
+    "rfq": "RFQ-G-2611",
+    "supplier": "northgate-ingredients.testnet",
+    "material": "ASC",
+    "qtyBase": 1400000000,
+    "unitPriceUsdc": 6650000,
+    "freightUsdc": 180000000,
+    "leadTimeDays": 7
+  },
+  "anchored_tx": "42R9MGcavZ4SRrnjw4m7y5QDT98Q4dFhNa5kXa2EoonB"
+}

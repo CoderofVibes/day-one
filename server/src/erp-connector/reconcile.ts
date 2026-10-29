@@ -62,6 +62,22 @@ export interface ReconcileInput {
   erpDb: Erp;
   erp: ErpConnector;
   view: ContractView;
+  /**
+   * Pooled POs paid in the recorded group purchasing run (`npm run demo:group`, GROUP_BUY.md).
+   * That run keeps its own ledger and the mock ERP does not book it, so a contract PO that
+   * matches one of these exactly (id, amount, supplier, released) is reported as the group
+   * buy, and its payout is added back in the escrow check. Anything else stays a mismatch.
+   */
+  groupRuns?: readonly GroupRunPo[];
+}
+
+export interface GroupRunPo {
+  poNo: string;
+  /** Token base units. */
+  amount: string;
+  supplier: string;
+  /** The `qc_release` transaction in the recording. */
+  releaseTx: string;
 }
 
 /** Contract statuses that still hold money, or have paid it out. */
@@ -334,27 +350,53 @@ async function payments({ dayOne, erpDb, view }: ReconcileInput): Promise<Check>
   };
 }
 
+/** Every PO on the contract, in submission order. */
+async function contractPos(view: ContractView): Promise<ContractPo[]> {
+  const all: ContractPo[] = [];
+  for (let from = 0; ; from += 100) {
+    const page = (await view("list_pos", { from, limit: 100 })) as ContractPo[];
+    all.push(...page);
+    if (page.length < 100) break;
+  }
+  return all;
+}
+
+/** Contract POs that are exactly a paid PO of the recorded group run. */
+function groupRunPos(all: readonly ContractPo[], groupRuns: readonly GroupRunPo[] = []) {
+  return all.flatMap((p) => {
+    const run = groupRuns.find((g) => g.poNo === p.po_id);
+    return run && p.status === PAID && p.amount === run.amount && p.supplier === run.supplier
+      ? [{ po: p, run }]
+      : [];
+  });
+}
+
 /** What the ERP books as money at the contract equals what the contract still holds. */
-async function escrow({ erpDb, view }: ReconcileInput): Promise<Check> {
+async function escrow({ erpDb, view, groupRuns }: ReconcileInput): Promise<Check> {
   const budget = (await view("get_budget")) as { budget: string; escrowed: string };
   const account = setting(erpDb, "escrowClearingAccount", "1050");
   const tb = trialBalance(erpDb);
   const erpHeld = tb.rows.find((r) => r.acctNumber === account)?.balanceUsdc ?? 0;
-  const chainHeld = Number(budget.budget) + Number(budget.escrowed);
+  const group = groupRunPos(await contractPos(view), groupRuns);
+  const groupPaid = group.reduce((sum, g) => sum + Number(g.po.amount), 0);
+  const chainHeld = Number(budget.budget) + Number(budget.escrowed) + groupPaid;
   const ok = erpHeld === chainHeld;
+  const plus = group.length
+    ? ` + paid by the group buy ${money(groupPaid)} (${group.map((g) => g.po.po_id).join(", ")})`
+    : "";
   return {
     name: "Escrow",
     ok,
     lines: [
       ok
-        ? `ERP account ${account} ${money(erpHeld)} = contract budget ${money(budget.budget)} + in escrow ${money(budget.escrowed)}`
-        : `ERP account ${account} holds ${money(erpHeld)}; the contract holds ${money(chainHeld)} (budget ${money(budget.budget)} + escrow ${money(budget.escrowed)}); difference ${money(erpHeld - chainHeld)}`,
+        ? `ERP account ${account} ${money(erpHeld)} = contract budget ${money(budget.budget)} + in escrow ${money(budget.escrowed)}${plus}`
+        : `ERP account ${account} holds ${money(erpHeld)}; the contract holds ${money(chainHeld - groupPaid)} (budget ${money(budget.budget)} + escrow ${money(budget.escrowed)})${plus}; difference ${money(erpHeld - chainHeld)}`,
     ],
   };
 }
 
 /** POs on the contract that Day One never created: fine while they hold no money. */
-async function strangers({ dayOne, view }: ReconcileInput): Promise<Check> {
+async function strangers({ dayOne, view, groupRuns }: ReconcileInput): Promise<Check> {
   const known = new Set(
     dayOne
       .select({ poNo: purchaseOrders.poNo })
@@ -362,14 +404,12 @@ async function strangers({ dayOne, view }: ReconcileInput): Promise<Check> {
       .all()
       .map((p) => p.poNo),
   );
-  const all: ContractPo[] = [];
-  for (let from = 0; ; from += 100) {
-    const page = (await view("list_pos", { from, limit: 100 })) as ContractPo[];
-    all.push(...page);
-    if (page.length < 100) break;
-  }
+  const all = await contractPos(view);
+  const group = groupRunPos(all, groupRuns);
+  const grouped = new Set(group.map((g) => g.po.po_id));
   const unknown = all.filter((p) => !known.has(p.po_id));
   const lines = unknown
+    .filter((p) => !grouped.has(p.po_id))
     .filter((p) => HOLDING.has(p.status) || p.status === PAID)
     .map(
       (p) =>
@@ -383,10 +423,22 @@ async function strangers({ dayOne, view }: ReconcileInput): Promise<Check> {
       ? [
           unknown.length === 0
             ? "none: every PO on the contract is one of Day One's"
-            : `${unknown.length} (rehearsals and cancelled tests): all cancelled or refunded, none holding or paid`,
+            : unknown.length === group.length
+              ? groupLine(group)
+              : `${unknown.length - group.length} (rehearsals and cancelled tests): all cancelled or refunded, none holding or paid` +
+                (group.length ? `; ${groupLine(group)}` : ""),
         ]
       : lines,
   };
+}
+
+function groupLine(group: ReturnType<typeof groupRunPos>) {
+  return group
+    .map(
+      (g) =>
+        `${g.po.po_id} ${money(g.po.amount)} to ${g.po.supplier} is the recorded group purchase (npm run demo:group, release tx ${short(g.run.releaseTx)}), booked in its own run, not in this ERP`,
+    )
+    .join("; ");
 }
 
 /** The ERP's ledger balances, and its payables account equals its open approved bills. */
@@ -462,4 +514,42 @@ async function supplierStanding({ erp, view }: ReconcileInput): Promise<Check> {
           ]
         : off.map((r) => r.line),
   };
+}
+
+interface FixtureEntry {
+  type?: string;
+  request?: { method?: string; args?: Record<string, unknown> };
+  outcome?: { status?: string; txHash?: string | null };
+}
+
+/**
+ * The paid pooled POs of a recorded group run (`data/replay/group-chain.json`): each funded
+ * `submit_pooled_po` with the `qc_release` that paid it. Only a recording on `network` counts.
+ */
+export function groupRunsFromFixture(
+  fixture: { network?: string; entries?: FixtureEntry[] },
+  network: string,
+): GroupRunPo[] {
+  if (fixture.network !== network) return [];
+  const entries = fixture.entries ?? [];
+  const ok = (e: FixtureEntry, method: string) =>
+    e.request?.method === method && e.outcome?.status === "success";
+  return entries
+    .filter((e) => ok(e, "submit_pooled_po"))
+    .flatMap((e) => {
+      const args = e.request?.args ?? {};
+      const release = entries.find(
+        (r) => ok(r, "qc_release") && r.request?.args?.po_id === args.po_id,
+      );
+      return release?.outcome?.txHash
+        ? [
+            {
+              poNo: String(args.po_id),
+              amount: String(args.amount),
+              supplier: String(args.supplier),
+              releaseTx: release.outcome.txHash,
+            },
+          ]
+        : [];
+    });
 }

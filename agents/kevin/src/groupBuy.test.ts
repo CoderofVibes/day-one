@@ -124,7 +124,9 @@ describe("the recorded group buy", () => {
     expect(result.po?.poNo).toBe(GROUP_PO);
     expect(result.pool.shares.reduce((sum, s) => sum + s.amount, 0)).toBe(result.po?.totalUsdc);
     expect(result.pool.shares.map((s) => s.approvedBy)).toEqual(["Linda Park", "Dana Whitfield"]);
-    expect(result.spent).toEqual({ A: 4_745_000_000, B: 4_745_000_000, C: 0 });
+    // Recorded on testnet after the main demo: Plant B's month already holds PO-1041 and
+    // PO-1042 ($5,762.00), so its total is that plus its $4,745.00 share.
+    expect(result.spent).toEqual({ A: 4_745_000_000, B: 10_507_000_000, C: 0 });
     expect(result.po?.savingsUsdc).toBe(810_000_000);
     expect(result.po?.status).toBe("paid");
 
