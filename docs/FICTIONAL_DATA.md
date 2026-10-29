@@ -197,6 +197,8 @@ Demo quote set for ascorbic acid (700 kg):
 | Northgate Ingredients | 7.10 | $180 | 7 days | **Selected**: qualified, lowest landed cost ($5,150.00), arrives Nov 16, before the Nov 17 batch |
 | Ridgeway Ascorbics | 7.35 | $165 | 5 days | Runner-up ($5,310.00) |
 
+**Supplier credentials** (CONTRACTS.md §3.1, issued by `npm run deploy:testnet`): Northgate and Ridgeway for `raw_material`, Bayfront for `lab_chemical`, all until 2027-10-31; QuickChem none. The credential attacks (`data/attacks/credential-attacks.json`) add three fictional accounts that exist only in the sandbox recording: `fennimore-polyols.testnet` (credential revoked after a supplier review), `sierra-mineral.testnet` (credential expired) and `pacific-excipient.testnet` (two deliveries of croscarmellose sodium failed QC, PO-T9311 and PO-T9312, so it is suspended).
+
 As data: `server/src/seed/quotes.ts` (`DEMO_QUOTES`). Kevin ranks qualified quotes by landed cost (quantity × price + freight) and excludes any quote whose lead time misses the need-by date (the first planned batch that stock cannot cover).
 
 ---

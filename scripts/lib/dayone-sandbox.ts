@@ -171,13 +171,19 @@ export async function startDayOneSandbox(options: DayOneSandboxOptions = {}) {
       { category: "lab_chemical", monthly_cap: usd(2_000) },
       ONE_YOCTO,
     );
-    // Northgate, Ridgeway and Bayfront are qualified; QuickChem is left off on purpose.
+    // Northgate, Ridgeway and Bayfront get supplier credentials as deploy.ts issues them on
+    // testnet (CONTRACTS.md §3.1); QuickChem gets none on purpose.
     for (const s of SUPPLIERS.filter((s) => s.vendor !== "QCD")) {
       await call(
         root,
         policy,
-        "set_supplier",
-        { supplier: s.account, status: "Qualified" },
+        "issue_credential",
+        {
+          supplier: s.account,
+          status: "Qualified",
+          categories: [s.vendor === "BLS" ? "lab_chemical" : "raw_material"],
+          expires_at: (BigInt(Date.UTC(2027, 9, 31)) * 1_000_000n).toString(),
+        },
         ONE_YOCTO,
       );
     }

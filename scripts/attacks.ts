@@ -1,6 +1,10 @@
-// npm run test:attacks — seven attacks on Kevin, each shown failing (agents/kevin/src/attacks.ts).
+// npm run test:attacks — eleven attacks on Kevin, each shown failing: seven in
+// agents/kevin/src/attacks.ts, four on supplier credentials in credential-attacks.ts.
 // Replays the recorded testnet calls and model answers by default: no keys, no network.
-//   --record  run live on testnet and NEAR AI Cloud and rewrite the fixtures (needs .env keys)
+// The credential attacks replay a local sandbox run of the new spend-policy
+// (data/attacks/credentials-sandbox.json) until it is deployed to testnet.
+//   --record  run the first seven live on testnet and NEAR AI Cloud and rewrite their
+//             fixtures (needs .env keys); the credential attacks still replay
 //   --json    print one JSON line after the readable text
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -11,6 +15,11 @@ import {
   runAttackSuite,
   type SigningKeyView,
 } from "../agents/kevin/src/attacks.ts";
+import {
+  type CredentialAttackFile,
+  runCredentialAttacks,
+  type SetupStep,
+} from "../agents/kevin/src/credential-attacks.ts";
 import { forecastMaterial } from "../agents/kevin/src/forecast.ts";
 import { confirmBr1045 } from "../agents/kevin/src/test/br-b-1045.ts";
 import { ChainClient, explorerUrl } from "../server/src/chain/client.ts";
@@ -114,6 +123,24 @@ const results: AttackResult[] = await runAttackSuite({
   },
 });
 
+// Attacks 8–11: supplier credentials, from their own recording.
+const CREDENTIAL_FIXTURE = join(root, "data/attacks/credentials-sandbox.json");
+const credentialRun = JSON.parse(readFileSync(CREDENTIAL_FIXTURE, "utf8")) as Fixture & {
+  setup: SetupStep[];
+};
+const credentialTransport = new ReplayTransport(credentialRun);
+results.push(
+  ...(await runCredentialAttacks({
+    chain: new ChainClient(db, credentialTransport, () => NOW),
+    erp,
+    spec: JSON.parse(
+      readFileSync(join(root, "data/attacks/credential-attacks.json"), "utf8"),
+    ) as CredentialAttackFile,
+    setup: credentialRun.setup,
+  })),
+);
+credentialTransport.assertDone();
+
 if (record && transport instanceof RecordingTransport && llm instanceof RecordingLlm) {
   transport.save(CHAIN_FIXTURE);
   llm.save(LLM_FIXTURE);
@@ -124,7 +151,10 @@ if (record && transport instanceof RecordingTransport && llm instanceof Recordin
 }
 
 const held = results.filter((r) => r.held).length;
-console.log(`Attack suite (${record ? "live on testnet" : "replay of recorded testnet run"})\n`);
+console.log(`Attack suite (${record ? "live on testnet" : "replay of recorded testnet run"})`);
+console.log(
+  `Attacks 8–11 replay a ${credentialRun.network} run of spend-policy with supplier credentials, recorded ${credentialRun.recordedAt.slice(0, 10)}.\n`,
+);
 for (const r of results) {
   console.log(`${r.held ? "PASS" : "FAIL"}  ${r.attack}`);
   for (const line of r.evidence) console.log(`      ${line}`);

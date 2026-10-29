@@ -5,6 +5,7 @@
 //! Every access check uses `predecessor_account_id`, never the signer, so relayed
 //! meta-transactions (signer = relayer) are judged by the account that asked.
 
+mod credentials;
 mod events;
 mod util;
 
@@ -16,6 +17,7 @@ use near_sdk::{
     PanicOnDefault, Promise, PromiseOrValue,
 };
 
+pub use credentials::{DeliveryOutcome, Standing, SupplierCredential};
 pub use events::Event;
 use util::{is_hash, label, period, usd};
 
@@ -477,11 +479,10 @@ impl SpendPolicy {
         if self.pos.contains_key(&po_id) {
             refuse(format!("{po_id} was already submitted."));
         }
-        let supplier_status = match self.suppliers.get(&supplier) {
-            Some(status) => *status,
-            None => refuse(format!(
-                "{supplier} is not an approved supplier; no approval can override this."
-            )),
+        // The supplier's credential: listed, issued, live, in good standing, this category.
+        let supplier_status = match self.supplier_gate(&supplier, &category, &po_id) {
+            Ok(status) => status,
+            Err(reason) => refuse(reason),
         };
         if amount.0 > self.budget {
             refuse(format!(
@@ -742,6 +743,7 @@ impl SpendPolicy {
                 amount: po.amount,
             }
             .emit();
+            self.record_delivery(&po.supplier, &po_id, DeliveryOutcome::Released);
         } else {
             po.status = PoStatus::Received;
             Event::PayoutFailed {
@@ -761,14 +763,16 @@ impl SpendPolicy {
         po.status = PoStatus::Refunded;
         let amount = po.amount;
         self.refund(&po);
+        let supplier = po.supplier.clone();
         self.pos.insert(po_id.clone(), po);
         Event::PoRefunded {
-            po_id,
+            po_id: po_id.clone(),
             by: env::predecessor_account_id(),
             amount,
             reason,
         }
         .emit();
+        self.record_delivery(&supplier, &po_id, DeliveryOutcome::Rejected);
     }
 
     /// HQ cancels a PO before delivery: the escrowed amount returns to the plant budget.
@@ -1197,7 +1201,7 @@ impl SpendPolicy {
             return;
         }
         require!(
-            self.suppliers.contains_key(&caller),
+            self.supplier_may_quote(&caller),
             "Only a registered purchasing agent or an approved supplier can anchor records."
         );
         require!(

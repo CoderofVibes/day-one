@@ -28,6 +28,7 @@ import { demoBus } from "../agents/suppliers/src/bus.ts";
 import { acceptAndShip } from "../agents/suppliers/src/shipping.ts";
 import { ChainClient, explorerUrl, type LoggedOutcome } from "../server/src/chain/client.ts";
 import { LiveTransport } from "../server/src/chain/live.ts";
+import type { ContractStanding } from "../server/src/erp-connector/credentials.ts";
 import { openLedger } from "../server/src/ledger/db.ts";
 import { chainTx, materials, poLines, staff } from "../server/src/ledger/schema.ts";
 import { quoteProof } from "../server/src/quotes.ts";
@@ -76,6 +77,24 @@ for (;;) {
 }
 const poNo = `PO-${number}`;
 const heldAtStart = BigInt(resumeFrom?.amount ?? 0);
+
+// Each rehearsal ends in a QC reject of a Northgate delivery, which counts on Northgate's
+// supplier credential (CONTRACTS.md §3.1): rejects in a row suspend it until HQ reinstates it.
+const NORTHGATE = "northgate-ingredients.testnet";
+const REINSTATE = `near contract call-function as-transaction ${ACCOUNTS.spendPolicy} reinstate_supplier json-args '{"supplier":"${NORTHGATE}"}' prepaid-gas '30 Tgas' attached-deposit '1 yoctoNEAR' sign-as ${ACCOUNTS.root} network-config testnet sign-with-keychain send`;
+/** Northgate's standing, or null on a contract deployed before supplier credentials. */
+async function northgate() {
+  try {
+    return (await view("get_supplier_standing", { supplier: NORTHGATE })) as ContractStanding;
+  } catch {
+    return null;
+  }
+}
+if (!resumeFrom && (await northgate())?.standing === "Suspended") {
+  fail(
+    `Northgate is suspended after rejected rehearsal deliveries; HQ reinstates it first: ${REINSTATE}`,
+  );
+}
 
 const db = openLedger();
 seedLedger(db);
@@ -183,6 +202,19 @@ lines.push(
       ? "every unit is back in the budget."
       : `CHANGED (was ${before.budget}, ${before.escrowed}).`),
 );
+const standing = await northgate();
+const record = standing?.credential?.reputation;
+if (record) {
+  const rule = (await view("get_suspension_rule")) as number;
+  lines.push(
+    `Northgate's delivery record: ${record.released} released, ${record.rejected} rejected, ${record.consecutive_rejects} rejected in a row (suspended at ${rule}).`,
+  );
+  if (standing.standing === "Suspended") {
+    lines.push(
+      `Northgate is suspended by this rehearsal's reject; before the demo or another rehearsal, HQ reinstates it: ${REINSTATE}`,
+    );
+  }
+}
 lines.push(ok && restored ? "PASS" : "FAIL");
 console.log(lines.join("\n"));
 if (json) {

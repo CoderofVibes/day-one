@@ -51,11 +51,16 @@ console.log(
 );
 for (const check of result.checks) {
   const [first, ...rest] = check.lines;
-  console.log(`${check.ok ? "MATCH    " : "MISMATCH "} ${check.name}: ${first ?? ""}`);
+  const verdict = check.skipped ? "SKIPPED  " : check.ok ? "MATCH    " : "MISMATCH ";
+  console.log(`${verdict} ${check.name}: ${first ?? ""}`);
   for (const line of rest) console.log(`          ${line}`);
 }
-const matched = result.checks.filter((c) => c.ok).length;
-console.log(`\n${matched} of ${result.checks.length} checks match.`);
+const checked = result.checks.filter((c) => !c.skipped);
+const matched = checked.filter((c) => c.ok).length;
+const skipped = result.checks.length - checked.length;
+console.log(
+  `\n${matched} of ${checked.length} checks match.${skipped ? ` ${skipped} skipped.` : ""}`,
+);
 if (record) console.log(`Views saved to ${FIXTURE.slice(root.length + 1)}.`);
 if (json) {
   console.log(

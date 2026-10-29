@@ -21,16 +21,29 @@ pub fn label(category: &str) -> String {
 
 /// Calendar month `YYYYMM` (UTC) from a block timestamp in nanoseconds.
 pub fn period(timestamp_ns: u64) -> u32 {
-    // Days since 1970-01-01 to a civil date (H. Hinnant's algorithm), non-negative inputs only.
+    let (year, month, _) = civil(timestamp_ns);
+    (year * 100 + month) as u32
+}
+
+/// "2026-11-09" (UTC) from a block timestamp in nanoseconds, for messages staff read.
+pub fn date(timestamp_ns: u64) -> String {
+    let (year, month, day) = civil(timestamp_ns);
+    format!("{year}-{month:02}-{day:02}")
+}
+
+/// (year, month, day) in UTC. Days since 1970-01-01 to a civil date (H. Hinnant's
+/// algorithm), non-negative inputs only.
+fn civil(timestamp_ns: u64) -> (u64, u64, u64) {
     let z = timestamp_ns / 86_400_000_000_000 + 719_468;
     let era = z / 146_097;
     let doe = z - era * 146_097;
     let yoe = (doe - doe / 1_460 + doe / 36_524 - doe / 146_096) / 365;
     let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
     let mp = (5 * doy + 2) / 153;
+    let day = doy - (153 * mp + 2) / 5 + 1;
     let month = if mp < 10 { mp + 3 } else { mp - 9 };
     let year = yoe + era * 400 + u64::from(month <= 2);
-    (year * 100 + month) as u32
+    (year, month, day)
 }
 
 /// A SHA-256 fingerprint written as 64 lowercase hex characters.
@@ -65,6 +78,14 @@ mod tests {
         assert_eq!(period(1_798_761_600_000_000_000), 202701);
         // 2028-02-29T12:00:00Z (leap day).
         assert_eq!(period(1_835_438_400_000_000_000), 202802);
+    }
+
+    #[test]
+    fn finds_the_calendar_day() {
+        assert_eq!(date(1_794_229_200_000_000_000), "2026-11-09");
+        assert_eq!(date(1_798_761_599_000_000_000), "2026-12-31");
+        assert_eq!(date(1_798_761_600_000_000_000), "2027-01-01");
+        assert_eq!(date(1_835_438_400_000_000_000), "2028-02-29");
     }
 
     #[test]

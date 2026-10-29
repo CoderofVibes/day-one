@@ -32,6 +32,14 @@ const DOLLAR = 1_000_000n;
 /** DTUSD minted to the treasury at init, and the plant budget funded from it. */
 const SUPPLY = 1_000_000n * DOLLAR;
 const BUDGET = 25_000n * DOLLAR;
+/** The supplier credentials HQ issues (CONTRACTS.md §8): the agents' §5 materials as categories. */
+const SUPPLIER_CREDENTIALS = [
+  { supplier: "northgate-ingredients.testnet", categories: ["raw_material"] },
+  { supplier: "ridgeway-ascorbics.testnet", categories: ["raw_material"] },
+  { supplier: "bayfront-labsupply.testnet", categories: ["lab_chemical"] },
+] as const;
+/** 2027-10-31T00:00:00Z in nanoseconds: one year of approval, renewed by re-running deploy. */
+const CREDENTIAL_EXPIRY = (BigInt(Date.UTC(2027, 9, 31)) * 1_000_000n).toString();
 /** NEP-145 storage deposit per token holder (CONTRACTS.md §2). */
 const STORAGE_DEPOSIT = "0.00125 NEAR";
 
@@ -170,16 +178,33 @@ async function main() {
   if ((await view(POLICY, "get_category_cap", { category: "lab_chemical" })) !== labCap) {
     asAcme(POLICY, "set_category_cap", { category: "lab_chemical", monthly_cap: labCap }, oneYocto);
   }
-  // Suppliers Kevin may pay (FICTIONAL_DATA §5). QuickChem Direct is unqualified and is left
-  // off, so the contract refuses it with no approval path.
-  for (const supplier of [
-    "northgate-ingredients.testnet",
-    "ridgeway-ascorbics.testnet",
-    "bayfront-labsupply.testnet",
-  ]) {
-    if ((await view(POLICY, "get_supplier", { supplier })) !== "Qualified") {
-      asAcme(POLICY, "set_supplier", { supplier, status: "Qualified" }, oneYocto);
+  // Suppliers Kevin may pay (FICTIONAL_DATA §5), each with a supplier credential: the
+  // categories it sells and an expiry (CONTRACTS.md §3.1). This is also the migration of the
+  // approvals set before credentials existed: issuing lists the supplier as well. QuickChem
+  // Direct is unqualified and gets none, so the contract refuses it with no approval path.
+  for (const { supplier, categories } of SUPPLIER_CREDENTIALS) {
+    const credential = await view<{
+      categories: string[];
+      expires_at: string;
+      revoked: unknown;
+    } | null>(POLICY, "get_credential", { supplier });
+    const current =
+      credential !== null &&
+      credential.revoked === null &&
+      credential.expires_at === CREDENTIAL_EXPIRY &&
+      same(credential.categories, categories) &&
+      (await view(POLICY, "get_supplier", { supplier })) === "Qualified";
+    if (!current) {
+      asAcme(
+        POLICY,
+        "issue_credential",
+        { supplier, status: "Qualified", categories, expires_at: CREDENTIAL_EXPIRY },
+        oneYocto,
+      );
     }
+  }
+  if ((await view(POLICY, "get_credential", { supplier: "quickchem-direct.testnet" })) !== null) {
+    throw new Error("quickchem-direct.testnet holds a supplier credential; HQ never issued one");
   }
 
   const { budget } = await view<{ budget: string }>(POLICY, "get_budget");
