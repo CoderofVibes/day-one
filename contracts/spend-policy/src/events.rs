@@ -1,9 +1,9 @@
 //! NEP-297 events (CONTRACTS.md §5). The behind-the-curtain view and the transcript print these.
 
-use near_sdk::json_types::U128;
+use near_sdk::json_types::{U128, U64};
 use near_sdk::{near, AccountId};
 
-use crate::SupplierStatus;
+use crate::{ShareLine, SupplierStatus};
 
 #[near(event_json(standard = "dayone_spend_policy"))]
 pub enum Event {
@@ -106,5 +106,33 @@ pub enum Event {
         ref_id: String,
         hash: String,
         by: AccountId,
+    },
+    // Group purchasing (GROUP_BUY.md).
+    #[event_version("1.0.0")]
+    PoolOpened {
+        pool_id: String,
+        category: String,
+        material: String,
+        by: AccountId,
+        plant: AccountId,
+    },
+    #[event_version("1.0.0")]
+    PoolJoined {
+        pool_id: String,
+        agent: AccountId,
+        plant: AccountId,
+        qty: U64,
+        max_amount: U128,
+    },
+    #[event_version("1.0.0")]
+    PooledPoAuthorized {
+        po_id: String,
+        pool_id: String,
+        agent: AccountId,
+        supplier: AccountId,
+        amount: U128,
+        category: String,
+        po_hash: String,
+        lines: Vec<ShareLine>,
     },
 }

@@ -5,6 +5,9 @@ use super::*;
 use near_sdk::test_utils::{get_logs, VMContextBuilder};
 use near_sdk::{testing_env, PromiseResult, RuntimeFeesConfig};
 
+/// Group purchasing: pools, pooled POs and per-plant approvals (tests/group.rs).
+mod group;
+
 const DOLLAR: u128 = 1_000_000;
 /// 2026-11-09T13:00:00Z, the demo clock.
 const DEMO_NS: u64 = 1_794_229_200_000_000_000;
