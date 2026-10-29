@@ -2,7 +2,7 @@
 
 ## In progress
 
-- **Three NEAR features run in their own sessions (Tony, Oct 28; OPEN_QUESTIONS #33):** group purchasing on branch `group-buy`, supplier credentials with reputation on `supplier-credentials`, sealed-bid quotes on `sealed-bids`. Builder runs: do not start these three items and do not add contract features meanwhile (contract fixes from a review are fine). The threads change the contract in sandbox tests only; Claude merges them one at a time, then redeploys `spend-policy` once and re-records the demo. Remove this line after that.
+- **Three NEAR features merged, testnet redeploy next (Tony, Oct 28; OPEN_QUESTIONS #35, #36):** group purchasing, supplier credentials with reputation and sealed-bid quotes are on main, tested on local sandboxes only. The builder task is paused until the interactive session finishes the redeploy: testnet accounts and policies for Plants A and C (GROUP_BUY.md §5), Kevin's key with `open_sealed_round` and `award_sealed_round`, NEAR for the larger contract's storage, `reset:testnet` then `setup:testnet` and `deploy:testnet`, then re-record the demo (`rehearse`, `demo:live -- --record`), the attacks, the reconcile views, the group run and the sealed round on testnet. Builder runs: do not change the contract or the recorded fixtures until this line is gone.
 
 ---
 

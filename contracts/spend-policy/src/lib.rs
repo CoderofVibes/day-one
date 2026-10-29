@@ -7,6 +7,7 @@
 
 mod credentials;
 mod events;
+mod sealed;
 mod util;
 
 use near_contract_standards::fungible_token::receiver::FungibleTokenReceiver;

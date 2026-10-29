@@ -26,6 +26,8 @@
     "verify": "tsx scripts/verify.ts",
     "attest": "tsx scripts/attest.ts",
     "verify:attestation": "tsx scripts/verify-attestation.ts",
+    "verify:round": "tsx scripts/verify-round.ts",
+    "sealed": "tsx scripts/sealed.ts",
     "render:records": "tsx tools/render/src/render.ts",
     "bakeoff": "tsx scripts/bakeoff.ts",
     "test:attacks": "tsx scripts/attacks.ts",

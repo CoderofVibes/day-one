@@ -61,6 +61,14 @@ pub fn get_anchor(&self, ref_id: String) -> Option<AnchorView>;
 3. **Explorer:** open the tx on `testnet.nearblocks.io`. The receipt logs show the `EVENT_JSON` with `ref_id` and `hash`.
 4. **Tamper demo:** edit one gram in the fixture, rerun verify, and get MISMATCH. This is a five-second beat for the video and a perfect "do X → see Y" README step.
 
+### Sealed quote rounds: commit-reveal on the same contract (Oct 28)
+The anchor pattern extends to sealed-bid quotes (CONTRACTS.md §10): a supplier commits sha256 of its salted quote text before a deadline and reveals the text afterwards, and the contract checks the reveal by hashing it, so the contract never needs to canonicalize JSON itself. Findings while building it:
+- `env::block_timestamp()` is the only clock a contract has; deadlines are block time, and views read the phase at the block they run in.
+- The local sandbox node's `sandbox_fast_forward` RPC (`delta_height`) advances block timestamps too, so a two-hour deadline passes in seconds in tests (near-sandbox 0.3.16, verified in `tests/sealed_round.rs`).
+- Genesis accounts on the sandbox can carry testnet-style names such as `northgate-ingredients.testnet`, so a sandbox recording uses the same account ids as testnet.
+- A contract can keep a feature's state in raw storage under its own prefix (`env::storage_read`/`storage_write` with Borsh) and add a second `#[near] impl` block and event enum in another module, so a new feature needs no change to the root state struct and no migration.
+- Commit-reveal hides prices only until the deadline: reveal arguments and stored texts are public. The salt is what stops a price being guessed from a commitment before then.
+
 ## Open questions for the human
 None. This is a technical choice; record it in CONTRACTS.md.
 

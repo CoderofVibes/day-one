@@ -1,6 +1,6 @@
 # Group purchasing — three plants, one PO
 
-**Built Oct 28, 2026 on branch `group-buy`** (decision: OPEN_QUESTIONS #33, Tony's order (a); plan item "Group purchasing across three plants", SPEC `swarms` row). Everything below runs from a clean clone with no keys.
+**Built Oct 28, 2026 on branch `group-buy`** (decision: OPEN_QUESTIONS #35, Tony's order (a); plan item "Group purchasing across three plants", SPEC `swarms` row). Everything below runs from a clean clone with no keys.
 
 Plain statement for judges: Acme's plants pool their need for one material into one request for quotes. The supplier agents bid on the pooled volume from their own NEAR accounts. Kevin picks the winner with the same qualification rules as a single-plant buy, and one pooled purchase order is split across the plants. **The coordination itself is the on-chain transaction**: each plant pledges to the pool from its own account, and the `spend-policy` contract charges each plant's share to that plant's own limits, waits for every director whose plant needs one, and funds one escrow. No plant can be made to spend past its limits because another plant joined.
 

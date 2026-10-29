@@ -6,6 +6,7 @@
     "./money": "./src/money.ts",
     "./canonical": "./src/canonical.ts",
     "./quotes": "./src/quotes.ts",
+    "./sealed": "./src/sealed.ts",
     "./ledger/db": "./src/ledger/db.ts",
     "./ledger/events": "./src/ledger/events.ts",
     "./ledger/schema": "./src/ledger/schema.ts",

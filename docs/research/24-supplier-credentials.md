@@ -6,7 +6,7 @@
 
 **Confidence:** high for the standard's status, roles, method signatures, events and revoke semantics (read from the NEP text on GitHub, Oct 28 2026). Medium for how the optional NFT views are picked up by wallets: the standard offers them as an optional `SBTNFT` trait, and I did not test a wallet against them. docs.near.org (via the near-docs MCP server, Oct 28) covers NEP-171/177/178 but has no page on NEP-393 or soulbound tokens. `near-contract-standards` 5.29.1 has no SBT module (checked in the installed crate), so the views are written by hand.
 
-**Decision taken (within the brief of OPEN_QUESTIONS #33):** the credential lives in `spend-policy`, additive, under new storage prefixes. Reputation (released / rejected deliveries, consecutive rejects, last outcome) is part of the same record, and a contract rule suspends a supplier after N consecutive QC rejects (default 2) until HQ reinstates it. Details in CONTRACTS.md §3.1.
+**Decision taken (within the brief of OPEN_QUESTIONS #35):** the credential lives in `spend-policy`, additive, under new storage prefixes. Reputation (released / rejected deliveries, consecutive rejects, last outcome) is part of the same record, and a contract rule suspends a supplier after N consecutive QC rejects (default 2, confirmed by Tony on Oct 28, OPEN_QUESTIONS #36) until HQ reinstates it. Details in CONTRACTS.md §3.1.
 
 ## Details
 

@@ -57,7 +57,12 @@ const ROOT_CHILDREN = [
  * key that reaches only its own spend-policy methods; staff hold no NEAR (the relayer pays).
  */
 const PLANT_B_CHILDREN = [
-  { prefix: "kevin", near: 1, methods: ["submit_po", "anchor", "anchor_batch"], allowance: 2 },
+  {
+    prefix: "kevin",
+    near: 1,
+    methods: ["submit_po", "anchor", "anchor_batch", "open_sealed_round", "award_sealed_round"],
+    allowance: 2,
+  },
   { prefix: "director", near: 0, methods: ["approve_po", "reject_po"], allowance: 0.25 },
   { prefix: "receiving", near: 0, methods: ["confirm_receipt"], allowance: 0.25 },
   { prefix: "qc", near: 0, methods: ["qc_release", "qc_reject"], allowance: 0.25 },

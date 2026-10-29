@@ -1,10 +1,12 @@
-// npm run test:attacks — eleven attacks on Kevin, each shown failing: seven in
-// agents/kevin/src/attacks.ts, four on supplier credentials in credential-attacks.ts.
+// npm run test:attacks — fourteen attacks on Kevin, each shown failing: seven in
+// agents/kevin/src/attacks.ts, four on supplier credentials in credential-attacks.ts and
+// the three sealed-bid attacks of agents/kevin/src/sealedRound.ts.
 // Replays the recorded testnet calls and model answers by default: no keys, no network.
 // The credential attacks replay a local sandbox run of the new spend-policy
-// (data/attacks/credentials-sandbox.json) until it is deployed to testnet.
+// (data/attacks/credentials-sandbox.json) and the sealed-bid attacks a sandbox round
+// (data/sealed/) until spend-policy is redeployed to testnet with both.
 //   --record  run the first seven live on testnet and NEAR AI Cloud and rewrite their
-//             fixtures (needs .env keys); the credential attacks still replay
+//             fixtures (needs .env keys); the credential and sealed-bid attacks still replay
 //   --json    print one JSON line after the readable text
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -21,6 +23,8 @@ import {
   type SetupStep,
 } from "../agents/kevin/src/credential-attacks.ts";
 import { forecastMaterial } from "../agents/kevin/src/forecast.ts";
+import { openSealedEnv } from "../agents/kevin/src/sealedEnv.ts";
+import { runSealedRound, sealedAttacks } from "../agents/kevin/src/sealedRound.ts";
 import { confirmBr1045 } from "../agents/kevin/src/test/br-b-1045.ts";
 import { ChainClient, explorerUrl } from "../server/src/chain/client.ts";
 import { LiveTransport } from "../server/src/chain/live.ts";
@@ -150,6 +154,11 @@ if (record && transport instanceof RecordingTransport && llm instanceof Recordin
   transport.assertDone();
 }
 
+// 8–10. The sealed-bid attacks, from the recorded sealed round.
+const sealed = openSealedEnv({ root });
+results.push(...sealedAttacks(await runSealedRound(sealed.deps)));
+if (sealed.transport instanceof ReplayTransport) sealed.transport.assertDone();
+
 const held = results.filter((r) => r.held).length;
 console.log(`Attack suite (${record ? "live on testnet" : "replay of recorded testnet run"})`);
 console.log(
@@ -158,7 +167,12 @@ console.log(
 for (const r of results) {
   console.log(`${r.held ? "PASS" : "FAIL"}  ${r.attack}`);
   for (const line of r.evidence) console.log(`      ${line}`);
-  for (const tx of r.txHashes) console.log(`      tx ${explorerUrl("testnet", tx)}`);
+  for (const tx of r.txHashes) {
+    const network = r.network ?? "testnet";
+    console.log(
+      `      tx ${explorerUrl(network, tx) ?? `${tx} (recorded on a local ${network} node)`}`,
+    );
+  }
   console.log("");
 }
 console.log(`${held} of ${results.length} attacks failed against Kevin.`);
@@ -169,7 +183,7 @@ if (json) {
       passed: held === results.length,
       attacks: results.map((r) => ({
         ...r,
-        txUrls: r.txHashes.map((t) => explorerUrl("testnet", t)),
+        txUrls: r.txHashes.map((t) => explorerUrl(r.network ?? "testnet", t)),
       })),
     }),
   );
