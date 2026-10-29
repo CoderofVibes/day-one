@@ -256,24 +256,34 @@ function StoryCamera({
 }) {
   const frame = useFrameRef();
   const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
   const controls = useRef<OrbitControlsImpl>(null);
   const free = useRef(false);
-  const from = useRef<Framing>(framingFor(title));
-  const to = useRef<Framing>(framingFor(title));
+  const from = useRef<Framing>(framingFor(title, size));
+  const to = useRef<Framing>(framingFor(title, size));
   const since = useRef(0);
   const seen = useRef(-1);
+  const sized = useRef(`${size.width}x${size.height}`);
 
   useFrame(() => {
     const f = frame.current;
     const c = controls.current;
     if (!c) return;
+    const sizeNow = `${size.width}x${size.height}`;
     if (seen.current !== at) {
       // A new step: the story takes the camera back from wherever the user left it.
       seen.current = at;
+      sized.current = sizeNow;
       from.current = framingOf(camera, c.target);
-      to.current = framingFor(title);
+      to.current = framingFor(title, size);
       since.current = f.t;
       free.current = false;
+    } else if (sized.current !== sizeNow && !free.current) {
+      // The stage changed size (a rotated phone, a resized window): refit the same shot.
+      sized.current = sizeNow;
+      from.current = framingOf(camera, c.target);
+      to.current = framingFor(title, size);
+      since.current = f.t;
     }
     if (window.dayOneTwin) window.dayOneTwin.camera = camera.position.toArray();
     if (free.current && !record) {
@@ -296,12 +306,89 @@ function StoryCamera({
       enableZoom={!record}
       enableRotate={!record}
       minDistance={25}
-      maxDistance={320}
+      maxDistance={480}
       maxPolarAngle={Math.PI / 2 - 0.08}
       onStart={() => {
         free.current = true;
       }}
     />
+  );
+}
+
+// ------------------------------------------------------------------ labels
+
+const SCREEN = new THREE.Vector3();
+
+/**
+ * A DOM label at its parent's position that fades out when any of it would cross the frame
+ * edge: half a plant name at the edge of the stage reads as a mistake, and the story camera
+ * frames the step's subjects, not every label. `stackPx` lifts the label by whole pixels so
+ * labels on coins stacked in the vault stay apart at every camera distance.
+ */
+function Label({
+  className,
+  zIndexRange,
+  stackPx = 0,
+  hidden,
+  children,
+}: {
+  className: string;
+  zIndexRange: [number, number];
+  stackPx?: number;
+  /** Set by a parent each frame to hide the label for a reason of its own (an overprint). */
+  hidden?: React.RefObject<boolean>;
+  children: React.ReactNode;
+}) {
+  const anchor = useRef<THREE.Group>(null);
+  const div = useRef<HTMLDivElement>(null);
+  const box = useRef<[number, number]>([0, 0]);
+  const observer = useRef<ResizeObserver | null>(null);
+  const shown = useRef(true);
+  const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
+  useEffect(() => () => observer.current?.disconnect(), []);
+  useFrame(() => {
+    const g = anchor.current;
+    const el = div.current;
+    if (!g || !el) return;
+    if (!observer.current) {
+      // drei renders the div in its own React root, so it exists only after our first frames.
+      // Measured once here and then off the frame loop, so the check forces no layout.
+      box.current = [el.offsetWidth, el.offsetHeight];
+      observer.current = new ResizeObserver(() => {
+        box.current = [el.offsetWidth, el.offsetHeight];
+      });
+      observer.current.observe(el);
+    }
+    g.getWorldPosition(SCREEN).project(camera);
+    const [w, h] = box.current;
+    const x = ((SCREEN.x + 1) / 2) * size.width;
+    const y = ((1 - SCREEN.y) / 2) * size.height - stackPx;
+    const inFrame =
+      SCREEN.z < 1 &&
+      x - w / 2 >= 0 &&
+      x + w / 2 <= size.width &&
+      y - h / 2 >= 0 &&
+      y + h / 2 <= size.height;
+    const show = inFrame && !hidden?.current;
+    if (show !== shown.current) {
+      shown.current = show;
+      el.style.opacity = show ? "" : "0";
+    }
+  });
+  return (
+    <group ref={anchor}>
+      <Html
+        ref={div}
+        center
+        pointerEvents="none"
+        zIndexRange={zIndexRange}
+        className={className}
+        style={stackPx ? { marginTop: -stackPx } : undefined}
+      >
+        {children}
+      </Html>
+    </group>
   );
 }
 
@@ -481,13 +568,52 @@ function Buildings({ theme }: { theme: Theme }) {
 }
 
 /** The glow around a department the moment it comes online, and its label. */
+const NEVER_HIDDEN: React.RefObject<boolean> = { current: false };
+
+/** About the size of a department pill on screen, from its text (11 px font, 6 px padding). */
+function pillSize(label: string): [number, number] {
+  return [label.length * 6.2 + 12, 17];
+}
+
 function DepartmentExtras({ theme, hideLabels }: { theme: Theme; hideLabels: boolean }) {
   const frame = useFrameRef();
+  const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
   const glows = useRef<(THREE.Mesh | null)[]>([]);
   const labels = useRef<(THREE.Group | null)[]>([]);
   const plantB = useMemo(() => FACILITY_LAYOUTS.find((l) => l.id === "B")?.departments ?? [], []);
+  const hidden = useRef(plantB.map(() => ({ current: false })));
+  const pills = useRef<{ i: number; x: number; y: number; z: number; w: number; h: number }[]>([]);
   useFrame(() => {
     const f = frame.current;
+    // Where each pill lands on screen; a pill behind a nearer one it would overprint hides.
+    pills.current.length = 0;
+    plantB.forEach(({ code }, i) => {
+      const g = labels.current[i];
+      const d = f.departments.find((x) => x.facility === "B" && x.code === code);
+      if (!g || !d) return;
+      g.getWorldPosition(SCREEN).project(camera);
+      const [w, h] = pillSize(d.label);
+      pills.current.push({
+        i,
+        x: ((SCREEN.x + 1) / 2) * size.width,
+        y: ((1 - SCREEN.y) / 2) * size.height,
+        z: SCREEN.z,
+        w,
+        h,
+      });
+    });
+    pills.current.sort((a, b) => a.z - b.z);
+    const kept: typeof pills.current = [];
+    for (const p of pills.current) {
+      const overprints = kept.some(
+        (k) =>
+          Math.abs(k.x - p.x) < (k.w + p.w) / 2 - 4 && Math.abs(k.y - p.y) < (k.h + p.h) / 2 - 4,
+      );
+      const flag = hidden.current[p.i];
+      if (flag) flag.current = overprints;
+      if (!overprints) kept.push(p);
+    }
     plantB.forEach(({ code, box }, i) => {
       const d = f.departments.find((x) => x.facility === "B" && x.code === code);
       const [cx, cy] = centerOf(box);
@@ -526,14 +652,14 @@ function DepartmentExtras({ theme, hideLabels }: { theme: Theme; hideLabels: boo
               labels.current[i] = el;
             }}
           >
-            <DeptLabel code={code} />
+            <DeptLabel code={code} hidden={hidden.current[i] ?? NEVER_HIDDEN} />
           </group>
         ))}
     </>
   );
 }
 
-function DeptLabel({ code }: { code: string }) {
+function DeptLabel({ code, hidden }: { code: string; hidden: React.RefObject<boolean> }) {
   const frame = useFrameRef();
   const [look, setLook] = useState<DeptLook>("offline");
   const [far, setFar] = useState(false);
@@ -548,14 +674,13 @@ function DeptLabel({ code }: { code: string }) {
     }
   });
   return (
-    <Html
-      center
-      pointerEvents="none"
+    <Label
       zIndexRange={[8, 0]}
       className={`t3-label dept ${look}${far ? " far" : ""}`}
+      hidden={hidden}
     >
       {label}
-    </Html>
+    </Label>
   );
 }
 
@@ -592,7 +717,7 @@ function Floors({ theme, state }: { theme: Theme; state: TwinState }) {
           <group key={layout.id}>
             <Slab box={layout.floor} z0={0} height={FLOOR_Z} color={theme.floor} />
             <group position={world(fx - layout.floor.w * 0.5, fy + 1.5, 0)}>
-              <Html center pointerEvents="none" zIndexRange={[8, 0]} className="t3-label plant">
+              <Label zIndexRange={[8, 0]} className="t3-label plant">
                 <strong>{facility?.name ?? layout.id}</strong>
                 <span>
                   {layout.id === "B"
@@ -600,7 +725,7 @@ function Floors({ theme, state }: { theme: Theme; state: TwinState }) {
                     : "online"}
                   {facility && facility.alerts.length > 0 && " · ⚠ review"}
                 </span>
-              </Html>
+              </Label>
             </group>
           </group>
         );
@@ -618,10 +743,10 @@ function EscrowLabel() {
     if (frame.current.escrowCents !== cents) setCents(frame.current.escrowCents);
   });
   return (
-    <Html center pointerEvents="none" zIndexRange={[8, 0]} className="t3-label pad">
+    <Label zIndexRange={[8, 0]} className="t3-label pad">
       <strong>Escrow</strong>
       <span>{cents > 0 ? `${formatCents(cents)} held` : "nothing held"}</span>
-    </Html>
+    </Label>
   );
 }
 
@@ -631,7 +756,22 @@ function standingColor(theme: Theme, standing: QuoteStanding | undefined): strin
   return theme.off;
 }
 
-function Pads({ theme, state, curtain }: { theme: Theme; state: TwinState; curtain: boolean }) {
+/** One depot label's height on screen: three lines, four with the curtain's hash; the name alone on a phone. */
+function depotStackPx(curtain: boolean, narrow: boolean): number {
+  return narrow ? 24 : curtain ? 64 : 52;
+}
+
+function Pads({
+  theme,
+  state,
+  curtain,
+  narrow,
+}: {
+  theme: Theme;
+  state: TwinState;
+  curtain: boolean;
+  narrow: boolean;
+}) {
   const label = (kind: keyof typeof PADS) => {
     const b = PADS[kind];
     return world(b.x + b.w / 2, b.y + b.d + 1.5, 0);
@@ -658,18 +798,18 @@ function Pads({ theme, state, curtain }: { theme: Theme; state: TwinState; curta
         <meshStandardMaterial color={theme.steady} roughness={0.8} />
       </mesh>
       <group position={label("hq")}>
-        <Html center pointerEvents="none" zIndexRange={[8, 0]} className="t3-label pad">
+        <Label zIndexRange={[8, 0]} className="t3-label pad">
           <strong>Acme HQ</strong>
           <span>budget</span>
-        </Html>
+        </Label>
       </group>
       <group position={label("escrow")}>
         <EscrowLabel />
       </group>
       <group position={label("suppliers")}>
-        <Html center pointerEvents="none" zIndexRange={[8, 0]} className="t3-label pad">
+        <Label zIndexRange={[8, 0]} className="t3-label pad">
           <strong>Suppliers</strong>
-        </Html>
+        </Label>
       </group>
       {depots(state).map((d, i) => {
         const standing = d.quote?.standing;
@@ -681,12 +821,11 @@ function Pads({ theme, state, curtain }: { theme: Theme; state: TwinState; curta
               <meshStandardMaterial color={standingColor(theme, standing)} roughness={0.85} />
             </mesh>
             {d.quote && (
-              <group position={[0, 3.4 + i * 1.5, 0]}>
-                <Html
-                  center
-                  pointerEvents="none"
+              <group position={[0, 3.4, 0]}>
+                <Label
                   zIndexRange={[9, 0]}
                   className={`t3-label depot ${standing ?? ""}`}
+                  stackPx={i * depotStackPx(curtain, narrow)}
                 >
                   <strong>{d.quote.supplier}</strong>
                   <span>
@@ -706,7 +845,7 @@ function Pads({ theme, state, curtain }: { theme: Theme; state: TwinState; curta
                       …
                     </span>
                   )}
-                </Html>
+                </Label>
               </group>
             )}
           </group>
@@ -721,7 +860,6 @@ function Pads({ theme, state, curtain }: { theme: Theme; state: TwinState; curta
 function Road({ theme, state }: { theme: Theme; state: TwinState }) {
   const points = useMemo(() => {
     const a = anchor3({ kind: "suppliers" }, state);
-    const b = anchor3({ kind: "dept", facility: "B", dept: "receiving" }, state);
     return road3(a, dock3({ kind: "dept", facility: "B", dept: "receiving" }, a)).points.map(
       ([x, y, z]) => [x, y + 0.05, z] as V3,
     );
@@ -762,12 +900,14 @@ function FlowView({
   state,
   theme,
   curtain,
+  narrow,
   index,
 }: {
   flow: Flow;
   state: TwinState;
   theme: Theme;
   curtain: boolean;
+  narrow: boolean;
   index: number;
 }) {
   const frame = useFrameRef();
@@ -861,16 +1001,23 @@ function FlowView({
         ) : (
           <Truck theme={theme} />
         )}
-        {/* A paid coin lands among the depots: its label sits above theirs. */}
-        <group position={[0, money ? (flow.status === "arrived" ? 8 : 2.2) : 4.2, 0]}>
-          <Html
-            center
-            pointerEvents="none"
+        {/* Labels stack by whole pixels, so they stay apart at every camera distance: coins
+            held in the vault one above the other, and a paid coin's label above the three
+            depot labels it lands among. */}
+        <group position={[0, money ? (flow.status === "arrived" ? 3.4 : 2.2) : 4.2, 0]}>
+          <Label
             zIndexRange={[12, 0]}
             className={`t3-label flow ${flow.kind} ${flow.status}`}
+            stackPx={
+              money && flow.status === "held"
+                ? index * 26
+                : money && flow.status === "arrived"
+                  ? 3 * depotStackPx(curtain, narrow)
+                  : 0
+            }
           >
             {flowLabel(flow, curtain)}
-          </Html>
+          </Label>
         </group>
       </group>
     </group>
@@ -935,14 +1082,9 @@ function LotView({ frameLot, theme }: { frameLot: LotFrame; theme: Theme }) {
           />
         </mesh>
         <group position={[0, 6.4, 0]}>
-          <Html
-            center
-            pointerEvents="none"
-            zIndexRange={[12, 0]}
-            className={`t3-label lot ${lot.state}`}
-          >
+          <Label zIndexRange={[12, 0]} className={`t3-label lot ${lot.state}`}>
             {mark} {lot.code}
-          </Html>
+          </Label>
         </group>
       </group>
     </group>
@@ -1030,7 +1172,7 @@ function Scene({
       <Floors theme={theme} state={next} />
       <Buildings theme={theme} />
       <DepartmentExtras theme={theme} hideLabels={hideLabels} />
-      <Pads theme={theme} state={next} curtain={curtain} />
+      <Pads theme={theme} state={next} curtain={curtain} narrow={hideLabels} />
       <Road theme={theme} state={next} />
       {flows.map((flow) => (
         <FlowView
@@ -1039,6 +1181,7 @@ function Scene({
           state={next}
           theme={theme}
           curtain={curtain}
+          narrow={hideLabels}
           index={held.indexOf(flow.id)}
         />
       ))}

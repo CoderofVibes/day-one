@@ -2,7 +2,9 @@
 // at the key demo moments: wide in light mode and phone-width in dark mode, with the curtain
 // off and, for the money steps, on. Files are served by request interception, so no server
 // runs. Prints console errors, the renderer's draw calls and the frames rendered in one second
-// at each moment. STEPS=all captures every step; CURTAIN=1 keeps the curtain on throughout.
+// at each moment, and any visible label that crosses the stage edge or overprints another
+// (the exit code is 1 when one does). STEPS=all captures every step; CURTAIN=1 keeps the
+// curtain on throughout.
 
 import { existsSync, readFileSync } from "node:fs";
 import { extname, join } from "node:path";
@@ -52,7 +54,35 @@ const PROBE = `new Promise((resolve) => {
   requestAnimationFrame(tick);
 })`;
 
+/**
+ * Visible labels that cross the stage edge, and label pairs that overprint. Labels the view
+ * faded out (opacity 0) do not count: that is how the twin keeps a label from being clipped.
+ */
+const LABELS = `(() => {
+  const stage = document.querySelector(".t3-stage").getBoundingClientRect();
+  const boxes = [...document.querySelectorAll(".t3-label")]
+    .filter((el) => {
+      const cs = getComputedStyle(el);
+      return cs.display !== "none" && Number(cs.opacity) > 0.5 && el.offsetWidth > 0;
+    })
+    .map((el) => ({ text: el.textContent.trim().replace(/\\s+/g, " "), r: el.getBoundingClientRect() }));
+  const clipped = boxes
+    .filter(({ r }) => r.left < stage.left - 1 || r.right > stage.right + 1 || r.top < stage.top - 1 || r.bottom > stage.bottom + 1)
+    .map((b) => b.text);
+  const overlapping = [];
+  for (let i = 0; i < boxes.length; i++)
+    for (let j = i + 1; j < boxes.length; j++) {
+      const a = boxes[i].r, b = boxes[j].r;
+      const x = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+      const y = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+      // A few pixels of touching corners is not overprinting.
+      if (x > 6 && y > 6) overlapping.push(boxes[i].text + " / " + boxes[j].text);
+    }
+  return { clipped, overlapping };
+})()`;
+
 const browser = await chromium.launch({ channel: "msedge" });
+let labelProblems = 0;
 
 // RECORD=1: record mode instead (?record=1). The clock must advance by exactly 1000/60 ms per
 // frame and the run must reach its last step on its own (research 16).
@@ -137,13 +167,19 @@ for (const [name, width, height, scheme] of [
     }
     await page.waitForTimeout(2600);
     const stats = (await page.evaluate(PROBE)) as { calls: number; triangles: number; fps: number };
+    const labels = (await page.evaluate(LABELS)) as { clipped: string[]; overlapping: string[] };
     const file = `${name}-${String(m.step).padStart(2, "0")}-${m.name}.png`;
     await stage.screenshot({ path: join(out, file) });
     console.log(
       `${file}: ${run.steps[m.step]?.title} · ${stats.calls} draw calls, ${stats.triangles} triangles, ${stats.fps} frames in 1 s`,
     );
+    for (const text of labels.clipped) console.log(`  clipped at the edge: ${text}`);
+    for (const pair of labels.overlapping) console.log(`  overprinting: ${pair}`);
+    labelProblems += labels.clipped.length + labels.overlapping.length;
   }
   console.log(name, "errors:", errors.length ? errors : "none");
   await page.close();
 }
 await browser.close();
+console.log(`label problems: ${labelProblems}`);
+process.exit(labelProblems === 0 ? 0 : 1);

@@ -317,13 +317,9 @@ export interface Depot {
  * sit along the pad's diagonal so their labels spread across the screen from the map's corner.
  */
 export function depots(state: TwinState): Depot[] {
-  const pad = PADS.suppliers;
-  const n = 3;
-  return Array.from({ length: n }, (_, i) => {
+  return depotPositions().map((position, i) => {
     const quote = state.quotes[i];
-    const x = pad.x + (pad.w * (i + 0.5)) / n;
-    const y = pad.y + (pad.d * (n - i - 0.5)) / n;
-    return quote ? { quote, position: world(x, y, PAD_Z) } : { position: world(x, y, PAD_Z) };
+    return quote ? { quote, position } : { position };
   });
 }
 
@@ -341,33 +337,175 @@ export interface Framing {
 const ISO = Math.PI / 4;
 const UP = 0.62;
 
-function around(box: Box, distance: number, lift = 2, azimuth = ISO, elevation = UP): Framing {
-  const [x, y] = centerOf(box);
-  return { target: world(x, y, lift), distance, azimuth, elevation };
-}
-
 /** Department labels hide beyond this camera distance; the whole-site view keeps plant names only. */
 export const LABEL_DISTANCE = 135;
 
-const SITE: Framing = { target: [14, 0, 20], distance: 160, azimuth: ISO, elevation: UP };
-const PLANT_B: Framing = {
-  target: [19, 2, 19],
-  distance: 78,
-  azimuth: ISO - 0.15,
-  elevation: 0.58,
+/** The canvas in CSS pixels. Labels are DOM, so their size is in pixels, whatever the camera does. */
+export interface Viewport {
+  width: number;
+  height: number;
+}
+
+/** The storyboard was framed at this size: the wide view of `npm run web:shot:3d`. */
+export const DEFAULT_VIEWPORT: Viewport = { width: 1280, height: 720 };
+
+/** The camera's vertical field of view, in degrees (Twin3D.tsx passes the same to the Canvas). */
+export const FOV = 32;
+
+/** A world point a shot keeps in frame, with half the size in pixels of any label hung on it. */
+export interface Subject {
+  point: V3;
+  padPx?: [number, number];
+}
+
+/** What a shot shows: the subjects to keep in frame and the angle to look from. */
+export interface Shot {
+  subjects: Subject[];
+  azimuth: number;
+  elevation: number;
+  /** Keeps a small subject in context: the camera comes no closer than this. */
+  minDistance?: number;
+}
+
+/** Clear space between a subject (or its label) and the frame edge, in pixels. */
+const EDGE_PX = 14;
+/** Stages this wide or narrower are phones: labels thin out and may fade at the edge instead. */
+export const NARROW_PX = 560;
+
+/**
+ * How much of a label's pixels a shot keeps inside the frame: all of it on a wide stage, none
+ * on a phone, where fitting 160 px labels into a 330 px stage would push the camera so far
+ * that the plants shrink to specks under them. There the labels are smaller and fade when
+ * they would cross the edge (Label in Twin3D.tsx).
+ */
+export function labelPadScale(viewport: Viewport): number {
+  return viewport.width <= NARROW_PX ? 0 : 1;
+}
+/** Half the size of a plant's name and its line below, and of a pad's name, in pixels. */
+const PLANT_LABEL_PX: [number, number] = [84, 18];
+const PAD_LABEL_PX: [number, number] = [44, 18];
+const DEPOT_LABEL_PX: [number, number] = [78, 30];
+const TRUCK_LABEL_PX: [number, number] = [36, 12];
+/** The camera never comes closer than this, so a tiny shot still shows some ground. */
+const MIN_DISTANCE = 30;
+
+/** A box's eight corners, on the ground and at `height`. */
+export function boxSubjects(box: Box, height: number): Subject[] {
+  const out: Subject[] = [];
+  for (const x of [box.x, box.x + box.w]) {
+    for (const y of [box.y, box.y + box.d]) {
+      out.push({ point: world(x, y, 0) }, { point: world(x, y, height) });
+    }
+  }
+  return out;
+}
+
+/** Where a plant's name hangs: the middle of its floor's front edge (Floors in Twin3D.tsx). */
+export function plantLabelPoint(floor: Box): V3 {
+  return world(floor.x + floor.w / 2, floor.y + floor.d + 1.5, 0);
+}
+
+/** Where a pad's name hangs: the middle of its front edge (Pads in Twin3D.tsx). */
+export function padLabelPoint(pad: Box): V3 {
+  return world(pad.x + pad.w / 2, pad.y + pad.d + 1.5, 0);
+}
+
+/** The three depots' places on the suppliers' pad, along its diagonal. */
+export function depotPositions(): V3[] {
+  const pad = PADS.suppliers;
+  const n = 3;
+  return Array.from({ length: n }, (_, i) =>
+    world(pad.x + (pad.w * (i + 0.5)) / n, pad.y + (pad.d * (n - i - 0.5)) / n, PAD_Z),
+  );
+}
+
+function plantSubjects(id: FacilityId): Subject[] {
+  const layout = FACILITY_LAYOUTS.find((l) => l.id === id);
+  if (!layout) return [];
+  const top =
+    FLOOR_Z + Math.max(...layout.departments.map((d) => topHeight(d.code, DEPT_Z.online)));
+  return [
+    ...boxSubjects(layout.floor, top),
+    { point: plantLabelPoint(layout.floor), padPx: PLANT_LABEL_PX },
+  ];
+}
+
+function padSubjects(kind: keyof typeof PADS, height: number): Subject[] {
+  return [
+    ...boxSubjects(PADS[kind], height),
+    { point: padLabelPoint(PADS[kind]), padPx: PAD_LABEL_PX },
+  ];
+}
+
+/** The vault with the refusal wall in front of it and the coins' labels above. */
+const ESCROW = (): Subject[] => padSubjects("escrow", PAD_Z + 9.5);
+/** The HQ tower. */
+const HQ = (): Subject[] => padSubjects("hq", PAD_Z + 10);
+/** The suppliers' pad with the three depots and their stacked quote labels. */
+const SUPPLIERS = (): Subject[] => [
+  ...padSubjects("suppliers", PAD_Z + 3),
+  ...depotPositions().map((p, i) => ({
+    point: [p[0], p[1] + 3.4 + i * 1.5, p[2]] as V3,
+    padPx: DEPOT_LABEL_PX,
+  })),
+];
+/** Plant B's dock: the truck stops west of receiving, on the side it came from. */
+const DOCK = (): Subject[] => {
+  const box = deptBox("B", "receiving");
+  return box ? [{ point: world(box.x - 5, box.y + box.d / 2, 0), padPx: TRUCK_LABEL_PX }] : [];
 };
-const MONEY: Framing = { target: [56, 1, 4], distance: 92, azimuth: ISO + 0.3, elevation: 0.5 };
-const SUPPLIERS: Framing = {
-  target: [10, 0, 46],
-  distance: 100,
+
+const SITE: Shot = {
+  subjects: [
+    ...plantSubjects("A"),
+    ...plantSubjects("B"),
+    ...plantSubjects("C"),
+    ...ESCROW(),
+    ...HQ(),
+    ...SUPPLIERS(),
+  ],
+  azimuth: ISO,
+  elevation: UP,
+};
+const PLANT_B: Shot = { subjects: plantSubjects("B"), azimuth: ISO - 0.15, elevation: 0.58 };
+/** The vault and HQ, with Plant B's purchasing in the background. */
+const MONEY: Shot = {
+  subjects: [...ESCROW(), ...HQ()],
+  azimuth: ISO + 0.3,
+  elevation: 0.5,
+  minDistance: 72,
+};
+/** The three depots, with Plant B's receiving in the background. */
+const QUOTES: Shot = {
+  subjects: SUPPLIERS(),
+  azimuth: ISO - 0.3,
+  elevation: 0.55,
+  minDistance: 80,
+};
+const SHIPPING: Shot = {
+  subjects: [...SUPPLIERS(), ...plantSubjects("B"), ...DOCK()],
   azimuth: ISO - 0.3,
   elevation: 0.55,
 };
-const TWO_PLANTS: Framing = { target: [-10, 0, 18], distance: 120, azimuth: ISO, elevation: 0.6 };
-const PAYOUT: Framing = { target: [32, 0, 38], distance: 125, azimuth: ISO + 0.1, elevation: 0.6 };
+const TWO_PLANTS: Shot = {
+  subjects: [...plantSubjects("A"), ...plantSubjects("B")],
+  azimuth: ISO,
+  elevation: 0.6,
+};
+/** The pallet in its cage and the money waiting for QC in the vault, in one frame. */
+const QC: Shot = {
+  subjects: [...plantSubjects("B"), ...DOCK(), ...ESCROW()],
+  azimuth: ISO - 0.25,
+  elevation: 0.5,
+};
+const PAYOUT: Shot = {
+  subjects: [...ESCROW(), ...SUPPLIERS(), ...plantSubjects("B")],
+  azimuth: ISO + 0.1,
+  elevation: 0.6,
+};
 
-/** Where the story camera looks at a step, by the step's title (web/src/run.ts AUDIENCE). */
-export function framingFor(title: string): Framing {
+/** What the story camera shows at a step, by the step's title (web/src/run.ts AUDIENCE). */
+export function shotFor(title: string): Shot {
   if (title.startsWith("Upload ") || title.endsWith(" confirms")) return PLANT_B;
   if (title.endsWith(" texts")) return MONEY;
   switch (title) {
@@ -376,24 +514,122 @@ export function framingFor(title: string): Framing {
     case "Forecast":
       return PLANT_B;
     case "Quotes":
-      return SUPPLIERS;
+      return QUOTES;
     case "Small PO":
     case "Big PO":
     case "Kevin retries":
       return MONEY;
     case "Supplier ships":
-      return SUPPLIERS;
+      return SHIPPING;
     case "Delivery":
     case "QC release":
-    case "QC reject": {
-      const lab = deptBox("B", "qc_lab");
-      return lab ? around(lab, 80, 3, ISO - 0.25, 0.5) : PLANT_B;
-    }
+    case "QC reject":
+      return QC;
     case "Paid":
       return PAYOUT;
     default:
       return SITE;
   }
+}
+
+function dot(a: V3, b: V3): number {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+function cross(a: V3, b: V3): V3 {
+  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+}
+
+function unit(a: V3): V3 {
+  const n = Math.hypot(a[0], a[1], a[2]) || 1;
+  return [a[0] / n, a[1] / n, a[2] / n];
+}
+
+/** The camera's axes for a framing: forward (towards what it looks at), right and up. */
+function axes(azimuth: number, elevation: number): { f: V3; r: V3; u: V3 } {
+  const f: V3 = [
+    -Math.sin(azimuth) * Math.cos(elevation),
+    -Math.sin(elevation),
+    -Math.cos(azimuth) * Math.cos(elevation),
+  ];
+  const r = unit(cross(f, [0, 1, 0]));
+  return { f, r, u: cross(r, f) };
+}
+
+/**
+ * The framing that keeps every subject, label included, inside the viewport from the shot's
+ * angle: the target is the middle of what is shown and the distance the smallest that fits
+ * the frame's narrower side. A phone's 4:3 stage gets a farther camera than the 16:9 wide view
+ * for the same shot, instead of clipping the plants at both edges.
+ */
+export function frameShot(shot: Shot, viewport: Viewport = DEFAULT_VIEWPORT): Framing {
+  const { f, r, u } = axes(shot.azimuth, shot.elevation);
+  const views = shot.subjects.map((s) => ({
+    x: dot(s.point, r),
+    y: dot(s.point, u),
+    z: dot(s.point, f),
+    pad: s.padPx ?? ([0, 0] as [number, number]),
+  }));
+  if (views.length === 0) {
+    return {
+      target: [0, 0, 0],
+      distance: Math.max(MIN_DISTANCE, shot.minDistance ?? 0),
+      azimuth: shot.azimuth,
+      elevation: shot.elevation,
+    };
+  }
+  const mid = (k: "x" | "y") =>
+    (Math.min(...views.map((v) => v[k])) + Math.max(...views.map((v) => v[k]))) / 2;
+  const cx = mid("x");
+  const cy = mid("y");
+  const cz = views.reduce((s, v) => s + v.z, 0) / views.length;
+  const tanH = Math.tan((FOV / 2) * (Math.PI / 180));
+  const tanW = tanH * (viewport.width / viewport.height);
+  const pads = labelPadScale(viewport);
+  let distance = Math.max(MIN_DISTANCE, shot.minDistance ?? 0);
+  for (const v of views) {
+    // The label's pixels and the edge margin are taken off the frame, not scaled with it.
+    const fx = Math.max(0.2, 1 - (2 * (v.pad[0] * pads + EDGE_PX)) / viewport.width);
+    const fy = Math.max(0.2, 1 - (2 * (v.pad[1] * pads + EDGE_PX)) / viewport.height);
+    const depth = v.z - cz;
+    distance = Math.max(
+      distance,
+      Math.abs(v.x - cx) / (tanW * fx) - depth,
+      Math.abs(v.y - cy) / (tanH * fy) - depth,
+    );
+  }
+  const target: V3 = [
+    cx * r[0] + cy * u[0] + cz * f[0],
+    cx * r[1] + cy * u[1] + cz * f[1],
+    cx * r[2] + cy * u[2] + cz * f[2],
+  ];
+  return { target, distance, azimuth: shot.azimuth, elevation: shot.elevation };
+}
+
+/** Where the story camera stands at a step, fitted to the viewport. */
+export function framingFor(title: string, viewport: Viewport = DEFAULT_VIEWPORT): Framing {
+  return frameShot(shotFor(title), viewport);
+}
+
+/**
+ * A world point on the screen for a framing, in pixels from the top left, or undefined when it
+ * is behind the camera. The tests check a shot's subjects with it.
+ */
+export function projectPoint(
+  framing: Framing,
+  point: V3,
+  viewport: Viewport = DEFAULT_VIEWPORT,
+): [number, number] | undefined {
+  const { f, r, u } = axes(framing.azimuth, framing.elevation);
+  const cam = cameraPosition(framing);
+  const d: V3 = [point[0] - cam[0], point[1] - cam[1], point[2] - cam[2]];
+  const depth = dot(d, f);
+  if (depth <= 0) return undefined;
+  const tanH = Math.tan((FOV / 2) * (Math.PI / 180));
+  const tanW = tanH * (viewport.width / viewport.height);
+  const nx = dot(d, r) / (depth * tanW);
+  const ny = dot(d, u) / (depth * tanH);
+  return [((nx + 1) / 2) * viewport.width, ((1 - ny) / 2) * viewport.height];
 }
 
 export function lerpFraming(a: Framing, b: Framing, u: number): Framing {

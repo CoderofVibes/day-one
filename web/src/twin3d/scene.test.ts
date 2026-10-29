@@ -11,14 +11,20 @@ import {
   blendFlows,
   blendLots,
   cameraPosition,
+  DEFAULT_VIEWPORT,
   depots,
   deptBox,
   dock3,
   ease,
+  frameShot,
   framingFor,
+  labelPadScale,
   lerpFraming,
+  projectPoint,
   road3,
+  shotFor,
   siteBounds,
+  type Viewport,
 } from "./scene.ts";
 
 const index = (title: string) => {
@@ -166,6 +172,28 @@ describe("paths and anchors", () => {
   });
 });
 
+/** How far a shot's subjects, labels included, reach past the frame at a viewport; 0 when they fit. */
+function overrun(title: string, viewport: Viewport): number {
+  const f = framingFor(title, viewport);
+  let worst = 0;
+  for (const s of shotFor(title).subjects) {
+    const p = projectPoint(f, s.point, viewport);
+    if (!p) return Number.POSITIVE_INFINITY;
+    const pads = labelPadScale(viewport);
+    const [hw, hh] = (s.padPx ?? [0, 0]).map((v) => v * pads) as [number, number];
+    worst = Math.max(
+      worst,
+      hw - p[0],
+      p[0] + hw - viewport.width,
+      hh - p[1],
+      p[1] + hh - viewport.height,
+    );
+  }
+  return worst;
+}
+
+const PHONE: Viewport = { width: 325, height: 244 };
+
 describe("story camera", () => {
   it("has a framing for every step of the recorded run and eases between them", () => {
     for (const step of run.steps) {
@@ -183,5 +211,59 @@ describe("story camera", () => {
     const [x, , z] = cameraPosition(a);
     expect(x).toBeGreaterThan(a.target[0]);
     expect(z).toBeGreaterThan(a.target[2]);
+  });
+
+  it("keeps every step's subjects and their labels inside the frame, wide and on a phone", () => {
+    for (const step of run.steps) {
+      expect(overrun(step.title, DEFAULT_VIEWPORT), `${step.title} wide`).toBeLessThanOrEqual(0);
+      expect(overrun(step.title, PHONE), `${step.title} phone`).toBeLessThanOrEqual(0);
+    }
+  });
+
+  it("stands farther back for a narrower stage, never closer than the shot allows", () => {
+    const wide = framingFor("Load seed");
+    const phone = framingFor("Load seed", PHONE);
+    expect(phone.distance).toBeGreaterThan(wide.distance);
+    expect(phone.target).toEqual(wide.target);
+    // On a phone the labels are left out of the fit, or the site would shrink under them.
+    expect(labelPadScale(PHONE)).toBe(0);
+    expect(labelPadScale(DEFAULT_VIEWPORT)).toBe(1);
+    expect(phone.distance).toBeLessThan(wide.distance * 2);
+    // The quotes shot would fit from close up; its minimum keeps the plant in the background.
+    expect(framingFor("Quotes").distance).toBe(shotFor("Quotes").minDistance);
+    // The money shot's two pads and their labels stay in frame from its angle.
+    const money = framingFor("Big PO");
+    const [vault, hq] = [
+      [63.5, 1, 13.5],
+      [75.5, 1, -12.5],
+    ] as const;
+    for (const point of [vault, hq]) {
+      const [px, py] = projectPoint(money, [...point], DEFAULT_VIEWPORT) ?? [-1, -1];
+      expect(px).toBeGreaterThan(0);
+      expect(px).toBeLessThan(DEFAULT_VIEWPORT.width);
+      expect(py).toBeGreaterThan(0);
+      expect(py).toBeLessThan(DEFAULT_VIEWPORT.height);
+    }
+  });
+
+  it("frames a shot around the middle of its subjects and puts the target between them", () => {
+    const f = frameShot({
+      subjects: [{ point: [0, 0, 0] }, { point: [40, 0, 0] }],
+      azimuth: 0,
+      elevation: 0.5,
+    });
+    expect(f.target[0]).toBeCloseTo(20);
+    expect(projectPoint(f, [20, 0, 0])?.[0]).toBeCloseTo(DEFAULT_VIEWPORT.width / 2);
+    // A label's pixels widen the frame: the same points need a farther camera.
+    const padded = frameShot({
+      subjects: [
+        { point: [0, 0, 0], padPx: [100, 20] },
+        { point: [40, 0, 0], padPx: [100, 20] },
+      ],
+      azimuth: 0,
+      elevation: 0.5,
+    });
+    expect(padded.distance).toBeGreaterThan(f.distance);
+    expect(projectPoint(f, [0, 0, 0])?.[0]).toBeGreaterThanOrEqual(0);
   });
 });

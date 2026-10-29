@@ -26,6 +26,8 @@
   pointer-events: none;
   user-select: none;
   white-space: nowrap;
+  /* Labels fade when they would cross the frame edge (Label in Twin3D.tsx). */
+  transition: opacity 0.25s;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -164,9 +166,23 @@
   font-size: 0.8rem;
 }
 
+/* Phones: smaller labels, names only; the camera fits the buildings and labels fade at the edge. */
 @media (max-width: 560px) {
+  .t3-label {
+    font-size: 11px;
+  }
+
+  .t3-label span {
+    font-size: 10px;
+  }
+
+  .t3-label.plant strong {
+    font-size: 12px;
+  }
+
   .t3-label.flow,
-  .t3-label.depot span {
+  .t3-label.depot span,
+  .t3-label.plant span {
     display: none;
   }
 }
