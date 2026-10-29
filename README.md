@@ -45,6 +45,7 @@ Also without keys:
 | `npm run books` | the bookkeeper's CSV of settled POs and Kevin's price-drift alert |
 | `npm run brief` | Kevin's 5am brief for Hollow Pine: what moved since Friday, what waits on a person, what to buy or move first (`-- --html` for the printable page) |
 | `npm run import -- "data/imports/INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx"` | Kevin reading the plant's messy inventory spreadsheet and flagging what he will not guess |
+| `npm run inbox` | three scanned batch records and a packing slip dropped into the folder Kevin watches: two ready for Ray, one with a question about a smudged quantity, the slip set aside; ends `4 of 4 scans landed` (the files stay in the git-ignored `data/inbox/batch-records/`) |
 
 Each takes `-- --json` and then prints one final JSON line, for example from `npm run test:attacks -- --json`:
 
@@ -80,6 +81,8 @@ Thirteen transactions, two refused by design (the over-limit PO and QuickChem's 
 - **Kevin's limits** (`server/src/chain/policy.ts`): the per-PO and monthly limits, category caps, supplier statuses and roles HQ set, read live from the contract with view calls. HQ changes them in plain words (`agents/kevin/src/policyChange.ts`): `npm run policy -- "raise Kevin's per-PO limit to $3,000"` prints Kevin's reading and the complete `set_agent_policy` call (or `pause_agent`, `resume_agent`), or says what he cannot draft; it sends only when the owner adds `--yes`, signed with the owner's key, never Kevin's (tried Oct 29: $2,500 to $2,600 and [back to $2,500](https://testnet.nearblocks.io/txns/3SCxPDUJx5FZWmfQfF7Mp1RuV7s9b2TN4SYsnKVkdY7k)).
 - **Morning brief** (`agents/kevin/src/brief.ts`): one printable page for the plant's purchaser at 5am, from the ledger alone: lot movements since the last working day, what waits on QC, an approver or a reviewer, what the plan needs ordered with any sister-plant stock that could cover it first, and price drift, mass balance and expiring lots. It reads; it drafts and sends nothing.
 - **Books** (`server/src/ledger/books.ts`): a QuickBooks-friendly CSV of settled POs, each row carrying its escrow payment and receipt anchor transactions, and a price-drift alert (on the seed: PO-1040's magnesium stearate, up 14.0%).
+
+Kevin also watches a folder (`data/inbox/batch-records/`, `agents/kevin/src/inbox.ts`): a scan dropped there is read, checked against the formula and the ledger, and queued under "Waiting for you" on Ray's screen with any question Kevin has. Nothing posts until Ray confirms; the same scan dropped twice is read once, and a page that is not a batch record is set aside.
 
 The "Spreadsheet" switch is the import wizard (`server/src/import/`): Ray's inventory workbook, with its duplicate lot, pound units, expired lot, typed total and retyped summary, becomes opening stock only after he answers each flag. Kevin proposes an answer and never guesses.
 
@@ -144,6 +147,7 @@ Kevin is the purchasing agent. The contract limits are one enforced layer around
 - Staff keys are held by the server because the phone is simulated. Production would have each person hold their own key through a login provider.
 - PO totals and supplier accounts are visible on chain; line items and prices are not.
 - The web UI replays the recorded run on a static host; `npm run api` serves the same screens live, one staff action at a time. The three-plant view, the import wizard and the transfer cards need `npm run api` (the static replay has no ledger). The plant map (flat SVG or the 3D view) draws the run's steps and transactions, not later ledger changes; its "Group buy" run is the recorded group purchase, never the live one.
+- The watched folder's "Waiting for you" queue needs `npm run api`; the static replay does not show it. In the recorded demo, confirming a queued record other than BR-B-1045 posts it to the plant ledger but anchors nothing, because the recording holds no anchor to replay for it; a live run anchors it.
 - The attestation proves that an attested NEAR AI Cloud instance of Kevin's model signed each recorded answer. All instances of a model share one signing key, so it does not prove which instance answered (`docs/research/10-near-ai-cloud.md`). A live run's new answers are not shown as attested until `npm run attest` runs again.
 - The ERP is a mock shaped like NetSuite, not NetSuite; the connector interface (`server/src/erp-connector/types.ts`) is the part meant to carry over.
 - NEAR RPC does not list past events without an indexer, so the policy view shows Kevin's current limits and this run's policy events, not a full history.
