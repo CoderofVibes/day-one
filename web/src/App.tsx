@@ -17,8 +17,10 @@ import {
 } from "./api.ts";
 import { type Action, actionsFor, actorOf, quantity } from "./live.ts";
 import {
+  type Attestation,
   type Audience,
   audienceOf,
+  type Check,
   type RunData,
   run as recorded,
   type Step,
@@ -703,6 +705,53 @@ function Phone({ step, approvals }: { step: Step; approvals: RunData["approvals"
   );
 }
 
+const MARK: Record<Check["status"], string> = { verified: "✓", unverified: "✗", skipped: "–" };
+
+/**
+ * The hardware enclave Kevin's model ran in and the signature of each recorded answer, from
+ * server/src/attestation (research 10). Dollars never appear here; staff never see it.
+ */
+function Attested({ result }: { result: Attestation }) {
+  const unverified = [...result.enclave, ...result.answers.flatMap((a) => a.checks)].filter(
+    (c) => c.status === "unverified",
+  ).length;
+  return (
+    <section className="attest" aria-label="Attested model">
+      <h3>Kevin's model runs in a hardware enclave</h3>
+      <p className="note">
+        {result.model} · NEAR AI Cloud {result.tier} · report{" "}
+        {result.fetchedAt.slice(0, 16).replace("T", " ")}Z · nonce {result.nonce.slice(0, 8)}…
+      </p>
+      <ul className="checks">
+        {result.enclave.map((c) => (
+          <li key={c.name} className={`check ${c.status}`} title={c.detail}>
+            {MARK[c.status]} {c.name}
+          </li>
+        ))}
+      </ul>
+      <ol className="answers">
+        {result.answers.map((a) => (
+          <li
+            key={a.chatId}
+            className={
+              a.checks.some((c) => c.status === "unverified") ? "answer unverified" : "answer"
+            }
+          >
+            <span className="task">{a.task}</span> chat {a.chatId.slice(0, 8)}… · request{" "}
+            {a.requestSha256.slice(0, 8)}… · response {a.responseSha256.slice(0, 8)}… ·{" "}
+            {a.checks.map((c) => `${MARK[c.status]} ${c.name}`).join(" · ")}
+          </li>
+        ))}
+      </ol>
+      <p className="muted">
+        {unverified === 0 ? "Every check verified" : `${unverified} checks unverified`}; npm run
+        verify:attestation re-checks it with no key. Every instance of a model shares one signing
+        key, so the signer proves an attested instance of this model answered, not which one.
+      </p>
+    </section>
+  );
+}
+
 function Curtain({ data, upTo }: { data: RunData; upTo: number }) {
   const pane = useRef<HTMLElement>(null);
   const txs = transactionsThrough(data, upTo);
@@ -726,6 +775,7 @@ function Curtain({ data, upTo }: { data: RunData; upTo: number }) {
     <section ref={pane} className="pane curtain" aria-label="Behind the curtain">
       <h2>Behind the curtain · NEAR {data.network}</h2>
       {notes(0, 1)}
+      {data.attestation && <Attested result={data.attestation} />}
       <ol className="txs">
         {txs.map(({ stepIndex, tx }) => (
           <li

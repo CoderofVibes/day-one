@@ -45,4 +45,17 @@ describe("the web UI's recorded run", () => {
     expect(approve?.signer).toMatch(/^director\.plant-b\./);
     expect(run.approvals[0]?.response).toBe("YES 1042");
   });
+
+  it("carries the verified attestation of the recorded model answers", () => {
+    const a = run.attestation;
+    expect(a?.ok).toBe(true);
+    expect(a?.answers.map((x) => x.task)).toEqual(["vision", "reasoning"]);
+    for (const c of [...(a?.enclave ?? []), ...(a?.answers.flatMap((x) => x.checks) ?? [])]) {
+      expect(c.status, c.name).toBe("verified");
+    }
+    // Hashes and signers stay behind the curtain: no staff line names them.
+    for (const step of run.steps) {
+      for (const line of step.staff) expect(line).not.toMatch(/sha256|enclave|attest/i);
+    }
+  });
 });

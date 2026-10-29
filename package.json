@@ -23,6 +23,8 @@
     "setup:testnet": "tsx scripts/setup-testnet.ts",
     "deploy:testnet": "tsx scripts/deploy.ts",
     "verify": "tsx scripts/verify.ts",
+    "attest": "tsx scripts/attest.ts",
+    "verify:attestation": "tsx scripts/verify-attestation.ts",
     "render:records": "tsx tools/render/src/render.ts",
     "bakeoff": "tsx scripts/bakeoff.ts",
     "test:attacks": "tsx scripts/attacks.ts",

@@ -8,6 +8,9 @@ import { join } from "node:path";
 import { type DemoPhase, type DemoStep, formatTranscript, startDemo } from "@day-one/kevin/demo";
 import { reviewDiscrepancy } from "@day-one/kevin/discrepancies";
 import { massBalance } from "@day-one/kevin/massBalance";
+import { readAttestationFixture, recordedReceipts } from "@day-one/server/attestation/fixture";
+import type { AttestationResult } from "@day-one/server/attestation/types";
+import { verifyAttestation } from "@day-one/server/attestation/verify";
 import { explorerUrl } from "@day-one/server/chain/client";
 import { books, booksCsv } from "@day-one/server/ledger/books";
 import { plantInventory } from "@day-one/server/ledger/inventory";
@@ -71,6 +74,8 @@ export interface RunState {
   transactions: TransactionView[];
   approvals: { request: string; response: string | null }[];
   people: { name: string; role: string }[];
+  /** The recorded run's attestation (replay); null in a live run, whose answers are new. */
+  attestation: AttestationResult | null;
 }
 
 const TX = /\(tx ([1-9A-HJ-NP-Za-km-z]{43,44})\)/;
@@ -79,6 +84,7 @@ export class DemoSession {
   private env!: DemoEnv;
   private machine!: ReturnType<typeof startDemo>;
   private queue: Promise<unknown> = Promise.resolve();
+  private attestation: AttestationResult | null = null;
 
   constructor(private readonly options: DemoEnvOptions = {}) {}
 
@@ -86,6 +92,13 @@ export class DemoSession {
   async start() {
     this.env = await openDemoEnv(this.options);
     this.machine = startDemo(this.env.deps);
+    const fixture = this.env.live ? null : readAttestationFixture(this.env.root);
+    this.attestation = fixture
+      ? await verifyAttestation(
+          fixture,
+          recordedReceipts(this.env.root, ["data/replay/demo-llm.json"]),
+        )
+      : null;
     await this.machine.load();
     return this;
   }
@@ -237,6 +250,7 @@ export class DemoSession {
         .select({ request: approvals.requestText, response: approvals.responseText })
         .from(approvals)
         .all(),
+      attestation: this.attestation,
       people: db
         .select({ name: staff.name, role: staff.role })
         .from(staff)

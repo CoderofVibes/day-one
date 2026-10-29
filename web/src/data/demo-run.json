@@ -13,6 +13,134 @@
       "response": "YES 1042"
     }
   ],
+  "attestation": {
+    "model": "z-ai/glm-5.3-flash",
+    "tier": "Private TEE",
+    "fetchedAt": "2026-10-29T01:11:38.449Z",
+    "nonce": "bb641433c2cd1bdd2cbe7542d7f9c76efca249dfe34ea6ede9a46a4c9bc4fc86",
+    "enclave": [
+      {
+        "name": "model TDX quote",
+        "status": "verified",
+        "detail": "v4, MRTD df4d77c8…"
+      },
+      {
+        "name": "model nonce",
+        "status": "verified",
+        "detail": "our nonce bb641433… echoed"
+      },
+      {
+        "name": "model report_data",
+        "status": "verified",
+        "detail": "binds signer 3b753b44… and our nonce"
+      },
+      {
+        "name": "model debug mode",
+        "status": "verified",
+        "detail": "off"
+      },
+      {
+        "name": "model compose hash",
+        "status": "verified",
+        "detail": "app_compose hashes to MRCONFIGID a0e3c6f4…"
+      },
+      {
+        "name": "model event log",
+        "status": "verified",
+        "detail": "replays to RTMR3 463b2e18…"
+      },
+      {
+        "name": "model Intel collateral",
+        "status": "verified",
+        "detail": "TCB UpToDate (checked 2026-10-29 01:11Z)"
+      },
+      {
+        "name": "model NVIDIA GPU",
+        "status": "verified",
+        "detail": "NRAS overall attestation result true (checked 2026-10-29 01:11Z)"
+      },
+      {
+        "name": "gateway TDX quote",
+        "status": "verified",
+        "detail": "v4, MRTD f06dfda6…"
+      },
+      {
+        "name": "gateway nonce",
+        "status": "verified",
+        "detail": "our nonce bb641433… echoed"
+      },
+      {
+        "name": "gateway report_data",
+        "status": "verified",
+        "detail": "binds signer b98a789c… and our nonce"
+      },
+      {
+        "name": "gateway debug mode",
+        "status": "verified",
+        "detail": "off"
+      },
+      {
+        "name": "gateway compose hash",
+        "status": "verified",
+        "detail": "app_compose hashes to MRCONFIGID 56444a2f…"
+      },
+      {
+        "name": "gateway event log",
+        "status": "verified",
+        "detail": "replays to RTMR3 fd148086…"
+      },
+      {
+        "name": "gateway Intel collateral",
+        "status": "verified",
+        "detail": "TCB UpToDate (checked 2026-10-29 01:11Z)"
+      }
+    ],
+    "answers": [
+      {
+        "chatId": "1d553d3e20fb4967877ee4d8e90127af",
+        "model": "z-ai/glm-5.3-flash",
+        "task": "vision",
+        "promptStart": "Transcribe this batch record page.",
+        "requestSha256": "193b33c1885e35c583bd042fbe7a41b58a19158663cc659961ba70fc1ec647a6",
+        "responseSha256": "20631cb8e157977271cf79a4ac76d52cd65df92678c2c88ed1213fd826b42b39",
+        "signer": "0x3b753b4406613c5e70ae640508632b600424fa0c",
+        "checks": [
+          {
+            "name": "signed text",
+            "status": "verified",
+            "detail": "model, request 193b33c1…, response 20631cb8…"
+          },
+          {
+            "name": "signer",
+            "status": "verified",
+            "detail": "3b753b44… = the attested model signer"
+          }
+        ]
+      },
+      {
+        "chatId": "849a02030b724849a906dd1f7527d2f5",
+        "model": "z-ai/glm-5.3-flash",
+        "task": "reasoning",
+        "promptStart": "Transcribe the invoice between the <document> tags into the JSON fields: invoice",
+        "requestSha256": "0a28347b2c5646ccd3b81c680ece44ea714486c494e9ac607a0af0a6e1967817",
+        "responseSha256": "e45bb0986426c50e20b14f722342e45de3795f4664b1154b829ff6488b7b8bac",
+        "signer": "0x3b753b4406613c5e70ae640508632b600424fa0c",
+        "checks": [
+          {
+            "name": "signed text",
+            "status": "verified",
+            "detail": "model, request 0a28347b…, response e45bb098…"
+          },
+          {
+            "name": "signer",
+            "status": "verified",
+            "detail": "3b753b44… = the attested model signer"
+          }
+        ]
+      }
+    ],
+    "ok": true
+  },
   "steps": [
     {
       "step": 0,

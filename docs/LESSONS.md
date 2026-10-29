@@ -8,6 +8,8 @@ _(none yet)_
 
 ## Lessons
 
+- **2026-10-28** — NEAR AI Cloud still served the signatures of answers recorded four hours earlier, and each signed text equalled `<model>:<sha256 request>:<sha256 response>` over the bytes the adapter had hashed, so the recorded demo could be attested after the fact. Rule: run `npm run attest` right after every re-record, while the signatures are fresh; and never reformat the request or response before hashing (the adapter hashes the exact bytes it sent and received). Also: the gateway's `event_log` is a JSON string while a model entry's is already an array, `report_data` is echoed for the gateway only, and the report is 370 KB, mostly GPU evidence; keep it whole in `data/replay/` and derive the web summary from it.
+
 - **2026-10-28** — The first plant-map screenshot showed every flow as a solid wedge: a CSS rule set `fill` on the flow group for its particle, and SVG fills an open `<path>` too. Rule: `fill: none` on every arc path, and set fills on circles only; always look at the first screenshot before tuning positions. Also: `playwright-core` lives in `tools/render`, so a one-off browser script runs from there (`npm run web:shot` already covers the common cases).
 
 - **2026-10-28** — Git Bash rewrote the `/mnt/c/...` argument of `wsl -d Ubuntu -- bash /mnt/c/.../check.sh` into `C:/Program Files/Git/mnt/c/...` (MSYS path conversion), so WSL could not find the script. Rule: start `wsl` from PowerShell, or set `MSYS_NO_PATHCONV=1` in Git Bash.

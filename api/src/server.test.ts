@@ -50,6 +50,10 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(body.next.choices).toContain("BR-B-1045.jpg");
     expect(body.transactions).toEqual([]);
     expect(body.people.map((p: { name: string }) => p.name)).toContain("Linda Park");
+    // The recorded answers' attestation rides along from the start: the enclave is a fact of
+    // the recording, not of the step the screen is on.
+    expect(body.attestation).toMatchObject({ model: "z-ai/glm-5.3-flash", ok: true });
+    expect(body.attestation.answers).toHaveLength(2);
     const inv = (await api("GET", "/api/inventory")).body;
     expect(inv.facilities.map((f: { code: string }) => f.code)).toEqual(["A", "B", "C"]);
     const asc = inv.materials.find((m: { code: string }) => m.code === "ASC");

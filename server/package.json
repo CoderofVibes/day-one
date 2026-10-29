@@ -28,17 +28,24 @@
     "./erp-connector/mock-netsuite": "./src/erp-connector/mock-netsuite.ts",
     "./erp-connector/sync": "./src/erp-connector/sync.ts",
     "./erp-connector/rebuild": "./src/erp-connector/rebuild.ts",
-    "./erp-connector/reconcile": "./src/erp-connector/reconcile.ts"
+    "./erp-connector/reconcile": "./src/erp-connector/reconcile.ts",
+    "./attestation/types": "./src/attestation/types.ts",
+    "./attestation/verify": "./src/attestation/verify.ts",
+    "./attestation/fetch": "./src/attestation/fetch.ts",
+    "./attestation/fixture": "./src/attestation/fixture.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "1.1.0",
+    "@day-one/erp": "*",
+    "@noble/curves": "^2.2.0",
+    "@noble/hashes": "^2.2.0",
+    "@phala/dcap-qvl": "^0.7.0",
     "better-sqlite3": "13.0.3",
     "drizzle-orm": "0.45.4",
-    "near-api-js": "^7.3.1",
-    "@day-one/erp": "*"
+    "near-api-js": "^7.3.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^9.6.0",

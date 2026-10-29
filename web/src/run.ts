@@ -37,6 +37,32 @@ export interface Approval {
   request: string;
   response: string | null;
 }
+/** One line of evidence from the attestation check (server/src/attestation). */
+export interface Check {
+  name: string;
+  status: "verified" | "unverified" | "skipped";
+  detail: string;
+}
+export interface AttestedAnswer {
+  chatId: string;
+  model: string;
+  task: string;
+  promptStart: string;
+  requestSha256: string;
+  responseSha256: string;
+  signer: string | null;
+  checks: Check[];
+}
+/** The enclave Kevin's model ran in and the signature of each recorded answer, verified. */
+export interface Attestation {
+  model: string;
+  tier: string;
+  fetchedAt: string;
+  nonce: string;
+  enclave: Check[];
+  answers: AttestedAnswer[];
+  ok: boolean;
+}
 /** What both sources share. */
 export interface RunData {
   network: string;
@@ -44,6 +70,8 @@ export interface RunData {
   approvals: Approval[];
   steps: Step[];
   transactions: Transaction[];
+  /** The recorded run's attestation; null when a live run has not been attested. */
+  attestation: Attestation | null;
 }
 export interface DemoRun extends RunData {
   recordedAt: string;

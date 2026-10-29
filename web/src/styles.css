@@ -293,6 +293,82 @@ button {
   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
 
+/* The attested model: the enclave's checks as chips, one line per signed answer. */
+.attest {
+  border: 1px solid var(--curtain-line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.attest h3 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.attest .note {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.checks {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  padding: 0;
+  margin: 0 0 8px;
+}
+
+.check {
+  border: 1px solid var(--curtain-line);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.check.verified {
+  color: var(--ok);
+  border-color: var(--ok);
+}
+
+.check.unverified {
+  color: #f08a82;
+  border-color: #f08a82;
+}
+
+.check.skipped {
+  opacity: 0.6;
+}
+
+.answers {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 6px;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 0.78rem;
+}
+
+.answer {
+  padding: 3px 0;
+  border-top: 1px solid var(--curtain-line);
+  overflow-wrap: anywhere;
+}
+
+.answer.unverified {
+  color: #f08a82;
+}
+
+.answer .task {
+  font-weight: 600;
+}
+
+.attest .muted {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+}
+
 .txs {
   list-style: none;
   padding: 0;

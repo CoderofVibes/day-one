@@ -8,6 +8,8 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { readAttestationFixture, recordedReceipts } from "../server/src/attestation/fixture.ts";
+import { verifyAttestation } from "../server/src/attestation/verify.ts";
 
 const root = resolve(import.meta.dirname, "..");
 const OUT = join(root, "web/src/data/demo-run.json");
@@ -52,11 +54,22 @@ const calls = new Map(
   fixture.entries.filter((e) => e.type === "call").map((e) => [e.outcome.txHash, e]),
 );
 
+// The enclave and signature checks that need no network, over the demo's own model answers;
+// the Intel and NVIDIA verdicts are the ones npm run attest recorded (dated in their detail).
+const attestationFixture = readAttestationFixture(root);
+const attestation = attestationFixture
+  ? await verifyAttestation(
+      attestationFixture,
+      recordedReceipts(root, ["data/replay/demo-llm.json"]),
+    )
+  : null;
+
 const data = {
   network: fixture.network,
   recordedAt: fixture.recordedAt,
   summary: demo.summary,
   approvals: demo.approvals,
+  attestation,
   steps: demo.steps.map((s) => ({
     step: s.step,
     title: s.title,
@@ -91,6 +104,9 @@ if (process.argv.includes("--check")) {
 } else {
   writeFileSync(OUT, text);
   console.log(
-    `Wrote web/src/data/demo-run.json: ${data.steps.length} steps, ${data.transactions.length} transactions.`,
+    `Wrote web/src/data/demo-run.json: ${data.steps.length} steps, ${data.transactions.length} transactions, ` +
+      (attestation
+        ? `${attestation.answers.length} attested answers (${attestation.ok ? "verified" : "UNVERIFIED"}).`
+        : "no attestation (npm run attest records one)."),
   );
 }
