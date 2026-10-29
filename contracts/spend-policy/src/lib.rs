@@ -6,6 +6,7 @@
 //! meta-transactions (signer = relayer) are judged by the account that asked.
 
 mod events;
+mod sealed;
 mod util;
 
 use near_contract_standards::fungible_token::receiver::FungibleTokenReceiver;
