@@ -2,9 +2,9 @@
 // agents/kevin/src/attacks.ts, four on supplier credentials in credential-attacks.ts and
 // the three sealed-bid attacks of agents/kevin/src/sealedRound.ts.
 // Replays the recorded testnet calls and model answers by default: no keys, no network.
-// The credential attacks replay a local sandbox run of the new spend-policy
-// (data/attacks/credentials-sandbox.json) and the sealed-bid attacks a sandbox round
-// (data/sealed/) until spend-policy is redeployed to testnet with both.
+// The credential attacks replay their testnet run (data/attacks/credentials-testnet.json,
+// written by `npm run record:credentials`) and the sealed-bid attacks a sandbox round
+// (data/sealed/).
 //   --record  run the first seven live on testnet and NEAR AI Cloud and rewrite their
 //             fixtures (needs .env keys); the credential and sealed-bid attacks still replay
 //   --json    print one JSON line after the readable text
@@ -127,8 +127,12 @@ const results: AttackResult[] = await runAttackSuite({
   },
 });
 
-// Attacks 8–11: supplier credentials, from their own recording.
-const CREDENTIAL_FIXTURE = join(root, "data/attacks/credentials-sandbox.json");
+// Attacks 8–11: supplier credentials, from their own recording: the testnet one when
+// `npm run record:credentials` has written it, else the sandbox test's.
+const CREDENTIAL_FIXTURE = [
+  join(root, "data/attacks/credentials-testnet.json"),
+  join(root, "data/attacks/credentials-sandbox.json"),
+].find((f) => existsSync(f)) as string;
 const credentialRun = JSON.parse(readFileSync(CREDENTIAL_FIXTURE, "utf8")) as Fixture & {
   setup: SetupStep[];
 };
@@ -141,6 +145,7 @@ results.push(
       readFileSync(join(root, "data/attacks/credential-attacks.json"), "utf8"),
     ) as CredentialAttackFile,
     setup: credentialRun.setup,
+    relayStaff: credentialRun.network === "testnet",
   })),
 );
 credentialTransport.assertDone();

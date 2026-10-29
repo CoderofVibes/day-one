@@ -48,6 +48,21 @@
         "ed25519:3rQ25LH7dmGMChVPf9cR7Ukp4tiWuBkegGStfzsBPaPW"
       ]
     },
+    "pacific-excipient.testnet": {
+      "publicKeys": [
+        "ed25519:CEvrpRTQKNPjuoeMAmMWBvgUW7w9UuRLtJpBccL731RW"
+      ]
+    },
+    "fennimore-polyols.testnet": {
+      "publicKeys": [
+        "ed25519:3CseooLq4w2gLw88V4znk5GGukhHppGCN8t8iHLpgent"
+      ]
+    },
+    "sierra-mineral.testnet": {
+      "publicKeys": [
+        "ed25519:CZzyg4ofRxmSnB2egDeLQKqafCj5cCMwdtfBpi5djW3n"
+      ]
+    },
     "kevin.plant-b.acme-holdings.testnet": {
       "publicKeys": [
         "ed25519:VmAfDJHAsvDTKWcCYaGULvfySU7PhHy31hPfJbeQBR7",

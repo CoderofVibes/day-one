@@ -9,9 +9,9 @@
 // 10. Outside its categories: Bayfront may sell lab chemicals, and gets a raw-material PO.
 // 11. Suspended for QC: Pacific Excipient's last two deliveries failed QC; Linda approves anyway.
 //
-// The specs are in data/attacks/credential-attacks.json. Until spend-policy with credentials
-// is on testnet, the chain side replays a local sandbox run of the same wasm with the testnet
-// account names (contracts/spend-policy/tests/credentials_sandbox.rs).
+// The specs are in data/attacks/credential-attacks.json. The chain side replays the testnet run
+// of `npm run record:credentials` (data/attacks/credentials-testnet.json); the sandbox test
+// (contracts/spend-policy/tests/credentials_sandbox.rs) records the same calls on a local node.
 
 import type { ChainClient } from "@day-one/server/chain/client";
 import {
@@ -62,6 +62,8 @@ export interface CredentialAttackDeps {
   erp: ErpConnector;
   spec: CredentialAttackFile;
   setup: SetupStep[];
+  /** Linda's approval goes through the relayer, as on testnet where staff hold no NEAR. */
+  relayStaff?: boolean;
 }
 
 const OVERRIDE = "no approval can override this.";
@@ -72,6 +74,9 @@ export async function runCredentialAttacks(deps: CredentialAttackDeps): Promise<
   const { policy, kevin, director } = spec.accounts;
   const onChain = chain.network === "testnet";
   const results: AttackResult[] = [];
+  const budget = () =>
+    chain.view<{ budget: string; escrowed: string }>({ contractId: policy, method: "get_budget" });
+  const start = await budget();
 
   for (const a of spec.attacks) {
     const standing = await chain.view<ContractStanding>({
@@ -118,6 +123,7 @@ export async function runCredentialAttacks(deps: CredentialAttackDeps): Promise<
         receiverId: policy,
         method: "approve_po",
         args: { ...po, refused_tx: forced.txHash ?? "" },
+        ...(deps.relayStaff ? { viaRelayer: true } : {}),
       });
       const retry = await chain.call({
         kind: "submit_po",
@@ -157,16 +163,13 @@ export async function runCredentialAttacks(deps: CredentialAttackDeps): Promise<
   }
 
   // Nothing moved: the four refusals left the budget and escrow where the scene left them.
-  const books = await chain.view<{ budget: string; escrowed: string }>({
-    contractId: policy,
-    method: "get_budget",
-  });
+  const books = await budget();
   const last = results.at(-1);
   if (last) {
     last.evidence.push(
-      `After all four: ${formatUsd(BigInt(books.budget))} unallocated, ${formatUsd(BigInt(books.escrowed))} in escrow.`,
+      `After all four: ${formatUsd(BigInt(books.budget))} unallocated, ${formatUsd(BigInt(books.escrowed))} in escrow, as before the first.`,
     );
-    last.held &&= books.escrowed === "0";
+    last.held &&= books.budget === start.budget && books.escrowed === start.escrowed;
   }
   if (!onChain) {
     for (const r of results) {

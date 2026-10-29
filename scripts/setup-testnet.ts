@@ -53,6 +53,12 @@ const ROOT_CHILDREN = [
   { id: "ridgeway-ascorbics.testnet", near: 1 },
   { id: "quickchem-direct.testnet", near: 1 },
   { id: "bayfront-labsupply.testnet", near: 1 },
+  // The suppliers of the credential attacks (data/attacks/credential-attacks.json): HQ revokes,
+  // lets expire and suspends their credentials. Pacific Excipient accepts and ships two
+  // deliveries from its own account; the other two never sign.
+  { id: "pacific-excipient.testnet", near: 0.3 },
+  { id: "fennimore-polyols.testnet", near: 0.1 },
+  { id: "sierra-mineral.testnet", near: 0.1 },
 ] as const;
 
 /** What a plant's Kevin may call: plain and pooled POs, pools, anchors and sealed rounds. */
