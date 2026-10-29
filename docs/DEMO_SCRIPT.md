@@ -44,6 +44,8 @@ The demo clock starts at `2026-11-09T13:00:00Z`. Each step prints a plain-langua
 | 13 | Real USDC proof (separate run: `npm run usdc`, recorded Oct 29) | `PO-1047 (pH buffer ×2, $19.00) settled in Circle USDC.` | `chain: full cycle on the USDC deployment, 19.00 USDC → bayfront-labsupply.testnet (txs …)` |
 | 14 | Summary | `Plant B: 6 of 9 departments online.` | `chain: 10 transactions, 1 refused by design, 0 failed.` (11 with step 13), then the explorer links |
 
+**Video-only beat (storyboard "New bank details", Oct 29; OPEN_QUESTIONS #41):** between steps 10 and 11 the video page shows a second Northgate invoice for PO-1042 asking for payment to `northgate-remit.testnet`, and Kevin holding it for Marcy. It is the attack suite's recorded hidden-text invoice (`data/attacks/invoices.json`, replayed by `npm run test:attacks`), not a step of this run: it prints nothing in the transcript and sends nothing to the contract, which is the point. Step 11's payout then goes to `northgate-ingredients.testnet`, the account fixed on the funded PO.
+
 Exact numbers come from `FICTIONAL_DATA.md` and must be recomputed by code, not hard-coded in the script. The replay test asserts that the printed transcript equals the committed one.
 
 If the human chooses real USDC for the main demo (OPEN_QUESTIONS), every `DTUSD` above becomes `USDC` and step 13 is dropped.

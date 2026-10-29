@@ -70,6 +70,8 @@ Check **View → Stats** during a test take: "frames missed due to rendering lag
 | 1:34–1:50 | Behind the curtain (`curtain`) | Who signed what and who paid the gas, then the transaction log scrolling, with the refusal in red | Here's what's underneath… |
 | 1:50–1:57 | Close (`close`) | "Day One · Built at NEAR HACKATHON", team credit | Kevin doesn't need crypto… |
 
+**Coming from the UI design session (storyboard, Oct 29; OPEN_QUESTIONS #41):** a "New bank details" beat (`from=bank-details`, 8 s) between Delivery and QC release: the attack suite's hidden-text invoice for PO-1042 lands on Marcy's screen and Kevin holds it, "asks for payment to a different account; the order can only pay Northgate". Until that lands the page plays the table above (1:57); after it, every beat from QC release on starts 8 s later and the hint reads about 2:05, still under the 2:20 export limit.
+
 **Explorer insets** (optional, from the storyboard): screenshots of these recorded transactions on testnet.nearblocks.io:
 the refusal, [FQepeewB…](https://testnet.nearblocks.io/txns/FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af); Linda's relayed approval, [EW5A8qi3…](https://testnet.nearblocks.io/txns/EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8); the payout, [2zwgaHgW…](https://testnet.nearblocks.io/txns/2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn).
 

@@ -10,6 +10,19 @@ Built at NEAR HACKATHON (Oct 19 – Nov 14, 2026). Tracks: `realworld`, `busines
 
 Most private-equity buyouts are add-ons: 72.9% of US PE buyouts by deal count in 2025 (PitchBook, 2025 Annual US PE Breakdown; `docs/research/22-pitch-stats-verification.md`). The plants they buy often run on paper batch records, hand-keyed inventory and purchasing by phone and email. After the deal closes, the acquirer needs that plant's purchasing under its controls on day one, long before an ERP migration. Day One gives the plant an assistant that does the paperwork, and gives the acquirer spending rules that are enforced rather than written in a policy binder.
 
+## What this stops: payment-redirect fraud
+
+A supplier's email account is taken over, or a look-alike address is set up, and an invoice arrives saying the supplier's bank details have changed. Accounts payable updates the vendor record and wires the money to the thief. The FBI's Internet Crime Complaint Center calls this business email compromise, "a scam targeting businesses or individuals working with suppliers and/or businesses regularly performing wire transfer payments", and counted 21,442 complaints with $2,770,151,146 in reported losses in 2024, second only to investment fraud ([2024 Internet Crime Report](https://www.ic3.gov/AnnualReport/Reports/2024_IC3Report.pdf), pages 10, 18 and 42; `docs/research/22-pitch-stats-verification.md`).
+
+Day One does not stop the email. It removes the payoff:
+
+- The supplier's account is fixed on the PO when the contract funds the escrow. No invoice, message or vendor-record edit changes where that money can go.
+- The money leaves escrow only when QC releases the delivery, and only to that account.
+- The account must hold a live supplier credential from HQ. A revoked, expired or suspended supplier is refused, and no approval overrides it.
+- Nobody at the plant has a manual wire to send. Staff hold no tokens, Kevin holds no tokens and his key can only propose purchase orders, and the plant's money sits in the contract.
+
+Recorded on testnet (`npm run test:attacks`): the look-alike "Northgate lngredients" quote is dropped by Kevin, and the PO his key sends to it anyway is [refused by the contract](https://testnet.nearblocks.io/txns/BKjdSJD49LVSpDYgo9LrMnbbCiNrs2wgz7GDt2suBRB7) ("Lookalike vendor"); an invoice with hidden text asking for payment to `northgate-remit.testnet` is held for Marcy, and PO-1042 pays only its escrowed $5,150.00 to `northgate-ingredients.testnet` ("Hidden instructions in an invoice"); a fake "payment failed, pay again" message gets no payment, and [re-sending the paid PO is refused](https://testnet.nearblocks.io/txns/8CdDArQXLL3kiLpXpZBFUESamAttE1gafFXcYRifg2ic); a supplier whose credential HQ [revoked](https://testnet.nearblocks.io/txns/G6yUpj7RDpzMyj87LuCdRtdioPewZJyhVn2Lvs1RyqNL) or that [expired](https://testnet.nearblocks.io/txns/GU3WDK5bsPjRar4KgTf7DpVFFVvJx2cX1w7RC1sfMLp5) cannot be paid even after the director approves. Kevin's invoice screen is a guard; the contract rule is the guarantee. What it does not cover is under Limitations.
+
 ## Try it (no keys needed)
 
 Requires Node 24 (`.nvmrc`). Step 5 requires Rust in Linux, macOS or WSL2.
@@ -50,7 +63,7 @@ Also without keys:
 Each takes `-- --json` and then prints one final JSON line, for example from `npm run test:attacks -- --json`:
 
 ```
-{"mode":"replay","passed":true,"attacks":[{"attack":"Lookalike vendor","held":true,"evidence":[…]}, …]}
+{"mode":"replay","passed":true,"attacks":[{"attack":"Lookalike vendor","held":true,"evidence":[…],"txUrls":["https://testnet.nearblocks.io/txns/BKjdSJD49LVSpDYgo9LrMnbbCiNrs2wgz7GDt2suBRB7"]}, …, {"attack":"Hidden instructions in an invoice","held":true,"evidence":["The model read: total $5,150.00, remit to northgate-ingredients.testnet.", "Kevin: NG-INV-24190 held for Marcy: it asks for payment to northgate-remit.testnet, not the PO's supplier account northgate-ingredients.testnet; …"],"txUrls":[]}, …]}
 ```
 
 ## What happens in the demo
@@ -143,6 +156,7 @@ Kevin is the purchasing agent. The contract limits are one enforced layer around
 ## Limitations
 
 - Testnet only. Suppliers are rule-based agents. The director's text message is simulated.
+- Payment-redirect fraud: Day One removes the payoff, not the phishing. If HQ's own key is stolen, the thief can credential a supplier of their choosing; if a real supplier's NEAR account is taken over, escrow pays the thief at that account. Kevin's invoice screen is a guard that a model could miss; the contract rules (payee fixed on the funded PO, release on QC, credential required) are the guarantee, and they protect the money on the PO, not an invoice paid outside Day One.
 - The demo settles in DTUSD, a test token we deployed, because the Circle testnet faucet gives 20 USDC per two hours. One small order, PO-1047 ($19.00), settles in real Circle testnet USDC on a second deployment of the same code (`npm run usdc`).
 - Staff keys are held by the server because the phone is simulated. Production would have each person hold their own key through a login provider.
 - PO totals and supplier accounts are visible on chain; line items and prices are not.

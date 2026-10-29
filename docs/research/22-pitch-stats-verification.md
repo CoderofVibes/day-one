@@ -12,6 +12,7 @@ Checked 2026-10-23. Every statistic below was opened at its cited source and, wh
 | b | ~40% of small businesses are Boomer-owned; 3M+ expected to change hands within a decade | **Partly verified / Partly unverified** — “over 3 million… will change hands within the next decade” is in the cited article as an author's expectation; the **40% figure was not found in the cited article** | **Use with rewording** for the 3M line (attribute as expectation); **do not use** the 40% line as cited |
 | c | Add-ons were 72.9% of US PE buyouts by deal count in 2025 (PitchBook) | **Verified** — confirmed in PitchBook's own 2025 Annual US PE Breakdown PDF | **Use** (always with “by deal count”) |
 | d | “Integration after close is where buy-and-build differentiates” | **Partly verified (qualitative)** — supported as a synthesis by evidence CapitalPad compiles (esp. Bain via CapitalPad), but it is **not a statistic and not a verbatim finding** of the cited page | **Use with rewording** (present as argument + Bain evidence, not as a sourced fact) |
+| e | BEC (payment-redirect fraud) losses: 21,442 complaints, $2.77B reported losses in 2024, second to investment fraud (FBI IC3) | **Verified** — read from the IC3 2024 report PDF itself (added Oct 29) | **Use** (always "reported losses"; Day One "removes the payoff", never "stops phishing") |
 | — | Framing: “98% of American manufacturers are small businesses, employing nearly 5 million people” | **Verified** as a combined statement against SBA sources | **Use** |
 
 ## Key facts — per claim
@@ -101,6 +102,26 @@ CapitalPad is also transparent about limits: studies are observational, samples 
 
 **Decision: Use with rewording.**
 
+### e) Payment-redirect fraud losses (added 2026-10-29 for OPEN_QUESTIONS #41)
+
+**Claim:** "Business email compromise cost US businesses billions last year" (the README's "What this stops" section).
+**Source used:** FBI Internet Crime Complaint Center, *2024 Internet Crime Report*, https://www.ic3.gov/AnnualReport/Reports/2024_IC3Report.pdf (47 pages; the PDF was downloaded and its text extracted on 2026-10-29, so these are the report's own numbers, not a blog's).
+
+**What the report says (verbatim from the extracted text):**
+- Page 4: "In 2024, complaints totaled 859,532, with losses of $16.6 billion, representing a 33 percent increase from 2023."
+- Page 10, "2024 crime types by complaint loss": "Investment $6,570,639,864 … Business Email Compromise $2,770,151,146 … Tech Support $1,464,755,976" (BEC is the second-largest loss category).
+- Page 18, three-year complaint count: "Business Email Compromise 21,442 | 21,489 | 21,832" (2024, 2023, 2022).
+- Page 19, three-year complaint loss: "Business Email Compromise $2,770,151,146 | $2,946,830,270 | $2,742,354,049".
+- Page 42, definition: "Business Email Compromise (BEC): BEC is a scam targeting businesses or individuals working with suppliers and/or businesses regularly performing wire transfer payments. These sophisticated scams are carried out by fraudsters by compromising email accounts and other forms of communication such as phone numbers and virtual meeting applications, through social engineering or computer intrusion techniques to conduct unauthorized transfer of funds."
+
+**Also checked:** IC3 public service announcement "Business Email Compromise: The $55 Billion Scam", September 11, 2024, https://www.ic3.gov/PSA/2024/PSA240911: "305,033" domestic and international incidents and "$55,499,915,582" exposed dollar loss between October 2013 and December 2023 (exposed loss counts attempted as well as actual loss, so it is not comparable with the annual report's reported-loss figure). Its advice includes "Use secondary channels and/or two-factor authentication to verify requests for changes in account information."
+
+**Verdict: Verified** against the primary PDF. The report counts complaints filed with IC3, so the true figure is higher; say "reported losses", never "total losses".
+
+**Safe wording:** "The FBI's Internet Crime Complaint Center counted 21,442 business email compromise complaints with $2.77 billion in reported losses in 2024, second only to investment fraud (2024 Internet Crime Report, pages 10 and 18)." Never claim Day One stops phishing; it removes the payoff (OPEN_QUESTIONS #41).
+
+**Decision: Use.**
+
 ### Combined framing line
 
 **Claim:** “98% of American manufacturers are small businesses, employing nearly 5 million people”
@@ -119,6 +140,9 @@ CapitalPad is also transparent about limits: studies are observational, samples 
 - **(d) Medium** — CapitalPad page opened in full; support is real but indirect (Bain/BCG evidence + CapitalPad's integration sections), and the underlying studies are old, small, and mostly European, as CapitalPad itself discloses.
 
 ## Sources
+
+- https://www.ic3.gov/AnnualReport/Reports/2024_IC3Report.pdf (FBI IC3, 2024 Internet Crime Report — primary; text extracted 2026-10-29)
+- https://www.ic3.gov/PSA/2024/PSA240911 (FBI IC3 PSA, Business Email Compromise: The $55 Billion Scam, 2024-09-11)
 
 - https://manufacturingleadgeneration.com/small-manufacturing-business-statistics/
 - https://www.sba.gov/blog/2026/2026-10/national-veterans-small-business-week-2026-fueling-american-manufacturing-through-capital-growth-and-grit/
