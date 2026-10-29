@@ -283,6 +283,39 @@ describe("the REST shape", () => {
     ).toMatchObject({ approvalStatus: { id: "rejected" }, approvedBy: { refName: "Marcy Allen" } });
   });
 
+  it("lets Marcy dismiss a duplicate alert over POST !dismissAlert, shown on the bill and the web view", () => {
+    const invoice = (tranId: string) => ({
+      tranId,
+      entity: { id: "OFH" },
+      tranDate: "2026-11-16",
+      total: 120,
+      item: { items: [{ item: { refName: "BTL" }, quantity: 4000, rate: 0.03 }] },
+    });
+    expect(call("POST", "/vendorBill", invoice("OFH-4410")).status).toBe(201);
+    const dup = bodyOf<{ id: string; custbody_match_status: { id: string } }>(
+      call("POST", "/vendorBill", invoice("OFH-4410-R")),
+    );
+    expect(dup.custbody_match_status.id).toBe("duplicate");
+    const reason = { alert: "duplicateInvoice", note: "Reissue of OFH-4410; nothing more owed." };
+    expect(call("POST", `/vendorBill/${dup.id}/!dismissAlert`, reason, VIEWER).status).toBe(403);
+    expect(
+      call("POST", `/vendorBill/${dup.id}/!dismissAlert`, { ...reason, alert: "x" }, MARCY).status,
+    ).toBe(400);
+    expect(call("POST", "/vendorBill/OFH-4410/!dismissAlert", reason, MARCY).status).toBe(409);
+    const dismissed = call("POST", `/vendorBill/${dup.id}/!dismissAlert`, reason, MARCY);
+    expect(dismissed.status).toBe(200);
+    expect(bodyOf<Record<string, unknown>>(dismissed)).toMatchObject({
+      status: { id: "rejected" },
+      custbody_alert_dismissals: [
+        { alert: "duplicateInvoice", note: reason.note, by: "Marcy Allen" },
+      ],
+    });
+    expect(call("POST", `/vendorBill/${dup.id}/!dismissAlert`, reason, MARCY).status).toBe(409);
+    const page = String(handle({ method: "GET", path: "/ui/bills" }).body);
+    expect(page).toContain("Reissue of OFH-4410; nothing more owed.");
+    expect(page).toContain(">dismissed<");
+  });
+
   it("answers bad input and unknown vendors in NetSuite's error shape", () => {
     const missing = call("POST", "/purchaseOrder", { ...PO_1042, tranId: undefined });
     expect(missing.status).toBe(400);

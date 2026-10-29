@@ -10,6 +10,8 @@ import type { ErpDb } from "../db.ts";
 import { type MatchException, type MatchPo, normalizeInvoiceNo, threeWayMatch } from "../match.ts";
 import { extend, formatUsd, quantity } from "../money.ts";
 import {
+  type BillAlert,
+  billAlertDismissals,
   itemReceiptLines,
   itemReceipts,
   items,
@@ -501,6 +503,114 @@ export function decideVendorBill(
     detail: input.note,
   });
   return loadBillResult(db, bill.id, false);
+}
+
+export interface AlertDismissal {
+  alert: BillAlert;
+  /** The item of a price-drift alert; null for a duplicate. */
+  itemCode: string | null;
+  note: string;
+  by: string;
+  at: string;
+}
+
+export function alertDismissalsOf(db: ErpDb, billId: number): AlertDismissal[] {
+  return db
+    .select({ d: billAlertDismissals, by: users.fullName })
+    .from(billAlertDismissals)
+    .innerJoin(users, eq(users.id, billAlertDismissals.userId))
+    .where(eq(billAlertDismissals.billId, billId))
+    .orderBy(billAlertDismissals.id)
+    .all()
+    .map(({ d, by }) => ({
+      alert: d.alert,
+      itemCode: d.alert === "priceDrift" ? d.alertKey : null,
+      note: d.note,
+      by,
+      at: d.at,
+    }));
+}
+
+/**
+ * The AP manager dismisses an alert on a bill with a reason (FEATURES_V2 §2). The dismissal is
+ * kept beside the alert, never replaces it, and changes nothing else: a duplicate stays
+ * rejected and unpayable, a drifted price stays as billed.
+ */
+export function dismissBillAlert(
+  db: ErpDb,
+  input: {
+    billId: number;
+    alert: BillAlert;
+    /** Required for a price-drift alert: which item's price. */
+    itemCode?: string | null;
+    note: string;
+    userId: number;
+    at: string;
+  },
+): AlertDismissal {
+  const bill = db.select().from(vendorBills).where(eq(vendorBills.id, input.billId)).get();
+  if (!bill) throw new ErpRefusal("BILL_NOT_FOUND", `No bill ${input.billId}.`);
+  const user = db.select().from(users).where(eq(users.id, input.userId)).get();
+  if (!user || (user.role !== "apManager" && user.role !== "controller")) {
+    throw new ErpRefusal("FORBIDDEN", "Only the AP manager or the controller dismisses an alert.");
+  }
+  const note = input.note.trim();
+  if (!note) throw new ErpRefusal("REASON_REQUIRED", "Dismissing an alert needs a reason.");
+
+  let alertKey: string;
+  let what: string;
+  if (input.alert === "priceDrift") {
+    const drift = (
+      bill.priceDriftJson ? (JSON.parse(bill.priceDriftJson) as PriceDrift[]) : []
+    ).find((d) => d.itemCode === input.itemCode);
+    if (!drift) {
+      throw new ErpRefusal(
+        "NO_SUCH_ALERT",
+        `${bill.tranId} has no price-drift alert${input.itemCode ? ` for ${input.itemCode}` : ""}.`,
+      );
+    }
+    alertKey = drift.itemCode;
+    what = `the price-drift alert on ${drift.itemCode} (+${(drift.driftBp / 100).toFixed(1)}%)`;
+  } else {
+    if (bill.matchStatus !== "duplicate")
+      throw new ErpRefusal("NO_SUCH_ALERT", `${bill.tranId} is not flagged as a duplicate.`);
+    alertKey = "duplicateInvoice";
+    what = "the duplicate-invoice alert";
+  }
+  const already = db
+    .select()
+    .from(billAlertDismissals)
+    .where(and(eq(billAlertDismissals.billId, bill.id), eq(billAlertDismissals.alertKey, alertKey)))
+    .get();
+  if (already)
+    throw new ErpRefusal("ALREADY_DISMISSED", `${what} on ${bill.tranId} is already dismissed.`);
+
+  db.insert(billAlertDismissals)
+    .values({
+      billId: bill.id,
+      alert: input.alert,
+      alertKey,
+      note,
+      userId: user.id,
+      at: input.at,
+    })
+    .run();
+  audit(db, {
+    at: input.at,
+    userId: user.id,
+    action: "update",
+    recordType: "vendorBill",
+    recordId: bill.id,
+    tranId: bill.tranId,
+    detail: `dismissed ${what}: ${note}`,
+  });
+  return {
+    alert: input.alert,
+    itemCode: input.alert === "priceDrift" ? alertKey : null,
+    note,
+    by: user.fullName,
+    at: input.at,
+  };
 }
 
 // ---------------------------------------------------------------- vendorPayment

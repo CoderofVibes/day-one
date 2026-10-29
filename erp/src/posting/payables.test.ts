@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { type Erp, openErp } from "../db.ts";
 import { formatUsd, usd } from "../money.ts";
 import {
+  billAlertDismissals,
   inventoryBalances,
   purchaseOrderLines,
   purchaseOrders,
@@ -12,10 +13,12 @@ import {
 import { seedErp } from "../seed/index.ts";
 import { trialBalance } from "./journal.ts";
 import {
+  alertDismissalsOf,
   approvedBillFor,
   createVendorBill,
   createVendorPayment,
   decideVendorBill,
+  dismissBillAlert,
 } from "./payables.ts";
 import {
   ErpRefusal,
@@ -92,6 +95,68 @@ function bill1042(over: Partial<Parameters<typeof createVendorBill>[1]> = {}) {
     userId: kevin,
     at: AT,
     ...over,
+  });
+}
+
+/** PEC-55388 at $9.35/kg after PEC-55120 at $8.20/kg: the seeded price drift (FICTIONAL_DATA §13). */
+function pec55388() {
+  upsertPurchaseOrder(db, {
+    tranId: "PO-1035",
+    vendorCode: "PEC",
+    locationCode: "B",
+    tranDate: "2026-09-24",
+    lines: [{ itemCode: "MGS", quantityBase: 50 * KG, rateUsdc: usd(8.2) }],
+    verdict: "paid",
+    fundingTx: "check",
+    userId: kevin,
+    at: AT,
+  });
+  postItemReceipt(db, {
+    externalId: "RCV-PO-1035",
+    poTranId: "PO-1035",
+    tranDate: "2026-10-01",
+    lines: [{ poLine: 1, quantityBase: 50 * KG, lotNumber: "MGS-261001-01" }],
+    userId: kevin,
+    at: AT,
+  });
+  createVendorBill(db, {
+    tranId: "PEC-55120",
+    vendorCode: "PEC",
+    poTranId: "PO-1035",
+    tranDate: "2026-10-02",
+    totalUsdc: usd(410),
+    lines: [{ itemCode: "MGS", quantityBase: 50 * KG, rateUsdc: usd(8.2) }],
+    userId: kevin,
+    at: AT,
+  });
+  upsertPurchaseOrder(db, {
+    tranId: "PO-1040",
+    vendorCode: "PEC",
+    locationCode: "B",
+    tranDate: "2026-10-15",
+    lines: [{ itemCode: "MGS", quantityBase: 50 * KG, rateUsdc: usd(9.35) }],
+    verdict: "paid",
+    fundingTx: "check",
+    userId: kevin,
+    at: AT,
+  });
+  postItemReceipt(db, {
+    externalId: "RCV-PO-1040",
+    poTranId: "PO-1040",
+    tranDate: "2026-10-21",
+    lines: [{ poLine: 1, quantityBase: 50 * KG, lotNumber: "MGS-261021-01" }],
+    userId: kevin,
+    at: AT,
+  });
+  return createVendorBill(db, {
+    tranId: "PEC-55388",
+    vendorCode: "PEC",
+    poTranId: "PO-1040",
+    tranDate: "2026-10-22",
+    totalUsdc: usd(467.5),
+    lines: [{ itemCode: "MGS", quantityBase: 50 * KG, rateUsdc: usd(9.35) }],
+    userId: kevin,
+    at: AT,
   });
 }
 
@@ -308,64 +373,7 @@ describe("vendor bills", () => {
   });
 
   it("notes price drift over 10% against the vendor's last approved bill without holding the bill", () => {
-    upsertPurchaseOrder(db, {
-      tranId: "PO-1035",
-      vendorCode: "PEC",
-      locationCode: "B",
-      tranDate: "2026-09-24",
-      lines: [{ itemCode: "MGS", quantityBase: 50 * KG, rateUsdc: usd(8.2) }],
-      verdict: "paid",
-      fundingTx: "check",
-      userId: kevin,
-      at: AT,
-    });
-    postItemReceipt(db, {
-      externalId: "RCV-PO-1035",
-      poTranId: "PO-1035",
-      tranDate: "2026-10-01",
-      lines: [{ poLine: 1, quantityBase: 50 * KG, lotNumber: "MGS-261001-01" }],
-      userId: kevin,
-      at: AT,
-    });
-    createVendorBill(db, {
-      tranId: "PEC-55120",
-      vendorCode: "PEC",
-      poTranId: "PO-1035",
-      tranDate: "2026-10-02",
-      totalUsdc: usd(410),
-      lines: [{ itemCode: "MGS", quantityBase: 50 * KG, rateUsdc: usd(8.2) }],
-      userId: kevin,
-      at: AT,
-    });
-    upsertPurchaseOrder(db, {
-      tranId: "PO-1040",
-      vendorCode: "PEC",
-      locationCode: "B",
-      tranDate: "2026-10-15",
-      lines: [{ itemCode: "MGS", quantityBase: 50 * KG, rateUsdc: usd(9.35) }],
-      verdict: "paid",
-      fundingTx: "check",
-      userId: kevin,
-      at: AT,
-    });
-    postItemReceipt(db, {
-      externalId: "RCV-PO-1040",
-      poTranId: "PO-1040",
-      tranDate: "2026-10-21",
-      lines: [{ poLine: 1, quantityBase: 50 * KG, lotNumber: "MGS-261021-01" }],
-      userId: kevin,
-      at: AT,
-    });
-    const drift = createVendorBill(db, {
-      tranId: "PEC-55388",
-      vendorCode: "PEC",
-      poTranId: "PO-1040",
-      tranDate: "2026-10-22",
-      totalUsdc: usd(467.5),
-      lines: [{ itemCode: "MGS", quantityBase: 50 * KG, rateUsdc: usd(9.35) }],
-      userId: kevin,
-      at: AT,
-    });
+    const drift = pec55388();
     expect(drift).toMatchObject({ matchStatus: "matched", approvalStatus: "approved" });
     expect(drift.priceDrift).toEqual([
       {
@@ -376,6 +384,84 @@ describe("vendor bills", () => {
         driftBp: 1402,
       },
     ]);
+  });
+
+  it("lets the AP manager dismiss an alert with a reason, kept beside the alert and changing nothing else", () => {
+    const drift = pec55388();
+    const dup = createVendorBill(db, {
+      tranId: "PEC-55388-R",
+      vendorCode: "PEC",
+      poTranId: "PO-1040",
+      tranDate: "2026-10-29",
+      totalUsdc: usd(467.5),
+      lines: [{ itemCode: "MGS", quantityBase: 50 * KG, rateUsdc: usd(9.35) }],
+      userId: kevin,
+      at: AT,
+    });
+    expect(dup).toMatchObject({ matchStatus: "duplicate", approvalStatus: "rejected" });
+    const before = db.select().from(vendorBills).all();
+    const dismiss = (input: Partial<Parameters<typeof dismissBillAlert>[1]>) => () =>
+      dismissBillAlert(db, {
+        billId: drift.id,
+        alert: "priceDrift",
+        itemCode: "MGS",
+        note: "Pacific's new contract price from October; Jordan agreed it.",
+        userId: marcy,
+        at: AT,
+        ...input,
+      });
+    const code = (fn: () => unknown) => {
+      try {
+        fn();
+      } catch (error) {
+        return error instanceof ErpRefusal ? error.code : String(error);
+      }
+      return "ok";
+    };
+
+    expect(code(dismiss({ userId: kevin }))).toBe("FORBIDDEN");
+    expect(code(dismiss({ note: "  " }))).toBe("REASON_REQUIRED");
+    expect(code(dismiss({ itemCode: "ASC" }))).toBe("NO_SUCH_ALERT");
+    expect(code(dismiss({ alert: "duplicateInvoice" }))).toBe("NO_SUCH_ALERT");
+    expect(dismiss({})()).toEqual({
+      alert: "priceDrift",
+      itemCode: "MGS",
+      note: "Pacific's new contract price from October; Jordan agreed it.",
+      by: "Marcy Allen",
+      at: AT,
+    });
+    expect(code(dismiss({}))).toBe("ALREADY_DISMISSED");
+    expect(
+      code(
+        dismiss({
+          billId: dup.id,
+          alert: "duplicateInvoice",
+          itemCode: null,
+          note: "Reissue of PEC-55388, already paid; nothing owed.",
+        }),
+      ),
+    ).toBe("ok");
+
+    // The alerts and the bills are as they were; the duplicate still cannot be approved.
+    expect(db.select().from(vendorBills).all()).toEqual(before);
+    expect(alertDismissalsOf(db, drift.id)).toHaveLength(1);
+    expect(alertDismissalsOf(db, dup.id)).toMatchObject([
+      { alert: "duplicateInvoice", itemCode: null, by: "Marcy Allen" },
+    ]);
+    expect(
+      code(() =>
+        decideVendorBill(db, {
+          billId: dup.id,
+          decision: "approve",
+          note: "dismissed",
+          userId: marcy,
+          at: AT,
+        }),
+      ),
+    ).toBe("DUPLICATE_INVOICE");
+    // Kept in the record trail: the table refuses edits and deletes.
+    expect(() => db.delete(billAlertDismissals).run()).toThrow(/append-only/);
+    expect(() => db.update(billAlertDismissals).set({ note: "x" }).run()).toThrow(/append-only/);
   });
 
   it("refuses a bill from a blocked vendor", () => {

@@ -16,6 +16,7 @@ import {
   createPurchaseOrder,
   createVendorBillFromBody,
   createVendorPaymentFromBody,
+  dismissVendorBillAlert,
   findVendorByAccount,
   inventoryBalanceRows,
   type Principal,
@@ -221,6 +222,12 @@ export function createRouter(db: Erp, clock: Clock = { now: () => new Date().toI
               String(createVendorBillFromBody(db, body, principal, clock).id),
               "vendorBill",
             );
+          if (type === "vendorBill" && key && verb === "!dismissAlert") {
+            const id = billIdOf(key);
+            if (id === undefined) return fail(404, "NOT_FOUND", `No vendorBill ${key}.`);
+            dismissVendorBillAlert(db, id, body, principal, clock);
+            return json(200, reader.get(db, String(id)));
+          }
           if (type === "vendorPayment" && !key)
             return created(
               createVendorPaymentFromBody(db, body, principal, clock).tranId,
@@ -254,11 +261,9 @@ export function createRouter(db: Erp, clock: Clock = { now: () => new Date().toI
             return json(200, reader.get(db, key));
           }
           if (type === "vendorBill") {
-            const id = /^\d+$/.test(key)
-              ? Number(key)
-              : (reader.get(db, key) as { id: string } | null)?.id;
+            const id = billIdOf(key);
             if (id === undefined) return fail(404, "NOT_FOUND", `No vendorBill ${key}.`);
-            patchVendorBill(db, Number(id), body, principal, clock);
+            patchVendorBill(db, id, body, principal, clock);
             return json(200, reader.get(db, String(id)));
           }
           return fail(405, "METHOD_NOT_ALLOWED", `${type} does not accept PATCH.`);
@@ -272,6 +277,13 @@ export function createRouter(db: Erp, clock: Clock = { now: () => new Date().toI
       if (error instanceof Error && error.name === "PostingError")
         return fail(409, "POSTING_REFUSED", error.message);
       throw error;
+    }
+
+    /** A bill's internal id from its id or its invoice number. */
+    function billIdOf(key: string) {
+      if (/^\d+$/.test(key)) return Number(key);
+      const record = readers.vendorBill.get(db, key) as { id: string } | null;
+      return record ? Number(record.id) : undefined;
     }
 
     /** NetSuite answers a create with 204 and a Location header; this mock also returns the record. */

@@ -15,6 +15,13 @@
       "when": 1793229373913,
       "tag": "0001_erp_rules",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793290767045,
+      "tag": "0002_bill_alert_dismissals",
+      "breakpoints": true
     }
   ]
 }

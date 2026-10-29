@@ -1,0 +1,2831 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "088c9503-631e-48ef-bffb-c6698075a512",
+  "prevId": "131070dc-6287-41ee-939f-9116150fb514",
+  "tables": {
+    "accounts": {
+      "name": "accounts",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "acct_number": {
+          "name": "acct_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "acct_name": {
+          "name": "acct_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "acct_type": {
+          "name": "acct_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "is_inactive": {
+          "name": "is_inactive",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {
+        "accounts_acctNumber_unique": {
+          "name": "accounts_acctNumber_unique",
+          "columns": ["acct_number"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "accounts_type": {
+          "name": "accounts_type",
+          "value": "\"accounts\".\"acct_type\" in ('bank', 'otherCurrentAsset', 'accountsPayable', 'otherCurrentLiability', 'equity', 'costOfGoodsSold', 'expense')"
+        }
+      }
+    },
+    "approval_rules": {
+      "name": "approval_rules",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rule_no": {
+          "name": "rule_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "min_total_usdc": {
+          "name": "min_total_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "max_total_usdc": {
+          "name": "max_total_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vendor_status": {
+          "name": "vendor_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "match_status": {
+          "name": "match_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "requires": {
+          "name": "requires",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approver_role": {
+          "name": "approver_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "approval_rules_scope_ruleNo_unique": {
+          "name": "approval_rules_scope_ruleNo_unique",
+          "columns": ["scope", "rule_no"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "approval_rules_scope": {
+          "name": "approval_rules_scope",
+          "value": "\"approval_rules\".\"scope\" in ('purchaseOrder', 'vendorBill')"
+        },
+        "approval_rules_requires": {
+          "name": "approval_rules_requires",
+          "value": "\"approval_rules\".\"requires\" in ('contractVerdict', 'controller', 'apManager', 'auto', 'reject')"
+        }
+      }
+    },
+    "audit_trail": {
+      "name": "audit_trail",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "at": {
+          "name": "at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "record_type": {
+          "name": "record_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "record_id": {
+          "name": "record_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tran_id": {
+          "name": "tran_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "detail": {
+          "name": "detail",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "audit_trail_user_id_users_id_fk": {
+          "name": "audit_trail_user_id_users_id_fk",
+          "tableFrom": "audit_trail",
+          "tableTo": "users",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "audit_trail_action": {
+          "name": "audit_trail_action",
+          "value": "\"audit_trail\".\"action\" in ('create', 'update', 'approve', 'reject', 'post', 'login')"
+        }
+      }
+    },
+    "bill_alert_dismissals": {
+      "name": "bill_alert_dismissals",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "bill_id": {
+          "name": "bill_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "alert": {
+          "name": "alert",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "alert_key": {
+          "name": "alert_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "at": {
+          "name": "at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "bill_alert_dismissals_billId_alertKey_unique": {
+          "name": "bill_alert_dismissals_billId_alertKey_unique",
+          "columns": ["bill_id", "alert_key"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "bill_alert_dismissals_bill_id_vendor_bills_id_fk": {
+          "name": "bill_alert_dismissals_bill_id_vendor_bills_id_fk",
+          "tableFrom": "bill_alert_dismissals",
+          "tableTo": "vendor_bills",
+          "columnsFrom": ["bill_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "bill_alert_dismissals_user_id_users_id_fk": {
+          "name": "bill_alert_dismissals_user_id_users_id_fk",
+          "tableFrom": "bill_alert_dismissals",
+          "tableTo": "users",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "bill_alert_dismissals_alert": {
+          "name": "bill_alert_dismissals_alert",
+          "value": "\"bill_alert_dismissals\".\"alert\" in ('priceDrift', 'duplicateInvoice')"
+        }
+      }
+    },
+    "inventory_adjustment_lines": {
+      "name": "inventory_adjustment_lines",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "adjustment_id": {
+          "name": "adjustment_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "line": {
+          "name": "line",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lot_number": {
+          "name": "lot_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inventory_status": {
+          "name": "inventory_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "adjust_qty_base": {
+          "name": "adjust_qty_base",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit_cost_usdc": {
+          "name": "unit_cost_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_usdc": {
+          "name": "amount_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "inventory_adjustment_lines_adjustmentId_line_unique": {
+          "name": "inventory_adjustment_lines_adjustmentId_line_unique",
+          "columns": ["adjustment_id", "line"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "inventory_adjustment_lines_adjustment_id_inventory_adjustments_id_fk": {
+          "name": "inventory_adjustment_lines_adjustment_id_inventory_adjustments_id_fk",
+          "tableFrom": "inventory_adjustment_lines",
+          "tableTo": "inventory_adjustments",
+          "columnsFrom": ["adjustment_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "inventory_adjustment_lines_item_id_items_id_fk": {
+          "name": "inventory_adjustment_lines_item_id_items_id_fk",
+          "tableFrom": "inventory_adjustment_lines",
+          "tableTo": "items",
+          "columnsFrom": ["item_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "inventory_adjustment_lines_status": {
+          "name": "inventory_adjustment_lines_status",
+          "value": "\"inventory_adjustment_lines\".\"inventory_status\" in ('quarantine', 'good', 'rejected')"
+        }
+      }
+    },
+    "inventory_adjustments": {
+      "name": "inventory_adjustments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tran_id": {
+          "name": "tran_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tran_date": {
+          "name": "tran_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "memo": {
+          "name": "memo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "journal_id": {
+          "name": "journal_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "inventory_adjustments_tranId_unique": {
+          "name": "inventory_adjustments_tranId_unique",
+          "columns": ["tran_id"],
+          "isUnique": true
+        },
+        "inventory_adjustments_externalId_unique": {
+          "name": "inventory_adjustments_externalId_unique",
+          "columns": ["external_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "inventory_adjustments_location_id_locations_id_fk": {
+          "name": "inventory_adjustments_location_id_locations_id_fk",
+          "tableFrom": "inventory_adjustments",
+          "tableTo": "locations",
+          "columnsFrom": ["location_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "inventory_adjustments_account_id_accounts_id_fk": {
+          "name": "inventory_adjustments_account_id_accounts_id_fk",
+          "tableFrom": "inventory_adjustments",
+          "tableTo": "accounts",
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "inventory_adjustments_journal_id_journal_entries_id_fk": {
+          "name": "inventory_adjustments_journal_id_journal_entries_id_fk",
+          "tableFrom": "inventory_adjustments",
+          "tableTo": "journal_entries",
+          "columnsFrom": ["journal_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "inventory_adjustments_created_by_user_id_users_id_fk": {
+          "name": "inventory_adjustments_created_by_user_id_users_id_fk",
+          "tableFrom": "inventory_adjustments",
+          "tableTo": "users",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "inventory_adjustments_reason": {
+          "name": "inventory_adjustments_reason",
+          "value": "\"inventory_adjustments\".\"reason\" in ('opening', 'production', 'waste', 'count', 'return')"
+        }
+      }
+    },
+    "inventory_movements": {
+      "name": "inventory_movements",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "source_type": {
+          "name": "source_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_line": {
+          "name": "source_line",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inventory_status": {
+          "name": "inventory_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lot_number": {
+          "name": "lot_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity_delta_base": {
+          "name": "quantity_delta_base",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value_delta_usdc": {
+          "name": "value_delta_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "posted_at": {
+          "name": "posted_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "inventory_movements_item_id_items_id_fk": {
+          "name": "inventory_movements_item_id_items_id_fk",
+          "tableFrom": "inventory_movements",
+          "tableTo": "items",
+          "columnsFrom": ["item_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "inventory_movements_location_id_locations_id_fk": {
+          "name": "inventory_movements_location_id_locations_id_fk",
+          "tableFrom": "inventory_movements",
+          "tableTo": "locations",
+          "columnsFrom": ["location_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "inventory_movements_source": {
+          "name": "inventory_movements_source",
+          "value": "\"inventory_movements\".\"source_type\" in ('itemReceipt', 'inventoryAdjustment', 'inventoryTransfer', 'inventoryStatusChange')"
+        },
+        "inventory_movements_status": {
+          "name": "inventory_movements_status",
+          "value": "\"inventory_movements\".\"inventory_status\" in ('quarantine', 'good', 'rejected')"
+        }
+      }
+    },
+    "inventory_status_change_lines": {
+      "name": "inventory_status_change_lines",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "change_id": {
+          "name": "change_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "line": {
+          "name": "line",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lot_number": {
+          "name": "lot_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity_base": {
+          "name": "quantity_base",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "previous_status": {
+          "name": "previous_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revised_status": {
+          "name": "revised_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "inventory_status_change_lines_changeId_line_unique": {
+          "name": "inventory_status_change_lines_changeId_line_unique",
+          "columns": ["change_id", "line"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "inventory_status_change_lines_change_id_inventory_status_changes_id_fk": {
+          "name": "inventory_status_change_lines_change_id_inventory_status_changes_id_fk",
+          "tableFrom": "inventory_status_change_lines",
+          "tableTo": "inventory_status_changes",
+          "columnsFrom": ["change_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "inventory_status_change_lines_item_id_items_id_fk": {
+          "name": "inventory_status_change_lines_item_id_items_id_fk",
+          "tableFrom": "inventory_status_change_lines",
+          "tableTo": "items",
+          "columnsFrom": ["item_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "inventory_status_change_lines_from": {
+          "name": "inventory_status_change_lines_from",
+          "value": "\"inventory_status_change_lines\".\"previous_status\" in ('quarantine', 'good', 'rejected')"
+        },
+        "inventory_status_change_lines_to": {
+          "name": "inventory_status_change_lines_to",
+          "value": "\"inventory_status_change_lines\".\"revised_status\" in ('quarantine', 'good', 'rejected')"
+        }
+      }
+    },
+    "inventory_status_changes": {
+      "name": "inventory_status_changes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tran_id": {
+          "name": "tran_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tran_date": {
+          "name": "tran_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "memo": {
+          "name": "memo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "inventory_status_changes_tranId_unique": {
+          "name": "inventory_status_changes_tranId_unique",
+          "columns": ["tran_id"],
+          "isUnique": true
+        },
+        "inventory_status_changes_externalId_unique": {
+          "name": "inventory_status_changes_externalId_unique",
+          "columns": ["external_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "inventory_status_changes_location_id_locations_id_fk": {
+          "name": "inventory_status_changes_location_id_locations_id_fk",
+          "tableFrom": "inventory_status_changes",
+          "tableTo": "locations",
+          "columnsFrom": ["location_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "inventory_status_changes_created_by_user_id_users_id_fk": {
+          "name": "inventory_status_changes_created_by_user_id_users_id_fk",
+          "tableFrom": "inventory_status_changes",
+          "tableTo": "users",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "inventory_transfer_lines": {
+      "name": "inventory_transfer_lines",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "transfer_id": {
+          "name": "transfer_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "line": {
+          "name": "line",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lot_number": {
+          "name": "lot_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inventory_status": {
+          "name": "inventory_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity_base": {
+          "name": "quantity_base",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_usdc": {
+          "name": "amount_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "inventory_transfer_lines_transferId_line_unique": {
+          "name": "inventory_transfer_lines_transferId_line_unique",
+          "columns": ["transfer_id", "line"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "inventory_transfer_lines_transfer_id_inventory_transfers_id_fk": {
+          "name": "inventory_transfer_lines_transfer_id_inventory_transfers_id_fk",
+          "tableFrom": "inventory_transfer_lines",
+          "tableTo": "inventory_transfers",
+          "columnsFrom": ["transfer_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "inventory_transfer_lines_item_id_items_id_fk": {
+          "name": "inventory_transfer_lines_item_id_items_id_fk",
+          "tableFrom": "inventory_transfer_lines",
+          "tableTo": "items",
+          "columnsFrom": ["item_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "inventory_transfer_lines_status": {
+          "name": "inventory_transfer_lines_status",
+          "value": "\"inventory_transfer_lines\".\"inventory_status\" in ('quarantine', 'good', 'rejected')"
+        }
+      }
+    },
+    "inventory_transfers": {
+      "name": "inventory_transfers",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tran_id": {
+          "name": "tran_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "from_location_id": {
+          "name": "from_location_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "to_location_id": {
+          "name": "to_location_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tran_date": {
+          "name": "tran_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "memo": {
+          "name": "memo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "inventory_transfers_tranId_unique": {
+          "name": "inventory_transfers_tranId_unique",
+          "columns": ["tran_id"],
+          "isUnique": true
+        },
+        "inventory_transfers_externalId_unique": {
+          "name": "inventory_transfers_externalId_unique",
+          "columns": ["external_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "inventory_transfers_from_location_id_locations_id_fk": {
+          "name": "inventory_transfers_from_location_id_locations_id_fk",
+          "tableFrom": "inventory_transfers",
+          "tableTo": "locations",
+          "columnsFrom": ["from_location_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "inventory_transfers_to_location_id_locations_id_fk": {
+          "name": "inventory_transfers_to_location_id_locations_id_fk",
+          "tableFrom": "inventory_transfers",
+          "tableTo": "locations",
+          "columnsFrom": ["to_location_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "inventory_transfers_created_by_user_id_users_id_fk": {
+          "name": "inventory_transfers_created_by_user_id_users_id_fk",
+          "tableFrom": "inventory_transfers",
+          "tableTo": "users",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "item_receipt_lines": {
+      "name": "item_receipt_lines",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "receipt_id": {
+          "name": "receipt_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "line": {
+          "name": "line",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "po_line_id": {
+          "name": "po_line_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity_base": {
+          "name": "quantity_base",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rate_usdc": {
+          "name": "rate_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_usdc": {
+          "name": "amount_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lot_number": {
+          "name": "lot_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inventory_status": {
+          "name": "inventory_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "item_receipt_lines_receiptId_line_unique": {
+          "name": "item_receipt_lines_receiptId_line_unique",
+          "columns": ["receipt_id", "line"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "item_receipt_lines_receipt_id_item_receipts_id_fk": {
+          "name": "item_receipt_lines_receipt_id_item_receipts_id_fk",
+          "tableFrom": "item_receipt_lines",
+          "tableTo": "item_receipts",
+          "columnsFrom": ["receipt_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "item_receipt_lines_po_line_id_purchase_order_lines_id_fk": {
+          "name": "item_receipt_lines_po_line_id_purchase_order_lines_id_fk",
+          "tableFrom": "item_receipt_lines",
+          "tableTo": "purchase_order_lines",
+          "columnsFrom": ["po_line_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "item_receipt_lines_item_id_items_id_fk": {
+          "name": "item_receipt_lines_item_id_items_id_fk",
+          "tableFrom": "item_receipt_lines",
+          "tableTo": "items",
+          "columnsFrom": ["item_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "item_receipt_lines_status": {
+          "name": "item_receipt_lines_status",
+          "value": "\"item_receipt_lines\".\"inventory_status\" in ('quarantine', 'good', 'rejected')"
+        }
+      }
+    },
+    "item_receipts": {
+      "name": "item_receipts",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tran_id": {
+          "name": "tran_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "po_id": {
+          "name": "po_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tran_date": {
+          "name": "tran_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "memo": {
+          "name": "memo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "journal_id": {
+          "name": "journal_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "item_receipts_tranId_unique": {
+          "name": "item_receipts_tranId_unique",
+          "columns": ["tran_id"],
+          "isUnique": true
+        },
+        "item_receipts_externalId_unique": {
+          "name": "item_receipts_externalId_unique",
+          "columns": ["external_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "item_receipts_po_id_purchase_orders_id_fk": {
+          "name": "item_receipts_po_id_purchase_orders_id_fk",
+          "tableFrom": "item_receipts",
+          "tableTo": "purchase_orders",
+          "columnsFrom": ["po_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "item_receipts_location_id_locations_id_fk": {
+          "name": "item_receipts_location_id_locations_id_fk",
+          "tableFrom": "item_receipts",
+          "tableTo": "locations",
+          "columnsFrom": ["location_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "item_receipts_journal_id_journal_entries_id_fk": {
+          "name": "item_receipts_journal_id_journal_entries_id_fk",
+          "tableFrom": "item_receipts",
+          "tableTo": "journal_entries",
+          "columnsFrom": ["journal_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "item_receipts_created_by_user_id_users_id_fk": {
+          "name": "item_receipts_created_by_user_id_users_id_fk",
+          "tableFrom": "item_receipts",
+          "tableTo": "users",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "items": {
+      "name": "items",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_class": {
+          "name": "item_class",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "units_type": {
+          "name": "units_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "base_units_per_unit": {
+          "name": "base_units_per_unit",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "asset_account_id": {
+          "name": "asset_account_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cost_usdc": {
+          "name": "cost_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "is_inactive": {
+          "name": "is_inactive",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {
+        "items_itemId_unique": {
+          "name": "items_itemId_unique",
+          "columns": ["item_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "items_asset_account_id_accounts_id_fk": {
+          "name": "items_asset_account_id_accounts_id_fk",
+          "tableFrom": "items",
+          "tableTo": "accounts",
+          "columnsFrom": ["asset_account_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "items_class": {
+          "name": "items_class",
+          "value": "\"items\".\"item_class\" in ('rawMaterial', 'packaging', 'labSupply', 'finishedGood')"
+        }
+      }
+    },
+    "journal_entries": {
+      "name": "journal_entries",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tran_id": {
+          "name": "tran_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tran_date": {
+          "name": "tran_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "memo": {
+          "name": "memo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_type": {
+          "name": "source_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "journal_entries_tranId_unique": {
+          "name": "journal_entries_tranId_unique",
+          "columns": ["tran_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "journal_entries_created_by_user_id_users_id_fk": {
+          "name": "journal_entries_created_by_user_id_users_id_fk",
+          "tableFrom": "journal_entries",
+          "tableTo": "users",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "journal_entries_source": {
+          "name": "journal_entries_source",
+          "value": "\"journal_entries\".\"source_type\" in ('itemReceipt', 'inventoryAdjustment', 'vendorBill', 'vendorPayment', 'manual')"
+        }
+      }
+    },
+    "journal_lines": {
+      "name": "journal_lines",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "journal_id": {
+          "name": "journal_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "line": {
+          "name": "line",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "debit_usdc": {
+          "name": "debit_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "credit_usdc": {
+          "name": "credit_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "memo": {
+          "name": "memo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vendor_id": {
+          "name": "vendor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "journal_lines_journalId_line_unique": {
+          "name": "journal_lines_journalId_line_unique",
+          "columns": ["journal_id", "line"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "journal_lines_journal_id_journal_entries_id_fk": {
+          "name": "journal_lines_journal_id_journal_entries_id_fk",
+          "tableFrom": "journal_lines",
+          "tableTo": "journal_entries",
+          "columnsFrom": ["journal_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "journal_lines_account_id_accounts_id_fk": {
+          "name": "journal_lines_account_id_accounts_id_fk",
+          "tableFrom": "journal_lines",
+          "tableTo": "accounts",
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "journal_lines_location_id_locations_id_fk": {
+          "name": "journal_lines_location_id_locations_id_fk",
+          "tableFrom": "journal_lines",
+          "tableTo": "locations",
+          "columnsFrom": ["location_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "journal_lines_vendor_id_vendors_id_fk": {
+          "name": "journal_lines_vendor_id_vendors_id_fk",
+          "tableFrom": "journal_lines",
+          "tableTo": "vendors",
+          "columnsFrom": ["vendor_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "journal_lines_one_side": {
+          "name": "journal_lines_one_side",
+          "value": "(\"journal_lines\".\"debit_usdc\" = 0) <> (\"journal_lines\".\"credit_usdc\" = 0)"
+        },
+        "journal_lines_positive": {
+          "name": "journal_lines_positive",
+          "value": "\"journal_lines\".\"debit_usdc\" >= 0 and \"journal_lines\".\"credit_usdc\" >= 0"
+        }
+      }
+    },
+    "locations": {
+      "name": "locations",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "city": {
+          "name": "city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "locations_externalId_unique": {
+          "name": "locations_externalId_unique",
+          "columns": ["external_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "purchase_order_lines": {
+      "name": "purchase_order_lines",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "po_id": {
+          "name": "po_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "line": {
+          "name": "line",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity_base": {
+          "name": "quantity_base",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rate_usdc": {
+          "name": "rate_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_usdc": {
+          "name": "amount_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity_received_base": {
+          "name": "quantity_received_base",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "quantity_billed_base": {
+          "name": "quantity_billed_base",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "purchase_order_lines_poId_line_unique": {
+          "name": "purchase_order_lines_poId_line_unique",
+          "columns": ["po_id", "line"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "purchase_order_lines_po_id_purchase_orders_id_fk": {
+          "name": "purchase_order_lines_po_id_purchase_orders_id_fk",
+          "tableFrom": "purchase_order_lines",
+          "tableTo": "purchase_orders",
+          "columnsFrom": ["po_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "purchase_order_lines_item_id_items_id_fk": {
+          "name": "purchase_order_lines_item_id_items_id_fk",
+          "tableFrom": "purchase_order_lines",
+          "tableTo": "items",
+          "columnsFrom": ["item_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "purchase_orders": {
+      "name": "purchase_orders",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tran_id": {
+          "name": "tran_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "vendor_id": {
+          "name": "vendor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tran_date": {
+          "name": "tran_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approval_status": {
+          "name": "approval_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approved_by_user_id": {
+          "name": "approved_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "approval_note": {
+          "name": "approval_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "freight_usdc": {
+          "name": "freight_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "total_usdc": {
+          "name": "total_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "memo": {
+          "name": "memo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "custbody_dayone_category": {
+          "name": "custbody_dayone_category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "custbody_dayone_po_hash": {
+          "name": "custbody_dayone_po_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "custbody_contract_verdict": {
+          "name": "custbody_contract_verdict",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "custbody_contract_reason": {
+          "name": "custbody_contract_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "custbody_near_funding_tx": {
+          "name": "custbody_near_funding_tx",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "custbody_near_approval_tx": {
+          "name": "custbody_near_approval_tx",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "custbody_near_approved_by": {
+          "name": "custbody_near_approved_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "purchase_orders_tranId_unique": {
+          "name": "purchase_orders_tranId_unique",
+          "columns": ["tran_id"],
+          "isUnique": true
+        },
+        "purchase_orders_externalId_unique": {
+          "name": "purchase_orders_externalId_unique",
+          "columns": ["external_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "purchase_orders_vendor_id_vendors_id_fk": {
+          "name": "purchase_orders_vendor_id_vendors_id_fk",
+          "tableFrom": "purchase_orders",
+          "tableTo": "vendors",
+          "columnsFrom": ["vendor_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "purchase_orders_location_id_locations_id_fk": {
+          "name": "purchase_orders_location_id_locations_id_fk",
+          "tableFrom": "purchase_orders",
+          "tableTo": "locations",
+          "columnsFrom": ["location_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "purchase_orders_approved_by_user_id_users_id_fk": {
+          "name": "purchase_orders_approved_by_user_id_users_id_fk",
+          "tableFrom": "purchase_orders",
+          "tableTo": "users",
+          "columnsFrom": ["approved_by_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "purchase_orders_created_by_user_id_users_id_fk": {
+          "name": "purchase_orders_created_by_user_id_users_id_fk",
+          "tableFrom": "purchase_orders",
+          "tableTo": "users",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "purchase_orders_status": {
+          "name": "purchase_orders_status",
+          "value": "\"purchase_orders\".\"status\" in ('pendingApproval', 'pendingReceipt', 'partiallyReceived', 'pendingBilling', 'fullyBilled', 'closed', 'rejected')"
+        },
+        "purchase_orders_approval": {
+          "name": "purchase_orders_approval",
+          "value": "\"purchase_orders\".\"approval_status\" in ('pendingApproval', 'approved', 'rejected')"
+        },
+        "purchase_orders_verdict": {
+          "name": "purchase_orders_verdict",
+          "value": "\"purchase_orders\".\"custbody_contract_verdict\" in ('funded', 'awaitingApproval', 'refused', 'cancelled', 'refunded', 'paid')"
+        }
+      }
+    },
+    "settings": {
+      "name": "settings",
+      "columns": {
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "users": {
+      "name": "users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "full_name": {
+          "name": "full_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "location_id": {
+          "name": "location_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "users_username_unique": {
+          "name": "users_username_unique",
+          "columns": ["username"],
+          "isUnique": true
+        },
+        "users_token_unique": {
+          "name": "users_token_unique",
+          "columns": ["token"],
+          "isUnique": true
+        },
+        "users_externalId_unique": {
+          "name": "users_externalId_unique",
+          "columns": ["external_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "users_location_id_locations_id_fk": {
+          "name": "users_location_id_locations_id_fk",
+          "tableFrom": "users",
+          "tableTo": "locations",
+          "columnsFrom": ["location_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "users_role": {
+          "name": "users_role",
+          "value": "\"users\".\"role\" in ('administrator', 'controller', 'apManager', 'approver', 'connector', 'viewer', 'system')"
+        }
+      }
+    },
+    "vendor_bill_lines": {
+      "name": "vendor_bill_lines",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "bill_id": {
+          "name": "bill_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "line": {
+          "name": "line",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "po_line_id": {
+          "name": "po_line_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "quantity_base": {
+          "name": "quantity_base",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rate_usdc": {
+          "name": "rate_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_usdc": {
+          "name": "amount_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "vendor_bill_lines_billId_line_unique": {
+          "name": "vendor_bill_lines_billId_line_unique",
+          "columns": ["bill_id", "line"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "vendor_bill_lines_bill_id_vendor_bills_id_fk": {
+          "name": "vendor_bill_lines_bill_id_vendor_bills_id_fk",
+          "tableFrom": "vendor_bill_lines",
+          "tableTo": "vendor_bills",
+          "columnsFrom": ["bill_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "vendor_bill_lines_po_line_id_purchase_order_lines_id_fk": {
+          "name": "vendor_bill_lines_po_line_id_purchase_order_lines_id_fk",
+          "tableFrom": "vendor_bill_lines",
+          "tableTo": "purchase_order_lines",
+          "columnsFrom": ["po_line_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "vendor_bill_lines_item_id_items_id_fk": {
+          "name": "vendor_bill_lines_item_id_items_id_fk",
+          "tableFrom": "vendor_bill_lines",
+          "tableTo": "items",
+          "columnsFrom": ["item_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "vendor_bills": {
+      "name": "vendor_bills",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tran_id": {
+          "name": "tran_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "normalized_tran_id": {
+          "name": "normalized_tran_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vendor_id": {
+          "name": "vendor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "po_id": {
+          "name": "po_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tran_date": {
+          "name": "tran_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "due_date": {
+          "name": "due_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "terms": {
+          "name": "terms",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "freight_usdc": {
+          "name": "freight_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "total_usdc": {
+          "name": "total_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "memo": {
+          "name": "memo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "match_status": {
+          "name": "match_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "match_exceptions_json": {
+          "name": "match_exceptions_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
+        "approval_status": {
+          "name": "approval_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approved_by_user_id": {
+          "name": "approved_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "approval_note": {
+          "name": "approval_note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "duplicate_of_id": {
+          "name": "duplicate_of_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "price_drift_json": {
+          "name": "price_drift_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_paid_usdc": {
+          "name": "amount_paid_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "journal_id": {
+          "name": "journal_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "vendor_bills_externalId_unique": {
+          "name": "vendor_bills_externalId_unique",
+          "columns": ["external_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "vendor_bills_vendor_id_vendors_id_fk": {
+          "name": "vendor_bills_vendor_id_vendors_id_fk",
+          "tableFrom": "vendor_bills",
+          "tableTo": "vendors",
+          "columnsFrom": ["vendor_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "vendor_bills_po_id_purchase_orders_id_fk": {
+          "name": "vendor_bills_po_id_purchase_orders_id_fk",
+          "tableFrom": "vendor_bills",
+          "tableTo": "purchase_orders",
+          "columnsFrom": ["po_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "vendor_bills_approved_by_user_id_users_id_fk": {
+          "name": "vendor_bills_approved_by_user_id_users_id_fk",
+          "tableFrom": "vendor_bills",
+          "tableTo": "users",
+          "columnsFrom": ["approved_by_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "vendor_bills_duplicate_of_id_vendor_bills_id_fk": {
+          "name": "vendor_bills_duplicate_of_id_vendor_bills_id_fk",
+          "tableFrom": "vendor_bills",
+          "tableTo": "vendor_bills",
+          "columnsFrom": ["duplicate_of_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "vendor_bills_journal_id_journal_entries_id_fk": {
+          "name": "vendor_bills_journal_id_journal_entries_id_fk",
+          "tableFrom": "vendor_bills",
+          "tableTo": "journal_entries",
+          "columnsFrom": ["journal_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "vendor_bills_created_by_user_id_users_id_fk": {
+          "name": "vendor_bills_created_by_user_id_users_id_fk",
+          "tableFrom": "vendor_bills",
+          "tableTo": "users",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "vendor_bills_terms": {
+          "name": "vendor_bills_terms",
+          "value": "\"vendor_bills\".\"terms\" in ('net30', 'onQcRelease')"
+        },
+        "vendor_bills_match": {
+          "name": "vendor_bills_match",
+          "value": "\"vendor_bills\".\"match_status\" in ('matched', 'exception', 'duplicate')"
+        },
+        "vendor_bills_approval": {
+          "name": "vendor_bills_approval",
+          "value": "\"vendor_bills\".\"approval_status\" in ('pendingApproval', 'approved', 'rejected')"
+        },
+        "vendor_bills_status": {
+          "name": "vendor_bills_status",
+          "value": "\"vendor_bills\".\"status\" in ('open', 'paidInFull', 'rejected')"
+        }
+      }
+    },
+    "vendor_payments": {
+      "name": "vendor_payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "tran_id": {
+          "name": "tran_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "vendor_id": {
+          "name": "vendor_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tran_date": {
+          "name": "tran_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_usdc": {
+          "name": "amount_usdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payment_method": {
+          "name": "payment_method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "applied_bill_id": {
+          "name": "applied_bill_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "custbody_near_tx": {
+          "name": "custbody_near_tx",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "custbody_near_explorer_url": {
+          "name": "custbody_near_explorer_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "memo": {
+          "name": "memo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "journal_id": {
+          "name": "journal_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "vendor_payments_tranId_unique": {
+          "name": "vendor_payments_tranId_unique",
+          "columns": ["tran_id"],
+          "isUnique": true
+        },
+        "vendor_payments_externalId_unique": {
+          "name": "vendor_payments_externalId_unique",
+          "columns": ["external_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "vendor_payments_vendor_id_vendors_id_fk": {
+          "name": "vendor_payments_vendor_id_vendors_id_fk",
+          "tableFrom": "vendor_payments",
+          "tableTo": "vendors",
+          "columnsFrom": ["vendor_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "vendor_payments_account_id_accounts_id_fk": {
+          "name": "vendor_payments_account_id_accounts_id_fk",
+          "tableFrom": "vendor_payments",
+          "tableTo": "accounts",
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "vendor_payments_applied_bill_id_vendor_bills_id_fk": {
+          "name": "vendor_payments_applied_bill_id_vendor_bills_id_fk",
+          "tableFrom": "vendor_payments",
+          "tableTo": "vendor_bills",
+          "columnsFrom": ["applied_bill_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "vendor_payments_journal_id_journal_entries_id_fk": {
+          "name": "vendor_payments_journal_id_journal_entries_id_fk",
+          "tableFrom": "vendor_payments",
+          "tableTo": "journal_entries",
+          "columnsFrom": ["journal_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "vendor_payments_created_by_user_id_users_id_fk": {
+          "name": "vendor_payments_created_by_user_id_users_id_fk",
+          "tableFrom": "vendor_payments",
+          "tableTo": "users",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "vendor_payments_method": {
+          "name": "vendor_payments_method",
+          "value": "\"vendor_payments\".\"payment_method\" in ('escrowRelease', 'check')"
+        }
+      }
+    },
+    "vendors": {
+      "name": "vendors",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "company_name": {
+          "name": "company_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payout_account": {
+          "name": "payout_account",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "payout_verified_at": {
+          "name": "payout_verified_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "terms": {
+          "name": "terms",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'net30'"
+        },
+        "vb_po_qty_tolerance_bp": {
+          "name": "vb_po_qty_tolerance_bp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vb_po_amt_tolerance_bp": {
+          "name": "vb_po_amt_tolerance_bp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vb_ir_qty_difference_base": {
+          "name": "vb_ir_qty_difference_base",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "comments": {
+          "name": "comments",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "vendors_entityId_unique": {
+          "name": "vendors_entityId_unique",
+          "columns": ["entity_id"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "vendors_status": {
+          "name": "vendors_status",
+          "value": "\"vendors\".\"status\" in ('approved', 'onHold', 'blocked')"
+        },
+        "vendors_terms": {
+          "name": "vendors_terms",
+          "value": "\"vendors\".\"terms\" in ('net30', 'onQcRelease')"
+        }
+      }
+    }
+  },
+  "views": {
+    "inventory_balances": {
+      "columns": {
+        "itemId": {
+          "name": "itemId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "locationId": {
+          "name": "locationId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inventoryStatus": {
+          "name": "inventoryStatus",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantityOnHandBase": {
+          "name": "quantityOnHandBase",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "valueUsdc": {
+          "name": "valueUsdc",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "name": "inventory_balances",
+      "isExisting": true
+    }
+  },
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

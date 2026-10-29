@@ -64,7 +64,7 @@ Base path `/services/rest/record/v1`; `GET …/metadata-catalog` lists the recor
 | `purchaseOrder/{po}/!transform/itemReceipt` | POST | lines with `inventoryDetail.inventoryAssignment.items[].receiptInventoryNumber` = Day One lot code, status `quarantine` |
 | `itemReceipt`, `inventoryAdjustment`, `inventoryTransfer`, `inventoryStatusChange` | GET, POST | adjustments carry `custbody_reason` (`opening`, `production`, `waste`, `count`, `return`); a status change with `createdFrom` = the PO releases or returns a received lot |
 | `inventoryBalance` | GET list (`?location=`, `?item=`) | derived: quantity, value and average cost per item, location and status |
-| `purchaseOrder/{po}/!transform/vendorBill`, `vendorBill` | POST, GET, PATCH | the match runs on save: `custbody_match_status`, `custbody_match_exceptions`, `approvalStatus`, `custbody_duplicate_of`, `custbody_price_drift`, `receipts`; PATCH (AP manager) decides a held bill with `approvalNote` |
+| `purchaseOrder/{po}/!transform/vendorBill`, `vendorBill` | POST, GET, PATCH | the match runs on save: `custbody_match_status`, `custbody_match_exceptions`, `approvalStatus`, `custbody_duplicate_of`, `custbody_price_drift`, `custbody_alert_dismissals`, `receipts`; PATCH (AP manager) decides a held bill with `approvalNote`; POST `vendorBill/{id}/!dismissAlert` (AP manager or controller) dismisses one alert with `{ alert: priceDrift | duplicateInvoice, item, note }` |
 | `vendorPayment` | GET, POST | `apply.items[].doc` or `createdFrom` (the PO); `custbody_near_tx`, `custbody_near_explorer_url`; `custbody_on_account` when no approved bill took it |
 | `journalEntry`, `trialBalance`, `auditTrail` | GET | every posting; debits = credits; who did what and when |
 
@@ -106,6 +106,8 @@ Limits live on the vendor record with subsidiary defaults in `settings` (2% quan
 **Duplicate invoice.** Before matching: same vendor and the same normalized invoice number (upper-case alphanumerics, a reissue suffix such as `-R`, `COPY` or `REISSUED` removed, so `OFH-3317-R` is `OFH3317`), or same vendor, same PO and same amount within 30 days. A duplicate is saved `rejected` with `custbody_duplicate_of`, never posts and can never be approved or paid.
 
 **Price drift** (the bookkeeper pack's alert, FEATURES_V2 §2) is not a match exception: a bill at the PO's price matches. The ERP notes it on the bill (`custbody_price_drift`) when a unit price is more than 10% over the vendor's last approved bill for the item: PEC-55388 at $9.35/kg against $8.20/kg on PEC-55120, +14.0%.
+
+**Dismissing an alert** (FEATURES_V2 §2; OPEN_QUESTIONS #33 puts it on the ERP's payables side). Marcy (AP manager) or the controller dismisses a price-drift alert for one item, or a bill's duplicate-invoice alert, with a reason (`POST vendorBill/{id}/!dismissAlert`). The dismissal is a row in `bill_alert_dismissals` (append-only by trigger) and a line in the audit trail; it shows beside the alert on the bill and in the web view, and changes nothing else: a duplicate stays rejected and can never be approved or paid, a drifted price stays as billed. Each alert is dismissed once; a reason is required.
 
 ### 3.5 The approval matrix (on top of the contract, never instead of it)
 
