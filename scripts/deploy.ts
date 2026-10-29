@@ -22,6 +22,7 @@ import {
   type KeyPairString,
   teraToGas,
 } from "near-api-js";
+import { directorOf, kevinOf, PLANT_AGENTS } from "./lib/dayone-sandbox.ts";
 
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const ROOT = "acme-holdings.testnet";
@@ -160,19 +161,23 @@ async function main() {
   if (!same(await view(POLICY, "get_roles", { plant: PLANT_B }), roles)) {
     asAcme(POLICY, "set_roles", { plant: PLANT_B, ...roles }, oneYocto);
   }
-  const kevin = `kevin.${PLANT_B}`;
-  const policy = {
-    name: "Kevin",
-    plant: PLANT_B,
-    per_po_limit: (2_500n * DOLLAR).toString(),
-    monthly_limit: (60_000n * DOLLAR).toString(),
-    categories: ["raw_material", "packaging", "lab_chemical"],
-    approver: `director.${PLANT_B}`,
-  };
-  if (
-    !same(await view(POLICY, "get_agent_policy", { agent: kevin }), { ...policy, active: true })
-  ) {
-    asAcme(POLICY, "set_agent_policy", { agent: kevin, ...policy }, oneYocto);
+  // One Kevin per plant (GROUP_BUY.md §5); Plant B's is the main demo's policy. The table is
+  // the one the local sandbox uses, so both networks hold the same limits.
+  for (const p of PLANT_AGENTS) {
+    const kevin = kevinOf(p.code, ROOT);
+    const policy = {
+      name: p.name,
+      plant: `plant-${p.code}.${ROOT}`,
+      per_po_limit: (BigInt(p.perPoUsd) * DOLLAR).toString(),
+      monthly_limit: (BigInt(p.monthlyUsd) * DOLLAR).toString(),
+      categories: p.categories,
+      approver: directorOf(p.code, ROOT),
+    };
+    if (
+      !same(await view(POLICY, "get_agent_policy", { agent: kevin }), { ...policy, active: true })
+    ) {
+      asAcme(POLICY, "set_agent_policy", { agent: kevin, ...policy }, oneYocto);
+    }
   }
   const labCap = (2_000n * DOLLAR).toString();
   if ((await view(POLICY, "get_category_cap", { category: "lab_chemical" })) !== labCap) {

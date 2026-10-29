@@ -19,14 +19,16 @@ Root: `acme-holdings.testnet` (created by Tony Oct 27). Everything below except 
 | Account | Role | Online key | Initial NEAR |
 |---|---|---|---|
 | `acme-holdings.testnet` | Acquirer, treasury, contract owner | none (human's local credentials) | rest of float |
-| `plant-a.acme-holdings.testnet` | Facility A | none | 0.2 |
+| `plant-a.acme-holdings.testnet` | Facility A; creates and funds its Kevin and director (group purchasing, §9) | none | 0.8 (the Oct 28 account had 0.2; setup tops a plant up from root when it cannot fund its children) |
 | `plant-b.acme-holdings.testnet` | Facility B (acquired); creates and funds the four accounts below | none | 1.5 |
-| `plant-c.acme-holdings.testnet` | Facility C | none | 0.2 |
-| `kevin.plant-b.acme-holdings.testnet` | Kevin | FC: spend-policy `submit_po`, `anchor`, `anchor_batch`, `open_sealed_round`, `award_sealed_round` (§10; the testnet key gets the last two at the next redeploy); allowance 2 NEAR (cancelling is HQ's `cancel`, not Kevin's) | 1 |
+| `plant-c.acme-holdings.testnet` | Facility C; creates and funds its Kevin and director | none | 0.8 |
+| `kevin.plant-b.acme-holdings.testnet` | Kevin | FC: spend-policy `submit_po`, `submit_pooled_po`, `open_pool`, `join_pool`, `anchor`, `anchor_batch`, `open_sealed_round`, `award_sealed_round` (§9, §10); allowance 2 NEAR (cancelling is HQ's `cancel`, not Kevin's). A key made before a method was added is replaced by `setup:testnet` (same key pair, new methods) | 1 |
+| `kevin.plant-a…`, `kevin.plant-c.acme-holdings.testnet` | "Kevin at Plant A", "Kevin at Plant C" (group purchasing) | FC: the same eight methods; allowance 0.5 NEAR | 0.5 |
+| `director.plant-a…`, `director.plant-c.acme-holdings.testnet` | Each plant's director, approving its own share of a pooled PO | FC: spend-policy `approve_po`, `reject_po` | 0 |
 | `director.plant-b.acme-holdings.testnet` | Linda, ops director | FC: spend-policy `approve_po`, `reject_po` | 0 |
 | `receiving.plant-b.acme-holdings.testnet` | Tommy, receiving | FC: spend-policy `confirm_receipt` | 0 |
 | `qc.plant-b.acme-holdings.testnet` | Priya, QC | FC: spend-policy `qc_release`, `qc_reject` | 0 |
-| `spend-policy.acme-holdings.testnet` | The contract: policy, escrow, anchors | none after deploy | 5 |
+| `spend-policy.acme-holdings.testnet` | The contract: policy, escrow, anchors, pools, credentials, sealed rounds | none after deploy | 8 (5 before the Oct 29 redeploy; the merged wasm is larger) |
 | `spend-policy-usdc.acme-holdings.testnet` | Same wasm, initialized with Circle USDC, for the bonus real-USDC PO (§2) | none after deploy | 3 |
 | `dayone-relayer.testnet` | Day One's relayer (vendor-owned, outside Acme's tree) | full access | 10 |
 | `northgate-ingredients.testnet` | Supplier agent (qualified) | full access | 1 |
@@ -307,13 +309,13 @@ Receiving, QC, payout, `qc_reject` and `cancel` are unchanged: the pooled PO is 
 
 ### `submit_pooled_po` checks
 
-Refused outright (no approval path): caller not registered or paused; pool unknown, already placed, or in another category; caller not a member; `po_id` already used; supplier without a status; no lines, more than 10, a duplicate agent, a non-member, a zero share, a share over that plant's pledge; shares not adding up to `amount`; `amount` over the budget; a line agent paused or not allowed the category; a share approval that is expired or does not match (supplier, amount, category, `po_hash`, that agent's approver).
+Refused outright (no approval path): caller not registered or paused; pool unknown, already placed, or in another category; caller not a member; `po_id` already used; the supplier fails the §3.1 credential gate, exactly as in `submit_po` step 3a (not listed, no credential, revoked, expired, suspended, or not credentialed for the pool's category; Oct 29 review fix: until then only the listing was checked); no lines, more than 10, a duplicate agent, a non-member, a zero share, a share over that plant's pledge; shares not adding up to `amount`; `amount` over the budget; a line agent paused or not allowed the category; a share approval that is expired or does not match (supplier, amount, category, `po_hash`, that agent's approver).
 
 Then per share, unless it carries a matching approval: conditional supplier; share over that agent's per-PO limit; agent's monthly spend plus share over its monthly limit. Then the category cap on the pooled total, for every share without an approval. If any share waits, the PO is refused with one message naming every waiting share, ending in "director approval required." so Kevin's existing refusal handling applies.
 
 ### Tests
 
-`src/tests/group.rs`: 16 unit tests, one per refusal above plus the happy path, per-plant approvals, consumed and expired approvals, the monthly limit and category cap on shares, refunds by share, and the view. `tests/sandbox.rs` `group_purchasing_on_sandbox`: two plants, two directors, one escrow, one payout, a cancelled pool, on a local node with the DTUSD token.
+`src/tests/group.rs`: 19 unit tests, one per refusal above plus the happy path, a suspended, revoked, expired and wrong-category supplier refused on a pooled PO, per-plant approvals, consumed and expired approvals, the monthly limit and category cap on shares, refunds by share, and the view. `tests/sandbox.rs` `group_purchasing_on_sandbox`: two plants, two directors, one escrow, one payout, a cancelled pool, on a local node with the DTUSD token.
 
 ## 10. Sealed quote rounds (added Oct 28, branch `sealed-bids`)
 
@@ -334,6 +336,6 @@ Refusals (each panics with the message): late seal "Quotes for RFQ-… closed at
 - **Kevin.** `agents/kevin/src/sealed.ts`: `openedQuotes` throws while the round is `sealed`, ranks only opened quotes, re-checks each against its seal, and leaves an unopened quote void. The award is on chain; `submit_po` is unchanged and does not read it.
 - **Time.** Windows are block time. The demo's round has two hours to seal and one to open; staff see "2 sealed quotes, opened at 3:00 PM" on the demo clock.
 - **Storage.** About 500 bytes per round plus about 350 per opened quote, paid from the contract balance (§6 price: about 0.005 NEAR per round with two quotes).
-- **Keys.** Kevin's function-call key needs `open_sealed_round` and `award_sealed_round` added (setup lists them; the key already on testnet does not have them, so it must be replaced at the redeploy). Suppliers sign with their full-access keys, as for `accept_po`.
+- **Keys.** Kevin's function-call key carries `open_sealed_round` and `award_sealed_round`; `setup:testnet` replaces an older key that lacks them (§1). Suppliers sign with their full-access keys, as for `accept_po`.
 - **Tests.** 12 unit tests in `src/sealed/tests.rs`; `tests/sealed_round.rs` runs a round on a local node, fast-forwarded past the deadline, and its ignored `host_for_recording` test keeps that node up for `npm run sealed -- --record-sandbox`.
 - **Judge check (no keys).** `npm run verify:round -- data/sealed/RFQ-2611-02.round.json`: every opened quote hashes to its seal, names its round and supplier, was sealed before the deadline and opened in the window, and the winner is one of them; for a testnet file one `get_sealed_round` view confirms the chain holds the same round. The recorded round is from a local sandbox node until the contract is redeployed to testnet.

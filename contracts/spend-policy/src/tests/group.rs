@@ -391,6 +391,107 @@ fn an_unapproved_supplier_and_a_short_budget_cannot_be_approved_away_for_a_pool(
     assert_eq!(msg, "Plant budget is short by $1,000.00.");
 }
 
+/// The pooled PO to Northgate for $2,000 + $2,000, refused with `expected`; state unchanged.
+fn assert_pool_refused(c: &mut SpendPolicy, expected: &str) {
+    let before = budget(c);
+    let (spent_b, spent_a) = (spent(c, kevin()), spent(c, kevin_a()));
+    let lines = [(kevin(), 2_000), (kevin_a(), 2_000)];
+    let msg = panic_message(|| {
+        submit_asc(c, "PO-G-2001", &lines);
+    });
+    assert_eq!(msg, expected);
+    assert_eq!(budget(c), before);
+    assert_eq!((spent(c, kevin()), spent(c, kevin_a())), (spent_b, spent_a));
+    assert!(c.get_po("PO-G-2001".into()).is_none());
+    assert_eq!(c.get_pool(POOL.into()).unwrap().po_id, None);
+    let view = c.explain_pooled_po(
+        kevin(),
+        "PO-G-2001".into(),
+        POOL.into(),
+        northgate(),
+        U128(4_000 * DOLLAR),
+        "raw_material".into(),
+        hash(1),
+        shares(&lines),
+    );
+    assert_eq!(view.refusal.as_deref(), Some(expected));
+}
+
+#[test]
+fn a_supplier_suspended_for_qc_rejects_cannot_be_paid_through_a_pool() {
+    let mut c = setup_pools();
+    for po in ["PO-R1", "PO-R2"] {
+        submit(&mut c, po, northgate(), 100, "raw_material");
+        deliver(&mut c, po, &northgate());
+        as_(&qc());
+        c.qc_reject(po.into(), "Failed identity test".into());
+    }
+    // Both plants' directors approve their shares; the gate runs before any approval.
+    approve_share(&mut c, &director(), "PO-G-2001", &kevin(), 2_000);
+    approve_share(&mut c, &director_a(), "PO-G-2001", &kevin_a(), 2_000);
+    assert_pool_refused(
+        &mut c,
+        "northgate-ingredients.testnet is suspended after 2 rejected deliveries in a row until HQ reinstates it; no approval can override this.",
+    );
+}
+
+#[test]
+fn a_revoked_credential_cannot_be_paid_through_a_pool() {
+    let mut c = setup_pools();
+    as_owner();
+    c.revoke_credential(northgate(), "Audit lapsed".into());
+    assert_pool_refused(
+        &mut c,
+        "northgate-ingredients.testnet's supplier credential was revoked by HQ on 2026-11-09 (Audit lapsed); no approval can override this.",
+    );
+}
+
+#[test]
+fn an_expired_credential_cannot_be_paid_through_a_pool() {
+    let mut c = setup_pools();
+    as_owner();
+    c.issue_credential(
+        northgate(),
+        SupplierStatus::Qualified,
+        vec!["raw_material".into()],
+        U64(DEMO_NS + 1),
+    );
+    // One hour later the credential has lapsed.
+    let lines = [(kevin(), 2_000), (kevin_a(), 2_000)];
+    call_as(&kevin(), &kevin(), DEMO_NS + HOUR_NS, 0);
+    let msg = panic_message(|| {
+        c.submit_pooled_po(
+            "PO-G-2001".into(),
+            POOL.into(),
+            northgate(),
+            U128(4_000 * DOLLAR),
+            "raw_material".into(),
+            hash(1),
+            shares(&lines),
+        );
+    });
+    assert_eq!(
+        msg,
+        "northgate-ingredients.testnet's supplier credential expired on 2026-11-09; HQ must renew it, and no approval can override this."
+    );
+    assert!(c.get_po("PO-G-2001".into()).is_none());
+}
+
+#[test]
+fn a_supplier_not_credentialed_for_the_pools_category_cannot_be_paid_through_it() {
+    let mut c = setup_pools();
+    // Bayfront is credentialed for lab chemicals only; the pool is for raw material.
+    let lines = [(kevin(), 2_000), (kevin_a(), 2_000)];
+    let msg = panic_message(|| {
+        submit_pooled(&mut c, "PO-G-2001", bayfront(), "raw_material", &lines);
+    });
+    assert_eq!(
+        msg,
+        "PO-G-2001: bayfront-labsupply.testnet is not credentialed to sell raw material; no approval can override this."
+    );
+    assert!(c.get_po("PO-G-2001".into()).is_none());
+}
+
 #[test]
 fn one_plant_over_its_limit_holds_the_whole_po_and_the_refusal_names_every_such_plant() {
     let mut c = setup_pools();

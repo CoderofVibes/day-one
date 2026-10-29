@@ -39,7 +39,7 @@ The three-plant web view (`npm run web`, "Three plants") shows the same pool as 
 - On pass, one escrow record is funded; `budget` and `escrowed` move as for a plain PO; each plant's agent is charged its share in its monthly spend; `get_pool_lines(po_id)` keeps the allocation with who approved each share. Receiving, QC, payout, QC reject and HQ cancel are the existing methods, through the placing plant's roles; a refund gives each plant its share back.
 - A pool takes one PO and then no more pledges.
 
-Tested in `contracts/spend-policy/src/tests/group.rs` (16 unit tests, one per refusal and per happy path) and `tests/sandbox.rs` (`group_purchasing_on_sandbox`, on a local node with the DTUSD token).
+Tested in `contracts/spend-policy/src/tests/group.rs` (19 unit tests, one per refusal and per happy path, including the supplier credential gate) and `tests/sandbox.rs` (`group_purchasing_on_sandbox`, on a local node with the DTUSD token).
 
 ## 3. What Kevin does, and does not
 
@@ -65,8 +65,8 @@ Prerequisite: one `cargo test` run in `contracts/` (AGENTS.md), which downloads 
 
 After the three contract branches are merged and `spend-policy` is redeployed once:
 
-1. **Accounts.** The group buy needs a purchasing agent and a director per plant. Create `kevin.plant-a.acme-holdings.testnet`, `director.plant-a…`, `kevin.plant-c…` and `director.plant-c…` the way `setup-testnet` creates Plant B's (function-call keys for `submit_po`, `submit_pooled_po`, `open_pool`, `join_pool`, `anchor`, `anchor_batch` on the agents; `approve_po`, `reject_po` on the directors; keys in `.near-credentials/testnet/`). Plant B's existing Kevin key needs the three new methods added to its function-call key, or a second key.
-2. **Policy.** `set_agent_policy` for the two new agents (names "Kevin at Plant A" and "Kevin at Plant C", $2,500 per PO; `scripts/lib/dayone-sandbox.ts` `PLANT_AGENTS` is the reference). Plant B's policy is unchanged.
+1. **Accounts.** `npm run setup:testnet` creates `kevin.plant-a.acme-holdings.testnet`, `director.plant-a…`, `kevin.plant-c…` and `director.plant-c…` the way it creates Plant B's (agents: function-call keys for `submit_po`, `submit_pooled_po`, `open_pool`, `join_pool`, `anchor`, `anchor_batch`, `open_sealed_round`, `award_sealed_round`; directors: `approve_po`, `reject_po`; keys in `.near-credentials/testnet/`), tops up Plants A and C from root when they cannot fund them, and replaces Plant B's older Kevin key with one that carries the new methods (Oct 29).
+2. **Policy.** `npm run deploy:testnet` sets the two new agents' policies from `PLANT_AGENTS` in `scripts/lib/dayone-sandbox.ts` ("Kevin at Plant A" and "Kevin at Plant C", $2,500 per PO), the same table the sandbox uses. Plant B's policy is unchanged.
 3. **Relayer.** `allPlantsStaff()` in `scripts/lib/dayone-sandbox.ts` is the staff list the relayer carries for the group demo (Plant B's dock and QC plus the three directors); `npm run demo:group -- --live` uses it.
 4. **Record.** `npm run demo:group -- --live --record --web` after `npm run rehearse` and with `PO-G-2001` unused on the contract. The transcript then prints explorer links and the quote proofs land in `data/quotes/`.
 

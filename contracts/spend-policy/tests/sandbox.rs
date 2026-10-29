@@ -561,11 +561,15 @@ async fn group_purchasing_on_sandbox() {
         )
         .await;
     }
+    // A pooled PO passes the same supplier credential gate as a plain one (CONTRACTS.md §9).
     w.ok(
         "acme",
         "policy",
-        "set_supplier",
-        json!({ "supplier": "northgate", "status": "Qualified" }),
+        "issue_credential",
+        json!({
+            "supplier": "northgate", "status": "Qualified", "categories": ["raw_material"],
+            "expires_at": "2000000000000000000",
+        }),
     )
     .await;
     w.call(

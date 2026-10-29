@@ -1372,13 +1372,11 @@ impl SpendPolicy {
         if self.pos.contains_key(po_id) {
             return refused(format!("{po_id} was already submitted."));
         }
-        let supplier_status = match self.suppliers.get(supplier) {
-            Some(status) => *status,
-            None => {
-                return refused(format!(
-                    "{supplier} is not an approved supplier; no approval can override this."
-                ))
-            }
+        // The same supplier credential gate as a plain PO (§3.1): listed, issued, live, in good
+        // standing and credentialed for this category. No share approval reaches past it.
+        let supplier_status = match self.supplier_gate(supplier, category, po_id) {
+            Ok(status) => status,
+            Err(reason) => return refused(reason),
         };
         if lines.is_empty() || lines.len() > MAX_POOL_LINES {
             return refused(format!(
