@@ -9,6 +9,7 @@ import { type DemoPhase, type DemoStep, formatTranscript, startDemo } from "@day
 import { reviewDiscrepancy } from "@day-one/kevin/discrepancies";
 import { massBalance } from "@day-one/kevin/massBalance";
 import { explorerUrl } from "@day-one/server/chain/client";
+import { books, booksCsv } from "@day-one/server/ledger/books";
 import { plantInventory } from "@day-one/server/ledger/inventory";
 import { approvals, chainTx, staff } from "@day-one/server/ledger/schema";
 import { eq } from "drizzle-orm";
@@ -155,6 +156,15 @@ export class DemoSession {
   /** Issued against tablets, QC samples and waste for every confirmed batch, with Kevin's line. */
   massBalance() {
     return massBalance(this.env.db);
+  }
+
+  /** The bookkeeper export: settled POs, price-drift alerts and Kevin's note (FEATURES_V2 §2). */
+  books() {
+    return books(this.env.db);
+  }
+
+  booksCsv() {
+    return booksCsv(this.env.db);
   }
 
   /**

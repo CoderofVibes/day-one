@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ApiError,
+  BOOKS_EXPORT_URL,
+  type Books,
+  getBooks,
   getInventory,
   getMassBalance,
   getState,
@@ -127,6 +130,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const [plants, setPlants] = useState(false);
   const [inventory, setInventory] = useState<PlantInventory | null>(null);
   const [mass, setMass] = useState<MassBalance | null>(null);
+  const [books, setBooks] = useState<Books | null>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: refresh whenever the run (state) moves
   useEffect(() => {
@@ -137,6 +141,9 @@ function LiveApp({ initial }: { initial: LiveState }) {
     });
     getMassBalance().then((m) => {
       if (!stale) setMass(m);
+    });
+    getBooks().then((b) => {
+      if (!stale) setBooks(b);
     });
     return () => {
       stale = true;
@@ -195,7 +202,13 @@ function LiveApp({ initial }: { initial: LiveState }) {
 
       <main className="panes">
         {plants && (
-          <PlantsPane inventory={inventory} mass={mass} busy={busy !== null} onReview={review} />
+          <PlantsPane
+            inventory={inventory}
+            mass={mass}
+            books={books}
+            busy={busy !== null}
+            onReview={review}
+          />
         )}
         <StaffFeed data={state} upTo={last} curtain={curtain} />
         {curtain && <Curtain data={state} upTo={last} />}
@@ -323,11 +336,13 @@ function ActionButton({
 function PlantsPane({
   inventory,
   mass,
+  books,
   busy,
   onReview,
 }: {
   inventory: PlantInventory | null;
   mass: MassBalance | null;
+  books: Books | null;
   busy: boolean;
   onReview: (id: number, decision: "apply" | "dismiss") => void;
 }) {
@@ -412,7 +427,60 @@ function PlantsPane({
         </table>
       </div>
       {mass && <MassBalanceBlock mass={mass} plants={plants} />}
+      {books && <BooksBlock books={books} />}
     </section>
+  );
+}
+
+/** Settled purchase orders for the books, the price-drift alerts, and the CSV export. */
+function BooksBlock({ books }: { books: Books }) {
+  const usd = (units: number) =>
+    `$${(units / 1_000_000).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+  const flagged = new Set(books.alerts.map((a) => a.poNo));
+  return (
+    <div className="mass books">
+      <h3>Books · settled purchase orders</h3>
+      {books.sentences.map((s) => (
+        <p key={s} className="kevin-line">
+          {s}
+        </p>
+      ))}
+      <p>
+        <a className="export" href={BOOKS_EXPORT_URL} download>
+          Export for QuickBooks (CSV)
+        </a>{" "}
+        <span className="muted small">
+          one row per line, plain dates and numbers, totals to the cent
+        </span>
+      </p>
+      <div className="table-wrap">
+        <table className="stock">
+          <thead>
+            <tr>
+              <th>PO</th>
+              <th>Vendor</th>
+              <th>Released</th>
+              <th>Total</th>
+              <th>Paid</th>
+            </tr>
+          </thead>
+          <tbody>
+            {books.settled.map((po) => (
+              <tr key={po.poNo}>
+                <th scope="row">{po.poNo}</th>
+                <td>{po.vendor}</td>
+                <td>{po.releasedOn ?? "—"}</td>
+                <td className={flagged.has(po.poNo) ? "low" : undefined}>
+                  {usd(po.totalUsdc)}
+                  {flagged.has(po.poNo) && <span className="small"> price drift</span>}
+                </td>
+                <td>{po.paymentRef ? "on QC release" : "by check"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 

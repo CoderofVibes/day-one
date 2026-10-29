@@ -22,7 +22,8 @@
     "./relayer": "./src/relayer/relayer.ts",
     "./records/anchors": "./src/records/anchors.ts",
     "./extraction/schema": "./src/extraction/schema.ts",
-    "./seed/batchRecords": "./src/seed/batchRecords.ts"
+    "./seed/batchRecords": "./src/seed/batchRecords.ts",
+    "./ledger/books": "./src/ledger/books.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate"

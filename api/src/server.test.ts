@@ -194,6 +194,42 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(state.transactions).toHaveLength(10);
   });
 
+  it("exports the settled POs for the books: PO-1042 paid from escrow, PO-1041 still held", async () => {
+    const { status, body } = await api("GET", "/api/books");
+    expect(status).toBe(200);
+    expect(body.settled.map((po: { poNo: string }) => po.poNo)).toEqual([
+      "PO-1035",
+      "PO-1036",
+      "PO-1037",
+      "PO-1038",
+      "PO-1039",
+      "PO-1040",
+      "PO-1042",
+    ]);
+    // $9,632.50 of history plus PO-1042's $5,150.00; PO-1041 is escrowed, not settled.
+    expect(body.totalUsdc).toBe(14_782_500_000);
+    const state = (await api("GET", "/api/run")).body;
+    const txOf = (method: string) =>
+      state.transactions.find((t: { method: string }) => t.method === method)?.tx;
+    const po1042 = body.settled.at(-1);
+    expect(po1042.paymentRef).toBe(txOf("qc_release"));
+    expect(po1042.recordRef).toBe(state.transactions.at(-1).tx);
+    expect(po1042.releasedOn).toBe("2026-11-16");
+    expect(body.sentences[0]).toBe(
+      "7 settled purchase orders, $14,782.50, each matched to a receipt; 1 paid from escrow on QC release, the rest by check before Day One.",
+    );
+    expect(body.alerts.map((a: { poNo: string }) => a.poNo)).toEqual(["PO-1040"]);
+
+    const csv = await fetch(`${base}/api/books/export.csv`);
+    expect(csv.headers.get("content-type")).toBe("text/csv; charset=utf-8");
+    const lines = (await csv.text()).trimEnd().split("\r\n");
+    expect(lines[0]).toMatch(/^PO,Vendor,Received,Released,/);
+    expect(lines.filter((l) => l.startsWith("PO-1042,"))).toHaveLength(2);
+    expect(lines.at(-1)).toMatch(
+      /^PO-1042,Northgate Ingredients,2026-11-16,2026-11-16,,Freight,1,,180\.00,180\.00,/,
+    );
+  });
+
   it("prints the same transcript as npm run demo", async () => {
     const { status, body } = await api("GET", "/api/transcript");
     expect(status).toBe(200);

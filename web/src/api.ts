@@ -132,6 +132,41 @@ export function getMassBalance(): Promise<MassBalance> {
   return request<MassBalance>("GET", "api/mass-balance");
 }
 
+export interface SettledPo {
+  poNo: string;
+  vendor: string;
+  receivedOn: string | null;
+  releasedOn: string | null;
+  totalUsdc: number;
+  paymentRef: string | null;
+  recordRef: string | null;
+}
+export interface PriceDrift {
+  poNo: string;
+  vendor: string;
+  material: string;
+  name: string;
+  unit: string;
+  unitPriceUsdc: number;
+  trailingUsdc: number;
+  trailingPoNos: string[];
+  driftBp: number;
+  sentence: string;
+}
+export interface Books {
+  settled: SettledPo[];
+  totalUsdc: number;
+  alerts: PriceDrift[];
+  sentences: string[];
+}
+
+export function getBooks(): Promise<Books> {
+  return request<Books>("GET", "api/books");
+}
+
+/** The CSV the accounting view links to; the API answers with text/csv as a download. */
+export const BOOKS_EXPORT_URL = "api/books/export.csv";
+
 export function postReview(
   id: number,
   decision: "apply" | "dismiss",

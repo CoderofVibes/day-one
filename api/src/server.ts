@@ -14,6 +14,8 @@
 //   GET  /api/transcript                       text/plain, the same lines npm run demo prints
 //   GET  /api/inventory                        stock by plant and material, transfer discrepancies
 //   GET  /api/mass-balance                     issued vs tablets, QC and waste per batch and period
+//   GET  /api/books                            settled POs, price-drift alerts, Kevin's note
+//   GET  /api/books/export.csv                 the settled POs as the CSV Ruth imports (text/csv)
 //   POST /api/discrepancies/:id/review         JSON {"decision": "apply" | "dismiss", "staff"?: …}
 //
 // Anything else is served from the built web UI (web/dist) when it exists.
@@ -84,6 +86,14 @@ async function route(
   if (method === "GET" && path === "/api/inventory") return reply(res, 200, session.inventory());
   if (method === "GET" && path === "/api/mass-balance")
     return reply(res, 200, session.massBalance());
+  if (method === "GET" && path === "/api/books") return reply(res, 200, session.books());
+  if (method === "GET" && path === "/api/books/export.csv") {
+    res.writeHead(200, {
+      "content-type": "text/csv; charset=utf-8",
+      "content-disposition": 'attachment; filename="day-one-settled-purchase-orders.csv"',
+    });
+    return res.end(session.booksCsv());
+  }
   if (method === "GET" && path === "/api/transcript") {
     res.writeHead(200, { "content-type": "text/plain; charset=utf-8" });
     return res.end(session.transcript());
