@@ -1,0 +1,2560 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-29T18:53:03.034Z",
+  "entries": [
+    {
+      "key": "0fc618e8a75ee61c05c691a3bc5dad70fd1a6c8ae2b481222d37bd95b410d636",
+      "task": "vision",
+      "promptStart": "Transcribe this batch record page.",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\"document_type\":\"batch_record\",\"batch_number\":{\"raw\":\"BR-B-1043\",\"legibility\":\"clear\"},\"product_code\":{\"raw\":\"P-VC500\",\"legibility\":\"clear\"},\"product_name\":{\"raw\":\"Hollow Pine Vitamin C 500 mg Chewable\",\"legibility\":\"clear\"},\"batch_size\":{\"raw\":\"800,000 tablets\",\"legibility\":\"clear\"},\"manufacture_date\":{\"raw\":\"11/04/26\",\"legibility\":\"clear\"},\"facility\": {\"raw\":\"Hollow Pine Tablet Co. · Rm 104 Weigh & Dispense\",\"legibility\":\"clear\"},\"materials\": [{\"line_no\":1,\"material_name\":{\"raw\":\"Ascorbic acid (ASC)\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"ASC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"ASC-261030-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"NGI-26103001\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"412.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"412.240\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"}},{\"line_no\":2,\"material_name\":{\"raw\":\"Sorbitol (SOR)\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"SOR\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"SOR-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"FPO-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"416.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"416.060\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"}},{\"line_no\":3,\"material_name\":{\"raw\":\"Microcrystalline cellulose 102 (MCC)\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"MCC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"MCC-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"120.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"120.100\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\": {\"present\": true, \"struck_value\": \"102.100\", \"initials\": \"DW\"},\"weighed_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"}},{\"line_no\":4,\"material_name\":{\"raw\":\"Citric acid anhydrous (CTA)\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"CTA\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"CTA-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"NGI-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"20.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"20.030\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"}},{\"line_no\":5,\"material_name\":{\"raw\":\"Natural orange flavor (FOR)\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"FOR\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"FOR-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"OFH-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"12.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"11.990\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"}},{\"line_no\":6,\"material_name\":{\"raw\":\"Magnesium stearate (MGS)\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"MGS\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"MGS-261001-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26100101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"12.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"12.010\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"}},{\"line_no\":7,\"material_name\":{\"raw\":\"Silicon dioxide (SIO)\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"SIO\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"SIO-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"6.400\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"6.400\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"}},{\"line_no\":8,\"material_name\":{\"raw\":\"Sucralose (SUC)\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"SUC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"SUC-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"OFH-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"1.600\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"1.601\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"}}],\"theoretical_yield\":{\"raw\":\"800,000 tablets\",\"legibility\":\"clear\"},\"actual_yield\":{\"raw\":\"723,200 tablets\",\"legibility\":\"clear\"},\"yield_percent\":{\"raw\":\"90.4 %\",\"legibility\":\"clear\"},\"waste_qty\":{\"raw\":\"95.931 kg\",\"legibility\":\"clear\"},\"waste_unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"signatures\":[{\"role\":\"production\",\"name\":\"Linda Park\",\"date\":\"11/04/26\"},{\"role\":\"qa_review\",\"name\":\"Priya Natarajan\",\"date\":\"11/05/26\"}],\"margin_notes\":[{\"text\":\"QA REVIEWED\",\"legibility\":\"clear\"},{\"text\":\"11/05/26\",\"legibility\":\"clear\"}]}",
+        "json": {
+          "document_type": "batch_record",
+          "batch_number": {
+            "raw": "BR-B-1043",
+            "legibility": "clear"
+          },
+          "product_code": {
+            "raw": "P-VC500",
+            "legibility": "clear"
+          },
+          "product_name": {
+            "raw": "Hollow Pine Vitamin C 500 mg Chewable",
+            "legibility": "clear"
+          },
+          "batch_size": {
+            "raw": "800,000 tablets",
+            "legibility": "clear"
+          },
+          "manufacture_date": {
+            "raw": "11/04/26",
+            "legibility": "clear"
+          },
+          "facility": {
+            "raw": "Hollow Pine Tablet Co. · Rm 104 Weigh & Dispense",
+            "legibility": "clear"
+          },
+          "materials": [
+            {
+              "line_no": 1,
+              "material_name": {
+                "raw": "Ascorbic acid (ASC)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "ASC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "ASC-261030-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "NGI-26103001",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "412.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "412.240",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 2,
+              "material_name": {
+                "raw": "Sorbitol (SOR)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "SOR",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "SOR-260901-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "FPO-26090101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "416.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "416.060",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 3,
+              "material_name": {
+                "raw": "Microcrystalline cellulose 102 (MCC)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "MCC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "MCC-260901-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26090101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "120.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "120.100",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": true,
+                "struck_value": "102.100",
+                "initials": "DW"
+              },
+              "weighed_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 4,
+              "material_name": {
+                "raw": "Citric acid anhydrous (CTA)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "CTA",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "CTA-260901-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "NGI-26090101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "20.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "20.030",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 5,
+              "material_name": {
+                "raw": "Natural orange flavor (FOR)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "FOR",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "FOR-260901-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "OFH-26090101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "12.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "11.990",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 6,
+              "material_name": {
+                "raw": "Magnesium stearate (MGS)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "MGS",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "MGS-261001-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26100101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "12.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "12.010",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 7,
+              "material_name": {
+                "raw": "Silicon dioxide (SIO)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "SIO",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "SIO-260901-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26090101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "6.400",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "6.400",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 8,
+              "material_name": {
+                "raw": "Sucralose (SUC)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "SUC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "SUC-260901-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "OFH-26090101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "1.600",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "1.601",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              }
+            }
+          ],
+          "theoretical_yield": {
+            "raw": "800,000 tablets",
+            "legibility": "clear"
+          },
+          "actual_yield": {
+            "raw": "723,200 tablets",
+            "legibility": "clear"
+          },
+          "yield_percent": {
+            "raw": "90.4 %",
+            "legibility": "clear"
+          },
+          "waste_qty": {
+            "raw": "95.931 kg",
+            "legibility": "clear"
+          },
+          "waste_unit": {
+            "raw": "kg",
+            "legibility": "clear"
+          },
+          "signatures": [
+            {
+              "role": "production",
+              "name": "Linda Park",
+              "date": "11/04/26"
+            },
+            {
+              "role": "qa_review",
+              "name": "Priya Natarajan",
+              "date": "11/05/26"
+            }
+          ],
+          "margin_notes": [
+            {
+              "text": "QA REVIEWED",
+              "legibility": "clear"
+            },
+            {
+              "text": "11/05/26",
+              "legibility": "clear"
+            }
+          ]
+        },
+        "usage": {
+          "inputTokens": 5028,
+          "outputTokens": 1544
+        },
+        "receipt": {
+          "chatId": "35a10e066d554109bc56d6c17e5c8628",
+          "requestSha256": "53bb46e207bc381207cf668e6e21b99f03482c0954b49b6e5021869a0c6bfa0f",
+          "responseSha256": "9dcefd543ab1190041b6b0affb05f8659cfbcf0df09d27cc0ce8ca3c41c6c668"
+        }
+      }
+    },
+    {
+      "key": "23d82f456ab3787c0375c3b230d2e85fd6ab6f95b3ef73e422f3a5477af77fb0",
+      "task": "vision",
+      "promptStart": "Transcribe this batch record page.",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\n  \"document_type\": \"batch_record\",\n  \"batch_number\": {\n    \"raw\": \"\",\n    \"legibility\": \"clear\"\n  },\n  \"product_code\": {\n    \"raw\": \"\",\n    \"legibility\": \"clear\"\n  },\n  \"product_name\": {\n    \"raw\": \"\",\n    \"legibility\": \"clear\"\n  },\n  \"batch_size\": {\n    \"raw\": \"\",\n    \"legibility\": \"clear\"\n  },\n  \"manufacture_date\": {\n    \"raw\": \"\",\n    \"legibility\": \"clear\"\n  },\n  \"facility\": {\n    \"raw\": \"\",\n    \"legibility\": \"clear\"\n  },\n  \"materials\": [],\n  \"theoretical_yield\": {\n    \"raw\": \"\",\n    \"legibility\": \"clear\"\n  },\n  \"actual_yield\": {\n    \"raw\": \"\",\n    \"legibility\": \"clear\"\n  },\n  \"yield_percent\": {\n    \"raw\": \"\",\n    \"legibility\": \"clear\"\n  },\n  \"waste_qty\": {\n    \"raw\": \"\",\n    \"legibility\": \"clear\"\n  },\n  \"waste_unit\": {\n    \"raw\": \"\",\n    \"legibility\": \"clear\"\n  },\n  \"signatures\": [],\n  \"margin_notes\": []\n}",
+        "json": {
+          "document_type": "batch_record",
+          "batch_number": {
+            "raw": "",
+            "legibility": "clear"
+          },
+          "product_code": {
+            "raw": "",
+            "legibility": "clear"
+          },
+          "product_name": {
+            "raw": "",
+            "legibility": "clear"
+          },
+          "batch_size": {
+            "raw": "",
+            "legibility": "clear"
+          },
+          "manufacture_date": {
+            "raw": "",
+            "legibility": "clear"
+          },
+          "facility": {
+            "raw": "",
+            "legibility": "clear"
+          },
+          "materials": [],
+          "theoretical_yield": {
+            "raw": "",
+            "legibility": "clear"
+          },
+          "actual_yield": {
+            "raw": "",
+            "legibility": "clear"
+          },
+          "yield_percent": {
+            "raw": "",
+            "legibility": "clear"
+          },
+          "waste_qty": {
+            "raw": "",
+            "legibility": "clear"
+          },
+          "waste_unit": {
+            "raw": "",
+            "legibility": "clear"
+          },
+          "signatures": [],
+          "margin_notes": []
+        },
+        "usage": {
+          "inputTokens": 5028,
+          "outputTokens": 264
+        },
+        "receipt": {
+          "chatId": "92e6018afa404163b1f9d1da959427a3",
+          "requestSha256": "3bd886fd4a3ca2458dd0dcc47a86ffe17203fd7fa70c002a681adc58313fa2dd",
+          "responseSha256": "0eb7901634a8168a12bbe1b52139f63d85338b75d906cb781f2c59d73a3f7490"
+        }
+      }
+    },
+    {
+      "key": "3f4036d4f44686963ee14895df927d139a504a05b3f13ad6df9245f0db262ac5",
+      "task": "vision",
+      "promptStart": "Transcribe this batch record page.",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\"document_type\": \"batch_record\", \"batch_number\": {\"raw\": \"BR-B-1046\", \"legibility\": \"clear\"}, \"product_code\": {\"raw\": \"P-CMD\", \"legibility\": \"clear\"}, \"product_name\": {\"raw\": \"Hollow Pine Cal-Mag + D3 Tablet\", \"legibility\": \"clear\"}, \"batch_size\": {\"raw\": \"500,000 tablets\", \"legibility\": \"clear\"}, \"manufacture_date\": {\"raw\": \"11/07/26\", \"legibility\": \"clear\"}, \"facility\": {\"raw\": \"Hollow Pine Tablet Co.\", \"legibility\": \"clear\"}, \"materials\": [{\"line_no\": 1, \"material_name\": {\"raw\": \"Calcium carbonate\", \"legibility\": \"clear\"}, \"material_code\": {\"raw\": \"CAC\", \"legibility\": \"clear\"}, \"internal_lot\": {\"raw\": \"CAC-261014-01\", \"legibility\": \"clear\"}, \"supplier_lot\": {\"raw\": \"SMS-26101401\", \"legibility\": \"clear\"}, \"target_qty\": {\"raw\": \"625.000\", \"legibility\": \"clear\"}, \"actual_qty\": {\"raw\": \"624.786\", \"legibility\": \"clear\"}, \"unit\": {\"raw\": \"kg\", \"legibility\": \"clear\"}, \"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"}, \"weighed_by\": {\"raw\": \"KO\", \"legibility\": \"clear\"}, \"verified_by\": {\"raw\": \"AR\", \"legibility\": \"clear\"}}, {\"line_no\": 2, \"material_name\": {\"raw\": \"Microcrystalline cellulose 102\", \"legibility\": \"clear\"}, \"material_code\": {\"raw\": \"MCC\", \"legibility\": \"clear\"}, \"internal_lot\": {\"raw\": \"MCC-261001-01\", \"legibility\": \"clear\"}, \"supplier_lot\": {\"raw\": \"PEC-26100101\", \"legibility\": \"clear\"}, \"target_qty\": {\"raw\": \"100.000\", \"legibility\": \"clear\"}, \"actual_qty\": {\"raw\": \"100.150\", \"legibility\": \"clear\"}, \"unit\": {\"raw\": \"kg\", \"legibility\": \"clear\"}, \"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"}, \"weighed_by\": {\"raw\": \"KO\", \"legibility\": \"clear\"}, \"verified_by\": {\"raw\": \"AR\", \"legibility\": \"clear\"}}, {\"line_no\": 3, \"material_name\": {\"raw\": \"Magnesium oxide\", \"legibility\": \"clear\"}, \"material_code\": {\"raw\": \"MGO\", \"legibility\": \"clear\"}, \"internal_lot\": {\"raw\": \"MGO-261014-01\", \"legibility\": \"clear\"}, \"supplier_lot\": {\"raw\": \"SMS-26101401\", \"legibility\": \"clear\"}, \"target_qty\": {\"raw\": \"83.000\", \"legibility\": \"clear\"}, \"actual_qty\": {\"raw\": \"83.040\", \"legibility\": \"unclear\"}, \"unit\": {\"raw\": \"kg\", \"legibility\": \"clear\"}, \"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"}, \"weighed_by\": {\"raw\": \"KO\", \"legibility\": \"clear\"}, \"verified_by\": {\"raw\": \"AR\", \"legibility\": \"clear\"}}, {\"line_no\": 4, \"material_name\": {\"raw\": \"Croscarmellose sodium\", \"legibility\": \"clear\"}, \"material_code\": {\"raw\": \"CCS\", \"legibility\": \"clear\"}, \"internal_lot\": {\"raw\": \"CCS-260915-01\", \"legibility\": \"clear\"}, \"supplier_lot\": {\"raw\": \"PEC-26091501\", \"legibility\": \"clear\"}, \"target_qty\": {\"raw\": \"15.000\", \"legibility\": \"clear\"}, \"actual_qty\": {\"raw\": \"15.020\", \"legibility\": \"clear\"}, \"unit\": {\"raw\": \"kg\", \"legibility\": \"clear\"}, \"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"}, \"weighed_by\": {\"raw\": \"KO\", \"legibility\": \"clear\"}, \"verified_by\": {\"raw\": \"AR\", \"legibility\": \"clear\"}}, {\"line_no\": 5, \"material_name\": {\"raw\": \"Stearic acid\", \"legibility\": \"clear\"}, \"material_code\": {\"raw\": \"STA\", \"legibility\": \"clear\"}, \"internal_lot\": {\"raw\": \"STA-260915-01\", \"legibility\": \"clear\"}, \"supplier_lot\": {\"raw\": \"PEC-26091501\", \"legibility\": \"clear\"}, \"target_qty\": {\"raw\": \"10.000\", \"legibility\": \"clear\"}, \"actual_qty\": {\"raw\": \"9.990\", \"legibility\": \"clear\"}, \"unit\": {\"raw\": \"kg\", \"legibility\": \"clear\"}, \"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"}, \"weighed_by\": {\"raw\": \"KO\", \"legibility\": \"clear\"}, \"verified_by\": {\"raw\": \"AR\", \"legibility\": \"clear\"}}, {\"line_no\": 6, \"material_name\": {\"raw\": \"Magnesium stearate\", \"legibility\": \"clear\"}, \"material_code\": {\"raw\": \"MGS\", \"legibility\": \"clear\"}, \"internal_lot\": {\"raw\": \"MGS-261001-01\", \"legibility\": \"clear\"}, \"supplier_lot\": {\"raw\": \"PEC-26100101\", \"legibility\": \"clear\"}, \"target_qty\": {\"raw\": \"7.500\", \"legibility\": \"clear\"}, \"actual_qty\": {\"raw\": \"7.510\", \"legibility\": \"clear\"}, \"unit\": {\"raw\": \"kg\", \"legibility\": \"clear\"}, \"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"}, \"weighed_by\": {\"raw\": \"KO\", \"legibility\": \"clear\"}, \"verified_by\": {\"raw\": \"AR\", \"legibility\": \"clear\"}}, {\"line_no\": 7, \"material_name\": {\"raw\": \"Vitamin D3 beadlet 100,000 IU/g\", \"legibility\": \"clear\"}, \"material_code\": {\"raw\": \"VD3\", \"legibility\": \"clear\"}, \"internal_lot\": {\"raw\": \"VD3-260920-01\", \"legibility\": \"clear\"}, \"supplier_lot\": {\"raw\": \"DDN-26092001\", \"legibility\": \"clear\"}, \"target_qty\": {\"raw\": \"2.000\", \"legibility\": \"clear\"}, \"actual_qty\": {\"raw\": \"2.004\", \"legibility\": \"clear\"}, \"unit\": {\"raw\": \"kg\", \"legibility\": \"clear\"}, \"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"}, \"weighed_by\": {\"raw\": \"KO\", \"legibility\": \"clear\"}, \"verified_by\": {\"raw\": \"AR\", \"legibility\": \"clear\"}}], \"theoretical_yield\": {\"raw\": \"500,000\", \"legibility\": \"clear\"}, \"actual_yield\": {\"raw\": \"449,500\", \"legibility\": \"clear\"}, \"yield_percent\": {\"raw\": \"89.9\", \"legibility\": \"clear\"}, \"waste_qty\": {\"raw\": \"84.592\", \"legibility\": \"clear\"}, \"waste_unit\": {\"raw\": \"kg\", \"legibility\": \"clear\"}, \"signatures\": [{\"role\": \"production\", \"name\": \"Linda Park\", \"date\": \"11/07/26\"}, {\"role\": \"qa_review\", \"name\": \"Priya Natarajan\", \"date\": \"11/08/26\"}], \"margin_notes\": []}",
+        "json": {
+          "document_type": "batch_record",
+          "batch_number": {
+            "raw": "BR-B-1046",
+            "legibility": "clear"
+          },
+          "product_code": {
+            "raw": "P-CMD",
+            "legibility": "clear"
+          },
+          "product_name": {
+            "raw": "Hollow Pine Cal-Mag + D3 Tablet",
+            "legibility": "clear"
+          },
+          "batch_size": {
+            "raw": "500,000 tablets",
+            "legibility": "clear"
+          },
+          "manufacture_date": {
+            "raw": "11/07/26",
+            "legibility": "clear"
+          },
+          "facility": {
+            "raw": "Hollow Pine Tablet Co.",
+            "legibility": "clear"
+          },
+          "materials": [
+            {
+              "line_no": 1,
+              "material_name": {
+                "raw": "Calcium carbonate",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "CAC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "CAC-261014-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "SMS-26101401",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "625.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "624.786",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 2,
+              "material_name": {
+                "raw": "Microcrystalline cellulose 102",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "MCC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "MCC-261001-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26100101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "100.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "100.150",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 3,
+              "material_name": {
+                "raw": "Magnesium oxide",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "MGO",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "MGO-261014-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "SMS-26101401",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "83.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "83.040",
+                "legibility": "unclear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 4,
+              "material_name": {
+                "raw": "Croscarmellose sodium",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "CCS",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "CCS-260915-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26091501",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "15.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "15.020",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 5,
+              "material_name": {
+                "raw": "Stearic acid",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "STA",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "STA-260915-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26091501",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "10.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "9.990",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 6,
+              "material_name": {
+                "raw": "Magnesium stearate",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "MGS",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "MGS-261001-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26100101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "7.500",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "7.510",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 7,
+              "material_name": {
+                "raw": "Vitamin D3 beadlet 100,000 IU/g",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "VD3",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "VD3-260920-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "DDN-26092001",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "2.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "2.004",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            }
+          ],
+          "theoretical_yield": {
+            "raw": "500,000",
+            "legibility": "clear"
+          },
+          "actual_yield": {
+            "raw": "449,500",
+            "legibility": "clear"
+          },
+          "yield_percent": {
+            "raw": "89.9",
+            "legibility": "clear"
+          },
+          "waste_qty": {
+            "raw": "84.592",
+            "legibility": "clear"
+          },
+          "waste_unit": {
+            "raw": "kg",
+            "legibility": "clear"
+          },
+          "signatures": [
+            {
+              "role": "production",
+              "name": "Linda Park",
+              "date": "11/07/26"
+            },
+            {
+              "role": "qa_review",
+              "name": "Priya Natarajan",
+              "date": "11/08/26"
+            }
+          ],
+          "margin_notes": []
+        },
+        "usage": {
+          "inputTokens": 5028,
+          "outputTokens": 1752
+        },
+        "receipt": {
+          "chatId": "6af172ba91034ed28c6d65a2ebadbeda",
+          "requestSha256": "e34f5f0e4b4c58fa17f85e88b3f15d010a008c19fb444006b19b360c18150a7e",
+          "responseSha256": "48b917a8a6036644905ba5004a224416aa2b9ff9f5e0052adf1344dfbba6c909"
+        }
+      }
+    },
+    {
+      "key": "8c7734bdb04d8176c36529ef64d0447a8a36c3a69b3b0a977b97e7242253fb71",
+      "task": "vision",
+      "promptStart": "Transcribe this batch record page.",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\n  \"document_type\": \"batch_record\",\n  \"batch_number\": {\n    \"raw\": \"BR-B-1044\",\n    \"legibility\": \"clear\"\n  },\n  \"product_code\": {\n    \"raw\": \"P-ELX\",\n    \"legibility\": \"clear\"\n  },\n  \"product_name\": {\n    \"raw\": \"Hollow Pine Electrolyte Effervescent\",\n    \"legibility\": \"clear\"\n  },\n  \"batch_size\": {\n    \"raw\": \"300,000 tablets\",\n    \"legibility\": \"clear\"\n  },\n  \"manufacture_date\": {\n    \"raw\": \"11/05/26\",\n    \"legibility\": \"clear\"\n  },\n  \"facility\": {\n    \"raw\": \"Hollow Pine Tablet Co. · Rm 104 Weigh & Dispense\",\n    \"legibility\": \"clear\"\n  },\n  \"materials\": [\n    {\n      \"line_no\": 1,\n      \"material_name\": {\n        \"raw\": \"Citric acid anhydrous\",\n        \"legibility\": \"clear\"\n      },\n      \"material_code\": {\n        \"raw\": \"CTA\",\n        \"legibility\": \"clear\"\n      },\n      \"internal_lot\": {\n        \"raw\": \"CTA-260901-01\",\n        \"legibility\": \"clear\"\n      },\n      \"supplier_lot\": {\n        \"raw\": \"NGI-26090101\",\n        \"legibility\": \"clear\"\n      },\n      \"target_qty\": {\n        \"raw\": \"210.000\",\n        \"legibility\": \"clear\"\n      },\n      \"actual_qty\": {\n        \"raw\": \"210.300\",\n        \"legibility\": \"clear\"\n      },\n      \"unit\": {\n        \"raw\": \"kg\",\n        \"legibility\": \"clear\"\n      },\n      \"correction\": {\n        \"present\": false,\n        \"struck_value\": \"\",\n        \"initials\": \"\"\n      }\n    ,\n      \"weighed_by\": {\n        \"raw\": \"KO\",\n        \"legibility\": \"clear\"\n      },\n      \"verified_by\": {\n        \"raw\": \"AR\",\n        \"legibility\": \"clear\"\n      }\n    },\n    {\n      \"line_no\": 2,\n      \"material_name\": {\n        \"raw\": \"Sodium bicarbonate\",\n        \"legibility\": \"clear\"\n      },\n      \"material_code\": {\n        \"raw\": \"SBC\",\n        \"legibility\": \"clear\"\n      },\n      \"internal_lot\": {\n        \"raw\": \"SBC-260918-01\",\n        \"legibility\": \"clear\"\n      },\n      \"supplier_lot\": {\n        \"raw\": \"SMS-26091801\",\n        \"legibility\": \"clear\"\n      },\n      \"target_qty\": {\n        \"raw\": \"180.000\",\n        \"legibility\": \"clear\"\n      },\n      \"actual_qty\": {\n        \"raw\": \"180.150\",\n        \"legibility\": \"clear\"\n      },\n      \"unit\": {\n        \"raw\": \"kg\",\n        \"legibility\": \"clear\"\n      },\n      \"correction\": {\n        \"present\": false,\n        \"struck_value\": \"\",\n        \"initials\": \"\"\n      }\n    ,\n      \"weighed_by\": {\n        \"raw\": \"KO\",\n        \"legibility\": \"clear\"\n      },\n      \"verified_by\": {\n        \"raw\": \"AR\",\n        \"legibility\": \"clear\"\n      }\n    },\n    {\n      \"line_no\": 3,\n      \"material_name\": {\n        \"raw\": \"Mannitol\",\n        \"legibility\": \"clear\"\n      },\n      \"material_code\": {\n        \"raw\": \"MAN\",\n        \"legibility\": \"clear\"\n      },\n      \"internal_lot\": {\n        \"raw\": \"MAN-260918-01\",\n        \"legibility\": \"clear\"\n      },\n      \"supplier_lot\": {\n        \"raw\": \"FPO-26091801\",\n        \"legibility\": \"clear\"\n      },\n      \"target_qty\": {\n        \"raw\": \"156.000\",\n        \"legibility\": \"clear\"\n      },\n      \"actual_qty\": {\n        \"raw\": \"155.900\",\n        \"legibility\": \"clear\"\n      },\n      \"unit\": {\n        \"raw\": \"kg\",\n        \"legibility\": \"clear\"\n      },\n      \"correction\": {\n        \"present\": false,\n        \"struck_value\": \"\",\n        \"initials\": \"\"\n      }\n    ,\n      \"weighed_by\": {\n        \"raw\": \"KO\",\n        \"legibility\": \"clear\"\n      },\n      \"verified_by\": {\n        \"raw\": \"AR\",\n        \"legibility\": \"clear\"\n      }\n    },\n    {\n      \"line_no\": 4,\n      \"material_name\": {\n        \"raw\": \"Potassium citrate\",\n        \"legibility\": \"clear\"\n      },\n      \"material_code\": {\n        \"raw\": \"KCT\",\n        \"legibility\": \"clear\"\n      },\n      \"internal_lot\": {\n        \"raw\": \"KCT-260918-01\",\n        \"legibility\": \"clear\"\n      },\n      \"supplier_lot\": {\n        \"raw\": \"NGI-26091801\",\n        \"legibility\": \"clear\"\n      },\n      \"target_qty\": {\n        \"raw\": \"90.000\",\n        \"legibility\": \"clear\"\n      },\n      \"actual_qty\": {\n        \"raw\": \"90.200\",\n        \"legibility\": \"clear\"\n      },\n      \"unit\": {\n        \"raw\": \"kg\",\n        \"legibility\": \"clear\"\n      },\n      \"correction\": {\n        \"present\": false,\n        \"struck_value\": \"\",\n        \"initials\": \"\"\n      }\n    ,\n      \"weighed_by\": {\n        \"raw\": \"KO\",\n        \"legibility\": \"clear\"\n      },\n      \"verified_by\": {\n        \"raw\": \"AR\",\n        \"legibility\": \"clear\"\n      }\n    },\n    {\n      \"line_no\": 5,\n      \"material_name\": {\n        \"raw\": \"PEG 6000\",\n        \"legibility\": \"clear\"\n      },\n      \"material_code\": {\n        \"raw\": \"PEG\",\n        \"legibility\": \"clear\"\n      },\n      \"internal_lot\": {\n        \"raw\": \"PEG-260918-01\",\n        \"legibility\": \"clear\"\n      },\n      \"supplier_lot\": {\n        \"raw\": \"PEC-26091801\",\n        \"legibility\": \"clear\"\n      },\n      \"target_qty\": {\n        \"raw\": \"18.000\",\n        \"legibility\": \"clear\"\n      },\n      \"actual_qty\": {\n        \"raw\": \"18.050\",\n        \"legibility\": \"clear\"\n      },\n      \"unit\": {\n        \"raw\": \"kg\",\n        \"legibility\": \"clear\"\n      },\n      \"correction\": {\n        \"present\": false,\n        \"struck_value\": \"\",\n        \"initials\": \"\"\n      }\n    ,\n      \"weighed_by\": {\n        \"raw\": \"KO\",\n        \"legibility\": \"clear\"\n      },\n      \"verified_by\": {\n        \"raw\": \"AR\",\n        \"legibility\": \"clear\"\n      }\n    },\n    {\n      \"line_no\": 6,\n      \"material_name\": {\n        \"raw\": \"Lemon-lime flavor\",\n        \"legibility\": \"clear\"\n      },\n      \"material_code\": {\n        \"raw\": \"FLL\",\n        \"legibility\": \"clear\"\n      },\n      \"internal_lot\": {\n        \"raw\": \"FLL-260918-01\",\n        \"legibility\": \"clear\"\n      },\n      \"supplier_lot\": {\n        \"raw\": \"OFH-26091801\",\n        \"legibility\": \"clear\"\n      },\n      \"target_qty\": {\n        \"raw\": \"12.000\",\n        \"legibility\": \"clear\"\n      },\n      \"actual_qty\": {\n        \"raw\": \"11.980\",\n        \"legibility\": \"clear\"\n      },\n      \"unit\": {\n        \"raw\": \"kg\",\n        \"legibility\": \"clear\"\n      },\n      \"correction\": {\n        \"present\": false,\n        \"struck_value\": \"\",\n        \"initials\": \"\"\n      }\n    ,\n      \"weighed_by\": {\n        \"raw\": \"KO\",\n        \"legibility\": \"clear\"\n      },\n      \"verified_by\": {\n        \"raw\": \"AR\",\n        \"legibility\": \"clear\"\n      }\n    },\n    {\n      \"line_no\": 7,\n      \"material_name\": {\n        \"raw\": \"Sodium chloride\",\n        \"legibility\": \"clear\"\n      },\n      \"material_code\": {\n        \"raw\": \"NAC\",\n        \"legibility\": \"clear\"\n      },\n      \"internal_lot\": {\n        \"raw\": \"NAC-260918-01\",\n        \"legibility\": \"clear\"\n      },\n      \"supplier_lot\": {\n        \"raw\": \"SMS-26091801\",\n        \"legibility\": \"clear\"\n      },\n      \"target_qty\": {\n        \"raw\": \"6.000\",\n        \"legibility\": \"clear\"\n      },\n      \"actual_qty\": {\n        \"raw\": \"6.010\",\n        \"legibility\": \"clear\"\n      },\n      \"unit\": {\n        \"raw\": \"kg\",\n        \"legibility\": \"clear\"\n      },\n      \"correction\": {\n        \"present\": false,\n        \"struck_value\": \"\",\n        \"initials\": \"\"\n      }\n    ,\n      \"weighed_by\": {\n        \"raw\": \"KO\",\n        \"legibility\": \"clear\"\n      },\n      \"verified_by\": {\n        \"raw\": \"AR\",\n        \"legibility\": \"clear\"\n      }\n    },\n    {\n      \"line_no\": 8,\n      \"material_name\": {\n        \"raw\": \"Sucralose\",\n        \"legibility\": \"clear\"\n      },\n      \"material_code\": {\n        \"raw\": \"SUC\",\n        \"legibility\": \"clear\"\n      },\n      \"internal_lot\": {\n        \"raw\": \"SUC-260901-01\",\n        \"legibility\": \"clear\"\n      },\n      \"supplier_lot\": {\n        \"raw\": \"OFH-26090101\",\n        \"legibility\": \"clear\"\n      },\n      \"target_qty\": {\n        \"raw\": \"3.000\",\n        \"legibility\": \"clear\"\n      },\n      \"actual_qty\": {\n        \"raw\": \"3.010\",\n        \"legibility\": \"clear\"\n      },\n      \"unit\": {\n        \"raw\": \"kg\",\n        \"legibility\": \"clear\"\n      },\n      \"correction\": {\n        \"present\": false,\n        \"struck_value\": \"\",\n        \"initials\": \"\"\n      }\n    ,\n      \"weighed_by\": {\n        \"raw\": \"KO\",\n        \"legibility\": \"clear\"\n      },\n      \"verified_by\": {\n        \"raw\": \"AR\",\n        \"legibility\": \"clear\"\n      }\n    }\n  ],\n  \"theoretical_yield\": {\n    \"raw\": \"300,000\",\n    \"legibility\": \"clear\"\n  },\n  \"actual_yield\": {\n    \"raw\": \"258,600\",\n    \"legibility\": \"clear\"\n  },\n  \"yield_percent\": {\n    \"raw\": \"86.2\",\n    \"legibility\": \"clear\"\n  },\n  \"waste_qty\": {\n    \"raw\": \"93.250\",\n    \"legibility\": \"clear\"\n  },\n  \"waste_unit\": {\n    \"raw\": \"kg\",\n    \"legibility\": \"clear\"\n  },\n  \"signatures\": [\n    {\n      \"role\": \"production\",\n      \"name\": \"Linda Park\",\n      \"date\": \"11/05/26\"\n    },\n    {\n      \"role\": \"qa_review\",\n      \"name\": \"Priya Natarajan\",\n      \"date\": \"11/06/26\"\n    }\n  ],\n  \"margin_notes\": [\n    {\n      \"text\": \"Compression sticking, stn 3. Punches cleaned 2x. -KO\",\n      \"legibility\": \"clear\"\n    }\n  ]\n}",
+        "json": {
+          "document_type": "batch_record",
+          "batch_number": {
+            "raw": "BR-B-1044",
+            "legibility": "clear"
+          },
+          "product_code": {
+            "raw": "P-ELX",
+            "legibility": "clear"
+          },
+          "product_name": {
+            "raw": "Hollow Pine Electrolyte Effervescent",
+            "legibility": "clear"
+          },
+          "batch_size": {
+            "raw": "300,000 tablets",
+            "legibility": "clear"
+          },
+          "manufacture_date": {
+            "raw": "11/05/26",
+            "legibility": "clear"
+          },
+          "facility": {
+            "raw": "Hollow Pine Tablet Co. · Rm 104 Weigh & Dispense",
+            "legibility": "clear"
+          },
+          "materials": [
+            {
+              "line_no": 1,
+              "material_name": {
+                "raw": "Citric acid anhydrous",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "CTA",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "CTA-260901-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "NGI-26090101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "210.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "210.300",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 2,
+              "material_name": {
+                "raw": "Sodium bicarbonate",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "SBC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "SBC-260918-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "SMS-26091801",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "180.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "180.150",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 3,
+              "material_name": {
+                "raw": "Mannitol",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "MAN",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "MAN-260918-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "FPO-26091801",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "156.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "155.900",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 4,
+              "material_name": {
+                "raw": "Potassium citrate",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "KCT",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "KCT-260918-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "NGI-26091801",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "90.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "90.200",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 5,
+              "material_name": {
+                "raw": "PEG 6000",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "PEG",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "PEG-260918-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26091801",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "18.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "18.050",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 6,
+              "material_name": {
+                "raw": "Lemon-lime flavor",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "FLL",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "FLL-260918-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "OFH-26091801",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "12.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "11.980",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 7,
+              "material_name": {
+                "raw": "Sodium chloride",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "NAC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "NAC-260918-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "SMS-26091801",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "6.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "6.010",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 8,
+              "material_name": {
+                "raw": "Sucralose",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "SUC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "SUC-260901-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "OFH-26090101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "3.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "3.010",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            }
+          ],
+          "theoretical_yield": {
+            "raw": "300,000",
+            "legibility": "clear"
+          },
+          "actual_yield": {
+            "raw": "258,600",
+            "legibility": "clear"
+          },
+          "yield_percent": {
+            "raw": "86.2",
+            "legibility": "clear"
+          },
+          "waste_qty": {
+            "raw": "93.250",
+            "legibility": "clear"
+          },
+          "waste_unit": {
+            "raw": "kg",
+            "legibility": "clear"
+          },
+          "signatures": [
+            {
+              "role": "production",
+              "name": "Linda Park",
+              "date": "11/05/26"
+            },
+            {
+              "role": "qa_review",
+              "name": "Priya Natarajan",
+              "date": "11/06/26"
+            }
+          ],
+          "margin_notes": [
+            {
+              "text": "Compression sticking, stn 3. Punches cleaned 2x. -KO",
+              "legibility": "clear"
+            }
+          ]
+        },
+        "usage": {
+          "inputTokens": 5028,
+          "outputTokens": 2585
+        },
+        "receipt": {
+          "chatId": "28ad89c8afa9459e8f62921c3adc8ffd",
+          "requestSha256": "132450c977e42c3f91bb1cc663e6cda9926b9f0953cdf6bb888a9919a7cf28cd",
+          "responseSha256": "d10f7db3008707d90379c994a867c20c5c0b6e154b19c0b4816d67ff8f299c3f"
+        }
+      }
+    },
+    {
+      "key": "a17a01919be10b13da1d6ad12ddfb120cb740a35bfeb8ba489cedc06f3f481fa",
+      "task": "vision",
+      "promptStart": "Transcribe this batch record page.",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{  \"document_type\": \"batch_record\",  \"batch_number\": {\"raw\": \"BR-B-1042\", \"legibility\": \"clear\"},  \"product_code\": {\"raw\": \"P-CMD\", \"legibility\": \"clear\"},  \"product_name\": {\"raw\": \"Hollow Pine Cal-Mag + D3 Tablet\", \"legibility\": \"clear\"},  \"batch_size\": {\"raw\": \"500,000 tablets\", \"legibility\": \"clear\"},  \"manufacture_date\": {\"raw\": \"11/03/26\", \"legibility\": \"clear\"},  \"facility\": {\"raw\": \"Hollow Pine Tablet Co. · Rm 104 Weigh & Dispense\", \"legibility\": \"clear\"},  \"materials\": [    {\"line_no\": 1, \"material_name\": {\"raw\": \"Calcium carbonate (CAC)\", \"legibility\": \"clear\"}, \"material_code\": {\"raw\": \"CAC\", \"legibility\": \"clear\"}, \"internal_lot\": {\"raw\": \"CAC-261014-01\", \"legibility\": \"clear\"}, \"supplier_lot\": {\"raw\": \"SMS-26101401\", \"legibility\": \"clear\"}, \"target_qty\": {\"raw\": \"625,000\", \"legibility\": \"clear\"}, \"actual_qty\": {\"raw\": \"625,115\", \"legibility\": \"clear\"}, \"unit\": {\"raw\": \"g\", \"legibility\": \"clear\"}, \"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"}, \"weighed_by\": {\"raw\": \"KO\", \"legibility\": \"clear\"}, \"verified_by\": {\"raw\": \"AR\", \"legibility\": \"clear\"}},    {\"line_no\": 2, \"material_name\": {\"raw\": \"Microcrystalline cellulose 102 (MCC)\", \"legibility\": \"clear\"}, \"material_code\": {\"raw\": \"MCC\", \"legibility\": \"clear\"}, \"internal_lot\": {\"raw\": \"MCC-261001-01\", \"legibility\": \"clear\"}, \"supplier_lot\": {\"raw\": \"PEC-26100101\", \"legibility\": \"clear\"}, \"target_qty\": {\"raw\": \"100,000\", \"legibility\": \"clear\"}, \"actual_qty\": {\"raw\": \"99,870\", \"legibility\": \"clear\"}, \"unit\": {\"raw\": \"g\", \"legibility\": \"clear\"}, \"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"}, \"weighed_by\": {\"raw\": \"KO\", \"legibility\": \"clear\"}, \"verified_by\": {\"raw\": \"AR\", \"legibility\": \"clear\"}},    {\"line_no\": 3, \"material_name\": {\"raw\": \"Magnesium oxide (MGO)\", \"legibility\": \"clear\"}, \"material_code\": {\"raw\": \"MGO\", \"legibility\": \"clear\"}, \"internal_lot\": {\"raw\": \"MGO-261014-01\", \"legibility\": \"clear\"}, \"supplier_lot\": {\"raw\": \"SMS-26101401\", \"legibility\": \"clear\"}, \"target_qty\": {\"raw\": \"83,000\", \"legibility\": \"clear\"}, \"actual_qty\": {\"raw\": \"83,040\", \"legibility\": \"clear\"}, \"unit\": {\"raw\": \"g\", \"legibility\": \"clear\"}, \"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"}, \"weighed_by\": {\"raw\": \"KO\", \"legibility\": \"clear\"}, \"verified_by\": {\"raw\": \"AR\", \"legibility\": \"clear\"}},    {\"line_no\": 4, \"material_name\": {\"raw\": \"Croscarmellose sodium (CCS)\", \"legibility\": \"clear\"}, \"material_code\": {\"raw\": \"CCS\", \"legibility\": \"clear\"}, \"internal_lot\": {\"raw\": \"CCS-260915-01\", \"legibility\": \"clear\"}, \"supplier_lot\": {\"raw\": \"PEC-26091501\", \"legibility\": \"clear\"}, \"target_qty\": {\"raw\": \"15,000\", \"legibility\": \"clear\"}, \"actual_qty\": {\"raw\": \"14,990\", \"legibility\": \"clear\"}, \"unit\": {\"raw\": \"g\", \"legibility\": \"clear\"}, \"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"}, \"weighed_by\": {\"raw\": \"KO\", \"legibility\": \"clear\"}, \"verified_by\": {\"raw\": \"AR\", \"legibility\": \"clear\"}},    {\"line_no\": 5, \"material_name\": {\"raw\": \"Stearic acid (STA)\", \"legibility\": \"clear\"}, \"material_code\": {\"raw\": \"STA\", \"legibility\": \"clear\"}, \"internal_lot\": {\"raw\": \"STA-260915-01\", \"legibility\": \"clear\"}, \"supplier_lot\": {\"raw\": \"PEC-26091501\", \"legibility\": \"clear\"}, \"target_qty\": {\"raw\": \"10,000\", \"legibility\": \"clear\"}, \"actual_qty\": {\"raw\": \"10,010\", \"legibility\": \"clear\"}, \"unit\": {\"raw\": \"g\", \"legibility\": \"clear\"}, \"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"}, \"weighed_by\": {\"raw\": \"KO\", \"legibility\": \"clear\"}, \"verified_by\": {\"raw\": \"AR\", \"legibility\": \"clear\"}},    {\"line_no\": 6, \"material_name\": {\"raw\": \"Magnesium stearate (MGS)\", \"legibility\": \"clear\"}, \"material_code\": {\"raw\": \"MGS\", \"legibility\": \"clear\"}, \"internal_lot\": {\"raw\": \"MGS-261001-01\", \"legibility\": \"clear\"}, \"supplier_lot\": {\"raw\": \"PEC-26100101\", \"legibility\": \"clear\"}, \"target_qty\": {\"raw\": \"7,500\", \"legibility\": \"clear\"}, \"actual_qty\": {\"raw\": \"7,480\", \"legibility\": \"clear\"}, \"unit\": {\"raw\": \"g\", \"legibility\": \"clear\"}, \"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"}, \"weighed_by\": {\"raw\": \"KO\", \"legibility\": \"clear\"}, \"verified_by\": {\"raw\": \"AR\", \"legibility\": \"clear\"}},    {\"line_no\": 7, \"material_name\": {\"raw\": \"Vitamin D3 beadlet 100,000 IU/g (VD3)\", \"legibility\": \"clear\"}, \"material_code\": {\"raw\": \"VD3\", \"legibility\": \"clear\"}, \"internal_lot\": {\"raw\": \"VD3-260920-01\", \"legibility\": \"clear\"}, \"supplier_lot\": {\"raw\": \"DDN-26092001\", \"legibility\": \"clear\"}, \"target_qty\": {\"raw\": \"2,000\", \"legibility\": \"clear\"}, \"actual_qty\": {\"raw\": \"1,995\", \"legibility\": \"clear\"}, \"unit\": {\"raw\": \"g\", \"legibility\": \"clear\"}, \"correction\": {\"present\": false, \"struck_value\": \"\", \"initials\": \"\"}, \"weighed_by\": {\"raw\": \"KO\", \"legibility\": \"clear\"}, \"verified_by\": {\"raw\": \"AR\", \"legibility\": \"clear\"}}  ],  \"theoretical_yield\": {\"raw\": \"500,000 tablets\", \"legibility\": \"clear\"},  \"actual_yield\": {\"raw\": \"447,500 tablets\", \"legibility\": \"clear\"},  \"yield_percent\": {\"raw\": \"89.5 %\", \"legibility\": \"clear\"},  \"waste_qty\": {\"raw\": \"87.962\", \"legibility\": \"clear\"},  \"waste_unit\": {\"raw\": \"kg\", \"legibility\": \"clear\"},  \"signatures\": [    {\"role\": \"production\", \"name\": \"Linda Park\", \"date\": \"11/03/26\"},    {\"role\": \"qa_review\", \"name\": \"Priya Natarajan\", \"date\": \"11/04/26\"}  ],  \"margin_notes\": []}",
+        "json": {
+          "document_type": "batch_record",
+          "batch_number": {
+            "raw": "BR-B-1042",
+            "legibility": "clear"
+          },
+          "product_code": {
+            "raw": "P-CMD",
+            "legibility": "clear"
+          },
+          "product_name": {
+            "raw": "Hollow Pine Cal-Mag + D3 Tablet",
+            "legibility": "clear"
+          },
+          "batch_size": {
+            "raw": "500,000 tablets",
+            "legibility": "clear"
+          },
+          "manufacture_date": {
+            "raw": "11/03/26",
+            "legibility": "clear"
+          },
+          "facility": {
+            "raw": "Hollow Pine Tablet Co. · Rm 104 Weigh & Dispense",
+            "legibility": "clear"
+          },
+          "materials": [
+            {
+              "line_no": 1,
+              "material_name": {
+                "raw": "Calcium carbonate (CAC)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "CAC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "CAC-261014-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "SMS-26101401",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "625,000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "625,115",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "g",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 2,
+              "material_name": {
+                "raw": "Microcrystalline cellulose 102 (MCC)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "MCC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "MCC-261001-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26100101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "100,000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "99,870",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "g",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 3,
+              "material_name": {
+                "raw": "Magnesium oxide (MGO)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "MGO",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "MGO-261014-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "SMS-26101401",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "83,000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "83,040",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "g",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 4,
+              "material_name": {
+                "raw": "Croscarmellose sodium (CCS)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "CCS",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "CCS-260915-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26091501",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "15,000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "14,990",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "g",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 5,
+              "material_name": {
+                "raw": "Stearic acid (STA)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "STA",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "STA-260915-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26091501",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "10,000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "10,010",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "g",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 6,
+              "material_name": {
+                "raw": "Magnesium stearate (MGS)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "MGS",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "MGS-261001-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26100101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "7,500",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "7,480",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "g",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 7,
+              "material_name": {
+                "raw": "Vitamin D3 beadlet 100,000 IU/g (VD3)",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "VD3",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "VD3-260920-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "DDN-26092001",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "2,000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "1,995",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "g",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "KO",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "AR",
+                "legibility": "clear"
+              }
+            }
+          ],
+          "theoretical_yield": {
+            "raw": "500,000 tablets",
+            "legibility": "clear"
+          },
+          "actual_yield": {
+            "raw": "447,500 tablets",
+            "legibility": "clear"
+          },
+          "yield_percent": {
+            "raw": "89.5 %",
+            "legibility": "clear"
+          },
+          "waste_qty": {
+            "raw": "87.962",
+            "legibility": "clear"
+          },
+          "waste_unit": {
+            "raw": "kg",
+            "legibility": "clear"
+          },
+          "signatures": [
+            {
+              "role": "production",
+              "name": "Linda Park",
+              "date": "11/03/26"
+            },
+            {
+              "role": "qa_review",
+              "name": "Priya Natarajan",
+              "date": "11/04/26"
+            }
+          ],
+          "margin_notes": []
+        },
+        "usage": {
+          "inputTokens": 5028,
+          "outputTokens": 1803
+        },
+        "receipt": {
+          "chatId": "746aa6cfaec54bc2b0b6be90e81fe2cb",
+          "requestSha256": "473e9d539e4c574cf1343aa020ebfd812494e6db4a1c41b4630e9262861d7643",
+          "responseSha256": "8f7d7ccacba9064f1b74fbf3dc104d48e1f534a903e1fd681a3484dc2fcb215e"
+        }
+      }
+    },
+    {
+      "key": "c362c251dba6bf99759725be97b6ba1fcb42b1cd4e5a30a53001c0fcad321353",
+      "task": "vision",
+      "promptStart": "Transcribe this batch record page.",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\"document_type\":\"batch_record\",\"batch_number\":{\"raw\":\"BR-B-1041\",\"legibility\":\"clear\"},\"product_code\":{\"raw\":\"P-VC500\",\"legibility\":\"clear\"},\"product_name\":{\"raw\":\"Hollow Pine Vitamin C 500 mg Chewable\",\"legibility\":\"clear\"},\"batch_size\":{\"raw\":\"800,000 tablets\",\"legibility\":\"clear\"},\"manufacture_date\":{\"raw\":\"11/02/26\",\"legibility\":\"clear\"},\"facility\":{\"raw\":\"Hollow Pine Tablet Co. · Rm 104 Weigh & Dispense\",\"legibility\":\"clear\"},\"materials\":[{\"line_no\":1,\"material_name\":{\"raw\":\"Ascorbic acid\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"ASC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"ASC-261026-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"NGI-26102601\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"412.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"412.180\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{  \"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":2,\"material_name\":{\"raw\":\"Sorbitol\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"SOR\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"SOR-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"FPO-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"416.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"415.700\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":3,\"material_name\":{\"raw\":\"Microcrystalline cellulose 102\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"MCC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"MCC-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"120.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"120.300\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":4,\"material_name\":{\"raw\":\"Citric acid anhydrous\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"CTA\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"CTA-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"NGI-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"20.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"19.960\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":5,\"material_name\":{\"raw\":\"Natural orange flavor\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"FOR\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"FOR-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"OFH-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"12.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"12.020\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":6,\"material_name\":{\"raw\":\"Magnesium stearate\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"MGS\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"MGS-261001-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26100101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"12.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"11.970\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":7,\"material_name\":{\"raw\":\"Silicon dioxide\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"SIO\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"SIO-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"6.400\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"6.390\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":8,\"material_name\":{\"raw\":\"Sucralose\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"SUC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"SUC-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"OFH-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"1.600\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"1.598\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}}],\"theoretical_yield\":{\"raw\":\"800,000\",\"legibility\":\"clear\"},\"actual_yield\":{\"raw\":\"729,600\",\"legibility\":\"clear\"},\"yield_percent\":{\"raw\":\"91.2\",\"legibility\":\"clear\"},\"waste_qty\":{\"raw\":\"87.618\",\"legibility\":\"clear\"},\"waste_unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"signatures\":[{\"role\":\"production\",\"name\":\"Linda Park\",\"date\":\"11/02/26\"},{\"role\":\"qa_review\",\"name\":\"Priya Natarajan\",\"date\":\"11/03/26\"}],\"margin_notes\":[]\n}",
+        "json": {
+          "document_type": "batch_record",
+          "batch_number": {
+            "raw": "BR-B-1041",
+            "legibility": "clear"
+          },
+          "product_code": {
+            "raw": "P-VC500",
+            "legibility": "clear"
+          },
+          "product_name": {
+            "raw": "Hollow Pine Vitamin C 500 mg Chewable",
+            "legibility": "clear"
+          },
+          "batch_size": {
+            "raw": "800,000 tablets",
+            "legibility": "clear"
+          },
+          "manufacture_date": {
+            "raw": "11/02/26",
+            "legibility": "clear"
+          },
+          "facility": {
+            "raw": "Hollow Pine Tablet Co. · Rm 104 Weigh & Dispense",
+            "legibility": "clear"
+          },
+          "materials": [
+            {
+              "line_no": 1,
+              "material_name": {
+                "raw": "Ascorbic acid",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "ASC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "ASC-261026-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "NGI-26102601",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "412.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "412.180",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 2,
+              "material_name": {
+                "raw": "Sorbitol",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "SOR",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "SOR-260901-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "FPO-26090101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "416.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "415.700",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 3,
+              "material_name": {
+                "raw": "Microcrystalline cellulose 102",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "MCC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "MCC-260901-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26090101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "120.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "120.300",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 4,
+              "material_name": {
+                "raw": "Citric acid anhydrous",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "CTA",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "CTA-260901-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "NGI-26090101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "20.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "19.960",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 5,
+              "material_name": {
+                "raw": "Natural orange flavor",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "FOR",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "FOR-260901-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "OFH-26090101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "12.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "12.020",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 6,
+              "material_name": {
+                "raw": "Magnesium stearate",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "MGS",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "MGS-261001-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26100101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "12.000",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "11.970",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 7,
+              "material_name": {
+                "raw": "Silicon dioxide",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "SIO",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "SIO-260901-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26090101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "6.400",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "6.390",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 8,
+              "material_name": {
+                "raw": "Sucralose",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "SUC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "SUC-260901-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "OFH-26090101",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "1.600",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "1.598",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "kg",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "JM",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "DW",
+                "legibility": "clear"
+              }
+            }
+          ],
+          "theoretical_yield": {
+            "raw": "800,000",
+            "legibility": "clear"
+          },
+          "actual_yield": {
+            "raw": "729,600",
+            "legibility": "clear"
+          },
+          "yield_percent": {
+            "raw": "91.2",
+            "legibility": "clear"
+          },
+          "waste_qty": {
+            "raw": "87.618",
+            "legibility": "clear"
+          },
+          "waste_unit": {
+            "raw": "kg",
+            "legibility": "clear"
+          },
+          "signatures": [
+            {
+              "role": "production",
+              "name": "Linda Park",
+              "date": "11/02/26"
+            },
+            {
+              "role": "qa_review",
+              "name": "Priya Natarajan",
+              "date": "11/03/26"
+            }
+          ],
+          "margin_notes": []
+        },
+        "usage": {
+          "inputTokens": 5028,
+          "outputTokens": 1452
+        },
+        "receipt": {
+          "chatId": "8556841ec05949008088bab10081e2ef",
+          "requestSha256": "d0d047d0c60dadcb3a4c210867227150183384ec3ca9e6761ee025ad3251bb5f",
+          "responseSha256": "e25500017ab58b860c5209b6c17a3103d5b322e5bb5fc25a85286ce611213244"
+        }
+      }
+    },
+    {
+      "key": "cb890421d80f335f15ed243acf06e66178891d61b7735e498ca187964eaccc23",
+      "task": "vision",
+      "promptStart": "Transcribe this batch record page.",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\"document_type\":\"batch_record\",\"batch_number\":{\"raw\":\"BR-A-2207\",\"legibility\":\"clear\"},\"product_code\":{\"raw\":\"P-CMD\",\"legibility\":\"clear\"},\"product_name\":{\"raw\":\"Hollow Pine Cal-Mag + D3 Tablet\",\"legibility\":\"clear\"},\"batch_size\":{\"raw\":\"500,000 tablets\",\"legibility\":\"clear\"},\"manufacture_date\":{\"raw\":\"11/05/26\",\"legibility\":\"clear\"},\"facility\":{\"raw\":\"Acme Riverside\",\"legibility\":\"clear\"},\"materials\":[{\"line_no\":1,\"material_name\":{\"raw\":\"Calcium carbonate\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"CAC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"CAC-261030-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"SMS-26103001\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"1,377.9\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"1,377.9\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"lb\",\"legibility\":\"clear\"},\"correction\":{  \"present\":false  ,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"BL\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"ST\",\"legibility\":\"clear\"}},{\"line_no\":2,\"material_name\":{\"raw\":\"Microcrystalline cellulose 102\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"MCC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"MCC-260925-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26092501\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"220.5\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"220.5\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"lb\",\"legibility\":\"clear\"},\"correction\":{  \"present\":false  ,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"BL\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"ST\",\"legibility\":\"clear\"}},{\"line_no\":3,\"material_name\":{\"raw\":\"Magnesium oxide\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"MGO\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"MGO-260925-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"SMS-26092501\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"183.0\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"183.0\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"lb\",\"legibility\":\"clear\"},\"correction\":{  \"present\":false  ,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"BL\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"ST\",\"legibility\":\"clear\"}},{\"line_no\":4,\"material_name\":{\"raw\":\"Croscarmellose sodium\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"CCS\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"CCS-260925-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26092501\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"33.1\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"33.1\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"lb\",\"legibility\":\"clear\"},\"correction\":{  \"present\":false  ,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"BL\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"ST\",\"legibility\":\"clear\"}},{\"line_no\":5,\"material_name\":{\"raw\":\"Stearic acid\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"STA\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"STA-260925-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26092501\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"22.0\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"22.0\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"lb\",\"legibility\":\"clear\"},\"correction\":{  \"present\":false  ,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"BL\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"ST\",\"legibility\":\"clear\"}},{\"line_no\":6,\"material_name\":{\"raw\":\"Magnesium stearate\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"MGS\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"MGS-260925-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26092501\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"16.5\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"16.5\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"lb\",\"legibility\":\"clear\"},\"correction\":{  \"present\":false  ,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"BL\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"ST\",\"legibility\":\"clear\"}},{\"line_no\":7,\"material_name\":{\"raw\":\"Vitamin D3 beadlet 100,000 IU/g\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"VD3\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"VD3-260920-02\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"DDN-26092002\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"4.4\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"4.4\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"lb\",\"legibility\":\"clear\"},\"correction\":{  \"present\":false  ,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"BL\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"ST\",\"legibility\":\"clear\"}}],\"theoretical_yield\":{\"raw\":\"500,000\",\"legibility\":\"clear\"},\"actual_yield\":{\"raw\":\"450,500\",\"legibility\":\"clear\"},\"yield_percent\":{\"raw\":\"90.1\",\"legibility\":\"clear\"},\"waste_qty\":{\"raw\":\"55.8\",\"legibility\":\"clear\"},\"waste_unit\":{\"raw\":\"lb\",\"legibility\":\"clear\"},\"signatures\":[{\"role\":\"production\",\"name\":\"Owen Brandt\",\"date\":\"11/05/26\"},{\"role\":\"qa_review\",\"name\":\"Mei Cho\",\"date\":\"11/06/26\"}],\"margin_notes\":[{ \"text\":\"QA REVIEWED 11/06/26\" ,\"legibility\":\"clear\"}]}",
+        "json": {
+          "document_type": "batch_record",
+          "batch_number": {
+            "raw": "BR-A-2207",
+            "legibility": "clear"
+          },
+          "product_code": {
+            "raw": "P-CMD",
+            "legibility": "clear"
+          },
+          "product_name": {
+            "raw": "Hollow Pine Cal-Mag + D3 Tablet",
+            "legibility": "clear"
+          },
+          "batch_size": {
+            "raw": "500,000 tablets",
+            "legibility": "clear"
+          },
+          "manufacture_date": {
+            "raw": "11/05/26",
+            "legibility": "clear"
+          },
+          "facility": {
+            "raw": "Acme Riverside",
+            "legibility": "clear"
+          },
+          "materials": [
+            {
+              "line_no": 1,
+              "material_name": {
+                "raw": "Calcium carbonate",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "CAC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "CAC-261030-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "SMS-26103001",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "1,377.9",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "1,377.9",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "lb",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "BL",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "ST",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 2,
+              "material_name": {
+                "raw": "Microcrystalline cellulose 102",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "MCC",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "MCC-260925-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26092501",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "220.5",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "220.5",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "lb",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "BL",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "ST",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 3,
+              "material_name": {
+                "raw": "Magnesium oxide",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "MGO",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "MGO-260925-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "SMS-26092501",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "183.0",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "183.0",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "lb",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "BL",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "ST",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 4,
+              "material_name": {
+                "raw": "Croscarmellose sodium",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "CCS",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "CCS-260925-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26092501",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "33.1",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "33.1",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "lb",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "BL",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "ST",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 5,
+              "material_name": {
+                "raw": "Stearic acid",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "STA",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "STA-260925-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26092501",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "22.0",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "22.0",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "lb",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "BL",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "ST",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 6,
+              "material_name": {
+                "raw": "Magnesium stearate",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "MGS",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "MGS-260925-01",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "PEC-26092501",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "16.5",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "16.5",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "lb",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "BL",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "ST",
+                "legibility": "clear"
+              }
+            },
+            {
+              "line_no": 7,
+              "material_name": {
+                "raw": "Vitamin D3 beadlet 100,000 IU/g",
+                "legibility": "clear"
+              },
+              "material_code": {
+                "raw": "VD3",
+                "legibility": "clear"
+              },
+              "internal_lot": {
+                "raw": "VD3-260920-02",
+                "legibility": "clear"
+              },
+              "supplier_lot": {
+                "raw": "DDN-26092002",
+                "legibility": "clear"
+              },
+              "target_qty": {
+                "raw": "4.4",
+                "legibility": "clear"
+              },
+              "actual_qty": {
+                "raw": "4.4",
+                "legibility": "clear"
+              },
+              "unit": {
+                "raw": "lb",
+                "legibility": "clear"
+              },
+              "correction": {
+                "present": false,
+                "struck_value": "",
+                "initials": ""
+              },
+              "weighed_by": {
+                "raw": "BL",
+                "legibility": "clear"
+              },
+              "verified_by": {
+                "raw": "ST",
+                "legibility": "clear"
+              }
+            }
+          ],
+          "theoretical_yield": {
+            "raw": "500,000",
+            "legibility": "clear"
+          },
+          "actual_yield": {
+            "raw": "450,500",
+            "legibility": "clear"
+          },
+          "yield_percent": {
+            "raw": "90.1",
+            "legibility": "clear"
+          },
+          "waste_qty": {
+            "raw": "55.8",
+            "legibility": "clear"
+          },
+          "waste_unit": {
+            "raw": "lb",
+            "legibility": "clear"
+          },
+          "signatures": [
+            {
+              "role": "production",
+              "name": "Owen Brandt",
+              "date": "11/05/26"
+            },
+            {
+              "role": "qa_review",
+              "name": "Mei Cho",
+              "date": "11/06/26"
+            }
+          ],
+          "margin_notes": [
+            {
+              "text": "QA REVIEWED 11/06/26",
+              "legibility": "clear"
+            }
+          ]
+        },
+        "usage": {
+          "inputTokens": 5028,
+          "outputTokens": 1333
+        },
+        "receipt": {
+          "chatId": "f83e348c6f054b72ab0fe3b7f9f76dde",
+          "requestSha256": "a6c54f5fdabb113ad518c45b83df1b16bdaa8358216620041219a9e35a089c7c",
+          "responseSha256": "b0ab8e40a739a8f2476505f14639970d68daa76304fb1065bda0c343f1fac2c0"
+        }
+      }
+    }
+  ]
+}

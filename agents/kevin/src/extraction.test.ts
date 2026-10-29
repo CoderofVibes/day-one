@@ -211,6 +211,13 @@ describe("BR-B-1045, the demo upload (DEMO_SCRIPT steps 1 and 2)", () => {
     await expect(transcribeBatchRecord(llm({ document_type: "other" }), image)).rejects.toThrow(
       "not a batch record",
     );
+    // The model called the packing slip a batch record and left every field blank.
+    const blank = { ...glm("BR-B-1045"), batch_number: { raw: "", legibility: "clear" } };
+    await expect(transcribeBatchRecord(llm({ ...blank, materials: [] }), image)).rejects.toThrow(
+      "not a batch record",
+    );
+    // A record whose batch number is unreadable is still a record: the review says so.
+    await expect(transcribeBatchRecord(llm(blank), image)).resolves.toBeTruthy();
   });
 });
 

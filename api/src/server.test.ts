@@ -1,5 +1,6 @@
-import { readFileSync } from "node:fs";
+import { copyFileSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import type { AddressInfo } from "node:net";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { REPO_ROOT } from "./env.ts";
@@ -514,5 +515,134 @@ describe("the import wizard over HTTP", () => {
     expect((await api("POST", "/api/imports", { file: "nope.xlsx" })).status).toBe(404);
     const id = "0".repeat(64);
     expect((await api("POST", `/api/imports/${id}/confirm`, { answers: {} })).status).toBe(404);
+  });
+});
+
+describe("the watched folder: Kevin reads the scans and Ray confirms them from his queue", () => {
+  let inboxServer: ReturnType<typeof createServer>;
+  let inboxBase: string;
+  let dir: string;
+  const call = async (method: string, path: string, body?: unknown) => {
+    const init: RequestInit = { method };
+    if (body !== undefined) {
+      init.headers = { "content-type": "application/json" };
+      init.body = JSON.stringify(body);
+    }
+    const res = await fetch(`${inboxBase}${path}`, init);
+    return { status: res.status, body: await res.json() };
+  };
+  /** The queue once every scan in the folder has settled and been read. */
+  const queue = async (n: number) => {
+    for (let i = 0; i < 100; i++) {
+      const { body } = await call("GET", "/api/batch-records");
+      if (body.items.length >= n) return body;
+      await new Promise((done) => setTimeout(done, 50));
+    }
+    throw new Error(`fewer than ${n} items landed`);
+  };
+
+  beforeAll(async () => {
+    dir = mkdtempSync(join(tmpdir(), "day-one-inbox-"));
+    for (const name of ["BR-B-1044.jpg", "BR-B-1045.jpg", "BR-B-1046.jpg"]) {
+      copyFileSync(join(REPO_ROOT, "data/batch-records", name), join(dir, name));
+    }
+    copyFileSync(join(REPO_ROOT, "data/packing-slips/NG-PS-60417.jpg"), join(dir, "scan-0007.jpg"));
+    const session = await new DemoSession(
+      { root: REPO_ROOT },
+      { policyView, inbox: { dir, stableMs: 100, pollMs: 50 } },
+    ).start();
+    inboxServer = createServer(session);
+    await new Promise<void>((done) => inboxServer.listen(0, done));
+    inboxBase = `http://127.0.0.1:${(inboxServer.address() as AddressInfo).port}`;
+  });
+
+  afterAll(async () => {
+    await new Promise<void>((done) => inboxServer.close(() => done()));
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("lists what Kevin read: three records for Ray and a page set aside", async () => {
+    const body = await queue(4);
+    const byFile = (name: string) =>
+      body.items.find((i: { file: string }) => i.file.endsWith(name));
+    expect(byFile("BR-B-1044.jpg")).toMatchObject({ status: "waiting", questions: 0 });
+    expect(byFile("BR-B-1045.jpg")).toMatchObject({
+      status: "waiting",
+      waitingFor: "Ray Delgado",
+      summary:
+        "Kevin read BR-B-1045 (VC500, 800,000 tablets). 8 materials, all within tolerance. Yield 90.8%.",
+    });
+    expect(byFile("BR-B-1046.jpg")).toMatchObject({ status: "waiting", questions: 1 });
+    expect(byFile("scan-0007.jpg")).toMatchObject({
+      status: "set_aside",
+      summary: "This isn't a batch record. Kevin left it out of the ledger.",
+    });
+    // Nothing posted: the run still waits for Ray.
+    expect((await call("GET", "/api/run")).body.next.phase).toBe("upload");
+  });
+
+  it("refuses BR-B-1046 until Ray answers the smudge, then posts it outside the run", async () => {
+    const asked = await call("POST", "/api/batch-records/BR-B-1046/confirm", {});
+    expect(asked.status).toBe(422);
+    expect(asked.body.error).toContain("needs answers first");
+    expect(
+      (await call("POST", "/api/batch-records/BR-B-1046/confirm", { resolutions: ["83.040"] }))
+        .status,
+    ).toBe(400);
+    const { status, body } = await call("POST", "/api/batch-records/BR-B-1046/confirm", {
+      resolutions: { "materials[2].actual_qty": "83.040" },
+    });
+    expect(status).toBe(200);
+    expect(body.steps).toHaveLength(1);
+    expect(body.steps[0].title).toBe("Ray confirms BR-B-1046");
+    expect(body.steps[0].staff[0]).toMatch(/^Inventory updated\./);
+    expect(body.next.phase).toBe("upload");
+    const run = (await call("GET", "/api/run")).body;
+    expect(run.steps.map((s: { title: string }) => s.title)).toEqual(["Load seed"]);
+  });
+
+  it("confirming BR-B-1045 from the queue is the run's upload and confirm, as recorded", async () => {
+    const { status, body } = await call("POST", "/api/batch-records/BR-B-1045/confirm", {});
+    expect(status).toBe(200);
+    expect(body.steps.map((s: { title: string }) => s.title)).toEqual([
+      "Upload BR-B-1045",
+      "Ray confirms",
+      "Discrepancy",
+      "Forecast",
+      "Quotes",
+      "Small PO",
+      "Big PO",
+    ]);
+    expect(body.next).toMatchObject({ phase: "reply", who: "Linda Park" });
+    // The same lines as the recorded run, through the refused PO-1042 (before Linda's text).
+    const recorded = readFileSync(join(REPO_ROOT, "data/replay/transcript.txt"), "utf8");
+    const res = await fetch(`${inboxBase}/api/transcript`);
+    const upToLinda = (text: string) => {
+      const lines = text.split("\n");
+      return lines.slice(
+        0,
+        lines.findIndex((l) => l.startsWith("Linda:")),
+      );
+    };
+    const ours = (await res.text()).split("\n");
+    const expected = upToLinda(recorded);
+    expect(ours.slice(0, expected.length)).toEqual(expected);
+    expect(expected).toHaveLength(15);
+
+    const items = (await call("GET", "/api/batch-records")).body.items;
+    expect(
+      items.map((i: { batchNo: string | null; status: string }) => [i.batchNo, i.status]),
+    ).toEqual([
+      ["BR-B-1044", "waiting"],
+      ["BR-B-1045", "confirmed"],
+      ["BR-B-1046", "confirmed"],
+      [null, "set_aside"],
+    ]);
+  });
+
+  it("reads the folder again into a fresh ledger on Start over", async () => {
+    await call("POST", "/api/run/reset");
+    const body = await queue(4);
+    expect(body.items.filter((i: { status: string }) => i.status === "waiting")).toHaveLength(3);
   });
 });

@@ -553,6 +553,41 @@ export const extractionFlags = sqliteTable(
   (t) => [oneOf("extraction_flags_kind", t.kind, FLAG_KINDS)],
 );
 
+/** waiting: read, for the purchaser; set_aside: not a record Kevin can take; failed: not read. */
+export const INBOX_STATUS = ["waiting", "confirmed", "set_aside", "failed"] as const;
+
+/**
+ * A scan dropped in the plant's watched folder (research 24 §1). Kevin reads it with the same
+ * pipeline as an upload and it waits here until the purchaser confirms it; the unique file hash
+ * makes the same scan dropped twice one item. Nothing reaches batch_records before the confirm.
+ */
+export const batchRecordInbox = sqliteTable(
+  "batch_record_inbox",
+  {
+    id: id(),
+    fileSha256: text().notNull().unique(),
+    sourceFile: text().notNull(),
+    status: text({ enum: INBOX_STATUS }).notNull(),
+    batchNo: text(),
+    facilityId: integer().references(() => facilities.id),
+    extractionJson: text(),
+    extractionModel: text(),
+    /** Kevin's line about the read, or why he set the file aside. */
+    summary: text().notNull(),
+    /** The read's flags: [{ fieldPath, kind, message, blocking }]. */
+    flagsJson: text().notNull(),
+    /** The error when the file could not be read; for logs, not for staff. */
+    error: text(),
+    receivedAt: text().notNull(),
+    batchId: integer().references(() => batchRecords.id),
+    /** Kevin's line after the confirm: what moved in inventory. */
+    outcome: text(),
+    confirmedBy: integer().references(() => staff.id),
+    confirmedAt: text(),
+  },
+  (t) => [oneOf("batch_record_inbox_status", t.status, INBOX_STATUS)],
+);
+
 // ---------------------------------------------------------------- 8. Chain evidence
 // (before purchasing, which references it)
 

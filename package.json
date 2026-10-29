@@ -41,6 +41,7 @@
     "policy": "tsx scripts/policy-change.ts",
     "mcp": "tsx scripts/kevin-mcp.ts",
     "books": "tsx scripts/books.ts",
+    "inbox": "tsx scripts/inbox.ts",
     "brief": "tsx scripts/brief.ts",
     "import": "tsx scripts/import.ts",
     "render:import": "tsx scripts/render-import.ts",

@@ -13,6 +13,7 @@
     "./approval": "./src/approval.ts",
     "./receiving": "./src/receiving.ts",
     "./extraction": "./src/extraction.ts",
+    "./inbox": "./src/inbox.ts",
     "./invoices": "./src/invoices.ts",
     "./payments": "./src/payments.ts",
     "./attacks": "./src/attacks.ts",

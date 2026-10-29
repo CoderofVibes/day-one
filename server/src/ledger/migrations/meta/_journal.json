@@ -64,6 +64,13 @@
       "when": 1793243332143,
       "tag": "0008_group_buy_tx_kinds",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1793299544046,
+      "tag": "0009_batch_record_inbox",
+      "breakpoints": true
     }
   ]
 }

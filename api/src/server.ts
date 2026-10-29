@@ -6,8 +6,9 @@
 //
 //   GET  /api/run                              the run so far, who acts next, transactions
 //   POST /api/run/reset                        start over from the seed
+//   GET  /api/batch-records                    the watched folder's review queue: what Kevin read, flags, status
 //   POST /api/batch-records                    image/jpeg body, or JSON {"file": "BR-B-1045.jpg"}
-//   POST /api/batch-records/:batchNo/confirm   JSON {"staff"?: "Ray Delgado"}
+//   POST /api/batch-records/:batchNo/confirm   JSON {"staff"?: "Ray Delgado", "resolutions"?: {"materials[2].actual_qty": "83.040"}}
 //   POST /api/messages                         JSON {"from": "Linda Park", "text": "YES 1042"}
 //   POST /api/deliveries                       JSON {"slipNo": "NG-PS-60417", "staff"?: …}
 //   POST /api/qc-decisions                     JSON {"lotCode": "ASC-…", "decision": "release" | "reject"}
@@ -73,13 +74,15 @@ const TYPES: Record<string, string> = {
 export function createServer(session: DemoSession, options: ServerOptions = {}) {
   const maxBody = options.maxBodyBytes ?? 10 * 1024 * 1024;
   const desk = options.imports ?? new ImportDesk();
-  return createHttpServer(async (req, res) => {
+  const server = createHttpServer(async (req, res) => {
     try {
       await route(session, desk, req, res, options.staticDir, maxBody);
     } catch (error) {
       reply(res, ...statusOf(error, session));
     }
   });
+  server.on("close", () => session.close());
+  return server;
 }
 
 async function route(
@@ -108,6 +111,8 @@ async function route(
   if (method === "GET" && path === "/api/transfer-suggestions")
     return reply(res, 200, session.transferSuggestions());
   if (method === "GET" && path === "/api/imports") return reply(res, 200, desk.state());
+  if (method === "GET" && path === "/api/batch-records")
+    return reply(res, 200, await session.inbox());
   if (method === "GET" && path === "/api/policy") return reply(res, 200, await session.policy());
   if (method === "GET" && path === "/api/brief")
     return reply(res, 200, session.brief(url.searchParams.get("plant") ?? undefined));
@@ -190,7 +195,11 @@ async function route(
   const confirm = /^\/api\/batch-records\/([\w-]+)\/confirm$/.exec(path);
   if (confirm) {
     const body = await readJson(req, maxBody);
-    return steps(res, session, await session.confirm(confirm[1] ?? "", text(body.staff)));
+    return steps(
+      res,
+      session,
+      await session.confirm(confirm[1] ?? "", text(body.staff), answers(body.resolutions)),
+    );
   }
 
   if (path === "/api/messages") {
@@ -322,6 +331,18 @@ function statusOf(error: unknown, session: DemoSession): [number, unknown] {
 function withHelp(message: string): { error: string; hint?: string } {
   const help = explainFailure(message);
   return help ? { error: message, hint: `${help.what} ${help.fix}` } : { error: message };
+}
+
+/** The purchaser's answers to a record's flags: field path → value, all strings. */
+function answers(value: unknown): Record<string, string> | undefined {
+  if (value === undefined) return undefined;
+  const ok =
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    Object.values(value).every((v) => typeof v === "string");
+  if (!ok) throw new SessionError(400, "resolutions is an object of field path → text");
+  return value as Record<string, string>;
 }
 
 function text(value: unknown): string | undefined {

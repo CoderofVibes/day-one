@@ -3,11 +3,22 @@
 // testnet run, no keys); live when started with --live. Actions run one after another, so two
 // clicks at once cannot interleave the run.
 
-import { readdirSync } from "node:fs";
-import { join } from "node:path";
+import { randomBytes } from "node:crypto";
+import { readdirSync, readFileSync } from "node:fs";
+import { join, relative, sep } from "node:path";
 import { briefHtml, morningBrief } from "@day-one/kevin/brief";
 import { type DemoPhase, type DemoStep, formatTranscript, startDemo } from "@day-one/kevin/demo";
 import { reviewDiscrepancy } from "@day-one/kevin/discrepancies";
+import {
+  confirmInboxItem,
+  type InboxRead,
+  type InboxRow,
+  inboxItems,
+  inboxRead,
+  markInboxConfirmed,
+  readInboxFile,
+  waitingInboxItem,
+} from "@day-one/kevin/inbox";
 import { massBalance, proposeWasteCorrections } from "@day-one/kevin/massBalance";
 import {
   approveTransfer,
@@ -36,6 +47,7 @@ import {
   openDemoEnv,
   pageOf,
 } from "./env.ts";
+import { type FolderWatch, watchFolder } from "./watcher.ts";
 
 export interface StepView {
   step: number;
@@ -126,6 +138,22 @@ export type PolicyState =
 export interface SessionExtras {
   /** View calls on the policy contract; by default keyless calls on the network. */
   policyView?: ViewFn;
+  /** The watched batch-record folder; none unless given (npm run api watches data/inbox/). */
+  inbox?: {
+    dir: string;
+    stableMs?: number;
+    pollMs?: number;
+    /** Each file Kevin read, as it lands. */
+    onRead?: (read: InboxRead) => void;
+    onError?: (error: unknown, name: string) => void;
+  };
+}
+
+/** The review queue as Ray's screen draws it. */
+export interface InboxState {
+  /** The watched folder, relative to the repository; null when nothing is watched. */
+  folder: string | null;
+  items: ReturnType<typeof inboxItems>;
 }
 
 export class DemoSession {
@@ -133,14 +161,17 @@ export class DemoSession {
   private machine!: ReturnType<typeof startDemo>;
   private queue: Promise<unknown> = Promise.resolve();
   private attestation: AttestationResult | null = null;
+  private watch: FolderWatch | null = null;
 
   constructor(
     private readonly options: DemoEnvOptions = {},
     private readonly extras: SessionExtras = {},
   ) {}
 
-  /** Seeds a fresh ledger and plays step 0. */
+  /** Seeds a fresh ledger and plays step 0; the folder is read again into the new ledger. */
   async start() {
+    this.watch?.stop();
+    this.watch = null;
     this.env = await openDemoEnv(this.options);
     this.machine = startDemo(this.env.deps);
     const fixture = this.env.live ? null : readAttestationFixture(this.env.root);
@@ -151,7 +182,47 @@ export class DemoSession {
         )
       : null;
     await this.machine.load();
+    this.watchInbox();
     return this;
+  }
+
+  /** Kevin reads every scan that settles in the watched folder into the review queue. */
+  private watchInbox() {
+    const inbox = this.extras.inbox;
+    if (!inbox) return;
+    const env = this.env;
+    this.watch = watchFolder({
+      dir: inbox.dir,
+      ...(inbox.stableMs === undefined ? {} : { stableMs: inbox.stableMs }),
+      ...(inbox.pollMs === undefined ? {} : { pollMs: inbox.pollMs }),
+      onFile: async (path) => {
+        const read = await readInboxFile(
+          env.db,
+          env.inboxLlm,
+          { path: relative(env.root, path).split(sep).join("/"), bytes: readFileSync(path) },
+          env.clock(),
+        );
+        // A read that finishes after "Start over" belongs to the old ledger; nobody sees it.
+        if (env === this.env) inbox.onRead?.(read);
+      },
+      ...(inbox.onError ? { onError: inbox.onError } : {}),
+    });
+  }
+
+  /** The review queue; `scan` waits for files that have settled in the folder to be read. */
+  async inbox(scan = false): Promise<InboxState> {
+    if (scan) await this.watch?.scan();
+    const dir = this.extras.inbox?.dir;
+    return {
+      folder: dir ? relative(this.env.root, dir).split(sep).join("/") : null,
+      items: inboxItems(this.env.db),
+    };
+  }
+
+  /** Stops watching the folder (the server is closing). */
+  close() {
+    this.watch?.stop();
+    this.watch = null;
   }
 
   reset() {
@@ -173,9 +244,17 @@ export class DemoSession {
     );
   }
 
-  /** Step 2, then Kevin's follow-up (steps 4–7). */
-  confirm(batchNo: string, staffName?: string) {
+  /**
+   * Step 2, then Kevin's follow-up (steps 4–7). A record waiting in the inbox is confirmed from
+   * there, with the purchaser's answers to its flags (`resolutions`, by field path).
+   */
+  confirm(batchNo: string, staffName?: string, resolutions?: Record<string, string>) {
     return this.run(async () => {
+      const item = this.machine.draft ? undefined : waitingInboxItem(this.env.db, batchNo);
+      if (item) return this.confirmFromInbox(item, staffName, resolutions ?? {});
+      if (resolutions && Object.keys(resolutions).length) {
+        throw new SessionError(400, `${batchNo} is not waiting in the inbox; it takes no answers`);
+      }
       const draft = this.machine.draft;
       if (draft && draft.batchNo !== batchNo) {
         throw new SessionError(400, `the draft waiting for confirmation is ${draft.batchNo}`);
@@ -184,6 +263,62 @@ export class DemoSession {
       if (this.machine.stopped) return confirmed;
       return [...confirmed, ...(await this.machine.purchase())];
     });
+  }
+
+  /**
+   * The run's own page (the recorded BR-B-1045, by hash) goes through the run when it is the
+   * run's turn: Ray's confirm is the upload and the confirm, and Kevin goes on to buy. Any other
+   * record posts on its own, at any point of the run, and answers with its confirm as a step
+   * that is not part of the run's transcript.
+   */
+  private async confirmFromInbox(
+    item: InboxRow,
+    staffName = "Ray Delgado",
+    resolutions: Record<string, string>,
+  ): Promise<DemoStep[]> {
+    const { db, deps } = this.env;
+    const staffId = this.staffId(staffName);
+    const runsOwn =
+      this.machine.next === "upload" &&
+      item.fileSha256 === deps.batchRecord.sha256 &&
+      Object.keys(resolutions).length === 0;
+    if (runsOwn) {
+      const page = { ...deps.batchRecord, file: item.sourceFile };
+      const uploaded = await this.machine.upload(page, inboxRead(item));
+      if (this.machine.next !== "confirm") return uploaded;
+      const confirmed = await this.machine.confirm(staffName);
+      const step = confirmed.find((s) => s.step === 2);
+      if (step && item.batchNo) {
+        markInboxConfirmed(db, item.id, {
+          batchNo: item.batchNo,
+          staffId,
+          now: this.env.clock(),
+          outcome: step.staff.join(" "),
+        });
+      }
+      if (this.machine.stopped) return [...uploaded, ...confirmed];
+      return [...uploaded, ...confirmed, ...(await this.machine.purchase())];
+    }
+    const done = await confirmInboxItem(
+      {
+        db,
+        // A replay has no recorded anchor for this record; a live run anchors it as Kevin.
+        ...(this.env.live ? { chain: deps.chain } : {}),
+        kevin: deps.kevin,
+        policyContract: deps.policyContract,
+        ...(deps.erp ? { erp: deps.erp } : {}),
+      },
+      item.id,
+      { staffId, now: this.env.clock(), salt: randomBytes(16).toString("hex"), resolutions },
+    );
+    const step: DemoStep = {
+      step: 2,
+      title: `${staffName.split(" ")[0]} confirms ${done.confirmation.review.batchNo}`,
+      staff: done.staff,
+      chain: done.chain,
+    };
+    if (done.erp.length) step.erp = done.erp;
+    return [step];
   }
 
   /** Steps 8–9: a text from the approver's phone. */

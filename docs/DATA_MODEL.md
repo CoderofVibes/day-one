@@ -83,6 +83,7 @@ An import posts each lot as opening stock through `appendLotEvent`: `received`, 
 | `batch_inputs` | `batch_id`, `lot_id`, `material_id`, `expected_base`, `actual_base`, `field_confidence`, `issue_event_id` — **backward genealogy** |
 | `batch_outputs` | `batch_id`, `output_lot_id` — **forward genealogy** |
 | `extraction_flags` | `batch_id`, `field_path`, `kind` (`low_confidence`, `out_of_tolerance`, `unit_mismatch`, `unknown_lot`, `correction_detected`, `yield_variance`; migration 0005), `message`, `resolved_by`, `resolved_value` |
+| `batch_record_inbox` | `file_sha256` (unique: the same scan dropped twice is one item), `source_file`, `status` (`waiting`, `confirmed`, `set_aside`, `failed`), `batch_no`, `facility_id`, `extraction_json`, `extraction_model`, `summary` (Kevin's line, or why he set the file aside), `flags_json`, `error`, `received_at`, `batch_id` (once confirmed), `outcome`, `confirmed_by`, `confirmed_at`. The watched folder's review queue (migration 0009); nothing reaches `batch_records` before the purchaser confirms. |
 
 ## 7. Purchasing
 
