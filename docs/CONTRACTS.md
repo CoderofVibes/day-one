@@ -112,7 +112,7 @@ pub struct Anchor { kind, hash: String /* 64 lowercase hex */, prev: Option<Stri
 | `set_roles(plant, receiver, qc)` | owner | 1 yocto | which staff accounts confirm receipt and release for a plant |
 | `set_agent_policy(agent, name, plant, per_po_limit, monthly_limit, categories, approver)` | owner | 1 yocto | emits `agent_policy_set`; the approver may not be the agent; replacing the approver revokes the old one's right to approve |
 | `set_category_cap(category, monthly_cap)` | owner | 1 yocto | `category_cap_set` |
-| `set_supplier(supplier, status)` | owner | 1 yocto | `Qualified`, `Conditional` or `null` (removes); `supplier_set` (added Oct 28: FICTIONAL_DATA §9 and the Nov 6 attack suite need the vendor rule enforced, not just Kevin's ranking) |
+| `set_supplier(supplier, status)` | owner | 1 yocto | `Qualified`, `Conditional` or `null` (removes); `supplier_set` (added Oct 28: FICTIONAL_DATA §9 and the Nov 6 attack suite need the vendor rule enforced, not just Kevin's ranking). Since §3.1 a listed supplier is paid only with a live credential; `issue_credential` sets the status too |
 | `pause_agent(agent)` / `resume_agent(agent)` | owner | 1 yocto | `agent_paused` / `agent_resumed` |
 | `ft_on_transfer(sender_id, amount, msg)` | token, with `sender_id == treasury` | — | `budget += amount`, `budget_funded`; any other token or sender is refunded |
 | `submit_po(po_id, supplier, amount, category, po_hash)` | a registered agent | none | checks below; on pass, record the PO as `Funded`, update counters, `budget -= amount`, `escrowed += amount`, emit `po_authorized` and `po_funded`. No cross-contract call. On fail, **panic** with a plain-language reason. |
@@ -137,7 +137,7 @@ pub struct Anchor { kind, hash: String /* 64 lowercase hex */, prev: Option<Stri
 1. Agent registered and active — "Kevin is paused by HQ."
 2. Category allowed — "Kevin isn't authorized to buy equipment."
 3. `po_id` not already used.
-3a. Supplier has a status — "quickchem-direct.testnet is not an approved supplier; no approval can override this."
+3a. Supplier has a live credential (§3.1), in this order — none and not listed: "quickchem-direct.testnet is not an approved supplier; no approval can override this."; listed by `set_supplier` but no credential; revoked; expired; taken off the list; suspended; PO category not on the credential. Every one of these ends "no approval can override this." and runs before step 5, so no approval reaches past it.
 4. Amount ≤ budget — "Plant budget is short by $X." No approval can override this.
 5. If a matching, unexpired approval exists (same supplier, amount, category, po_hash): consume it, skip steps 5a–8, record `approved_by`.
 5a. Conditional supplier — "PO-1043: delta-d-nutrition.testnet is a conditional supplier; director approval required."
@@ -150,6 +150,45 @@ The retry after approval is the identical call. Within-limit and approved POs sh
 **Separation of duties:** the director's key can only approve or reject. Only an agent can trigger funding, and only within rules or a matching approval. Neither can move tokens directly.
 
 A `po_refused` event is logged immediately before the panic. Logs from aborted calls are kept: confirmed Oct 28 in the sandbox test (the refused `submit_po` outcome carries the `po_refused` log). Nothing depends on it, because the panic message itself is in the failed transaction's status.
+
+### 3.1 Supplier credentials and reputation (Oct 28, OPEN_QUESTIONS #33; research 24)
+
+Each approved supplier holds a **soulbound credential** that HQ issues: the PO categories it may sell and an expiry. The credential is the permission: `submit_po` step 3a refuses a supplier without a live one, and no director approval overrides that. The same record carries the supplier's **delivery history**, which the contract updates itself, and a contract rule turns a run of QC rejects into a suspension that only HQ lifts. The contract is its own NEP-393 registry (the standard's single-contract case), so SBT-aware tools read the credentials through the standard views and `nep393` events.
+
+```rust
+pub struct SupplierCredential {
+    token: u64,                      // NEP-393 token id, one per supplier, from 1
+    supplier: AccountId,
+    categories: Vec<String>,         // raw_material, lab_chemical …
+    issued_at: U64, expires_at: U64, // ns
+    revoked: Option<Revocation>,     // { at, reason }; the token stays (NEP-393 revoke, no burn)
+    reputation: Reputation,
+}
+pub struct Reputation { released: u32, rejected: u32, consecutive_rejects: u32,
+                        last_outcome: Option<DeliveryOutcome>, last_po, last_at,
+                        suspended_at: Option<U64> }
+pub enum Standing { Approved, Conditional, Suspended, Expired, Revoked, NoCredential, NotListed }
+```
+
+**Storage is additive:** no field in the root struct. Credentials by supplier (`cred:s`), the token index (`cred:t`), the token counter (`cred:n`) and the suspension rule (`cred:r`) live under their own byte prefixes and are opened per call. No existing method signature changed. The supplier's status (`Qualified` / `Conditional`) stays in the existing supplier list.
+
+| Method | Caller | Deposit | Effect |
+|---|---|---|---|
+| `issue_credential(supplier, status, categories, expires_at)` | owner | 1 yocto | first time: mints the token (`nep393` `mint`); again: renews it (`renew`), keeps the token id and the delivery record, lifts a revocation, does **not** lift a suspension. Lists the supplier with `status` (`supplier_set`); `credential_issued`. Needs a category and a future expiry. |
+| `revoke_credential(supplier, reason)` | owner | 1 yocto | marks it revoked, takes the supplier off the list; `nep393` `revoke`, `supplier_set` (null), `credential_revoked`. Funded POs are untouched (HQ can `cancel`). |
+| `reinstate_supplier(supplier)` | owner | 1 yocto | lifts a suspension and clears the run of rejects (totals stay); `supplier_reinstated` |
+| `set_suspension_rule(consecutive_rejects)` | owner | 1 yocto | default 2, at least 1; `suspension_rule_set` |
+| Views: `get_credential`, `get_supplier_standing` (standing, `may_be_paid`, status, credential), `get_suspension_rule` | anyone | — | — |
+| NEP-393 views: `sbt_metadata`, `sbt_class_metadata` (class 1, "Approved supplier"), `sbt(issuer, token)`, `sbt_tokens(issuer, from_token, limit, with_expired)`, `sbt_tokens_by_owner(account, issuer, from_class, limit, with_expired)`, `sbt_supply(issuer)`, `sbt_supply_by_owner(account, issuer, class)` | anyone | — | times in **ms**; a revoked token reads as expired at its revocation |
+| NEP-171 read views: `nft_token(token_id)`, `nft_tokens_for_owner`, `nft_supply_for_owner`, `nft_total_supply` | anyone | — | read only; no transfer, no NFT events (NEP-393 `SBTNFT`) |
+
+**The record.** `qc_reject` adds a rejected delivery at once. A release counts in `on_payout` when the transfer succeeds, so a failed payout and the second release never count twice. `cancel` is not a delivery. A release ends a run of rejects but does not lift a suspension. When the run reaches the rule, the contract sets `suspended_at` and emits `supplier_suspended`. Each update emits `delivery_recorded`.
+
+**Quote anchors** (§6) need a listed supplier whose credential is neither revoked nor expired; a suspended supplier may still quote.
+
+**Staff words** (`server/src/erp-connector/credentials.ts`): Approved → "approved supplier"; Conditional → "approved supplier, director signs every PO"; Suspended, Expired, Revoked → "on hold: …" with the reason; no credential or not listed → "not an approved supplier". Token ids, categories and counts appear only behind the curtain.
+
+**ERP sync** (docs/ERP.md): the connector reads the credential of every vendor the escrow can pay. ERP `approved` must match `Approved` on chain; `onHold` fits conditional, suspended, expired or uncredentialed; `blocked` fits anyone the contract will not pay. `npm run erp:reconcile` reports any disagreement and who fixes it. Kevin treats the vendor as on hold if either side says so. The ERP never makes a supplier payable.
 
 ---
 
@@ -173,7 +212,10 @@ The two-contract design (policy funds a separate escrow with `ft_transfer_call`)
 
 One standard, version `1.0.0`, via `#[near(event_json(standard = …))]`:
 
-- `dayone_spend_policy`: `budget_funded`, `agent_policy_set`, `category_cap_set`, `supplier_set`, `roles_set`, `agent_paused`, `agent_resumed`, `po_refused`, `po_authorized`, `po_approved`, `po_rejected`, `po_funded`, `po_accepted`, `po_shipped`, `po_received`, `po_released`, `payout_failed`, `po_refunded`, `po_cancelled`, `record_anchored`
+- `dayone_spend_policy`: `budget_funded`, `agent_policy_set`, `category_cap_set`, `supplier_set`, `roles_set`, `agent_paused`, `agent_resumed`, `po_refused`, `po_authorized`, `po_approved`, `po_rejected`, `po_funded`, `po_accepted`, `po_shipped`, `po_received`, `po_released`, `payout_failed`, `po_refunded`, `po_cancelled`, `record_anchored`; supplier credentials (§3.1): `credential_issued`, `credential_revoked`, `delivery_recorded`, `supplier_suspended`, `supplier_reinstated`, `suspension_rule_set`
+- `nep393` (NEP-393 v1.0.0): `mint`, `renew`, `revoke` for the supplier credentials
+
+`qc_release`'s callback now also logs `delivery_recorded` after `po_released`, and `qc_reject` logs it after `po_refunded`.
 
 The behind-the-curtain view and the demo transcript print these events with explorer links.
 
@@ -182,7 +224,7 @@ The behind-the-curtain view and the demo transcript print these events with expl
 ## 6. Record anchoring
 
 - What is anchored: confirmed batch records, ranges of the `lot_events` hash chain, receipts (packing-slip hash), and supplier quotes. Approvals and payments are already transactions, so they are referenced by tx hash, not re-anchored.
-- Supplier quotes (Oct 28): each supplier agent anchors the fingerprint of its quote's terms from its own account as `ref_id = "<rfq>/<account>"`, kind `quote`, and sends Kevin the terms and the salt over the bus. The contract takes a quote anchor only from a supplier HQ has registered (`set_supplier`) and only under the caller's own account suffix, so a supplier can commit to a price but cannot squat another record's id, and an unqualified vendor's anchor (QuickChem) is refused. Kevin recomputes the fingerprint and ignores a quote that no longer matches what its sender anchored. `npm run verify` checks a quote file the same way as a batch record.
+- Supplier quotes (Oct 28): each supplier agent anchors the fingerprint of its quote's terms from its own account as `ref_id = "<rfq>/<account>"`, kind `quote`, and sends Kevin the terms and the salt over the bus. The contract takes a quote anchor only from a supplier HQ has listed with a credential that is neither revoked nor expired (§3.1) and only under the caller's own account suffix, so a supplier can commit to a price but cannot squat another record's id, and an unqualified vendor's anchor (QuickChem) is refused. Kevin recomputes the fingerprint and ignores a quote that no longer matches what its sender anchored. `npm run verify` checks a quote file the same way as a batch record.
 - Hash = `sha256(JCS-canonical JSON of the record + 16-byte salt)`. Salts stay off-chain; fictional fixtures ship with their salts so judges can verify.
 - Genealogy: a batch record's canonical form includes the hashes of its input lots' latest events, so the anchor commits to its inputs.
 - Cost: about 0.0016 NEAR of storage per anchor (paid from the contract balance; FC keys cannot attach deposits).
@@ -216,6 +258,14 @@ escrow (same contract):
 - payout to an unregistered supplier rolls back to `Received`
 - QC reject returns the amount to `budget`; cancel before receipt does the same
 
+supplier credentials (§3.1; `src/tests/credentials.rs`, `tests/credentials_sandbox.rs`):
+- issue mints one token per supplier and lists it; re-issue renews the same token and keeps the record; issuing needs HQ, a category and a future expiry
+- a listed supplier without a credential, a revoked, an expired, an unlisted or a suspended supplier, and a PO outside the credential's categories are each refused with their message, before and after a director's approval
+- releases and rejects build the record; a failed payout does not count; two rejects in a row suspend; only HQ reinstates; HQ sets the rule
+- a suspended supplier still quotes and its open POs still settle
+- NEP-393 and NEP-171 views, including a revoked token reading as expired
+- sandbox: the purchasing loop with credentials and the delivery record; the four credential attacks with the testnet account names, recorded to `data/attacks/credentials-sandbox.json` (`RECORD_CREDENTIAL_ATTACKS=1`; otherwise the test fails if the recording no longer matches the contract)
+
 Commands are added to `AGENTS.md` when they first pass.
 
 ---
@@ -223,6 +273,6 @@ Commands are added to `AGENTS.md` when they first pass.
 ## 8. Deploy and reset
 
 - `scripts/setup-testnet`: idempotent; creates sub-accounts, adds FC keys, registers storage, writes public account ids to `config/testnet-accounts.json` (committed) and private keys to gitignored credentials.
-- `scripts/deploy`: builds in WSL2, deploys `spend-policy`, calls `new`, `set_roles`, `set_agent_policy` (Kevin: per-PO $2,500; monthly $60,000 across `raw_material`, `packaging`, `lab_chemical`; approver `director.plant-b…`), `set_category_cap` (`lab_chemical` $2,000), `set_supplier` (Northgate, Ridgeway, Bayfront qualified; QuickChem left off), registers token storage for the contract and the four suppliers, funds the budget from treasury.
+- `scripts/deploy`: builds in WSL2, deploys `spend-policy`, calls `new`, `set_roles`, `set_agent_policy` (Kevin: per-PO $2,500; monthly $60,000 across `raw_material`, `packaging`, `lab_chemical`; approver `director.plant-b…`), `set_category_cap` (`lab_chemical` $2,000), `issue_credential` (§3.1: Northgate and Ridgeway `raw_material`, Bayfront `lab_chemical`, all qualified, until 2027-10-31; QuickChem gets none and the script checks it holds none; on a redeploy over the Oct 28 state this is also the migration of the `set_supplier` approvals), registers token storage for the contract and the four suppliers, funds the budget from treasury.
 - `scripts/reset`: `withdraw_budget`, suppliers return tokens to treasury so the float recycles, new PO id prefix per run so `po_id` uniqueness holds.
 - Contract accounts keep their full-access keys during the hackathon for redeploys. Deleting them to prove immutability is a post-hackathon step and is noted in the README.

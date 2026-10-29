@@ -19,6 +19,7 @@ Acme Holdings keeps its books in an ERP. When it buys Hollow Pine (Plant B), the
 | Record | Owner | Crosses the boundary as |
 |---|---|---|
 | Vendor master: legal name, status (`approved`, `onHold`, `blocked`), verified payout account, bill tolerances, terms | ERP | Day One reads it; before every `submit_po` Kevin checks that the vendor is `approved` and that the account the contract will pay is the vendor master's verified payout account |
+| Supplier credential: who the escrow may pay, for which categories, until when, and the delivery record (CONTRACTS.md §3.1) | the contract (HQ issues and revokes) | The connector reads it (`get_supplier_standing`, `server/src/erp-connector/credentials.ts`) and never writes it. ERP `approved` must match an approved credential; `onHold` fits a conditional, suspended, expired or uncredentialed supplier; `blocked` fits anyone the contract will not pay. Kevin treats a vendor as on hold if either says so; an ERP approval never makes a supplier payable. `npm run erp:reconcile` names every disagreement and who fixes it |
 | Item master (raw materials, packaging, lab supplies, finished goods), locations (Acme's plants), chart of accounts, approval matrix, users and roles | ERP | Day One addresses items by material code and locations by facility code |
 | Purchase order terms (lines, prices, freight, `po_hash`) and the contract's verdict | Day One (Kevin drafts; the contract escrows) | Mirrored into the ERP by PO number with the funding and approval tx hashes |
 | Lots, lot states, genealogy, batch records, the plant inventory ledger | Day One | Each ERP inventory line references its Day One lot code and, for issues, the batch number |
@@ -159,11 +160,13 @@ The hooks are optional (`DemoDeps.erp`); `npm run demo` and its transcript do no
 
 After the run: Plant B holds 1,010 kg of ascorbic acid at $7,171.00; AP is zero; the trial balance is $160,997.60 on each side.
 
-### 3.8 Attack suite additions (`npm run test:attacks`, 7 attacks, replay with no keys)
+### 3.8 Attack suite additions (`npm run test:attacks`, 11 attacks, replay with no keys)
 
 5. **Duplicate invoice.** NG-INV-24190 for PO-1042 is matched and paid in full (settlement ref = the recorded `qc_release` tx). The same invoice sent again as `NG-INV-24190-R` ("reissued", same $5,150.00) is rejected as a duplicate; nobody can approve it. The contract shows PO-1042 `Released`: the escrow paid once.
 6. **Split purchase.** Two lab-chemical POs sized from the live cap headroom ($695.00 each when recorded: both under the $2,500 per-PO limit, together $2,002.00 against the $2,000.00 monthly cap). The ERP's matrix has no category cap, by design, and clears both. The contract funded PO-T9101 (spend $1,307.00) and refused PO-T9102: "$695.00 would take lab chemical spending this month to $2,002.00, over the cap of $2,000.00; director approval required." HQ cancelled PO-T9101 afterwards; the budget is back at 19,238 DTUSD with 612 escrowed for PO-1041.
 7. **Ghost vendor.** A PO to Harrow Chemical Co. (`harrow-chemical.testnet`): the connector refuses to mirror it (`VENDOR_NOT_IN_MASTER`), `get_supplier` on the contract is null, and `submit_po` is refused ("not an approved supplier; no approval can override this"). Two independent layers.
+
+Attacks 8–11 are on supplier credentials (CONTRACTS.md §3.1, `agents/kevin/src/credential-attacks.ts`). Three of them use the ERP: Fennimore Polyols (revoked), Sierra Mineral Supply (expired) and Pacific Excipient Co. (suspended after two QC rejects) are still `approved` in the vendor master, and the connector reports each as "ERP says approved but the contract says on hold … Acme AP should put it on hold in the ERP" while the contract refuses the PO. The stale ERP approval gets nobody paid.
 
 The chain fixture (`data/replay/attacks-chain.json`) was re-recorded live on Oct 28 with the three new attacks (5 transactions). The model answers (`attacks-llm.json`) are the earlier recording: in the live re-record the vision model misread the genuine invoice's PO field once, which would have made the unchanged attack 2 fail; that flakiness is a model issue, not an ERP one, and is worth a note in LESSONS.
 
@@ -179,6 +182,7 @@ Three sets of books, matched by ID and compared; nothing is changed. `server/src
 | Escrow | the ERP's escrow clearing account (1050) = the contract's budget + amount in escrow ($19,850.00 = $19,238.00 + $612.00 when recorded) |
 | Contract POs not in Day One | throwaway and rehearsal POs are allowed while cancelled or refunded; one that holds or has paid money fails |
 | General ledger | debits = credits; accounts payable = open approved bills |
+| Supplier standing | for each vendor with a verified payout account, the ERP's status agrees with the account's supplier credential on the contract (§2). SKIPPED, not failed, against a contract without credentials, which is the recorded fixture until the redeploy |
 
 The first live run found a real gap: after QC release the ERP's PO mirror still said `funded` while Day One and the contract said paid, because Kevin's release hook posted the status change and the payment but not the final verdict. The hook now records it (`erp: purchaseOrder PO-1042 — contract verdict recorded: paid`). The contract views are recorded in `data/replay/reconcile-chain.json`; `-- --live` reads the contract now (still no keys), `-- --record` rewrites the fixture. The same function can run nightly against the live contract and post the result to Muse; that is not scheduled yet.
 
@@ -189,7 +193,7 @@ The first live run found a real gap: after QC release the ERP's PO mirror still 
 | Rebuild the ERP from scratch (masters, cutover sync from a fresh Day One seed, migrated AP history; about 3 s) | `npm run erp:seed` (`-- --json`) → `data/runtime/erp.db` |
 | Start the ERP: API and web view | `npm run erp` → http://localhost:8087/ (`ERP_PORT`, `ERP_DB`, `--reseed`) |
 | The demo loop with the ERP attached (replay of the recorded testnet run, no keys) | `npm run erp:demo` (`-- --json`, `--memory`) |
-| The attack suite, seven attacks | `npm run test:attacks` |
+| The attack suite, eleven attacks | `npm run test:attacks` |
 | Reconcile Day One, the ERP and the contract (replay of recorded views, no keys; `-- --live` reads testnet now, `-- --record` rewrites the fixture, `-- --json`) | `npm run erp:reconcile` → MATCH per check, exit 0 |
 | Tests (ERP: 38; connector, sync and reconciliation: 6; attack suite and Kevin: 66; 241 in all) | `npm test` |
 
