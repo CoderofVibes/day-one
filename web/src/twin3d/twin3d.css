@@ -130,21 +130,49 @@
   font-size: 10px;
 }
 
-/* The flat | 3D switch on the map pane. */
+/* The bar above the map pane: this run | group buy (with the group run's own steps), flat | 3D. */
 .map-view {
   grid-column: 1 / -1;
   position: relative;
 }
 
+.map-view .map-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0 0 8px;
+}
+
+.map-view .map-bar .view-switch:last-child {
+  margin-left: auto;
+}
+
 .map-view .view-switch {
-  position: absolute;
-  top: 12px;
-  right: 14px;
   display: inline-flex;
   border: 1px solid var(--line);
   border-radius: 8px;
   overflow: hidden;
-  z-index: 2;
+}
+
+.map-view .group-steps {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+}
+
+.map-view .group-steps button {
+  padding: 2px 9px;
+  font-size: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.map-view .group-steps button:disabled {
+  color: var(--muted);
 }
 
 .map-view .view-switch button {
@@ -185,10 +213,6 @@
   .t3-label.plant span {
     display: none;
   }
-}
-
-.map-view .pane.map h2 {
-  padding-right: 96px;
 }
 
 .t3-label.dept.far {

@@ -504,27 +504,70 @@ const PAYOUT: Shot = {
   elevation: 0.6,
 };
 
-/** What the story camera shows at a step, by the step's title (web/src/run.ts AUDIENCE). */
-export function shotFor(title: string): Shot {
+/** About the size of a coin's label on screen ("Plant B's $4,745.00 refused"). */
+const COIN_LABEL_PX: [number, number] = [110, 18];
+
+/** A department's building, with room above its roof for the label of a coin leaving it. */
+function deptSubjects(id: FacilityId, code: DeptCode): Subject[] {
+  const box = deptBox(id, code);
+  if (!box) return [];
+  const top = FLOOR_Z + topHeight(code, DEPT_Z.online);
+  const [x, y] = centerOf(box);
+  return [...boxSubjects(box, top), { point: world(x, y, top + 3), padPx: COIN_LABEL_PX }];
+}
+
+/** The pooled order (docs/GROUP_BUY.md): each plant's purchasing roof, where its coin leaves, and the vault. */
+const POOLED: Shot = {
+  subjects: [...deptSubjects("A", "purchasing"), ...deptSubjects("B", "purchasing"), ...ESCROW()],
+  azimuth: ISO + 0.2,
+  elevation: 0.55,
+};
+/** Where the earmarked share's truck stands on the road from the hub to Plant A: halfway. */
+const EARMARK_ROAD = (): Subject[] => {
+  const b = deptBox("B", "warehouse");
+  if (!b) return [];
+  const [bx, by] = centerOf(b);
+  const from = world(bx, by, 0);
+  const p = road3(from, dock3({ kind: "dept", facility: "A", dept: "warehouse" }, from)).at(0.5);
+  return [{ point: [p[0], p[1] + 4.2, p[2]], padPx: TRUCK_LABEL_PX }];
+};
+/** The pooled payout and the earmarked share's truck leaving the hub for Plant A, in one frame. */
+const POOLED_PAYOUT: Shot = {
+  subjects: [...ESCROW(), ...SUPPLIERS(), ...plantSubjects("B"), ...EARMARK_ROAD()],
+  azimuth: ISO + 0.1,
+  elevation: 0.6,
+};
+
+/**
+ * What the story camera shows at a step, by the step's title (web/src/run.ts AUDIENCE and the
+ * group run's titles in docs/GROUP_BUY.md). `pooled` is true once the run holds a pooled PO.
+ */
+export function shotFor(title: string, pooled = false): Shot {
   if (title.startsWith("Upload ") || title.endsWith(" confirms")) return PLANT_B;
-  if (title.endsWith(" texts")) return MONEY;
+  if (title.endsWith(" texts")) return pooled ? POOLED : MONEY;
   switch (title) {
     case "Discrepancy":
       return TWO_PLANTS;
     case "Forecast":
       return PLANT_B;
     case "Quotes":
+    case "Pooled quotes":
       return QUOTES;
+    case "Pooled PO":
+      return POOLED;
     case "Small PO":
     case "Big PO":
-    case "Kevin retries":
       return MONEY;
+    case "Kevin retries":
+      return pooled ? POOLED : MONEY;
     case "Supplier ships":
       return SHIPPING;
     case "Delivery":
-    case "QC release":
+    case "Delivery at the hub":
     case "QC reject":
       return QC;
+    case "QC release":
+      return pooled ? POOLED_PAYOUT : QC;
     case "Paid":
       return PAYOUT;
     default:
@@ -607,8 +650,17 @@ export function frameShot(shot: Shot, viewport: Viewport = DEFAULT_VIEWPORT): Fr
 }
 
 /** Where the story camera stands at a step, fitted to the viewport. */
-export function framingFor(title: string, viewport: Viewport = DEFAULT_VIEWPORT): Framing {
-  return frameShot(shotFor(title), viewport);
+export function framingFor(
+  title: string,
+  viewport: Viewport = DEFAULT_VIEWPORT,
+  pooled = false,
+): Framing {
+  return frameShot(shotFor(title, pooled), viewport);
+}
+
+/** True once the run has a pooled PO: its money moves as plant shares and the shots widen. */
+export function isPooled(state: TwinState): boolean {
+  return state.pooled !== undefined;
 }
 
 /**

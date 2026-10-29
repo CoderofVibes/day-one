@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { GROUP_TWIN, groupRun } from "../groupBuy.ts";
 import { run, type Step } from "../run.ts";
 import { anchor, arc, FACILITY_LAYOUTS, iso, slab, VIEW } from "./layout.ts";
 import {
@@ -234,6 +235,126 @@ describe("deriveTwinState over the recorded run", () => {
     });
     expect(s.escrowHeldCents).toBe(61_200);
     expect(status(s, "qc_lab")).toBe("online");
+  });
+});
+
+describe("deriveTwinState over the recorded group purchase (docs/GROUP_BUY.md)", () => {
+  const gIndex = (title: string) => {
+    const i = groupRun.steps.findIndex((s) => s.title === title);
+    if (i < 0) throw new Error(`no step "${title}" in the recorded group run`);
+    return i;
+  };
+  const gAt = (title: string) => deriveTwinState(groupRun, gIndex(title), GROUP_TWIN);
+  const alerts = (s: TwinState, id: string) => s.facilities.find((f) => f.id === id)?.alerts;
+
+  it("starts with every plant online and notes who is in the pool", () => {
+    const start = deriveTwinState(groupRun, 0, GROUP_TWIN);
+    expect(start.facilities.map((f) => `${f.id}:${f.online}/${f.departments.length}`)).toEqual([
+      "A:9/9",
+      "B:9/9",
+      "C:4/4",
+    ]);
+    expect(start.summary).toBe("All three plants on Acme's systems.");
+    const pool = gAt("Pool");
+    expect(alerts(pool, "B")).toEqual(["In the pool: 700 kg ascorbic acid."]);
+    expect(alerts(pool, "A")).toEqual(["In the pool: 700 kg ascorbic acid."]);
+    expect(alerts(pool, "C")).toEqual(["No ascorbic acid need; out of the pool."]);
+    expect(gAt("Pooled quotes").quotes.map((q) => `${q.supplier} ${q.standing}`)).toEqual([
+      "QuickChem Direct excluded",
+      "Northgate selected",
+      "Ridgeway runner-up",
+    ]);
+  });
+
+  it("refuses the pooled PO as one coin per plant share, each from its own purchasing roof", () => {
+    const s = gAt("Pooled PO");
+    const refused = s.flows.filter((f) => f.status === "refused");
+    expect(refused.map((f) => f.id)).toEqual(["refused-PO-G-2001/B", "refused-PO-G-2001/A"]);
+    expect(refused[0]).toMatchObject({
+      kind: "money",
+      from: { kind: "dept", facility: "B", dept: "purchasing" },
+      to: { kind: "escrow" },
+      label: "PO-G-2001 · Plant B's $4,745.00 share refused",
+      short: "Plant B's $4,745.00 refused",
+      share: { plant: "B", total: "$9,490.00" },
+    });
+    expect(refused[1]?.from).toEqual({ kind: "dept", facility: "A", dept: "purchasing" });
+    expect(refused[1]?.chainTx?.status).toBe("refused");
+    expect(s.escrowHeldCents).toBe(0);
+    expect(s.summary).toBe("PO-G-2001 pooled for $9,490.00: Plant B $4,745.00, Plant A $4,745.00.");
+    expect(s.pooled).toBe("PO-G-2001");
+    expect(gAt("Pooled quotes").pooled).toBeUndefined();
+  });
+
+  it("records each director's approval on their own plant", () => {
+    const linda = gAt("Linda texts");
+    expect(alerts(linda, "B")).toEqual([
+      "In the pool: 700 kg ascorbic acid.",
+      "PO-G-2001 approved by Linda Park; Kevin retries within the approval.",
+    ]);
+    expect(alerts(linda, "A")).toEqual(["In the pool: 700 kg ascorbic acid."]);
+    const dana = gAt("Dana texts");
+    expect(alerts(dana, "A")?.[1]).toBe(
+      "PO-G-2001 approved by Dana Whitfield; Kevin retries within the approval.",
+    );
+  });
+
+  it("funds one escrow from two coins, held with their approvals, and clears the notes", () => {
+    const s = gAt("Kevin retries");
+    const held = s.flows.filter((f) => f.status === "held");
+    expect(held.map((f) => f.label)).toEqual([
+      "PO-G-2001 · Plant B's $4,745.00 share held, approved by Linda Park",
+      "PO-G-2001 · Plant A's $4,745.00 share held, approved by Dana Whitfield",
+    ]);
+    expect(held.map((f) => f.share?.approvedBy)).toEqual(["Linda Park", "Dana Whitfield"]);
+    expect(s.flows.some((f) => f.status === "refused")).toBe(false);
+    expect(s.escrowHeldCents).toBe(949_000);
+    expect(alerts(s, "A")).toEqual([]);
+    expect(alerts(s, "B")).toEqual([]);
+    expect(alerts(s, "C")).toEqual(["No ascorbic acid need; out of the pool."]);
+  });
+
+  it("delivers to the hub, then pays once and sends the earmarked share on to Plant A", () => {
+    const hub = gAt("Delivery at the hub");
+    expect(hub.flows.find((f) => f.id === "ship-PO-G-2001")).toMatchObject({
+      status: "arrived",
+      label: "PO-G-2001 · 1,400 kg ascorbic acid from Northgate Ingredients",
+    });
+    expect(hub.lots).toEqual([
+      { code: "ASC-261117-01", state: "quarantine", facility: "B", department: "qc_lab" },
+    ]);
+    const paid = gAt("QC release");
+    expect(paid.lots[0]?.state).toBe("released");
+    expect(paid.escrowHeldCents).toBe(0);
+    expect(paid.flows.some((f) => f.status === "held")).toBe(false);
+    expect(paid.flows.find((f) => f.id === "paid-PO-G-2001")).toMatchObject({
+      from: { kind: "escrow" },
+      to: { kind: "suppliers" },
+      label: "PO-G-2001 · $9,490.00 paid to Northgate Ingredients",
+    });
+    expect(paid.flows.find((f) => f.id === "earmark-PO-G-2001")).toMatchObject({
+      kind: "material",
+      from: { kind: "dept", facility: "B", dept: "warehouse" },
+      to: { kind: "dept", facility: "A", dept: "warehouse" },
+      label: "PO-G-2001 · 700 kg on to Acme Riverside",
+      short: "700 kg → Plant A",
+      status: "moving",
+      progress: 0.5,
+    });
+    const lines = formatTwinState(paid);
+    expect(lines).toContain("Material: PO-G-2001 · 700 kg on to Acme Riverside, on the road.");
+    expect(lines).toContain("Money: PO-G-2001 · $9,490.00 paid to Northgate Ingredients, arrived.");
+    expect(lines.join("\n")).not.toMatch(/tx |testnet/);
+  });
+
+  it("leaves the demo run exactly as it was", () => {
+    const s = deriveTwinState(run, run.steps.length - 1);
+    expect(s.flows.every((f) => f.share === undefined)).toBe(true);
+    expect(s.pooled).toBeUndefined();
+    expect(s.summary).toBe("Plant B: 6 of 9 departments online.");
+    expect(at("Linda texts").facilities.find((f) => f.id === "B")?.alerts).toEqual([
+      "PO-1042 approved by Linda Park; Kevin retries within the approval.",
+    ]);
   });
 });
 

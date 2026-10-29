@@ -4,7 +4,8 @@
 // runs. Prints console errors, the renderer's draw calls and the frames rendered in one second
 // at each moment, and any visible label that crosses the stage edge or overprints another
 // (the exit code is 1 when one does). STEPS=all captures every step; CURTAIN=1 keeps the
-// curtain on throughout.
+// curtain on throughout; RUN=group captures the recorded group purchase (the map pane's
+// "Group buy" run, docs/GROUP_BUY.md) at its own moments instead.
 
 import { existsSync, readFileSync } from "node:fs";
 import { extname, join } from "node:path";
@@ -33,13 +34,38 @@ const KEY: { step: number; name: string; curtain?: boolean }[] = [
   { step: 13, name: "paid-curtain", curtain: true },
   { step: 14, name: "summary" },
 ];
-const run = JSON.parse(readFileSync(join(dist, "../src/data/demo-run.json"), "utf8")) as {
-  steps: { title: string }[];
-};
+/** The group run's moments: the pool, the two-share refusal, the funding, the hub and the payout. */
+const KEY_GROUP: { step: number; name: string; curtain?: boolean }[] = [
+  { step: 0, name: "three-plants" },
+  { step: 2, name: "pool" },
+  { step: 3, name: "pooled-quotes" },
+  { step: 4, name: "pooled-refused" },
+  { step: 4, name: "pooled-refused-curtain", curtain: true },
+  { step: 6, name: "both-approved" },
+  { step: 7, name: "pooled-funded" },
+  { step: 8, name: "truck" },
+  { step: 9, name: "hub" },
+  { step: 10, name: "paid-and-on" },
+  { step: 10, name: "paid-and-on-curtain", curtain: true },
+  { step: 11, name: "books" },
+];
+const group = process.env.RUN === "group";
+const run = JSON.parse(
+  readFileSync(
+    join(dist, group ? "../src/data/group-buy.json" : "../src/data/demo-run.json"),
+    "utf8",
+  ),
+) as { steps: { title: string }[] };
 const moments =
   process.env.STEPS === "all"
     ? run.steps.map((s, step) => ({ step, name: s.title.toLowerCase().replace(/\W+/g, "-") }))
-    : KEY;
+    : group
+      ? KEY_GROUP
+      : KEY;
+const query = group ? "?view=3d&run=group" : "?view=3d";
+const prefix = group ? "group-" : "";
+/** The step counter that must reach the last step in record mode. */
+const counterSel = group ? ".group-step-count" : ".step-count";
 
 // A string, not a function: tsx's esbuild helpers (__name) do not exist in the page.
 const PROBE = `new Promise((resolve) => {
@@ -100,7 +126,7 @@ if (process.env.RECORD) {
       contentType: types[extname(file)] ?? "application/octet-stream",
     });
   });
-  await page.goto("http://day-one.local/?view=3d&record=1");
+  await page.goto(`http://day-one.local/${query}&record=1`);
   await page.locator(".t3-stage canvas").waitFor();
   const samples: number[] = [];
   for (let i = 0; i < 6; i++) {
@@ -112,12 +138,12 @@ if (process.env.RECORD) {
   console.log(
     `record: clock ${samples.map((s) => s.toFixed(2)).join(", ")} ms · every sample a whole number of 1000/60 ms frames: ${fixed}`,
   );
-  const counter = page.locator(".step-count");
+  const counter = page.locator(counterSel);
   console.log(
     `record: after about 4 s the counter reads "${(await counter.textContent())?.trim()}"`,
   );
   await page.waitForFunction(
-    `document.querySelector(".step-count")?.textContent?.includes("${run.steps.length} / ${run.steps.length}")`,
+    `document.querySelector("${counterSel}")?.textContent?.includes("${run.steps.length} / ${run.steps.length}")`,
     null,
     { timeout: 120_000 },
   );
@@ -125,7 +151,7 @@ if (process.env.RECORD) {
     `record: reached "${(await counter.textContent())?.trim()}" at clock ${await page.evaluate("window.dayOneTwin.clock")} ms`,
   );
   await page.waitForTimeout(2600);
-  await page.locator(".t3-stage").screenshot({ path: join(out, "record-end.png") });
+  await page.locator(".t3-stage").screenshot({ path: join(out, `${prefix}record-end.png`) });
   console.log("record errors:", errors.length ? errors : "none");
   await page.close();
   await browser.close();
@@ -149,15 +175,18 @@ for (const [name, width, height, scheme] of [
       contentType: types[extname(file)] ?? "application/octet-stream",
     });
   });
-  await page.goto("http://day-one.local/?view=3d");
+  await page.goto(`http://day-one.local/${query}`);
   const stage = page.locator(".t3-stage");
   await stage.locator("canvas").waitFor();
   const curtain = page.getByText("Behind the curtain").first();
+  // The demo run steps on the arrow keys; the group run has its own › button on the map bar.
+  const next = page.getByRole("button", { name: "Next group step" });
   let at = 0;
   let curtainOn = false;
   for (const m of moments) {
     while (at < m.step) {
-      await page.keyboard.press("ArrowRight");
+      if (group) await next.click();
+      else await page.keyboard.press("ArrowRight");
       at++;
     }
     const want = Boolean(m.curtain || process.env.CURTAIN);
@@ -168,7 +197,7 @@ for (const [name, width, height, scheme] of [
     await page.waitForTimeout(2600);
     const stats = (await page.evaluate(PROBE)) as { calls: number; triangles: number; fps: number };
     const labels = (await page.evaluate(LABELS)) as { clipped: string[]; overlapping: string[] };
-    const file = `${name}-${String(m.step).padStart(2, "0")}-${m.name}.png`;
+    const file = `${prefix}${name}-${String(m.step).padStart(2, "0")}-${m.name}.png`;
     await stage.screenshot({ path: join(out, file) });
     console.log(
       `${file}: ${run.steps[m.step]?.title} · ${stats.calls} draw calls, ${stats.triangles} triangles, ${stats.fps} frames in 1 s`,

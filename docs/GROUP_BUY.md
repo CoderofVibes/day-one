@@ -27,7 +27,7 @@ prints the recorded run and `Transcript matches data/replay/group-transcript.txt
 
 Savings shown to staff: $810.00 against the price on file (two plants at $7.10/kg plus freight each, versus one pooled order at $6.65/kg plus one freight).
 
-The three-plant web view (`npm run web`, "Three plants") shows the same pool as a "Group purchasing" block: one line per plant with its quantity, share and approver, and the pooled PO with its savings.
+The three-plant web view (`npm run web`, "Three plants") shows the same pool as a "Group purchasing" block: one line per plant with its quantity, share and approver, and the pooled PO with its savings. The plant map's "Group buy" switch (flat or 3D, docs/TWIN3D.md "The group run") plays the recording step by step: one coin per plant share from each plant's purchasing to the escrow vault, both refused, two approvals, one escrow, the delivery at the hub and the earmarked 700 kg leaving for Riverside on release.
 
 ## 2. What the contract enforces (CONTRACTS.md §9)
 

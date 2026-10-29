@@ -7,7 +7,7 @@
 
 import { Edges, Html, Line, OrbitControls } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { Line2, OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { RunData } from "../run.ts";
@@ -19,6 +19,7 @@ import {
   formatQuotes,
   formatTwinState,
   type QuoteStanding,
+  type TwinOptions,
   type TwinState,
 } from "../twin/model.ts";
 import {
@@ -48,6 +49,7 @@ import {
   type FlowFrame,
   type Framing,
   framingFor,
+  isPooled,
   LABEL_DISTANCE,
   type LotFrame,
   lerp,
@@ -69,6 +71,8 @@ export interface Twin3DProps {
   record: boolean;
   /** Record mode reports the step it has reached. */
   onStep?: (at: number) => void;
+  /** How the run starts (every plant online for the group run); the demo's default otherwise. */
+  options?: TwinOptions;
 }
 
 // ------------------------------------------------------------------ theme
@@ -168,6 +172,24 @@ interface Frame {
 
 const FrameContext = createContext<React.RefObject<Frame> | null>(null);
 
+/** A label's box on screen this frame, for the overprint pass (LabelPass). */
+interface LabelSlot {
+  /** Which label wins an overprint: coins over lots over plant names over pads, depots, pills. */
+  rank: number;
+  /** Depth; nearer wins among equals. */
+  z: number;
+  x: number;
+  y: number;
+  /** 0 while the label is out of frame or unmeasured, so it blocks nothing. */
+  w: number;
+  h: number;
+  hidden: boolean;
+}
+
+const SlotsContext = createContext<React.RefObject<Map<string, LabelSlot>> | null>(null);
+
+const RANK = { flow: 9, lot: 8, plant: 7, pad: 6, depot: 5, dept: 1 } as const;
+
 function useFrameRef(): React.RefObject<Frame> {
   const ref = useContext(FrameContext);
   if (!ref) throw new Error("Twin3D parts must be inside the scene");
@@ -246,11 +268,14 @@ function framingOf(camera: THREE.Camera, target: THREE.Vector3): Framing {
 function StoryCamera({
   title,
   at,
+  pooled,
   record,
   reduced,
 }: {
   title: string;
   at: number;
+  /** The run holds a pooled PO: the money steps frame both plants' purchasing and the vault. */
+  pooled: boolean;
   record: boolean;
   reduced: boolean;
 }) {
@@ -259,8 +284,8 @@ function StoryCamera({
   const size = useThree((s) => s.size);
   const controls = useRef<OrbitControlsImpl>(null);
   const free = useRef(false);
-  const from = useRef<Framing>(framingFor(title, size));
-  const to = useRef<Framing>(framingFor(title, size));
+  const from = useRef<Framing>(framingFor(title, size, pooled));
+  const to = useRef<Framing>(framingFor(title, size, pooled));
   const since = useRef(0);
   const seen = useRef(-1);
   const sized = useRef(`${size.width}x${size.height}`);
@@ -275,14 +300,14 @@ function StoryCamera({
       seen.current = at;
       sized.current = sizeNow;
       from.current = framingOf(camera, c.target);
-      to.current = framingFor(title, size);
+      to.current = framingFor(title, size, pooled);
       since.current = f.t;
       free.current = false;
     } else if (sized.current !== sizeNow && !free.current) {
       // The stage changed size (a rotated phone, a resized window): refit the same shot.
       sized.current = sizeNow;
       from.current = framingOf(camera, c.target);
-      to.current = framingFor(title, size);
+      to.current = framingFor(title, size, pooled);
       since.current = f.t;
     }
     if (window.dayOneTwin) window.dayOneTwin.camera = camera.position.toArray();
@@ -323,20 +348,20 @@ const SCREEN = new THREE.Vector3();
  * A DOM label at its parent's position that fades out when any of it would cross the frame
  * edge: half a plant name at the edge of the stage reads as a mistake, and the story camera
  * frames the step's subjects, not every label. `stackPx` lifts the label by whole pixels so
- * labels on coins stacked in the vault stay apart at every camera distance.
+ * labels on coins stacked in the vault stay apart at every camera distance. Each label also
+ * reports its box to the overprint pass and hides when a higher-ranked or nearer label covers it.
  */
 function Label({
   className,
   zIndexRange,
+  rank,
   stackPx = 0,
-  hidden,
   children,
 }: {
   className: string;
   zIndexRange: [number, number];
+  rank: number;
   stackPx?: number;
-  /** Set by a parent each frame to hide the label for a reason of its own (an overprint). */
-  hidden?: React.RefObject<boolean>;
   children: React.ReactNode;
 }) {
   const anchor = useRef<THREE.Group>(null);
@@ -346,7 +371,10 @@ function Label({
   const shown = useRef(true);
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
+  const slots = useContext(SlotsContext);
+  const id = useId();
   useEffect(() => () => observer.current?.disconnect(), []);
+  useEffect(() => () => void slots?.current?.delete(id), [slots, id]);
   useFrame(() => {
     const g = anchor.current;
     const el = div.current;
@@ -370,7 +398,21 @@ function Label({
       x + w / 2 <= size.width &&
       y - h / 2 >= 0 &&
       y + h / 2 <= size.height;
-    const show = inFrame && !hidden?.current;
+    let covered = false;
+    if (slots?.current) {
+      const slot = slots.current.get(id);
+      covered = slot?.hidden ?? false;
+      slots.current.set(id, {
+        rank,
+        z: SCREEN.z,
+        x,
+        y,
+        w: inFrame ? w : 0,
+        h,
+        hidden: covered,
+      });
+    }
+    const show = inFrame && !covered;
     if (show !== shown.current) {
       shown.current = show;
       el.style.opacity = show ? "" : "0";
@@ -390,6 +432,34 @@ function Label({
       </Html>
     </group>
   );
+}
+
+/**
+ * The overprint pass over the boxes the labels reported: labels are taken in rank order,
+ * nearer first among equals, and one that would overprint a label already kept hides until
+ * the camera moves them apart. A hidden label keeps reporting, so the picture is a function
+ * of the camera, not of the order things happened in. It runs at the default priority (a
+ * positive one would switch off fiber's own rendering), so a label mounted after it reports
+ * a frame late; the fade covers that.
+ */
+function LabelPass() {
+  const slots = useContext(SlotsContext);
+  useFrame(() => {
+    const all = slots?.current;
+    if (!all) return;
+    const boxes = [...all.values()].filter((s) => s.w > 0);
+    boxes.sort((a, b) => b.rank - a.rank || a.z - b.z);
+    const kept: LabelSlot[] = [];
+    for (const s of boxes) {
+      // A few pixels of touching corners is not overprinting.
+      s.hidden = kept.some(
+        (k) =>
+          Math.abs(k.x - s.x) < (k.w + s.w) / 2 - 4 && Math.abs(k.y - s.y) < (k.h + s.h) / 2 - 4,
+      );
+      if (!s.hidden) kept.push(s);
+    }
+  });
+  return null;
 }
 
 // ------------------------------------------------------------------ buildings
@@ -567,53 +637,14 @@ function Buildings({ theme }: { theme: Theme }) {
   );
 }
 
-/** The glow around a department the moment it comes online, and its label. */
-const NEVER_HIDDEN: React.RefObject<boolean> = { current: false };
-
-/** About the size of a department pill on screen, from its text (11 px font, 6 px padding). */
-function pillSize(label: string): [number, number] {
-  return [label.length * 6.2 + 12, 17];
-}
-
+/** The glow around a department the moment it comes online, and its label (a pill). */
 function DepartmentExtras({ theme, hideLabels }: { theme: Theme; hideLabels: boolean }) {
   const frame = useFrameRef();
-  const camera = useThree((s) => s.camera);
-  const size = useThree((s) => s.size);
   const glows = useRef<(THREE.Mesh | null)[]>([]);
   const labels = useRef<(THREE.Group | null)[]>([]);
   const plantB = useMemo(() => FACILITY_LAYOUTS.find((l) => l.id === "B")?.departments ?? [], []);
-  const hidden = useRef(plantB.map(() => ({ current: false })));
-  const pills = useRef<{ i: number; x: number; y: number; z: number; w: number; h: number }[]>([]);
   useFrame(() => {
     const f = frame.current;
-    // Where each pill lands on screen; a pill behind a nearer one it would overprint hides.
-    pills.current.length = 0;
-    plantB.forEach(({ code }, i) => {
-      const g = labels.current[i];
-      const d = f.departments.find((x) => x.facility === "B" && x.code === code);
-      if (!g || !d) return;
-      g.getWorldPosition(SCREEN).project(camera);
-      const [w, h] = pillSize(d.label);
-      pills.current.push({
-        i,
-        x: ((SCREEN.x + 1) / 2) * size.width,
-        y: ((1 - SCREEN.y) / 2) * size.height,
-        z: SCREEN.z,
-        w,
-        h,
-      });
-    });
-    pills.current.sort((a, b) => a.z - b.z);
-    const kept: typeof pills.current = [];
-    for (const p of pills.current) {
-      const overprints = kept.some(
-        (k) =>
-          Math.abs(k.x - p.x) < (k.w + p.w) / 2 - 4 && Math.abs(k.y - p.y) < (k.h + p.h) / 2 - 4,
-      );
-      const flag = hidden.current[p.i];
-      if (flag) flag.current = overprints;
-      if (!overprints) kept.push(p);
-    }
     plantB.forEach(({ code, box }, i) => {
       const d = f.departments.find((x) => x.facility === "B" && x.code === code);
       const [cx, cy] = centerOf(box);
@@ -652,14 +683,14 @@ function DepartmentExtras({ theme, hideLabels }: { theme: Theme; hideLabels: boo
               labels.current[i] = el;
             }}
           >
-            <DeptLabel code={code} hidden={hidden.current[i] ?? NEVER_HIDDEN} />
+            <DeptLabel code={code} />
           </group>
         ))}
     </>
   );
 }
 
-function DeptLabel({ code, hidden }: { code: string; hidden: React.RefObject<boolean> }) {
+function DeptLabel({ code }: { code: string }) {
   const frame = useFrameRef();
   const [look, setLook] = useState<DeptLook>("offline");
   const [far, setFar] = useState(false);
@@ -676,8 +707,8 @@ function DeptLabel({ code, hidden }: { code: string; hidden: React.RefObject<boo
   return (
     <Label
       zIndexRange={[8, 0]}
+      rank={RANK.dept}
       className={`t3-label dept ${look}${far ? " far" : ""}`}
-      hidden={hidden}
     >
       {label}
     </Label>
@@ -717,7 +748,7 @@ function Floors({ theme, state }: { theme: Theme; state: TwinState }) {
           <group key={layout.id}>
             <Slab box={layout.floor} z0={0} height={FLOOR_Z} color={theme.floor} />
             <group position={world(fx - layout.floor.w * 0.5, fy + 1.5, 0)}>
-              <Label zIndexRange={[8, 0]} className="t3-label plant">
+              <Label zIndexRange={[8, 0]} rank={RANK.plant} className="t3-label plant">
                 <strong>{facility?.name ?? layout.id}</strong>
                 <span>
                   {layout.id === "B"
@@ -743,7 +774,7 @@ function EscrowLabel() {
     if (frame.current.escrowCents !== cents) setCents(frame.current.escrowCents);
   });
   return (
-    <Label zIndexRange={[8, 0]} className="t3-label pad">
+    <Label zIndexRange={[8, 0]} rank={RANK.pad} className="t3-label pad">
       <strong>Escrow</strong>
       <span>{cents > 0 ? `${formatCents(cents)} held` : "nothing held"}</span>
     </Label>
@@ -798,7 +829,7 @@ function Pads({
         <meshStandardMaterial color={theme.steady} roughness={0.8} />
       </mesh>
       <group position={label("hq")}>
-        <Label zIndexRange={[8, 0]} className="t3-label pad">
+        <Label zIndexRange={[8, 0]} rank={RANK.pad} className="t3-label pad">
           <strong>Acme HQ</strong>
           <span>budget</span>
         </Label>
@@ -807,7 +838,7 @@ function Pads({
         <EscrowLabel />
       </group>
       <group position={label("suppliers")}>
-        <Label zIndexRange={[8, 0]} className="t3-label pad">
+        <Label zIndexRange={[8, 0]} rank={RANK.pad} className="t3-label pad">
           <strong>Suppliers</strong>
         </Label>
       </group>
@@ -824,6 +855,7 @@ function Pads({
               <group position={[0, 3.4, 0]}>
                 <Label
                   zIndexRange={[9, 0]}
+                  rank={RANK.depot}
                   className={`t3-label depot ${standing ?? ""}`}
                   stackPx={i * depotStackPx(curtain, narrow)}
                 >
@@ -918,6 +950,14 @@ function FlowView({
       ? road3(a, dock3(flow.to, a))
       : arc3(a, b);
   }, [flow, state]);
+  // A shipment between plants (the hub's earmarked share) drives on a road of its own; the
+  // suppliers' road to the dock is drawn once by Road.
+  const ownRoad =
+    flow.kind === "material" && flow.status !== "disputed" && flow.from.kind === "dept";
+  const roadPoints = useMemo(
+    () => (ownRoad ? path.points.map(([x, y, z]) => [x, y + 0.05, z] as V3) : []),
+    [ownRoad, path],
+  );
   const mover = useRef<THREE.Group>(null);
   const line = useRef<Line2>(null);
   const wall = useRef<THREE.Mesh>(null);
@@ -961,6 +1001,9 @@ function FlowView({
   const wallAt: V3 = [end[0] + (start[0] - end[0]) * gap, 4.5, end[2] + (start[2] - end[2]) * gap];
   return (
     <group>
+      {ownRoad && (
+        <Line points={roadPoints} color={theme.off} lineWidth={5} transparent opacity={0.9} />
+      )}
       {(money || disputed) && (
         <Line
           ref={line}
@@ -1007,9 +1050,10 @@ function FlowView({
         <group position={[0, money ? (flow.status === "arrived" ? 3.4 : 2.2) : 4.2, 0]}>
           <Label
             zIndexRange={[12, 0]}
+            rank={RANK.flow}
             className={`t3-label flow ${flow.kind} ${flow.status}`}
             stackPx={
-              money && flow.status === "held"
+              money && (flow.status === "held" || flow.status === "refused")
                 ? index * 26
                 : money && flow.status === "arrived"
                   ? 3 * depotStackPx(curtain, narrow)
@@ -1082,7 +1126,7 @@ function LotView({ frameLot, theme }: { frameLot: LotFrame; theme: Theme }) {
           />
         </mesh>
         <group position={[0, 6.4, 0]}>
-          <Label zIndexRange={[12, 0]} className={`t3-label lot ${lot.state}`}>
+          <Label zIndexRange={[12, 0]} rank={RANK.lot} className={`t3-label lot ${lot.state}`}>
             {mark} {lot.code}
           </Label>
         </group>
@@ -1128,77 +1172,90 @@ function Scene({
     parts: blendDepartments(prev, next, 1).flatMap((d) =>
       buildingParts(d).map((part) => ({ part, dept: d })),
     ),
-    cameraDistance: framingFor(title).distance,
+    cameraDistance: framingFor(title, undefined, isPooled(next)).distance,
   });
+  const pooled = isPooled(next);
   // Flows in either state are drawn; a flow that left fades out and unmounts itself.
   const flows = useMemo(() => {
     const ids = new Set(next.flows.map((f) => f.id));
     return [...next.flows, ...prev.flows.filter((f) => !ids.has(f.id))];
   }, [prev, next]);
   const lots = useMemo(() => blendLots(prev, next, 1), [prev, next]);
+  // Coins that share a place stack: those held in the vault, and a pooled PO's shares at the wall.
   const held = flows.filter((f) => f.kind === "money" && f.status === "held").map((f) => f.id);
+  const refused = flows
+    .filter((f) => f.kind === "money" && f.status === "refused")
+    .map((f) => f.id);
+  const stackIndex = (id: string) => Math.max(held.indexOf(id), refused.indexOf(id));
+  const slots = useRef(new Map<string, LabelSlot>());
 
   return (
     <FrameContext.Provider value={frame}>
-      <Driver
-        prev={prev}
-        next={next}
-        at={at}
-        last={last}
-        record={record}
-        reduced={reduced}
-        onStep={onStep}
-        frame={frame}
-      />
-      <color attach="background" args={[theme.bg]} />
-      <hemisphereLight args={[theme.panel, theme.floor, 1.1]} />
-      <directionalLight
-        position={[70, 110, 50]}
-        intensity={1.5}
-        castShadow
-        shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-130}
-        shadow-camera-right={130}
-        shadow-camera-top={130}
-        shadow-camera-bottom={-130}
-        shadow-camera-near={10}
-        shadow-camera-far={400}
-        shadow-bias={-0.0004}
-      />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[15, -0.02, 20]} receiveShadow>
-        <planeGeometry args={[900, 900]} />
-        <meshStandardMaterial color={theme.bg} roughness={1} />
-      </mesh>
-      <Floors theme={theme} state={next} />
-      <Buildings theme={theme} />
-      <DepartmentExtras theme={theme} hideLabels={hideLabels} />
-      <Pads theme={theme} state={next} curtain={curtain} narrow={hideLabels} />
-      <Road theme={theme} state={next} />
-      {flows.map((flow) => (
-        <FlowView
-          key={flow.id}
-          flow={flow}
-          state={next}
-          theme={theme}
-          curtain={curtain}
-          narrow={hideLabels}
-          index={held.indexOf(flow.id)}
+      <SlotsContext.Provider value={slots}>
+        <Driver
+          prev={prev}
+          next={next}
+          at={at}
+          last={last}
+          record={record}
+          reduced={reduced}
+          onStep={onStep}
+          frame={frame}
         />
-      ))}
-      {lots.map((l) => (
-        <LotView key={l.lot.code} frameLot={l} theme={theme} />
-      ))}
-      <StoryCamera title={title} at={at} record={record} reduced={reduced} />
+        <color attach="background" args={[theme.bg]} />
+        <hemisphereLight args={[theme.panel, theme.floor, 1.1]} />
+        <directionalLight
+          position={[70, 110, 50]}
+          intensity={1.5}
+          castShadow
+          shadow-mapSize={[2048, 2048]}
+          shadow-camera-left={-130}
+          shadow-camera-right={130}
+          shadow-camera-top={130}
+          shadow-camera-bottom={-130}
+          shadow-camera-near={10}
+          shadow-camera-far={400}
+          shadow-bias={-0.0004}
+        />
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[15, -0.02, 20]} receiveShadow>
+          <planeGeometry args={[900, 900]} />
+          <meshStandardMaterial color={theme.bg} roughness={1} />
+        </mesh>
+        <Floors theme={theme} state={next} />
+        <Buildings theme={theme} />
+        <DepartmentExtras theme={theme} hideLabels={hideLabels} />
+        <Pads theme={theme} state={next} curtain={curtain} narrow={hideLabels} />
+        <Road theme={theme} state={next} />
+        {flows.map((flow) => (
+          <FlowView
+            key={flow.id}
+            flow={flow}
+            state={next}
+            theme={theme}
+            curtain={curtain}
+            narrow={hideLabels}
+            index={stackIndex(flow.id)}
+          />
+        ))}
+        {lots.map((l) => (
+          <LotView key={l.lot.code} frameLot={l} theme={theme} />
+        ))}
+        <StoryCamera title={title} at={at} pooled={pooled} record={record} reduced={reduced} />
+        <LabelPass />
+      </SlotsContext.Provider>
     </FrameContext.Provider>
   );
 }
 
-export default function Twin3D({ run, at, curtain, record, onStep }: Twin3DProps) {
+export default function Twin3D({ run, at, curtain, record, onStep, options }: Twin3DProps) {
   const theme = useTheme();
   const reduced = useReducedMotion();
   const last = run.steps.length - 1;
-  const prev = useMemo(() => deriveTwinState(run, Math.max(0, at - 1)), [run, at]);
-  const next = useMemo(() => deriveTwinState(run, at), [run, at]);
+  const prev = useMemo(
+    () => deriveTwinState(run, Math.max(0, at - 1), options),
+    [run, at, options],
+  );
+  const next = useMemo(() => deriveTwinState(run, at, options), [run, at, options]);
   const title = run.steps[Math.min(last, Math.max(0, Math.floor(at)))]?.title ?? "";
   const notes = [...formatTwinState(next, curtain), ...formatQuotes(next, curtain)];
   const [narrow, setNarrow] = useState(() => matchMedia("(max-width: 560px)").matches);
@@ -1218,7 +1275,12 @@ export default function Twin3D({ run, at, curtain, record, onStep }: Twin3DProps
           dpr={record ? 1 : [1, 1.5]}
           frameloop="always"
           gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
-          camera={{ fov: 32, near: 2, far: 1200, position: cameraPosition(framingFor(title)) }}
+          camera={{
+            fov: 32,
+            near: 2,
+            far: 1200,
+            position: cameraPosition(framingFor(title, undefined, isPooled(next))),
+          }}
           aria-label={`3D plant view. ${notes.join(" ")}`}
           onCreated={({ gl }) => {
             // For npm run web:shot:3d: the renderer's draw calls and triangles per frame.

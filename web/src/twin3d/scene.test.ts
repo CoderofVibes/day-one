@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { GROUP_TWIN, groupRun } from "../groupBuy.ts";
 import { run } from "../run.ts";
 import { DEPT_Z, FLOOR_Z } from "../twin/layout.ts";
 import { DEPARTMENTS, deriveTwinState } from "../twin/model.ts";
@@ -18,6 +19,7 @@ import {
   ease,
   frameShot,
   framingFor,
+  isPooled,
   labelPadScale,
   lerpFraming,
   projectPoint,
@@ -173,10 +175,10 @@ describe("paths and anchors", () => {
 });
 
 /** How far a shot's subjects, labels included, reach past the frame at a viewport; 0 when they fit. */
-function overrun(title: string, viewport: Viewport): number {
-  const f = framingFor(title, viewport);
+function overrun(title: string, viewport: Viewport, pooled = false): number {
+  const f = framingFor(title, viewport, pooled);
   let worst = 0;
-  for (const s of shotFor(title).subjects) {
+  for (const s of shotFor(title, pooled).subjects) {
     const p = projectPoint(f, s.point, viewport);
     if (!p) return Number.POSITIVE_INFINITY;
     const pads = labelPadScale(viewport);
@@ -218,6 +220,30 @@ describe("story camera", () => {
       expect(overrun(step.title, DEFAULT_VIEWPORT), `${step.title} wide`).toBeLessThanOrEqual(0);
       expect(overrun(step.title, PHONE), `${step.title} phone`).toBeLessThanOrEqual(0);
     }
+  });
+
+  it("frames the group run too: both plants' purchasing and the vault once the PO is pooled", () => {
+    groupRun.steps.forEach((step, i) => {
+      const pooled = isPooled(deriveTwinState(groupRun, i, GROUP_TWIN));
+      expect(pooled, step.title).toBe(i >= 4);
+      expect(overrun(step.title, DEFAULT_VIEWPORT, pooled), `${step.title} wide`).toBe(0);
+      expect(overrun(step.title, PHONE, pooled), `${step.title} phone`).toBe(0);
+    });
+    // The pooled money shot must see Plant A's purchasing roof, far to the west of the vault.
+    const plain = framingFor("Kevin retries");
+    const pooled = framingFor("Kevin retries", DEFAULT_VIEWPORT, true);
+    expect(pooled.distance).toBeGreaterThan(plain.distance);
+    expect(pooled.target[0]).toBeLessThan(plain.target[0]);
+    const a = deptBox("A", "purchasing");
+    if (!a) throw new Error("Plant A has no purchasing cell");
+    const roof = projectPoint(pooled, [a.x + a.w / 2, FLOOR_Z + 6, a.y + a.d / 2]);
+    expect(roof?.[0]).toBeGreaterThan(0);
+    expect(roof?.[0]).toBeLessThan(DEFAULT_VIEWPORT.width);
+    // Texts and the release follow the pooled shots; the demo run's own shots are unchanged.
+    expect(shotFor("Dana texts", true)).toBe(shotFor("Pooled PO"));
+    expect(shotFor("Linda texts")).toBe(shotFor("Big PO"));
+    expect(shotFor("QC release", true)).not.toBe(shotFor("QC release"));
+    expect(isPooled(deriveTwinState(run, run.steps.length - 1))).toBe(false);
   });
 
   it("stands farther back for a narrower stage, never closer than the shot allows", () => {
