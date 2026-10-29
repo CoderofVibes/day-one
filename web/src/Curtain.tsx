@@ -112,7 +112,6 @@ export function Curtain({ data, upTo }: { data: RunData; upTo: number }) {
   // Follow the newest transaction when the run moves; not on mount, so opening the curtain on
   // another screen does not scroll the page.
   const seen = useRef(upTo);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: follow the newest transaction
   useEffect(() => {
     if (seen.current === upTo) return;
     seen.current = upTo;
