@@ -18,6 +18,7 @@ import {
   transfers,
 } from "@day-one/server/ledger/schema";
 import { and, eq } from "drizzle-orm";
+import { isWasteCorrection } from "./massBalance.ts";
 
 /** A received quantity this far from the shipped one is a weighing difference, not a loss. */
 export const TRANSFER_TOLERANCE_BP = 50;
@@ -158,7 +159,8 @@ export interface ReviewInput {
 /**
  * The source plant's review of a proposed adjustment: applying it posts the `count_adjust`
  * as the reviewer (Kevin proposed, a person decided) and resolves the transfer; dismissing it
- * leaves the books as they are and the transfer marked resolved by a person.
+ * leaves the books as they are and the transfer marked resolved by a person. A waste
+ * correction from the mass balance posts no event: applying it records the extra waste.
  */
 export function reviewDiscrepancy(db: Ledger, discrepancyId: number, input: ReviewInput) {
   const row = db.select().from(discrepancies).where(eq(discrepancies.id, discrepancyId)).get();
@@ -166,8 +168,20 @@ export function reviewDiscrepancy(db: Ledger, discrepancyId: number, input: Revi
   if (row.status !== "proposed_adjustment") {
     throw new Error(`discrepancy ${discrepancyId} is ${row.status}, not awaiting review`);
   }
-  const proposed = JSON.parse(row.proposedEventJson ?? "null") as LotEventInput | null;
-  if (!proposed) throw new Error(`discrepancy ${discrepancyId} has no proposed adjustment`);
+  const proposal = JSON.parse(row.proposedEventJson ?? "null") as unknown;
+  if (!proposal) throw new Error(`discrepancy ${discrepancyId} has no proposed adjustment`);
+  const status = input.decision === "apply" ? "adjusted" : "dismissed";
+  if (isWasteCorrection(proposal)) {
+    // Waste left the floor with the batch; no lot moves. The applied row is the addendum the
+    // mass balance reads, and the anchored batch record keeps its own figure.
+    const decided = { ...proposal, reviewedBy: input.staffId, reviewedAt: input.now };
+    db.update(discrepancies)
+      .set({ status, proposedEventJson: JSON.stringify(decided) })
+      .where(eq(discrepancies.id, discrepancyId))
+      .run();
+    return { event: null, status } as const;
+  }
+  const proposed = proposal as LotEventInput;
   return db.transaction((tx) => {
     const event =
       input.decision === "apply"

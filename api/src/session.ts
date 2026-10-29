@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { briefHtml, morningBrief } from "@day-one/kevin/brief";
 import { type DemoPhase, type DemoStep, formatTranscript, startDemo } from "@day-one/kevin/demo";
 import { reviewDiscrepancy } from "@day-one/kevin/discrepancies";
-import { massBalance } from "@day-one/kevin/massBalance";
+import { massBalance, proposeWasteCorrections } from "@day-one/kevin/massBalance";
 import {
   approveTransfer,
   dismissTransfer,
@@ -217,6 +217,11 @@ export class DemoSession {
   /** Issued against tablets, QC samples and waste for every confirmed batch, with Kevin's line. */
   massBalance() {
     return massBalance(this.env.db);
+  }
+
+  /** Kevin's waste corrections for flagged batches, for the plant to review; ledger only. */
+  proposeWasteCorrections() {
+    return this.run(async () => proposeWasteCorrections(this.env.db));
   }
 
   /** Spare stock at one plant that covers another's reorder, before anyone buys (FEATURES_V2 §3). */

@@ -23,7 +23,8 @@
 //   GET  /api/brief                            Kevin's 5am brief (?plant=A|B|C; the acquired plant by default)
 //   GET  /api/brief.html                       the same brief as one printable page
 //   GET  /api/policy                           HQ's view: the limits the contract enforces now, policy changes
-//   POST /api/discrepancies/:id/review         JSON {"decision": "apply" | "dismiss", "staff"?: …}
+//   POST /api/mass-balance/proposals           Kevin sends each flagged batch's plant a waste correction
+//   POST /api/discrepancies/:id/review        JSON {"decision": "apply" | "dismiss", "staff"?: …}
 //   GET  /api/imports                          the import plant's opening inventory, posted imports, review queue
 //   POST /api/imports                          the .xlsx or .csv body (?name=), or JSON {"file": "<name in data/imports>"}
 //   POST /api/imports/:id/mapping              JSON {"mapping": {"item": 0, …}}: Kevin reads the sheet again
@@ -230,6 +231,15 @@ async function route(
         text(body.staff),
       ),
     );
+  }
+
+  if (path === "/api/mass-balance/proposals") {
+    const proposed = await session.proposeWasteCorrections();
+    return reply(res, 200, {
+      proposed,
+      inventory: session.inventory(),
+      massBalance: session.massBalance(),
+    });
   }
 
   const review = /^\/api\/discrepancies\/(\d+)\/review$/.exec(path);

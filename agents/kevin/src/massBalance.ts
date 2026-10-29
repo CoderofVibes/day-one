@@ -3,13 +3,15 @@
 // unaccounted material. Kevin flags a batch, and a plant's product over the period, when the
 // unaccounted share of what was issued passes the threshold, and says in one line whether a
 // unit mix-up could explain it: the gap between the quantities as written and the formula's
-// own quantity for the batch is the most a conversion could have moved. Everything here is a
-// read over the ledger; nothing is adjusted without a person.
+// own quantity for the batch is the most a conversion could have moved. `massBalance` is a
+// read over the ledger. `proposeWasteCorrections` writes Kevin's proposals for the plant to
+// review; an applied one is an addendum to the waste, never an edit of the batch record.
 
 import type { Ledger } from "@day-one/server/ledger/db";
 import {
   batchInputs,
   batchRecords,
+  discrepancies,
   facilities,
   formulaLines,
   formulas,
@@ -30,13 +32,36 @@ export interface BatchBalance {
   tablets: number;
   tabletsBase: number;
   qcBase: number;
+  /** Waste as the batch record has it. */
   wasteBase: number;
+  /** Waste the plant added on review (applied corrections); the record itself is unchanged. */
+  reviewedWasteBase: number;
   unaccountedBase: number;
   /** Unaccounted material as basis points of what was issued. */
   unaccountedBp: number;
   /** How far the issued quantity is from the formula's quantity for the batch's planned size. */
   unitEffectBase: number;
   flagged: boolean;
+}
+
+/**
+ * Kevin's proposed correction of one batch's recorded waste, stored as the discrepancy's
+ * proposal. Applying it records the extra waste beside the batch record; nothing is edited.
+ */
+export interface WasteCorrection {
+  kind: "waste_correction";
+  batchNo: string;
+  facilityId: number;
+  /** Waste to add to what the record says. */
+  wasteDeltaBase: number;
+  reason: string;
+  /** Set by the review: the staff member who applied or dismissed it, and when. */
+  reviewedBy?: number;
+  reviewedAt?: string;
+}
+
+export function isWasteCorrection(p: unknown): p is WasteCorrection {
+  return (p as { kind?: unknown } | null)?.kind === "waste_correction";
 }
 
 export interface ProductPeriodBalance {
@@ -47,6 +72,7 @@ export interface ProductPeriodBalance {
   to: string | null;
   batches: number;
   issuedBase: number;
+  reviewedWasteBase: number;
   unaccountedBase: number;
   unaccountedBp: number;
   unitEffectBase: number;
@@ -58,6 +84,8 @@ export interface MassBalance {
   periods: ProductPeriodBalance[];
   /** Kevin's line for each flagged plant and product; empty when everything balances. */
   sentences: string[];
+  /** Flagged batches with material missing and no correction proposed yet. */
+  unproposed: string[];
 }
 
 export interface MassBalanceInput {
@@ -93,11 +121,17 @@ export function massBalance(db: Ledger, input: MassBalanceInput = {}): MassBalan
     .orderBy(asc(batchRecords.completedAt), asc(batchRecords.batchNo))
     .all();
 
+  const corrections = wasteCorrections(db);
   const batches: BatchBalance[] = rows.map((r) => {
     const tablets = r.batch.actualTablets ?? 0;
     const tabletsBase = tablets * r.tabletWeightMg;
     const wasteBase = r.batch.wasteBase ?? 0;
-    const unaccountedBase = r.issuedBase - tabletsBase - QC_SAMPLE_MG - wasteBase;
+    const reviewedWasteBase = sum(
+      corrections.filter((c) => c.status === "adjusted" && c.batchNo === r.batch.batchNo),
+      (c) => c.wasteDeltaBase,
+    );
+    const unaccountedBase =
+      r.issuedBase - tabletsBase - QC_SAMPLE_MG - wasteBase - reviewedWasteBase;
     const planned = r.batch.theoreticalTablets ?? r.standardTablets;
     const formulaForBatch = Math.round((r.formulaBase * planned) / r.standardTablets);
     const unaccountedBp = r.issuedBase ? Math.round((unaccountedBase * 10_000) / r.issuedBase) : 0;
@@ -111,6 +145,7 @@ export function massBalance(db: Ledger, input: MassBalanceInput = {}): MassBalan
       tabletsBase,
       qcBase: QC_SAMPLE_MG,
       wasteBase,
+      reviewedWasteBase,
       unaccountedBase,
       unaccountedBp,
       unitEffectBase: Math.abs(r.issuedBase - formulaForBatch),
@@ -138,6 +173,7 @@ export function massBalance(db: Ledger, input: MassBalanceInput = {}): MassBalan
       to: times.at(-1) ?? null,
       batches: list.length,
       issuedBase,
+      reviewedWasteBase: sum(list, (b) => b.reviewedWasteBase),
       unaccountedBase,
       unaccountedBp,
       unitEffectBase: sum(list, (b) => b.unitEffectBase),
@@ -145,8 +181,102 @@ export function massBalance(db: Ledger, input: MassBalanceInput = {}): MassBalan
     };
   });
 
-  const sentences = periods.filter((p) => p.flagged).map((p) => explain(p, periods, batches));
-  return { batches, periods, sentences };
+  const sentences = [
+    ...periods.filter((p) => p.flagged).map((p) => explain(p, periods, batches)),
+    ...periods.filter((p) => p.reviewedWasteBase > 0).map(reviewed),
+  ];
+  const proposed = new Set(corrections.map((c) => c.batchNo));
+  const unproposed = batches
+    .filter((b) => b.flagged && b.unaccountedBase > 0 && !proposed.has(b.batchNo))
+    .map((b) => b.batchNo);
+  return { batches, periods, sentences, unproposed };
+}
+
+export interface ProposedCorrection {
+  id: number;
+  batchNo: string;
+  facility: string;
+  wasteDeltaBase: number;
+  sentence: string;
+}
+
+/**
+ * For each flagged batch with material missing and no proposal yet, Kevin proposes recording
+ * the missing material as waste, for the batch's plant to apply or dismiss (`reviewDiscrepancy`).
+ * Never twice for a batch, whatever became of the first proposal.
+ */
+export function proposeWasteCorrections(db: Ledger): ProposedCorrection[] {
+  const balance = massBalance(db);
+  const out: ProposedCorrection[] = [];
+  for (const batchNo of balance.unproposed) {
+    const b = balance.batches.find((x) => x.batchNo === batchNo) as BatchBalance;
+    const plant = db
+      .select({ id: facilities.id, name: facilities.name })
+      .from(facilities)
+      .where(eq(facilities.code, b.facility))
+      .get();
+    if (!plant) continue;
+    const correction: WasteCorrection = {
+      kind: "waste_correction",
+      batchNo,
+      facilityId: plant.id,
+      wasteDeltaBase: b.unaccountedBase,
+      reason:
+        `${batchNo}: ${kg(b.unaccountedBase)} issued but in neither the tablets, the QC samples ` +
+        "nor the recorded waste, recorded as waste on review; the batch record stays as written.",
+    };
+    const sentence =
+      `${batchNo} at ${shortName(plant.name)}: ${kg(b.issuedBase)} issued, ${kg(b.tabletsBase)} in ` +
+      `tablets, ${kg(b.qcBase)} in QC samples and ${kg(b.wasteBase)} written as waste, so ` +
+      `${kg(b.unaccountedBase)} is missing. Proposed for Plant ${b.facility} to review: record it ` +
+      "as waste beside the batch record, which stays as written.";
+    const row = db
+      .insert(discrepancies)
+      .values({
+        kind: "unrecorded_consumption",
+        facilityId: plant.id,
+        lotId: null,
+        expectedBase: b.wasteBase + b.unaccountedBase,
+        observedBase: b.wasteBase,
+        detectedBy: "kevin",
+        status: "proposed_adjustment",
+        explanation: sentence,
+        proposedEventJson: JSON.stringify(correction),
+      })
+      .returning({ id: discrepancies.id })
+      .get();
+    out.push({
+      id: row.id,
+      batchNo,
+      facility: b.facility,
+      wasteDeltaBase: b.unaccountedBase,
+      sentence,
+    });
+  }
+  return out;
+}
+
+/** Every waste correction Kevin proposed, with what became of it. */
+function wasteCorrections(db: Ledger) {
+  return db
+    .select({ status: discrepancies.status, json: discrepancies.proposedEventJson })
+    .from(discrepancies)
+    .where(eq(discrepancies.kind, "unrecorded_consumption"))
+    .all()
+    .map((r) => ({ status: r.status, proposal: JSON.parse(r.json ?? "null") as unknown }))
+    .filter((r): r is { status: typeof r.status; proposal: WasteCorrection } =>
+      isWasteCorrection(r.proposal),
+    )
+    .map((r) => ({ status: r.status, ...r.proposal }));
+}
+
+/** Kevin's line once a plant has recorded the missing material as waste on review. */
+function reviewed(p: ProductPeriodBalance) {
+  return (
+    `${p.product} at ${shortName(p.facilityName)}: Plant ${p.facility} recorded ` +
+    `${kg(p.reviewedWasteBase)} more waste on review. The batch records stay as written; ` +
+    "the cost per bottle now carries it."
+  );
 }
 
 /** Kevin's one line for a flagged plant and product (FICTIONAL_DATA §15 "What Kevin shows"). */

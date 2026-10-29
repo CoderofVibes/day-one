@@ -54,6 +54,7 @@ export interface DiscrepancyView {
   explanation: string | null;
   proposed: { facility: string; qtyDeltaBase: number; reason: string | null } | null;
   transferNo: string | null;
+  batchNo: string | null;
 }
 export interface PlantInventory {
   facilities: { code: string; name: string; role: string }[];
@@ -71,6 +72,7 @@ export interface BatchBalance {
   tabletsBase: number;
   qcBase: number;
   wasteBase: number;
+  reviewedWasteBase: number;
   unaccountedBase: number;
   unaccountedBp: number;
   unitEffectBase: number;
@@ -84,6 +86,7 @@ export interface ProductPeriodBalance {
   to: string | null;
   batches: number;
   issuedBase: number;
+  reviewedWasteBase: number;
   unaccountedBase: number;
   unaccountedBp: number;
   unitEffectBase: number;
@@ -93,6 +96,17 @@ export interface MassBalance {
   batches: BatchBalance[];
   periods: ProductPeriodBalance[];
   sentences: string[];
+  /** Flagged batches Kevin has not yet proposed a waste correction for. */
+  unproposed: string[];
+}
+
+/** Kevin sends each flagged batch's plant a waste correction to review. */
+export function postWasteProposals(): Promise<{
+  proposed: { id: number; batchNo: string; facility: string; sentence: string }[];
+  inventory: PlantInventory;
+  massBalance: MassBalance;
+}> {
+  return request("POST", "api/mass-balance/proposals", "{}", "application/json");
 }
 
 export class ApiError extends Error {

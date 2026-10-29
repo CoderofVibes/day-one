@@ -41,8 +41,11 @@ export interface DiscrepancyView {
   expectedBase: number;
   observedBase: number;
   explanation: string | null;
+  /** For a waste correction, `qtyDeltaBase` is the waste to add, not a stock movement. */
   proposed: { facility: string; qtyDeltaBase: number; reason: string | null } | null;
   transferNo: string | null;
+  /** The batch a mass-balance waste correction is for. */
+  batchNo: string | null;
 }
 
 export interface PlantInventory {
@@ -133,11 +136,28 @@ export function plantInventory(db: Ledger): PlantInventory {
     .orderBy(asc(discrepancies.id))
     .all()
     .map(({ d, lotCode, materialCode, facilityCode }) => {
-      const proposed = d.proposedEventJson
-        ? (JSON.parse(d.proposedEventJson) as LotEventInput)
+      const parsed = d.proposedEventJson
+        ? (JSON.parse(d.proposedEventJson) as
+            | LotEventInput
+            | {
+                kind: "waste_correction";
+                batchNo: string;
+                facilityId: number;
+                wasteDeltaBase: number;
+                reason: string;
+              })
         : null;
+      // A mass-balance waste correction moves no lot: its quantity is waste added on review.
+      const waste = parsed?.kind === "waste_correction" ? parsed : null;
+      const proposed = waste
+        ? { facilityId: waste.facilityId, qtyDeltaBase: waste.wasteDeltaBase, reason: waste.reason }
+        : (parsed as LotEventInput | null);
       const transfer =
-        proposed?.refType === "transfer" && proposed.refId
+        !waste &&
+        proposed &&
+        "refType" in proposed &&
+        proposed.refType === "transfer" &&
+        proposed.refId
           ? db
               .select({ no: transfers.transferNo })
               .from(transfers)
@@ -162,6 +182,7 @@ export function plantInventory(db: Ledger): PlantInventory {
             }
           : null,
         transferNo: transfer ?? null,
+        batchNo: waste?.batchNo ?? null,
       };
     });
 

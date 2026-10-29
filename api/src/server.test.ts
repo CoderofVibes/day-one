@@ -344,6 +344,34 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(again.status).toBe(409);
   });
 
+  it("sends Plant A Kevin's waste corrections, and an applied one balances its batch", async () => {
+    expect((await api("GET", "/api/mass-balance")).body.unproposed).toEqual([
+      "BR-A-2201",
+      "BR-A-2204",
+    ]);
+    const sent = await api("POST", "/api/mass-balance/proposals", {});
+    expect(sent.status).toBe(200);
+    expect(sent.body.proposed.map((p: { batchNo: string }) => p.batchNo)).toEqual([
+      "BR-A-2201",
+      "BR-A-2204",
+    ]);
+    expect(sent.body.massBalance.unproposed).toEqual([]);
+    expect((await api("POST", "/api/mass-balance/proposals", {})).body.proposed).toEqual([]);
+
+    const card = sent.body.inventory.discrepancies.find(
+      (d: { batchNo: string | null }) => d.batchNo === "BR-A-2201",
+    );
+    expect(card).toMatchObject({ status: "proposed_adjustment", proposed: { facility: "A" } });
+    const applied = await api("POST", `/api/discrepancies/${card.id}/review`, {
+      decision: "apply",
+    });
+    expect(applied.body.status).toBe("adjusted");
+    const after = (await api("GET", "/api/mass-balance")).body;
+    expect(after.batches.find((b: { batchNo: string }) => b.batchNo === "BR-A-2201")).toMatchObject(
+      { unaccountedBase: 0, flagged: false },
+    );
+  });
+
   it("lets HQ approve Kevin's bottle transfer and Hollow Pine receive it", async () => {
     const key = encodeURIComponent("BTL:C-B");
     const { status, body } = await api("POST", `/api/transfer-suggestions/${key}/approve`, {});

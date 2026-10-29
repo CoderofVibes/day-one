@@ -19,6 +19,7 @@ import {
   postReview,
   postTransferDecision,
   postTransferReceipt,
+  postWasteProposals,
   probeApi,
   type TransferSuggestions,
 } from "./api.ts";
@@ -206,6 +207,14 @@ function LiveApp({ initial }: { initial: LiveState }) {
     send(decision === "apply" ? "Apply the adjustment" : "Dismiss", async () => {
       const result = await postReview(id, decision);
       setInventory(result.inventory);
+      // An applied waste correction changes the mass balance too.
+      setMass(await getMassBalance());
+    });
+  const proposeWaste = () =>
+    send("Send the waste correction", async () => {
+      const result = await postWasteProposals();
+      setInventory(result.inventory);
+      setMass(result.massBalance);
     });
 
   const moved = (label: string, call: () => Promise<TransferSuggestions>) =>
@@ -271,6 +280,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
             moveNote={moveNote}
             busy={busy !== null}
             onReview={review}
+            onProposeWaste={proposeWaste}
             onDecideMove={decideMove}
             onReceiveMove={receiveMove}
           />
@@ -408,6 +418,7 @@ function PlantsPane({
   moveNote,
   busy,
   onReview,
+  onProposeWaste,
   onDecideMove,
   onReceiveMove,
 }: {
@@ -420,6 +431,7 @@ function PlantsPane({
   moveNote: string[];
   busy: boolean;
   onReview: (id: number, decision: "apply" | "dismiss") => void;
+  onProposeWaste: () => void;
   onDecideMove: (key: string, decision: "approve" | "dismiss") => void;
   onReceiveMove: (transferNo: string) => void;
 }) {
@@ -527,7 +539,9 @@ function PlantsPane({
           </tbody>
         </table>
       </div>
-      {mass && <MassBalanceBlock mass={mass} plants={plants} />}
+      {mass && (
+        <MassBalanceBlock mass={mass} plants={plants} busy={busy} onPropose={onProposeWaste} />
+      )}
       {books && <BooksBlock books={books} />}
       <GroupBuyBlock plants={plants} />
     </section>
@@ -807,12 +821,21 @@ function PolicyBlock({ state }: { state: PolicyState }) {
 function MassBalanceBlock({
   mass,
   plants,
+  busy,
+  onPropose,
 }: {
   mass: MassBalance;
   plants: PlantInventory["facilities"];
+  busy: boolean;
+  onPropose: () => void;
 }) {
   const name = (code: string) => plants.find((p) => p.code === code)?.name ?? `Plant ${code}`;
   const pct = (bp: number) => `${(bp / 100).toFixed(2)}%`;
+  const toPlants = [
+    ...new Set(
+      mass.batches.filter((b) => mass.unproposed.includes(b.batchNo)).map((b) => b.facility),
+    ),
+  ];
   return (
     <div className="mass">
       <h3>Mass balance · issued against tablets, QC samples and recorded waste</h3>
@@ -824,6 +847,17 @@ function MassBalanceBlock({
             {s}
           </p>
         ))
+      )}
+      {toPlants.length > 0 && (
+        <div className="actions">
+          <button type="button" className="primary" disabled={busy} onClick={onPropose}>
+            Send Plant {toPlants.join(" and ")} a waste correction to review
+          </button>
+          <span className="muted small">
+            {mass.unproposed.length} {mass.unproposed.length === 1 ? "batch" : "batches"}; the batch
+            records stay as written.
+          </span>
+        </div>
       )}
       <div className="table-wrap">
         <table className="stock">

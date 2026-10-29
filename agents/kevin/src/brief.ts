@@ -246,7 +246,7 @@ export function morningBrief(db: Ledger, input: BriefInput): Brief {
     if (d.status !== "open" && d.status !== "proposed_adjustment") continue;
     if (d.facility !== plant.code && d.proposed?.facility !== plant.code) continue;
     waiting.push({
-      ref: d.transferNo ?? d.lotCode ?? `discrepancy ${d.id}`,
+      ref: d.transferNo ?? d.batchNo ?? d.lotCode ?? `discrepancy ${d.id}`,
       text:
         (d.explanation ?? `${d.kind} on ${d.lotCode ?? d.material}.`) +
         (d.status === "proposed_adjustment" ? " Kevin's adjustment waits for review." : ""),
