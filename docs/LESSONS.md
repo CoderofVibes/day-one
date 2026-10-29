@@ -32,6 +32,7 @@ _(none yet)_
 - **2026-10-28** — A `node -e "..."` edit in Git Bash ran a template literal's backticks as command substitution and silently wrote `new Error()`. Rule: write multi-line code edits with the Edit tool or a script file, never inline in a shell string.
 - **2026-10-28** — Drizzle wraps errors from `db.run(sql...)` as "Failed to run the query", hiding the SQLite message (a trigger's RAISE text). Rule: when a test checks a database error message, run the statement on `db.$client` or match `error.cause`.
 - **2026-10-28** — npm 11 skips package install scripts unless allowed (`allowScripts`); better-sqlite3 13 still loaded because its prebuilt binary ships in the package. Rule: after adding a native package, load it once (`node -e`) before relying on it; the clean-clone test does the same.
+- **2026-10-28** — A PowerShell `(Get-Content f) -replace … | Set-Content -Encoding utf8 f` on a test file read the UTF-8 source as ANSI and wrote it back with mojibake and a BOM; caught by `git status` and restored before commit. Rule: edit repo files with the Edit tool only; never round-trip them through PowerShell 5.1's Get-Content/Set-Content.
 - **2026-10-28** — A bare `python` in Git Bash on this PC hangs (Windows Store stub) until the tool times out. Rule: script with `node`, never `python`.
 
 - **2026-10-25** — Python's default `urllib` user-agent got HTTP 403 from the Cloudflare relay (bot filter) while curl, PowerShell and Node succeeded. Rule: scripts that call the bridge directly set a `User-Agent` header.

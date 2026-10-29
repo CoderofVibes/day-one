@@ -15,7 +15,8 @@
 //   GET  /api/inventory                        stock by plant and material, transfer discrepancies
 //   GET  /api/mass-balance                     issued vs tablets, QC and waste per batch and period
 //   GET  /api/books                            settled POs, price-drift alerts, Kevin's note
-//   GET  /api/books/export.csv                 the settled POs as the CSV Ruth imports (text/csv)
+//   GET  /api/transfer-suggestions             spare stock at one plant that covers another's reorder
+//   GET  /api/books/export.csv                the settled POs as the CSV Ruth imports (text/csv)
 //   GET  /api/policy                           HQ's view: the limits the contract enforces now, policy changes
 //   POST /api/discrepancies/:id/review         JSON {"decision": "apply" | "dismiss", "staff"?: …}
 //   GET  /api/imports                          the import plant's opening inventory, posted imports, review queue
@@ -97,6 +98,8 @@ async function route(
   if (method === "GET" && path === "/api/mass-balance")
     return reply(res, 200, session.massBalance());
   if (method === "GET" && path === "/api/books") return reply(res, 200, session.books());
+  if (method === "GET" && path === "/api/transfer-suggestions")
+    return reply(res, 200, session.transferSuggestions());
   if (method === "GET" && path === "/api/imports") return reply(res, 200, desk.state());
   if (method === "GET" && path === "/api/policy") return reply(res, 200, await session.policy());
   if (method === "GET" && path === "/api/books/export.csv") {

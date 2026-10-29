@@ -8,6 +8,7 @@ import { join } from "node:path";
 import { type DemoPhase, type DemoStep, formatTranscript, startDemo } from "@day-one/kevin/demo";
 import { reviewDiscrepancy } from "@day-one/kevin/discrepancies";
 import { massBalance } from "@day-one/kevin/massBalance";
+import { suggestTransfers } from "@day-one/kevin/transferSuggestions";
 import { readAttestationFixture, recordedReceipts } from "@day-one/server/attestation/fixture";
 import type { AttestationResult } from "@day-one/server/attestation/types";
 import { verifyAttestation } from "@day-one/server/attestation/verify";
@@ -208,6 +209,12 @@ export class DemoSession {
   /** Issued against tablets, QC samples and waste for every confirmed batch, with Kevin's line. */
   massBalance() {
     return massBalance(this.env.db);
+  }
+
+  /** Spare stock at one plant that covers another's reorder, before anyone buys (FEATURES_V2 §3). */
+  transferSuggestions() {
+    const suggestions = suggestTransfers(this.env.db, { now: this.env.clock() });
+    return { suggestions, sentences: suggestions.map((s) => s.sentence) };
   }
 
   /** The bookkeeper export: settled POs, price-drift alerts and Kevin's note (FEATURES_V2 §2). */

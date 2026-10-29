@@ -60,13 +60,38 @@ export interface Forecast {
 const NUMBER_WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
 
 /** Mass in kg, rounded to whole units for a spoken estimate. */
-function amount(base: number, dimension: string) {
+export function amount(base: number, dimension: string) {
   return dimension === "mass"
     ? `${Math.round(base / 1_000_000).toLocaleString("en-US")} kg`
     : `${base.toLocaleString("en-US")}`;
 }
 
+/** Kevin's forecast, recorded in `forecasts`. */
 export function forecastMaterial(db: Ledger, input: ForecastInput): Forecast {
+  const f = projectMaterial(db, input);
+  const methodNote =
+    `need = planned batches in ${f.horizonDays} days × actual use per tablet at this plant ` +
+    `(formula when no history); shortfall = need − on hand − on order`;
+  const row = db
+    .insert(forecasts)
+    .values({
+      materialId: f.materialId,
+      facilityId: f.facilityId,
+      horizonDays: f.horizonDays,
+      projectedNeedBase: f.needBase,
+      onHandBase: f.onHandBase,
+      onOrderBase: f.onOrderBase,
+      shortfallBase: f.shortfallBase,
+      methodNote,
+      createdAt: input.now,
+    })
+    .returning({ id: forecasts.id })
+    .get();
+  return { id: row.id, ...f };
+}
+
+/** The same numbers without writing a forecast row, for reads across every plant. */
+export function projectMaterial(db: Ledger, input: ForecastInput): Omit<Forecast, "id"> {
   const horizonDays = input.horizonDays ?? DEFAULT_HORIZON_DAYS;
   const facility = db.select().from(facilities).where(eq(facilities.code, input.facility)).get();
   const material = db.select().from(materials).where(eq(materials.code, input.material)).get();
@@ -194,27 +219,7 @@ export function forecastMaterial(db: Ledger, input: ForecastInput): Forecast {
     .filter(Boolean)
     .join(" ");
 
-  const methodNote =
-    `need = planned batches in ${horizonDays} days × actual use per tablet at this plant ` +
-    `(formula when no history); shortfall = need − on hand − on order`;
-  const row = db
-    .insert(forecasts)
-    .values({
-      materialId: material.id,
-      facilityId: facility.id,
-      horizonDays,
-      projectedNeedBase: needBase,
-      onHandBase,
-      onOrderBase,
-      shortfallBase,
-      methodNote,
-      createdAt: input.now,
-    })
-    .returning({ id: forecasts.id })
-    .get();
-
   return {
-    id: row.id,
     materialId: material.id,
     facilityId: facility.id,
     horizonDays,

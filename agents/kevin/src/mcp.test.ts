@@ -110,6 +110,13 @@ describe("Kevin's MCP server", () => {
     expect(lines).toContain("P-CMD at Riverside");
   });
 
+  it("offers Lakeview's spare bottles with Hollow Pine's bottle forecast", async () => {
+    const { lines, data } = await call("get_forecast", { material: "BTL", facility: "B" });
+    expect(lines).toContain("Recommend ordering 100,000.");
+    expect(lines).toContain("Moving 16,000 (BTL-260905-01) to Hollow Pine Tablet Co.");
+    expect(data.transfers).toHaveLength(1);
+  });
+
   it("drafts the demo's PO to Northgate without touching the chain", async () => {
     confirmBr1045(db);
     const forecast = await call("get_forecast", { material: "ASC" });

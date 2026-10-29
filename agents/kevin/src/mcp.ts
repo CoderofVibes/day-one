@@ -17,6 +17,7 @@ import { z } from "zod";
 import { forecastMaterial } from "./forecast.ts";
 import { massBalance } from "./massBalance.ts";
 import { draftPoFromRanking, openRfq, rankQuotes, recordQuotes } from "./purchasing.ts";
+import { suggestTransfers } from "./transferSuggestions.ts";
 
 export interface KevinMcpOptions {
   /** The plant ledger Kevin reads and drafts into. */
@@ -102,7 +103,8 @@ export function createKevinServer(options: KevinMcpOptions) {
       description:
         "Kevin's shortfall forecast for one material at one plant, computed from the formula " +
         "and the production plan (no model guesses): need, on hand, on order, the recommended " +
-        "order and the need-by date.",
+        "order and the need-by date; and, before any order, spare stock another plant could " +
+        "move here instead (a proposal: nothing is moved).",
       inputSchema: {
         material: z.string().describe("Material code, e.g. ASC"),
         facility: z.string().default("B").describe("Plant code"),
@@ -117,7 +119,15 @@ export function createKevinServer(options: KevinMcpOptions) {
         now,
         ...(horizon_days ? { horizonDays: horizon_days } : {}),
       });
-      return answer([forecast.sentence], forecast);
+      const transfers = suggestTransfers(db, {
+        material,
+        now,
+        horizonDays: forecast.horizonDays,
+      }).filter((s) => s.to === facility);
+      return answer([forecast.sentence, ...transfers.map((s) => s.sentence)], {
+        ...forecast,
+        transfers,
+      });
     },
   );
 
