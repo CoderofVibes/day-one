@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import {
   ApiError,
   BOOKS_EXPORT_URL,
@@ -44,12 +44,28 @@ import { PlantView } from "./twin3d/PlantView.tsx";
 
 const PLAY_MS = 2600;
 
+/** The video page (?video=1): the recorded run on the storyboard's clock (docs/RECORDING.md). */
+const VideoApp = lazy(() => import("./VideoApp.tsx"));
+const VIDEO =
+  typeof location !== "undefined" && new URLSearchParams(location.search).get("video") === "1";
+
+export function App() {
+  if (VIDEO) {
+    return (
+      <Suspense fallback={<div className="app muted">Loading…</div>}>
+        <VideoApp />
+      </Suspense>
+    );
+  }
+  return <Screens />;
+}
+
 /**
  * One UI, two sources. When the API (npm run api) answers, the screens run live: whoever is
  * up next gets their buttons and each click advances the run. Otherwise the recorded run
  * replays with Play, Back and Next, as on a static host.
  */
-export function App() {
+function Screens() {
   const [live, setLive] = useState<LiveState | null | undefined>(undefined);
   useEffect(() => {
     probeApi().then(setLive);
@@ -884,7 +900,7 @@ function PolicyBlock({ state }: { state: PolicyState }) {
 }
 
 /** Issued against tablets, QC samples and recorded waste, per plant and product (§15). */
-function MassBalanceBlock({
+export function MassBalanceBlock({
   mass,
   plants,
   busy,
@@ -1150,7 +1166,7 @@ function StaffFeed({
   );
 }
 
-function Who({ who, title }: { who: Audience; title?: string }) {
+export function Who({ who, title }: { who: Audience; title?: string }) {
   return (
     <div className="who">
       <span className="avatar" aria-hidden="true">
@@ -1169,7 +1185,7 @@ function Who({ who, title }: { who: Audience; title?: string }) {
   );
 }
 
-function Lines({ lines }: { lines: string[] }) {
+export function Lines({ lines }: { lines: string[] }) {
   return (
     <div className="lines">
       {lines.map((line) => (
@@ -1179,7 +1195,7 @@ function Lines({ lines }: { lines: string[] }) {
   );
 }
 
-function Phone({ step, approvals }: { step: Step; approvals: RunData["approvals"] }) {
+export function Phone({ step, approvals }: { step: Step; approvals: RunData["approvals"] }) {
   const approval = approvals.find((a) => a.response !== null) ?? approvals[0];
   return (
     <div className="phone">
@@ -1238,7 +1254,7 @@ function Attested({ result }: { result: Attestation }) {
   );
 }
 
-function Curtain({ data, upTo }: { data: RunData; upTo: number }) {
+export function Curtain({ data, upTo }: { data: RunData; upTo: number }) {
   const pane = useRef<HTMLElement>(null);
   const txs = transactionsThrough(data, upTo);
   // Lines without a transaction: the opening budget (step 0) and the closing summary.

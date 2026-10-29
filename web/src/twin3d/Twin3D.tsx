@@ -203,7 +203,9 @@ function Driver({
   const seen = useRef(at);
   if (seen.current !== at) {
     seen.current = at;
-    start.current = record ? at * STEP_MS : clock.current;
+    // A step the twin advanced itself starts on its own grid; one set from outside (the video
+    // page's storyboard clock) starts now.
+    start.current = record && onStep ? at * STEP_MS : clock.current;
   }
   useFrame((_, delta) => {
     clock.current += record ? RECORD_FRAME_MS : Math.min(delta * 1000, 100);
