@@ -27,6 +27,8 @@ target/
 *.db-wal
 *.db-shm
 data/runtime/
+# What lands in Kevin's watched folder (npm run inbox copies the demo scans in)
+data/inbox/batch-records/
 
 # Demo recordings and large media
 recordings/

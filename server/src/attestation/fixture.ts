@@ -7,7 +7,11 @@ import type { AnswerReceipt, AttestationFixture } from "./types.ts";
 
 export const ATTESTATION_FILE = "data/replay/attestation.json";
 /** Every LLM fixture whose NEAR AI answers the attestation covers. */
-export const LLM_FIXTURE_FILES = ["data/replay/demo-llm.json", "data/replay/attacks-llm.json"];
+export const LLM_FIXTURE_FILES = [
+  "data/replay/demo-llm.json",
+  "data/replay/attacks-llm.json",
+  "data/replay/inbox-llm.json",
+];
 
 /** The receipts of the recorded NEAR AI answers, in fixture order; other providers have none. */
 export function recordedReceipts(root: string, files = LLM_FIXTURE_FILES): AnswerReceipt[] {

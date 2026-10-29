@@ -16,6 +16,7 @@
 
 import { type ChainClient, explorerUrl, type LoggedOutcome } from "@day-one/server/chain/client";
 import { summarizeChainTx } from "@day-one/server/chain/summary";
+import type { BatchRecordExtraction } from "@day-one/server/extraction/schema";
 import type { Ledger } from "@day-one/server/ledger/db";
 import {
   batchRecords,
@@ -100,6 +101,12 @@ export interface BatchRecordPage {
   image: LlmImage;
 }
 
+/** A transcription already made, and the model that made it. */
+export interface PageRead {
+  extraction: BatchRecordExtraction;
+  model: string;
+}
+
 export interface DemoDeps {
   db: Ledger;
   chain: ChainClient;
@@ -180,8 +187,11 @@ export interface DemoMachine {
   readonly quarantined: string | null;
   /** 0. Seed counts and the contract's budget. */
   load(): Promise<DemoStep[]>;
-  /** 1. Kevin reads the page (the recorded BR-B-1045 unless another is given). */
-  upload(page?: BatchRecordPage): Promise<DemoStep[]>;
+  /**
+   * 1. Kevin reads the page (the recorded BR-B-1045 unless another is given). A page Kevin
+   * already read from the watched folder comes with that read, so what posts is what Ray saw.
+   */
+  upload(page?: BatchRecordPage, read?: PageRead): Promise<DemoStep[]>;
   /** 2. The purchaser confirms; Kevin anchors the record. */
   confirm(staffName?: string): Promise<DemoStep[]>;
   /** 4–7. Forecast, quotes, the small PO funds, the big PO is refused. */
@@ -354,9 +364,10 @@ class Demo implements DemoMachine {
     });
   }
 
-  upload(page: BatchRecordPage = this.deps.batchRecord) {
+  upload(page: BatchRecordPage = this.deps.batchRecord, read?: PageRead) {
     return this.phase("upload", "confirm", async () => {
-      const { extraction, model } = await transcribeBatchRecord(this.deps.llm, page.image);
+      const { extraction, model } =
+        read ?? (await transcribeBatchRecord(this.deps.llm, page.image));
       const draft = saveBatchDraft(this.db, extraction, {
         file: page.file,
         sha256: page.sha256,

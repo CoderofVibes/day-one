@@ -16,8 +16,8 @@
   "attestation": {
     "model": "z-ai/glm-5.3-flash",
     "tier": "Private TEE",
-    "fetchedAt": "2026-10-29T05:36:22.679Z",
-    "nonce": "c9da39286cdbb5e7945372edf0a531bc34faef38a5255650eb5442f219ee2da9",
+    "fetchedAt": "2026-10-29T18:54:13.552Z",
+    "nonce": "4458786b6733478a313b739a44a40bff0697cb804e0b146198bf3fc74e2f85ce",
     "enclave": [
       {
         "name": "model TDX quote",
@@ -27,7 +27,7 @@
       {
         "name": "model nonce",
         "status": "verified",
-        "detail": "our nonce c9da3928… echoed"
+        "detail": "our nonce 4458786b… echoed"
       },
       {
         "name": "model report_data",
@@ -52,12 +52,12 @@
       {
         "name": "model Intel collateral",
         "status": "verified",
-        "detail": "TCB UpToDate (checked 2026-10-29 05:36Z)"
+        "detail": "TCB UpToDate (checked 2026-10-29 18:54Z)"
       },
       {
         "name": "model NVIDIA GPU",
         "status": "verified",
-        "detail": "NRAS overall attestation result true (checked 2026-10-29 05:36Z)"
+        "detail": "NRAS overall attestation result true (checked 2026-10-29 18:54Z)"
       },
       {
         "name": "gateway TDX quote",
@@ -67,7 +67,7 @@
       {
         "name": "gateway nonce",
         "status": "verified",
-        "detail": "our nonce c9da3928… echoed"
+        "detail": "our nonce 4458786b… echoed"
       },
       {
         "name": "gateway report_data",
@@ -87,12 +87,12 @@
       {
         "name": "gateway event log",
         "status": "verified",
-        "detail": "replays to RTMR3 b7cf9a69…"
+        "detail": "replays to RTMR3 5a0e5e10…"
       },
       {
         "name": "gateway Intel collateral",
         "status": "verified",
-        "detail": "TCB UpToDate (checked 2026-10-29 05:36Z)"
+        "detail": "TCB UpToDate (checked 2026-10-29 18:54Z)"
       }
     ],
     "answers": [

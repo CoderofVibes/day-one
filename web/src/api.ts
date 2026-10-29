@@ -288,6 +288,48 @@ export function postTransferReceipt(transferNo: string): Promise<TransferSuggest
   return request("POST", `api/transfers/${transferNo}/receive`, "{}", "application/json");
 }
 
+/** The watched batch-record folder's review queue (agents/kevin/src/inbox.ts). */
+export interface InboxFlag {
+  fieldPath: string;
+  kind: string;
+  message: string;
+  blocking: boolean;
+  /** How Ray answers a blocking flag: types the value, or confirms he checked. */
+  answer: "value" | "check" | null;
+  suggestion: string | null;
+}
+export interface InboxItem {
+  id: number;
+  file: string;
+  status: "waiting" | "confirmed" | "set_aside" | "failed";
+  batchNo: string | null;
+  facility: string | null;
+  waitingFor: string | null;
+  summary: string;
+  flags: InboxFlag[];
+  questions: number;
+  receivedAt: string;
+  outcome: string | null;
+  confirmedBy: string | null;
+  confirmedAt: string | null;
+}
+export interface InboxState {
+  folder: string | null;
+  items: InboxItem[];
+}
+
+export function getInbox(): Promise<InboxState> {
+  return request<InboxState>("GET", "api/batch-records");
+}
+
+/** Ray confirms a record from the queue, with his answer to each blocking flag. */
+export function postInboxConfirm(
+  batchNo: string,
+  resolutions: Record<string, string>,
+): Promise<ActionResult> {
+  return postJson(`api/batch-records/${encodeURIComponent(batchNo)}/confirm`, { resolutions });
+}
+
 export function postJson(path: string, body: unknown = {}): Promise<ActionResult> {
   return request<ActionResult>("POST", path, JSON.stringify(body), "application/json");
 }

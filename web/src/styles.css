@@ -985,6 +985,55 @@ button {
   }
 }
 
+/* "Waiting for you": one card per scan Kevin read; posted and set-aside ones dim. */
+.inbox {
+  overflow-wrap: anywhere;
+}
+
+.inbox-list,
+.inbox-notes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.inbox-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.inbox-item .small {
+  margin: 0 0 8px;
+}
+
+.inbox-item.confirmed,
+.inbox-item.set_aside,
+.inbox-item.failed {
+  border-color: var(--line);
+  background: transparent;
+}
+
+.inbox-item.set_aside .inbox-head strong,
+.inbox-item.failed .inbox-head strong {
+  color: var(--muted);
+}
+
+.inbox-review .flags {
+  margin-top: 4px;
+}
+
+.inbox-review .flag {
+  background: var(--panel);
+}
+
+.inbox-notes li {
+  margin: 0 0 8px;
+  padding-left: 10px;
+  border-left: 3px solid var(--line);
+}
+
 /* The import wizard: one card per flag, answered cards dim, the quantity box inline. */
 .flags {
   list-style: none;

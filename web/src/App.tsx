@@ -5,16 +5,19 @@ import {
   type Books,
   BRIEF_URL,
   getBooks,
+  getInbox,
   getInventory,
   getMassBalance,
   getPolicy,
   getState,
   getTransferSuggestions,
+  type InboxState,
   type LiveState,
   type MassBalance,
   type PlantInventory,
   type PolicyState,
   postImage,
+  postInboxConfirm,
   postJson,
   postReview,
   postTransferDecision,
@@ -25,6 +28,7 @@ import {
 } from "./api.ts";
 import { groupBuy } from "./groupBuy.ts";
 import { ImportPane } from "./ImportPane.tsx";
+import { InboxPane } from "./InboxPane.tsx";
 import { type Action, actionsFor, actorOf, quantity } from "./live.ts";
 import { plantsSnapshot, STATIC_BOOKS_URL, STATIC_BRIEF_URL } from "./plants.ts";
 import {
@@ -202,6 +206,27 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const [moves, setMoves] = useState<TransferSuggestions | null>(null);
   // Kevin's line about the last approve, dismiss or receipt; the refresh below does not clear it.
   const [moveNote, setMoveNote] = useState<string[]>([]);
+  const [inbox, setInbox] = useState<InboxState | null>(null);
+
+  // Scans land in the watched folder at any time: the queue is read again every few seconds
+  // and after every action. A failed read keeps what is on screen.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refresh whenever the run (state) moves
+  useEffect(() => {
+    let stale = false;
+    const load = () =>
+      getInbox().then(
+        (next) => {
+          if (!stale) setInbox(next);
+        },
+        () => undefined,
+      );
+    load();
+    const timer = setInterval(load, 3_000);
+    return () => {
+      stale = true;
+      clearInterval(timer);
+    };
+  }, [state]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: refresh whenever the run (state) moves
   useEffect(() => {
@@ -249,6 +274,9 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const act = (a: Action) => send(a.label, () => postJson(a.path, a.body));
   const uploadFile = (file: File) =>
     send(`Upload ${file.name}`, () => postImage("api/batch-records", file, file.name));
+  const confirmScan = (batchNo: string, resolutions: Record<string, string>) =>
+    send(`Confirm ${batchNo}`, () => postInboxConfirm(batchNo, resolutions));
+  const waiting = inbox?.items.filter((i) => i.status === "waiting").length ?? 0;
 
   const review = (id: number, decision: "apply" | "dismiss") =>
     send(decision === "apply" ? "Apply the adjustment" : "Dismiss", async () => {
@@ -306,6 +334,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
         error={error}
         onAct={act}
         onUpload={uploadFile}
+        waiting={waiting}
         onReset={() => {
           setMoveNote([]);
           setRuns((n) => n + 1);
@@ -314,6 +343,14 @@ function LiveApp({ initial }: { initial: LiveState }) {
       />
 
       <main className="panes">
+        {inbox?.folder && (inbox.items.length > 0 || state.next.phase === "upload") && (
+          <InboxPane
+            inbox={inbox}
+            busy={busy !== null}
+            viewer="Ray Delgado"
+            onConfirm={confirmScan}
+          />
+        )}
         {map && <PlantView run={state} at={last} curtain={curtain} />}
         {sheet && <ImportPane key={runs} />}
         {plants && (
@@ -355,6 +392,7 @@ function ActionBar({
   error,
   onAct,
   onUpload,
+  waiting,
   onReset,
 }: {
   state: LiveState;
@@ -362,11 +400,14 @@ function ActionBar({
   error: { message: string; hint?: string } | null;
   onAct: (a: Action) => void;
   onUpload: (file: File) => void;
+  /** Scans Kevin already read from the folder: at Ray's turn they come before an upload. */
+  waiting: number;
   onReset: () => void;
 }) {
   const { next } = state;
   const actor = actorOf(next);
-  const actions = actionsFor(next);
+  const fromInbox = next.phase === "upload" && waiting > 0;
+  const actions = fromInbox ? [] : actionsFor(next);
   const waitingOnKevin = actions.length === 0 && next.phase !== "done";
   const request = state.approvals.find((a) => a.response === null)?.request;
 
@@ -379,11 +420,13 @@ function ActionBar({
             ? `${busy}… Kevin is working.`
             : state.stopped
               ? `The run stopped: ${state.stopped}`
-              : waitingOnKevin
-                ? next.action
-                : next.phase === "done"
-                  ? summaryLine(state)
-                  : next.action}
+              : fromInbox
+                ? `Kevin already read ${waiting === 1 ? "one batch record" : `${waiting} batch records`} from the scan folder. Open one under “Waiting for you”.`
+                : waitingOnKevin
+                  ? next.action
+                  : next.phase === "done"
+                    ? summaryLine(state)
+                    : next.action}
         </p>
       </div>
       {state.stopped && state.help && !busy && <p className="muted small bar-help">{state.help}</p>}

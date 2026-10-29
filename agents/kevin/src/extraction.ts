@@ -106,7 +106,11 @@ export async function transcribeBatchRecord(llm: LlmClient, image: LlmImage) {
     schema: BATCH_RECORD_SCHEMA,
   });
   const extraction = result.json as BatchRecordExtraction;
-  if (extraction?.document_type !== "batch_record") {
+  // A page with neither a batch number nor a material line is not a batch record, whatever the
+  // model called it (GLM labels the PO-1042 packing slip a batch record and leaves it blank).
+  const blank =
+    !extraction?.batch_number?.raw?.trim() && (extraction?.materials?.length ?? 0) === 0;
+  if (extraction?.document_type !== "batch_record" || blank) {
     throw new ExtractionError("this page is not a batch record");
   }
   return { extraction, model: `${result.provider}:${result.model}` };

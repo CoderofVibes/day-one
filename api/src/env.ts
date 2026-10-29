@@ -22,7 +22,7 @@ import {
   readFixture,
 } from "@day-one/server/chain/replay";
 import { type Ledger, openLedger } from "@day-one/server/ledger/db";
-import { createLlm, RecordingLlm, ReplayLlm } from "@day-one/server/llm/client";
+import { createLlm, type LlmFixture, RecordingLlm, ReplayLlm } from "@day-one/server/llm/client";
 import type { LlmClient } from "@day-one/server/llm/types";
 import { plantBStaff } from "@day-one/server/relayer";
 import { seedLedger } from "@day-one/server/seed";
@@ -33,6 +33,8 @@ import { acceptAndShip } from "@day-one/suppliers/shipping";
 /** The repository root, where data/, config/ and .env live. */
 export const REPO_ROOT = resolve(import.meta.dirname, "../..");
 export const RELAYER = "dayone-relayer.testnet";
+/** The folder Kevin watches for scanned batch records (research 24 §1). */
+export const INBOX_DIR = join(REPO_ROOT, "data/inbox/batch-records");
 /** The PO numbers the demo submits; a contract accepts each id once. */
 export const DEMO_POS = ["PO-1041", "PO-1042"];
 const BATCH_RECORD = "data/batch-records/BR-B-1045.jpg";
@@ -50,6 +52,8 @@ export function fixtureFiles(root = REPO_ROOT) {
     llm: join(root, "data/replay/demo-llm.json"),
     salts: join(root, "data/replay/demo-salts.json"),
     transcript: join(root, "data/replay/transcript.txt"),
+    /** The vision answers for the other scans in the demo inbox (npm run inbox -- --live --record). */
+    inboxLlm: join(root, "data/replay/inbox-llm.json"),
     proof: join(root, "data/batch-records/BR-B-1045.json"),
   };
 }
@@ -72,6 +76,8 @@ export interface DemoEnv {
   db: Ledger;
   transport: LiveTransport | RecordingTransport | ReplayTransport;
   llm: LlmClient;
+  /** Reads the watched folder: the live models, or the recorded answers for the demo inbox. */
+  inboxLlm: LlmClient;
   salts: DemoSalts;
   deps: DemoDeps;
   /** The chain log's clock, moved by the run. */
@@ -195,7 +201,23 @@ export async function openDemoEnv(options: DemoEnvOptions = {}): Promise<DemoEnv
     ship: (shipment) => acceptAndShip(chain, shipment, { policyContract: accounts.spendPolicy }),
     salts,
   };
-  return { root, live, accounts, db, transport, llm, salts, deps, clock: () => clock };
+  const inboxLlm = live ? llm : inboxReplay(fixtures.llm, fixtures.inboxLlm);
+  return { root, live, accounts, db, transport, llm, inboxLlm, salts, deps, clock: () => clock };
+}
+
+/**
+ * The recorded vision answers for the watched folder: the run's own (BR-B-1045 is read the same
+ * way whether uploaded or dropped) and the other scans of the demo inbox, when recorded. Its own
+ * client, so reading the folder never uses up an answer the run replays.
+ */
+export function inboxReplay(runFixture: string, inboxFixture: string): ReplayLlm {
+  const read = (file: string) => JSON.parse(readFileSync(file, "utf8")) as LlmFixture;
+  const run = read(runFixture);
+  const extra = existsSync(inboxFixture) ? read(inboxFixture).entries : [];
+  return new ReplayLlm({
+    ...run,
+    entries: [...run.entries.filter((e) => e.task === "vision"), ...extra],
+  });
 }
 
 /** A PO id can be submitted once per contract; a second live run needs fresh state. */
