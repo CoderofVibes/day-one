@@ -157,11 +157,10 @@ button {
 
 .panes {
   display: grid;
-  /* One column that never grows past the page, so a wide table scrolls inside its pane. */
-  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
+
 
 .with-curtain .panes {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -598,6 +597,8 @@ button {
 /* The three-plant view: stock by plant and the discrepancies to review. */
 .plants {
   grid-column: 1 / -1;
+  /* Never wider than the page: its wide tables scroll inside it at phone width. */
+  min-width: 0;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 12px;
