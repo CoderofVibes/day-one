@@ -33,6 +33,8 @@ To see the same run in a browser: `npm run web:build`, then open `web/dist/` fro
 
 Also without keys: `npm run test:attacks` (four attacks on Kevin, each shown failing) and `npm run escrow` (the contract's budget, escrow and every PO, read live from testnet). Each takes `-- --json` for one machine-readable line.
 
+Another agent can hire Kevin: `npm run --silent mcp` is an MCP server on stdio with `get_inventory`, `get_forecast`, `get_mass_balance`, `get_books`, `get_policy` (his limits, read live from the contract) and `draft_po`. A draft is all it can make; only Day One's workflow submits, and the contract decides.
+
 ## What happens in the demo
 
 From `data/replay/transcript.txt` (recorded live on testnet, Oct 28, 2026):
@@ -117,6 +119,7 @@ Built by DadMod (Tony Langford, solo entrant) with Claude Code; the code was wri
 | near-api-js | 7.3.1 | chain client and relayer |
 | better-sqlite3, drizzle-orm, drizzle-kit | 13.0.3, 0.45.4, 0.31.11 | ledger |
 | @anthropic-ai/sdk | 1.1.0 | fallback model route |
+| @modelcontextprotocol/sdk, zod | 1.32.1, 4.6.7 | Kevin's MCP server |
 | React, React DOM | 19.3.1 | web UI |
 | Vite, @vitejs/plugin-react | 8.3.5, 6.1.2 | web UI build |
 | playwright-core (dev, `tools/render`) | 1.64.1 | rendering the fictional batch records, UI screenshots |
