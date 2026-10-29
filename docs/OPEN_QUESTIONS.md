@@ -37,7 +37,7 @@ Each question has a recommendation. Reply with the number and "yes" to accept it
 15. **Credit line.** What name goes in "Built by" and in the form's team lead field? **Answered Oct 26:** team name **DadMod**; lead Tony Langford, solo entry (one human, two AI collaborators, stated plainly). Never name his employer; "an advanced nuclear reactor startup" only. Blurbs in `README_TEMPLATE.md` and `DEMO_STORYBOARD.md`. **Form lead name (Tony, Oct 27):** Anthony Langford. His form email is known to Tony and Claude and deliberately not stored in this repo.
 16. **Disk budget.** C: has about 50 GB free, not the ~100 GB in the brief. Recommend capping this project at 15 GB. OK?
 
-## Added Oct 25 — from `docs/BUILD_ANALYSIS.md` (answer before Nov 2)
+## Added Oct 25 — from `docs/phase0/BUILD_ANALYSIS.md` (answer before Nov 2)
 
 21. **One contract instead of two.** Merge `po-escrow` into `spend-policy` now (escrow state lives inside the policy contract; same refusal, approval, release and refund semantics; one deployment). Recommend **yes**: the cross-contract funding hop is the riskiest code on the hero beat and buys only legibility (analysis §4.2). Alternative: keep two contracts and decide on Nov 4 as planned. **Answered Oct 25: yes.** One contract; CONTRACTS.md updated.
 22. **USDC proof optional.** Run PO-1047 in Circle testnet USDC only if your first faucet claim has landed by Nov 4 and the contract is already on testnet; otherwise drop it and state so in Limitations. Recommend **yes** (analysis §4.2). **Answered Oct 25: yes, as a bonus.** Tony expects to collect the USDC; it never gates week 2.

@@ -27,7 +27,7 @@
 ### What Intents would add to this product
 - **Cross-chain supplier payout.** A supplier invoices in "USDC on Base". On release, the escrow (or the treasury) sends USDC to a 1Click deposit address with `recipientType: DESTINATION_CHAIN`, and the supplier receives Base USDC. The buyer never handles bridges.
 - **Paying in what the supplier wants** (any asset-to-asset swap at release).
-- It does **not** add anything to limits, approvals, escrow or records, which are the hero features. For the `realworld` and `business` tracks, the hints are "suggested, not required" (BRIEF_ASSESSMENT §2).
+- It does **not** add anything to limits, approvals, escrow or records, which are the hero features. For the `realworld` and `business` tracks, the hints are "suggested, not required" (BRIEF_ASSESSMENT §2, in git history).
 
 ### How a 1Click payout works (from docs and OpenAPI)
 1. `POST /v0/quote` with body `{dry, swapType: "EXACT_INPUT"|"EXACT_OUTPUT"|..., slippageTolerance (bps), originAsset, depositType: "ORIGIN_CHAIN"|"INTENTS", destinationAsset, amount, recipient, recipientType: "DESTINATION_CHAIN"|"INTENTS", refundTo, refundType, deadline}`. With `dry: true`, the response has **no `depositAddress`** and nothing is committed.

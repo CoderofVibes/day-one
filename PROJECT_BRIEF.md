@@ -1,6 +1,6 @@
 # PROJECT BRIEF — Day One (featuring Kevin) for NEAR HACKATHON
 
-**Version 2 — 2026-10-22.** Revised after an assessment against the live rules (see `BRIEF_ASSESSMENT.md`). Changes from v1 are summarized in Section 15.
+**Version 2 — 2026-10-22.** Revised after an assessment against the live rules (`BRIEF_ASSESSMENT.md`, in git history). Changes from v1 are summarized in Section 15.
 
 > **For Claude Code:** This brief is the source of truth for Phase 0 (research, organization, planning).
 > Read it fully before doing anything. Phase 0 produces **research notes, specs, plans, fictional data specs and an empty project skeleton — not feature code, not seed scripts, not rendered documents.**
@@ -240,7 +240,7 @@ For every task: answer, confidence level, sources, and "decision recommended."
 - `DEMO_SCRIPT.md` — the deterministic replay: seeded inputs, expected outputs, which transactions are recorded for replay mode, the five README quickstart steps.
 - `DEMO_STORYBOARD.md` — shot-by-shot ≤2 min demo with a judge-lens note per beat + the X post text draft.
 - `PLAN.md` — day-by-day Nov 1–14 plan (Section 12), each day ending in a working, committable state; tasks sized for 30–60 minute unattended runs; which tasks need the human (accounts, keys, confirmations, recording); the ordered cut list.
-- `RISKS.md` — technical risks (testnet USDC access, relayer availability, extraction accuracy, NEAR AI Cloud vision, scope creep) with fallbacks.
+- `phase0/RISKS.md` — technical risks (testnet USDC access, relayer availability, extraction accuracy, NEAR AI Cloud vision, scope creep) with fallbacks.
 - `README_TEMPLATE.md` — final README skeleton written for AI judges: what, problem, NEAR features used (named per track), "do X → see Y" quickstart (≤5 steps), architecture, on-chain/off-chain table, sustainability paragraph, limitations.
 - `OPEN_QUESTIONS.md` — decisions for the human.
 
@@ -254,13 +254,13 @@ day-one/
 ├── AGENTS.md                 # same conventions for other coding agents (Codex judges)
 ├── README.md                 # placeholder; final one written from README_TEMPLATE.md
 ├── PROJECT_BRIEF.md          # this file
-├── BRIEF_ASSESSMENT.md       # the assessment that produced v2
 ├── .env.example              # all required env vars, no secrets
 ├── docs/
 │   ├── research/             # one file per research task
 │   ├── SPEC.md  ARCHITECTURE.md  DATA_MODEL.md  CONTRACTS.md
-│   ├── FICTIONAL_DATA.md  DEMO_SCRIPT.md  DEMO_STORYBOARD.md  PLAN.md  RISKS.md
+│   ├── FICTIONAL_DATA.md  DEMO_SCRIPT.md  DEMO_STORYBOARD.md  PLAN.md
 │   ├── README_TEMPLATE.md  OPEN_QUESTIONS.md
+│   ├── phase0/               # pre-build analysis and RISKS.md
 ├── contracts/                # NEAR contracts (Rust or JS per research)
 │   ├── spend-policy/
 │   └── po-escrow/            # anchoring folded in or separate per research
@@ -317,7 +317,7 @@ Plan for half the human's days to be lost. Claude Code sessions should be resuma
 - [ ] All Section 10 docs exist and are consistent with each other.
 - [ ] Skeleton from Section 11 created; `CLAUDE.md`, `AGENTS.md` and `.env.example` written.
 - [ ] `PLAN.md` gives a concrete, ordered task list for Nov 1–14 with the spine first and a cut list.
-- [ ] `RISKS.md` names a fallback for every external dependency.
+- [ ] `phase0/RISKS.md` names a fallback for every external dependency.
 - [ ] `OPEN_QUESTIONS.md` is short, specific, and ready for the human.
 - [ ] Nothing pushed, published, deployed, or posted. No feature code, seed scripts or rendered documents.
 
