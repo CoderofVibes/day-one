@@ -33,6 +33,7 @@
     "demo:live": "tsx scripts/demo.ts --live",
     "rehearse": "tsx scripts/rehearse.ts",
     "escrow": "tsx scripts/escrow.ts",
+    "mcp": "tsx scripts/kevin-mcp.ts",
     "books": "tsx scripts/books.ts",
     "import": "tsx scripts/import.ts",
     "render:import": "tsx scripts/render-import.ts",

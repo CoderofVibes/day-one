@@ -122,7 +122,7 @@
 - [ ] **Morning cut decision.** Spine flawless in live and replay, T1 done → start T2. Otherwise T2 is cut and the rest of the week is spine, README and demo.
 - [ ] [I] README first full draft from `README_TEMPLATE.md`, with the claims table filled from real files, tests and tx hashes.
 - [ ] [I] T2 (if go): 3D twin in `web/src/twin3d/` from the same `TwinState` and layout.
-- [ ] [I] Kevin as a small MCP server: read tools plus `draft_po`, so another agent can hire Kevin (moved up, BUILD_ANALYSIS §6).
+- [x] [I] Kevin as a small MCP server: read tools plus `draft_po`, so another agent can hire Kevin (moved up, BUILD_ANALYSIS §6). **Done Oct 28 (night run, pulled forward):** `agents/kevin/src/mcp.ts` on `@modelcontextprotocol/sdk` 1.32.1 (zod 4.6.7; both pinned, over two weeks old): `get_inventory`, `get_forecast`, `get_mass_balance`, `get_books` over the ledger, `get_policy` read live from the contract with keyless view calls, and `draft_po` (forecast, the suppliers' quotes, ranking, a draft with its `po_hash`; never signs or submits; read tools marked read-only). Each answer is Kevin's lines plus a JSON copy. `npm run mcp` serves it on stdio over the seeded ledger at the demo's start; checked with a real MCP client over `npm run --silent mcp` against testnet. 6 tests (in-memory client, fake views). **Not built:** quotes for materials other than ASC (the seed has none), an HTTP transport, and a section in the README.
 - [ ] [I] **Cross-plant transfer suggestions, forecast side** (Plan v2, `FEATURES_V2.md` §3). Gate: the forecast job works (Nov 5). Start with one line in the forecast output; the full proposal-and-approve flow only if time allows.
 
 ### Wed Nov 11 — T2

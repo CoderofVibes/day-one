@@ -15,11 +15,14 @@
     "./payments": "./src/payments.ts",
     "./attacks": "./src/attacks.ts",
     "./demo": "./src/demo.ts",
-    "./erp": "./src/erp.ts"
+    "./erp": "./src/erp.ts",
+    "./mcp": "./src/mcp.ts"
   },
   "dependencies": {
     "@day-one/server": "*",
-    "drizzle-orm": "0.45.4"
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "drizzle-orm": "0.45.4",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@day-one/suppliers": "*"
