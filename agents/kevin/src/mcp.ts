@@ -1,7 +1,8 @@
 // Kevin as an MCP server: another agent can ask what he knows and have him draft a PO. Read
-// tools over the plant ledger, the live contract policy through keyless view calls, and
-// `draft_po`, which writes a draft only. Nothing here signs, submits or pays: a draft reaches
-// the chain only through Day One's workflow, where the spend-policy contract decides.
+// tools over the plant ledger, the live contract policy through keyless view calls,
+// `draft_po`, which writes a draft only, and `draft_policy_change`, which drafts HQ's owner call.
+// Nothing here signs, submits or pays: a draft reaches the chain only through Day One's workflow,
+// where the spend-policy contract decides, or by the owner's own signature.
 
 import { randomBytes } from "node:crypto";
 import { readPolicy, type ViewFn } from "@day-one/server/chain/policy";
@@ -17,6 +18,7 @@ import { z } from "zod";
 import { formatBrief, morningBrief } from "./brief.ts";
 import { forecastMaterial } from "./forecast.ts";
 import { massBalance } from "./massBalance.ts";
+import { draftPolicyChange } from "./policyChange.ts";
 import { draftPoFromRanking, openRfq, rankQuotes, recordQuotes } from "./purchasing.ts";
 import { suggestTransfers } from "./transferSuggestions.ts";
 
@@ -187,6 +189,27 @@ export function createKevinServer(options: KevinMcpOptions) {
     },
   );
 
+  /** The contract's policy for Kevin, and the staff member who approves above it. */
+  async function currentPolicy() {
+    const suppliers = db
+      .select({ account: vendors.nearAccountId })
+      .from(vendors)
+      .all()
+      .flatMap((v) => (v.account ? [v.account] : []));
+    const policy = await readPolicy(view, {
+      contract: accounts.spendPolicy,
+      network: accounts.network,
+      agent: `kevin.plant-b.${accounts.root}`,
+      plant: `plant-b.${accounts.root}`,
+      categories: CATEGORIES,
+      suppliers,
+    });
+    const approver = policy.agent
+      ? db.select().from(staff).where(eq(staff.nearAccountId, policy.agent.approver)).get()
+      : undefined;
+    return { policy, approver };
+  }
+
   server.registerTool(
     "get_policy",
     {
@@ -200,23 +223,8 @@ export function createKevinServer(options: KevinMcpOptions) {
       annotations: { ...readOnly, openWorldHint: true },
     },
     async () => {
-      const suppliers = db
-        .select({ account: vendors.nearAccountId })
-        .from(vendors)
-        .all()
-        .flatMap((v) => (v.account ? [v.account] : []));
-      const policy = await readPolicy(view, {
-        contract: accounts.spendPolicy,
-        network: accounts.network,
-        agent: `kevin.plant-b.${accounts.root}`,
-        plant: `plant-b.${accounts.root}`,
-        categories: CATEGORIES,
-        suppliers,
-      });
+      const { policy, approver } = await currentPolicy();
       const agent = policy.agent;
-      const approver = agent
-        ? db.select().from(staff).where(eq(staff.nearAccountId, agent.approver)).get()
-        : undefined;
       const usd = (units: string) => formatUsd(BigInt(units));
       return answer(
         agent
@@ -227,6 +235,37 @@ export function createKevinServer(options: KevinMcpOptions) {
             ]
           : ["The contract holds no policy for Kevin."],
         policy,
+      );
+    },
+  );
+
+  server.registerTool(
+    "draft_policy_change",
+    {
+      title: "Draft a change to Kevin's limits",
+      description:
+        "Kevin reads a plain-English request from HQ (per-PO limit, monthly limit, categories, " +
+        "pause or resume) against the policy the contract holds now and drafts the one owner " +
+        "call that makes it, with every argument filled in; or says what he cannot draft. Draft " +
+        "only: the contract takes these calls from its owner alone, so Kevin cannot sign them " +
+        "and nothing is sent.",
+      inputSchema: {
+        request: z.string().describe("e.g. raise Kevin's per-PO limit to $3,000"),
+      },
+      annotations: { ...readOnly, openWorldHint: true },
+    },
+    async ({ request }) => {
+      const { policy, approver } = await currentPolicy();
+      if (!policy.agent) throw new Error("the contract holds no policy for Kevin");
+      const draft = draftPolicyChange(request, policy.agent, approver?.name);
+      return answer(
+        [
+          draft.sentence,
+          ...(draft.call
+            ? ["Draft only. Nothing was signed or sent; the contract owner signs."]
+            : []),
+        ],
+        { ...draft, contract: accounts.spendPolicy },
       );
     },
   );

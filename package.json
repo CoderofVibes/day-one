@@ -34,6 +34,7 @@
     "demo:group": "tsx scripts/demo-group.ts",
     "rehearse": "tsx scripts/rehearse.ts",
     "escrow": "tsx scripts/escrow.ts",
+    "policy": "tsx scripts/policy-change.ts",
     "mcp": "tsx scripts/kevin-mcp.ts",
     "books": "tsx scripts/books.ts",
     "brief": "tsx scripts/brief.ts",
