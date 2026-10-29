@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "recordedAt": "2026-10-28T21:24:01.889Z",
+  "recordedAt": "2026-10-29T05:32:07.496Z",
   "entries": [
     {
       "key": "0277fb5c29765ad6c4bde2461c495b5bd8c54b4becff6a82520028dd499112bb",
@@ -9,7 +9,7 @@
       "result": {
         "provider": "nearai",
         "model": "z-ai/glm-5.3-flash",
-        "text": "{\"document_type\":\"batch_record\",\"batch_number\":{\"raw\":\"BR-B-1045\",\"legibility\":\"clear\"},\"product_code\":{\"raw\":\"P-VC500\",\"legibility\":\"clear\"},\"product_name\":{\"raw\":\"Hollow Pine Vitamin C 500 mg Chewable\",\"legibility\":\"clear\"},\"batch_size\":{\"raw\":\"800,000 tablets\",\"legibility\":\"clear\"},\"manufacture_date\":{\"raw\":\"11/06/26\",\"legibility\":\"clear\"},\"facility\":{\"raw\":\"Hollow Pine Tablet Co.\",\"legibility\":\"clear\"},\"materials\":[{\"line_no\":1,\"material_name\":{\"raw\":\"Ascorbic acid\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"ASC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"ASC-261009-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"NGI-26100901\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"412.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"187.450\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{  \"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":2,\"material_name\":{\"raw\":\"Ascorbic acid\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"ASC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"ASC-260921-02\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"RWA-26092102\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"\",\"legibility\":\"illegible\"},\"actual_qty\":{\"raw\":\"224.900\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{  \"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":3,\"material_name\":{\"raw\":\"Sorbitol\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"SOR\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"SOR-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"FPO-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"416.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"416.200\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{  \"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":4,\"material_name\":{\"raw\":\"Microcrystalline cellulose 102\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"MCC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"MCC-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"120.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"119.880\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{  \"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":5,\"material_name\":{\"raw\":\"Citric acid anhydrous\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"CTA\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"CTA-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"NGI-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"20.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"20.040\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{  \"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":6,\"material_name\":{\"raw\":\"Natural orange flavor\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"FOR\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"FOR-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"OFH-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"12.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"11.980\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{  \"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":7,\"material_name\":{\"raw\":\"Magnesium stearate\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"MGS\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"MGS-261001-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26100101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"12.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"12.030\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{  \"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":8,\"material_name\":{\"raw\":\"Silicon dioxide\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"SIO\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"SIO-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"6.400\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"6.410\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{  \"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":9,\"material_name\":{\"raw\":\"Sucralose\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"SUC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"SUC-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"OFH-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"1.600\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"1.602\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{  \"present\": false, \"struck_value\": \"\", \"initials\": \"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}}],\"theoretical_yield\":{\"raw\":\"800,000\",\"legibility\":\"clear\"},\"actual_yield\":{\"raw\":\"726,400\",\"legibility\":\"clear\"},\"yield_percent\":{\"raw\":\"90.8\",\"legibility\":\"clear\"},\"waste_qty\":{\"raw\":\"91.992\",\"legibility\":\"clear\"},\"waste_unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"signatures\":[{\"role\":\"production\",\"name\":\"Linda Park\",\"date\":\"11/06/26\"},{\"role\":\"qa_review\",\"name\":\"Priya Natarajan\",\"date\":\"11/07/26\"}],\"margin_notes\":[{  \"text\": \"Operators: JM = Jesse Morales; DW = Dana Whitfield\",  \"legibility\": \"clear\"  }]}",
+        "text": "{\"document_type\":\"batch_record\",\"batch_number\":{\"raw\":\"BR-B-1045\",\"legibility\":\"clear\"},\"product_code\":{\"raw\":\"P-VC500\",\"legibility\":\"clear\"},\"product_name\":{\"raw\":\"Hollow Pine Vitamin C 500 mg Chewable\",\"legibility\":\"clear\"},\"batch_size\":{\"raw\":\"800,000 tablets\",\"legibility\":\"clear\"},\"manufacture_date\":{\"raw\":\"11/06/26\",\"legibility\":\"clear\"},\"facility\":{\"raw\":\"Hollow Pine Tablet Co. · Rm 104 Weigh & Dispense\",\"legibility\":\"clear\"},\"materials\":[{\"line_no\":1,\"material_name\":{\"raw\":\"Ascorbic acid\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"ASC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"ASC-261009-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"NGI-26100901\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"412.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"187.450\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":2,\"material_name\":{\"raw\":\"Ascorbic acid\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"ASC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"ASC-260921-02\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"RWA-26092102\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"224.900\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":3,\"material_name\":{\"raw\":\"Sorbitol\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"SOR\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"SOR-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"FPO-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"416.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"416.200\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":4,\"material_name\":{\"raw\":\"Microcrystalline cellulose 102\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"MCC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"MCC-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"120.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"119.880\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":5,\"material_name\":{\"raw\":\"Citric acid anhydrous\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"CTA\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"CTA-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"NGI-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"20.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"20.040\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":6,\"material_name\":{\"raw\":\"Natural orange flavor\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"FOR\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"FOR-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"OFH-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"12.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"11.980\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":7,\"material_name\":{\"raw\":\"Magnesium stearate\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"MGS\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"MGS-261001-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26100101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"12.000\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"12.030\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":8,\"material_name\":{\"raw\":\"Silicon dioxide\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"SIO\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"SIO-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"PEC-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"6.400\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"6.410\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}},{\"line_no\":9,\"material_name\":{\"raw\":\"Sucralose\",\"legibility\":\"clear\"},\"material_code\":{\"raw\":\"SUC\",\"legibility\":\"clear\"},\"internal_lot\":{\"raw\":\"SUC-260901-01\",\"legibility\":\"clear\"},\"supplier_lot\":{\"raw\":\"OFH-26090101\",\"legibility\":\"clear\"},\"target_qty\":{\"raw\":\"1.600\",\"legibility\":\"clear\"},\"actual_qty\":{\"raw\":\"1.602\",\"legibility\":\"clear\"},\"unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"correction\":{\"present\":false,\"struck_value\":\"\",\"initials\":\"\"},\"weighed_by\":{\"raw\":\"JM\",\"legibility\":\"clear\"},\"verified_by\":{\"raw\":\"DW\",\"legibility\":\"clear\"}}],\"theoretical_yield\":{\"raw\":\"800,000 tablets\",\"legibility\":\"clear\"},\"actual_yield\":{\"raw\":\"726,400 tablets\",\"legibility\":\"clear\"},\"yield_percent\":{\"raw\":\"90.8\",\"legibility\":\"clear\"},\"waste_qty\":{\"raw\":\"91.992\",\"legibility\":\"clear\"},\"waste_unit\":{\"raw\":\"kg\",\"legibility\":\"clear\"},\"signatures\":[{\"role\":\"production\",\"name\":\"Linda Park\",\"date\":\"11/06/26\"},{\"role\":\"qa_review\",\"name\":\"Priya Natarajan\",\"date\":\"11/07/26\"}],\"margin_notes\":[]}",
         "json": {
           "document_type": "batch_record",
           "batch_number": {
@@ -33,7 +33,7 @@
             "legibility": "clear"
           },
           "facility": {
-            "raw": "Hollow Pine Tablet Co.",
+            "raw": "Hollow Pine Tablet Co. · Rm 104 Weigh & Dispense",
             "legibility": "clear"
           },
           "materials": [
@@ -101,7 +101,7 @@
               },
               "target_qty": {
                 "raw": "",
-                "legibility": "illegible"
+                "legibility": "clear"
               },
               "actual_qty": {
                 "raw": "224.900",
@@ -435,11 +435,11 @@
             }
           ],
           "theoretical_yield": {
-            "raw": "800,000",
+            "raw": "800,000 tablets",
             "legibility": "clear"
           },
           "actual_yield": {
-            "raw": "726,400",
+            "raw": "726,400 tablets",
             "legibility": "clear"
           },
           "yield_percent": {
@@ -466,21 +466,16 @@
               "date": "11/07/26"
             }
           ],
-          "margin_notes": [
-            {
-              "text": "Operators: JM = Jesse Morales; DW = Dana Whitfield",
-              "legibility": "clear"
-            }
-          ]
+          "margin_notes": []
         },
         "usage": {
           "inputTokens": 5028,
-          "outputTokens": 1675
+          "outputTokens": 1606
         },
         "receipt": {
-          "chatId": "1d553d3e20fb4967877ee4d8e90127af",
+          "chatId": "50f188629cb84a1ab9b64321afc01ddf",
           "requestSha256": "193b33c1885e35c583bd042fbe7a41b58a19158663cc659961ba70fc1ec647a6",
-          "responseSha256": "20631cb8e157977271cf79a4ac76d52cd65df92678c2c88ed1213fd826b42b39"
+          "responseSha256": "095b78acae0a0d16b4f70761bbbbdfb6dba4ca7f408a21de925e3578b704bfa3"
         }
       }
     },
@@ -491,7 +486,7 @@
       "result": {
         "provider": "nearai",
         "model": "z-ai/glm-5.3-flash",
-        "text": "{\"invoice_no\": \"NG-INV-24190\", \"vendor_name\": \"Northgate Ingredients\", \"po_number\": \"PO-1042\", \"lines\": [{\"description\": \"Ascorbic acid, USP fine powder\", \"quantity\": \"700\", \"unit\": \"kg\", \"unit_price\": \"$7.10\", \"amount\": \"$4,970.00\"}], \"freight\": \"$180.00\", \"total\": \"$5,150.00\", \"remit_to\": \"northgate-ingredients.testnet\"}",
+        "text": "{ \"invoice_no\": \"NG-INV-24190\", \"vendor_name\": \"Northgate Ingredients\", \"po_number\": \"PO-1042\", \"lines\": [ { \"description\": \"Ascorbic acid, USP fine powder\", \"quantity\": \"700\", \"unit\": \"kg\", \"unit_price\": \"$7.10\", \"amount\": \"$4,970.00\" } ], \"freight\": \"$180.00\", \"total\": \"$5,150.00\", \"remit_to\": \"northgate-ingredients.testnet\" }",
         "json": {
           "invoice_no": "NG-INV-24190",
           "vendor_name": "Northgate Ingredients",
@@ -511,12 +506,12 @@
         },
         "usage": {
           "inputTokens": 284,
-          "outputTokens": 115
+          "outputTokens": 120
         },
         "receipt": {
-          "chatId": "849a02030b724849a906dd1f7527d2f5",
+          "chatId": "bb147329717b4e9ab1c8571aeef1a45e",
           "requestSha256": "0a28347b2c5646ccd3b81c680ece44ea714486c494e9ac607a0af0a6e1967817",
-          "responseSha256": "e45bb0986426c50e20b14f722342e45de3795f4664b1154b829ff6488b7b8bac"
+          "responseSha256": "d03924d89a6f63ce253264f0bb772a3d3e32a6e401936fe7c3739a7ea4730620"
         }
       }
     }

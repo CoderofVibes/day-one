@@ -1,7 +1,7 @@
 {
   "version": 1,
   "network": "testnet",
-  "recordedAt": "2026-10-28T21:24:01.880Z",
+  "recordedAt": "2026-10-29T05:32:07.495Z",
   "entries": [
     {
       "type": "view",
@@ -27,7 +27,7 @@
             {
               "kind": "batch_record",
               "ref_id": "BR-B-1045",
-              "hash": "d7de24f4802cb1bc7d79f6d931d59b2d72e8fa23f2affd30547fbb91e87d7be8",
+              "hash": "25c6caff2b79b01a2471cfd9fe5284d9f328c4f86fa7b4a3dcf89c98aff69029",
               "prev": null
             }
           ]
@@ -39,7 +39,7 @@
         "status": "success",
         "errorMessage": null,
         "returnValue": null,
-        "txHash": "Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN",
+        "txHash": "GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -48,12 +48,111 @@
             "data": {
               "kind": "batch_record",
               "ref_id": "BR-B-1045",
-              "hash": "d7de24f4802cb1bc7d79f6d931d59b2d72e8fa23f2affd30547fbb91e87d7be8",
+              "hash": "25c6caff2b79b01a2471cfd9fe5284d9f328c4f86fa7b4a3dcf89c98aff69029",
               "by": "kevin.plant-b.acme-holdings.testnet"
             }
           }
         ],
-        "blockHeight": 275205632
+        "blockHeight": 275256395
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "quote",
+        "signerId": "quickchem-direct.testnet",
+        "receiverId": "spend-policy.acme-holdings.testnet",
+        "method": "anchor",
+        "args": {
+          "kind": "quote",
+          "ref_id": "RFQ-2611-01/quickchem-direct.testnet",
+          "hash": "850b4567c8342ce4692e681502afecdb07414ebb6d79f77d37e2fc1c816d8bea",
+          "prev": null
+        },
+        "depositYocto": "0",
+        "viaRelayer": false
+      },
+      "outcome": {
+        "status": "refused",
+        "errorMessage": "Only a registered purchasing agent or an approved supplier can anchor records.",
+        "returnValue": null,
+        "txHash": "6qNuBF16LW63gRCJ1QmLRY3RQ6k4RcX1NUN2V5scH3jJ",
+        "events": [],
+        "blockHeight": 275256399
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "quote",
+        "signerId": "northgate-ingredients.testnet",
+        "receiverId": "spend-policy.acme-holdings.testnet",
+        "method": "anchor",
+        "args": {
+          "kind": "quote",
+          "ref_id": "RFQ-2611-01/northgate-ingredients.testnet",
+          "hash": "bc68bb7c7ecd58fef160fad0d384d7393b56c0d21073e2d9ba9e75fea8c3c6b8",
+          "prev": null
+        },
+        "depositYocto": "0",
+        "viaRelayer": false
+      },
+      "outcome": {
+        "status": "success",
+        "errorMessage": null,
+        "returnValue": null,
+        "txHash": "FMLQyTJ7yZvFW5qyqoNUHnKuc3JTvkv3dPfjcW9nkyC5",
+        "events": [
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "record_anchored",
+            "data": {
+              "kind": "quote",
+              "ref_id": "RFQ-2611-01/northgate-ingredients.testnet",
+              "hash": "bc68bb7c7ecd58fef160fad0d384d7393b56c0d21073e2d9ba9e75fea8c3c6b8",
+              "by": "northgate-ingredients.testnet"
+            }
+          }
+        ],
+        "blockHeight": 275256403
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "quote",
+        "signerId": "ridgeway-ascorbics.testnet",
+        "receiverId": "spend-policy.acme-holdings.testnet",
+        "method": "anchor",
+        "args": {
+          "kind": "quote",
+          "ref_id": "RFQ-2611-01/ridgeway-ascorbics.testnet",
+          "hash": "a6cc83becdb51a17fe9980422909594cb344dd0be146069cb8fd29c252f5d35d",
+          "prev": null
+        },
+        "depositYocto": "0",
+        "viaRelayer": false
+      },
+      "outcome": {
+        "status": "success",
+        "errorMessage": null,
+        "returnValue": null,
+        "txHash": "4mBN5CwJBrkdn3e6CmaWWEzY7MVgdah1jcCo1t9pKjo2",
+        "events": [
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "record_anchored",
+            "data": {
+              "kind": "quote",
+              "ref_id": "RFQ-2611-01/ridgeway-ascorbics.testnet",
+              "hash": "a6cc83becdb51a17fe9980422909594cb344dd0be146069cb8fd29c252f5d35d",
+              "by": "ridgeway-ascorbics.testnet"
+            }
+          }
+        ],
+        "blockHeight": 275256407
       }
     },
     {
@@ -68,7 +167,7 @@
           "supplier": "bayfront-labsupply.testnet",
           "amount": "612000000",
           "category": "lab_chemical",
-          "po_hash": "70ceace733d213ca8cf51189739dde8017646af38cd57be520d60ccea0f2be4d"
+          "po_hash": "54c8013ce2306a3fa6c7991a2c2761c78607ca246356f1aa1526e5409b8083dc"
         },
         "depositYocto": "0",
         "viaRelayer": false
@@ -83,18 +182,18 @@
           "supplier": "bayfront-labsupply.testnet",
           "amount": "612000000",
           "category": "lab_chemical",
-          "po_hash": "70ceace733d213ca8cf51189739dde8017646af38cd57be520d60ccea0f2be4d",
+          "po_hash": "54c8013ce2306a3fa6c7991a2c2761c78607ca246356f1aa1526e5409b8083dc",
           "period": 202610,
           "status": "Funded",
           "approved_by": null,
           "supplier_lot": null,
-          "funded_at": "1793222613797446883",
+          "funded_at": "1793251897665286144",
           "accepted_at": null,
           "shipped_at": null,
           "received_at": null,
           "released_at": null
         },
-        "txHash": "DYHsrENhyw2N12D2v9eVcX4kspFrChBM4pbuh42SfS8x",
+        "txHash": "D28BgcP34ruXdczobk6WhvrgJxBWEm73qjQK5uxmzH1A",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -106,7 +205,7 @@
               "supplier": "bayfront-labsupply.testnet",
               "amount": "612000000",
               "category": "lab_chemical",
-              "po_hash": "70ceace733d213ca8cf51189739dde8017646af38cd57be520d60ccea0f2be4d",
+              "po_hash": "54c8013ce2306a3fa6c7991a2c2761c78607ca246356f1aa1526e5409b8083dc",
               "approved_by": null
             }
           },
@@ -122,7 +221,7 @@
             }
           }
         ],
-        "blockHeight": 275205636
+        "blockHeight": 275256411
       }
     },
     {
@@ -137,7 +236,7 @@
           "supplier": "northgate-ingredients.testnet",
           "amount": "5150000000",
           "category": "raw_material",
-          "po_hash": "f6755772331c88748f4c1b221932be2406be392e8c2f51a385024e79cf0cbef6"
+          "po_hash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3"
         },
         "depositYocto": "0",
         "viaRelayer": false
@@ -146,7 +245,7 @@
         "status": "refused",
         "errorMessage": "PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required.",
         "returnValue": null,
-        "txHash": "DZx3MwK8DxAghCAC7uRHor4jFVRsqPfjSCErGukrwwPW",
+        "txHash": "FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -162,7 +261,7 @@
             }
           }
         ],
-        "blockHeight": 275205640
+        "blockHeight": 275256415
       }
     },
     {
@@ -200,8 +299,8 @@
           "supplier": "northgate-ingredients.testnet",
           "amount": "5150000000",
           "category": "raw_material",
-          "po_hash": "f6755772331c88748f4c1b221932be2406be392e8c2f51a385024e79cf0cbef6",
-          "refused_tx": "DZx3MwK8DxAghCAC7uRHor4jFVRsqPfjSCErGukrwwPW"
+          "po_hash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3",
+          "refused_tx": "FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af"
         },
         "depositYocto": "0",
         "viaRelayer": true
@@ -210,7 +309,7 @@
         "status": "success",
         "errorMessage": null,
         "returnValue": null,
-        "txHash": "3pC54Z3zQJtxpYRBa3jAtzeWHmnstXft84YzWoPpYP8e",
+        "txHash": "EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -221,11 +320,11 @@
               "approver": "director.plant-b.acme-holdings.testnet",
               "supplier": "northgate-ingredients.testnet",
               "amount": "5150000000",
-              "refused_tx": "DZx3MwK8DxAghCAC7uRHor4jFVRsqPfjSCErGukrwwPW"
+              "refused_tx": "FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af"
             }
           }
         ],
-        "blockHeight": 275205645
+        "blockHeight": 275256420
       }
     },
     {
@@ -240,7 +339,7 @@
           "supplier": "northgate-ingredients.testnet",
           "amount": "5150000000",
           "category": "raw_material",
-          "po_hash": "f6755772331c88748f4c1b221932be2406be392e8c2f51a385024e79cf0cbef6"
+          "po_hash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3"
         },
         "depositYocto": "0",
         "viaRelayer": false
@@ -255,18 +354,18 @@
           "supplier": "northgate-ingredients.testnet",
           "amount": "5150000000",
           "category": "raw_material",
-          "po_hash": "f6755772331c88748f4c1b221932be2406be392e8c2f51a385024e79cf0cbef6",
+          "po_hash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3",
           "period": 202610,
           "status": "Funded",
           "approved_by": "director.plant-b.acme-holdings.testnet",
           "supplier_lot": null,
-          "funded_at": "1793222622154284686",
+          "funded_at": "1793251906049083632",
           "accepted_at": null,
           "shipped_at": null,
           "received_at": null,
           "released_at": null
         },
-        "txHash": "B3Hnh7CCwrrYiqbEDdSr3YuNTgk1NeqgZw3rJjGoUsTx",
+        "txHash": "3sUEp63gHQFSr6FvrjTDvarFh2zM2i1Zp9bhzumfbpmQ",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -278,7 +377,7 @@
               "supplier": "northgate-ingredients.testnet",
               "amount": "5150000000",
               "category": "raw_material",
-              "po_hash": "f6755772331c88748f4c1b221932be2406be392e8c2f51a385024e79cf0cbef6",
+              "po_hash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3",
               "approved_by": "director.plant-b.acme-holdings.testnet"
             }
           },
@@ -294,7 +393,7 @@
             }
           }
         ],
-        "blockHeight": 275205650
+        "blockHeight": 275256425
       }
     },
     {
@@ -313,12 +412,12 @@
         "supplier": "northgate-ingredients.testnet",
         "amount": "5150000000",
         "category": "raw_material",
-        "po_hash": "f6755772331c88748f4c1b221932be2406be392e8c2f51a385024e79cf0cbef6",
+        "po_hash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3",
         "period": 202610,
         "status": "Funded",
         "approved_by": "director.plant-b.acme-holdings.testnet",
         "supplier_lot": null,
-        "funded_at": "1793222622154284686",
+        "funded_at": "1793251906049083632",
         "accepted_at": null,
         "shipped_at": null,
         "received_at": null,
@@ -342,7 +441,7 @@
         "status": "success",
         "errorMessage": null,
         "returnValue": null,
-        "txHash": "FG8ETbHUfQBGTJq1zV3EbjDCnBH8JeqaZoSLihy2iJZg",
+        "txHash": "AsDTwnSwqeSLh3gNREJPgU5ckMeGhqsM2FMAWfTk1Ma7",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -354,7 +453,7 @@
             }
           }
         ],
-        "blockHeight": 275205654
+        "blockHeight": 275256429
       }
     },
     {
@@ -375,7 +474,7 @@
         "status": "success",
         "errorMessage": null,
         "returnValue": null,
-        "txHash": "HG1DD9fEb1A2cwM8c68SrjZ4AydFWPxUJcsj3PPwSVtQ",
+        "txHash": "BU6SLGGUxjkrXVdQQHv8c6G2iYFDQv8cyZ72q97MarBD",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -387,7 +486,7 @@
             }
           }
         ],
-        "blockHeight": 275205658
+        "blockHeight": 275256433
       }
     },
     {
@@ -406,14 +505,14 @@
         "supplier": "northgate-ingredients.testnet",
         "amount": "5150000000",
         "category": "raw_material",
-        "po_hash": "f6755772331c88748f4c1b221932be2406be392e8c2f51a385024e79cf0cbef6",
+        "po_hash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3",
         "period": 202610,
         "status": "Shipped",
         "approved_by": "director.plant-b.acme-holdings.testnet",
         "supplier_lot": "NG-24-8812",
-        "funded_at": "1793222622154284686",
-        "accepted_at": "1793222624675919810",
-        "shipped_at": "1793222626671374927",
+        "funded_at": "1793251906049083632",
+        "accepted_at": "1793251908478301558",
+        "shipped_at": "1793251910945249317",
         "received_at": null,
         "released_at": null
       }
@@ -435,7 +534,7 @@
         "status": "success",
         "errorMessage": null,
         "returnValue": null,
-        "txHash": "3vK7eacZDkDdW6YtC1bkt4vbToiFB1Tn9WEUM5gbNPEr",
+        "txHash": "7pCauyEYJSMeCLW1gNCgZ6bze6dqQasNvq7Twf8yJozm",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -447,7 +546,7 @@
             }
           }
         ],
-        "blockHeight": 275205663
+        "blockHeight": 275256438
       }
     },
     {
@@ -467,7 +566,7 @@
         "status": "success",
         "errorMessage": null,
         "returnValue": null,
-        "txHash": "14QHzV9PisQz7TqhnT6WRZ9QmmPfeaTSnbuZLiWVMC4d",
+        "txHash": "2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn",
         "events": [
           {
             "standard": "nep141",
@@ -492,9 +591,22 @@
               "supplier": "northgate-ingredients.testnet",
               "amount": "5150000000"
             }
+          },
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "delivery_recorded",
+            "data": {
+              "supplier": "northgate-ingredients.testnet",
+              "po_id": "PO-1042",
+              "outcome": "Released",
+              "released": 1,
+              "rejected": 1,
+              "consecutive_rejects": 0
+            }
           }
         ],
-        "blockHeight": 275205669
+        "blockHeight": 275256451
       }
     },
     {
@@ -509,7 +621,7 @@
             {
               "kind": "receipt",
               "ref_id": "RCV-PO-1042",
-              "hash": "d6c2a5e4bfc2f374e75867da955dcc7b7c41f16ab07b3cfa0e5a046d62bba20e",
+              "hash": "9b9d2244be26bc65d9b0692a91caee8805fbeb570ee3e0f483ea999c0bee8df7",
               "prev": null
             }
           ]
@@ -521,7 +633,7 @@
         "status": "success",
         "errorMessage": null,
         "returnValue": null,
-        "txHash": "ETfe8JQbV4NNkzAAtBMfNi5Wef77zivsDgTFcKwjHivP",
+        "txHash": "2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -530,12 +642,12 @@
             "data": {
               "kind": "receipt",
               "ref_id": "RCV-PO-1042",
-              "hash": "d6c2a5e4bfc2f374e75867da955dcc7b7c41f16ab07b3cfa0e5a046d62bba20e",
+              "hash": "9b9d2244be26bc65d9b0692a91caee8805fbeb570ee3e0f483ea999c0bee8df7",
               "by": "kevin.plant-b.acme-holdings.testnet"
             }
           }
         ],
-        "blockHeight": 275205682
+        "blockHeight": 275256458
       }
     }
   ]

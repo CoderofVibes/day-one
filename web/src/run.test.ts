@@ -37,9 +37,11 @@ describe("the web UI's recorded run", () => {
   });
 
   it("shows the refusal and the relayer-paid approval", () => {
+    // Two refusals by design: QuickChem's quote anchor (not an approved supplier) and PO-1042.
     const refused = run.transactions.filter((t) => t.status === "refused");
-    expect(refused).toHaveLength(1);
-    expect(refused[0]?.error).toContain("director approval required");
+    expect(refused.map((t) => t.method)).toEqual(["anchor", "submit_po"]);
+    expect(refused[0]?.signer).toBe("quickchem-direct.testnet");
+    expect(refused[1]?.error).toContain("director approval required");
     const approve = run.transactions.find((t) => t.method === "approve_po");
     expect(approve?.paidBy).toBe("dayone-relayer.testnet");
     expect(approve?.signer).toMatch(/^director\.plant-b\./);

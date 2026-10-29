@@ -3,11 +3,16 @@
   "publicKey": "ed25519:AXiQ36MSjmHXkdK57s9uEcX1s9SXCkhtQczWDX5VbYKW",
   "permission": {
     "FunctionCall": {
-      "allowance": "1995007765232563000000000",
+      "allowance": "1995794885715499900000000",
       "method_names": [
         "submit_po",
+        "submit_pooled_po",
+        "open_pool",
+        "join_pool",
         "anchor",
-        "anchor_batch"
+        "anchor_batch",
+        "open_sealed_round",
+        "award_sealed_round"
       ],
       "receiver_id": "spend-policy.acme-holdings.testnet"
     }

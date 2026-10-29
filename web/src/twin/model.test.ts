@@ -216,7 +216,7 @@ describe("formatTwinState", () => {
     expect(lines.join("\n")).not.toMatch(/tx /);
     const curtain = formatTwinState(at("Delivery"), true);
     expect(curtain.join("\n")).toMatch(
-      /Money: PO-1041 · \$612.00 held, in escrow \(tx DYHsrENh…\)/,
+      /Money: PO-1041 · \$612.00 held, in escrow \(tx D28BgcP3…\)/,
     );
   });
 });

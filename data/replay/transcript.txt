@@ -2,36 +2,42 @@ Loaded 3 facilities, 33 materials, 12 vendors, 7 batch records, 56 days of histo
   chain: spend-policy budget 25,000.00 DTUSD, escrowed 0.00 DTUSD
 Kevin read BR-B-1045 (VC500, 800,000 tablets). 8 materials, all within tolerance. Yield 90.8%.
 Inventory updated. Ascorbic acid at Plant B: 722.4 kg → 310.0 kg (reorder point 500 kg).
-  chain: anchored BR-B-1045 0xd7de24f4… ✓ (tx Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN)
+  chain: anchored BR-B-1045 0x25c6caff… ✓ (tx GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS)
 Plant A still shows 12.55 kg of lot ASC-261009-01, but Plant B weighed in 187.45 kg of the 200 kg sent. Proposed adjustment sent to Plant A for review.
 Two more VC500 batches in the next 10 days need about 824 kg. Short about 514 kg. Recommend ordering 700 kg.
 3 quotes. QuickChem Direct $5.90/kg excluded: vendor not qualified. Northgate $7.10/kg, 7 days — selected. Ridgeway $7.35/kg, 5 days — runner-up.
+  chain: anchor quote RFQ-2611-01 ✗ REFUSED "Only a registered purchasing agent or an approved supplier can anchor records." (tx 6qNuBF16LW63gRCJ1QmLRY3RQ6k4RcX1NUN2V5scH3jJ)
+  chain: anchor quote RFQ-2611-01 ✓ signed by northgate-ingredients.testnet (tx FMLQyTJ7yZvFW5qyqoNUHnKuc3JTvkv3dPfjcW9nkyC5)
+  chain: anchor quote RFQ-2611-01 ✓ signed by ridgeway-ascorbics.testnet (tx 4mBN5CwJBrkdn3e6CmaWWEzY7MVgdah1jcCo1t9pKjo2)
 PO-1041 to Bayfront Lab Supply, $612.00 — approved automatically and funded.
-  chain: submit_po PO-1041 ✓ (tx DYHsrENhyw2N12D2v9eVcX4kspFrChBM4pbuh42SfS8x) · escrow funded 612.00 DTUSD
+  chain: submit_po PO-1041 ✓ (tx D28BgcP34ruXdczobk6WhvrgJxBWEm73qjQK5uxmzH1A) · escrow funded 612.00 DTUSD
 PO-1042 to Northgate Ingredients, $5,150.00 is over Kevin's $2,500.00 limit. Sent to Linda for approval.
-  chain: submit_po PO-1042 ✗ REFUSED "PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required." (tx DZx3MwK8DxAghCAC7uRHor4jFVRsqPfjSCErGukrwwPW)
+  chain: submit_po PO-1042 ✗ REFUSED "PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required." (tx FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af)
 Linda: YES 1042 → Approved by Linda Park.
-  chain: approve_po PO-1042 ✓ signed by director.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx 3pC54Z3zQJtxpYRBa3jAtzeWHmnstXft84YzWoPpYP8e)
+  chain: approve_po PO-1042 ✓ signed by director.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8)
 PO-1042 sent to Northgate Ingredients. Funds held until delivery passes QC.
-  chain: submit_po PO-1042 ✓ (tx B3Hnh7CCwrrYiqbEDdSr3YuNTgk1NeqgZw3rJjGoUsTx) · escrow funded 5,150.00 DTUSD
-  chain: accept_po PO-1042 ✓ signed by northgate-ingredients.testnet (tx FG8ETbHUfQBGTJq1zV3EbjDCnBH8JeqaZoSLihy2iJZg)
-  chain: mark_shipped PO-1042 ✓ signed by northgate-ingredients.testnet (tx HG1DD9fEb1A2cwM8c68SrjZ4AydFWPxUJcsj3PPwSVtQ)
+  chain: submit_po PO-1042 ✓ (tx 3sUEp63gHQFSr6FvrjTDvarFh2zM2i1Zp9bhzumfbpmQ) · escrow funded 5,150.00 DTUSD
+  chain: accept_po PO-1042 ✓ signed by northgate-ingredients.testnet (tx AsDTwnSwqeSLh3gNREJPgU5ckMeGhqsM2FMAWfTk1Ma7)
+  chain: mark_shipped PO-1042 ✓ signed by northgate-ingredients.testnet (tx BU6SLGGUxjkrXVdQQHv8c6G2iYFDQv8cyZ72q97MarBD)
 Tommy photographed the packing slip. Matches PO-1042: 700 kg ascorbic acid, supplier lot NG-24-8812. Lot ASC-261116-01 is in quarantine.
-  chain: confirm_receipt PO-1042 ✓ signed by receiving.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx 3vK7eacZDkDdW6YtC1bkt4vbToiFB1Tn9WEUM5gbNPEr)
+  chain: confirm_receipt PO-1042 ✓ signed by receiving.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx 7pCauyEYJSMeCLW1gNCgZ6bze6dqQasNvq7Twf8yJozm)
 Priya released lot ASC-261116-01.
-  chain: qc_release PO-1042 ✓ (tx 14QHzV9PisQz7TqhnT6WRZ9QmmPfeaTSnbuZLiWVMC4d) · 5,150.00 DTUSD → northgate-ingredients.testnet
+  chain: qc_release PO-1042 ✓ (tx 2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn) · 5,150.00 DTUSD → northgate-ingredients.testnet
 PO-1042 — paid $5,150.00. Invoice matched to PO and receipt.
-  chain: anchored receipt PO-1042 ✓ (tx ETfe8JQbV4NNkzAAtBMfNi5Wef77zivsDgTFcKwjHivP)
-  chain: 10 transactions, 1 refused by design, 0 failed.
+  chain: anchored receipt PO-1042 ✓ (tx 2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV)
+  chain: 13 transactions, 2 refused by design, 0 failed.
 
 Explorer links:
-  anchor_batch https://testnet.nearblocks.io/txns/Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN
-  submit_po https://testnet.nearblocks.io/txns/DYHsrENhyw2N12D2v9eVcX4kspFrChBM4pbuh42SfS8x
-  submit_po https://testnet.nearblocks.io/txns/DZx3MwK8DxAghCAC7uRHor4jFVRsqPfjSCErGukrwwPW
-  approve_po https://testnet.nearblocks.io/txns/3pC54Z3zQJtxpYRBa3jAtzeWHmnstXft84YzWoPpYP8e
-  submit_po https://testnet.nearblocks.io/txns/B3Hnh7CCwrrYiqbEDdSr3YuNTgk1NeqgZw3rJjGoUsTx
-  accept_po https://testnet.nearblocks.io/txns/FG8ETbHUfQBGTJq1zV3EbjDCnBH8JeqaZoSLihy2iJZg
-  mark_shipped https://testnet.nearblocks.io/txns/HG1DD9fEb1A2cwM8c68SrjZ4AydFWPxUJcsj3PPwSVtQ
-  confirm_receipt https://testnet.nearblocks.io/txns/3vK7eacZDkDdW6YtC1bkt4vbToiFB1Tn9WEUM5gbNPEr
-  qc_release https://testnet.nearblocks.io/txns/14QHzV9PisQz7TqhnT6WRZ9QmmPfeaTSnbuZLiWVMC4d
-  anchor_batch https://testnet.nearblocks.io/txns/ETfe8JQbV4NNkzAAtBMfNi5Wef77zivsDgTFcKwjHivP
+  anchor_batch https://testnet.nearblocks.io/txns/GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS
+  anchor https://testnet.nearblocks.io/txns/6qNuBF16LW63gRCJ1QmLRY3RQ6k4RcX1NUN2V5scH3jJ
+  anchor https://testnet.nearblocks.io/txns/FMLQyTJ7yZvFW5qyqoNUHnKuc3JTvkv3dPfjcW9nkyC5
+  anchor https://testnet.nearblocks.io/txns/4mBN5CwJBrkdn3e6CmaWWEzY7MVgdah1jcCo1t9pKjo2
+  submit_po https://testnet.nearblocks.io/txns/D28BgcP34ruXdczobk6WhvrgJxBWEm73qjQK5uxmzH1A
+  submit_po https://testnet.nearblocks.io/txns/FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af
+  approve_po https://testnet.nearblocks.io/txns/EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8
+  submit_po https://testnet.nearblocks.io/txns/3sUEp63gHQFSr6FvrjTDvarFh2zM2i1Zp9bhzumfbpmQ
+  accept_po https://testnet.nearblocks.io/txns/AsDTwnSwqeSLh3gNREJPgU5ckMeGhqsM2FMAWfTk1Ma7
+  mark_shipped https://testnet.nearblocks.io/txns/BU6SLGGUxjkrXVdQQHv8c6G2iYFDQv8cyZ72q97MarBD
+  confirm_receipt https://testnet.nearblocks.io/txns/7pCauyEYJSMeCLW1gNCgZ6bze6dqQasNvq7Twf8yJozm
+  qc_release https://testnet.nearblocks.io/txns/2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn
+  anchor_batch https://testnet.nearblocks.io/txns/2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV

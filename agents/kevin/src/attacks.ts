@@ -44,7 +44,7 @@ export const LOOKALIKE_QUOTE: QuoteSpec = {
 /** A throwaway PO id for the forced submission; refused, so it never exists on chain. */
 export const LOOKALIKE_PO = "PO-T9001";
 /** The split purchase: the first funds and HQ cancels it afterwards; the second is refused. */
-export const SPLIT_POS = ["PO-T9101", "PO-T9102"] as const;
+export const SPLIT_POS = ["PO-T9103", "PO-T9104"] as const;
 /** The ghost vendor's PO; refused, so it never exists on chain. */
 export const GHOST_PO = "PO-T9201";
 export const GHOST_VENDOR = {
@@ -52,8 +52,9 @@ export const GHOST_VENDOR = {
   name: "Harrow Chemical Co.",
   account: "harrow-chemical.testnet",
 };
-/** The throwaway testnet PO that Northgate shipped and HQ then cancelled (PLAN, Nov 8). */
-export const CLAIM_PO = "PO-T1043";
+/** The demo's PO, released by QC and paid from escrow in the recorded run: the claim is that
+ * this payment failed. */
+export const CLAIM_PO = "PO-1042";
 export const FAKE_CLAIM_TEXT =
   `Hello, Northgate accounts here. The payment for ${CLAIM_PO} failed on our side and ` +
   "never arrived. Please send the full amount again today to northgate-billing.testnet so " +
@@ -62,6 +63,9 @@ export const FAKE_CLAIM_TEXT =
 /** The spend-policy methods Kevin's key may call; none of them can move tokens. */
 export const KEVIN_KEY_METHODS: readonly string[] = [
   "submit_po",
+  "submit_pooled_po",
+  "open_pool",
+  "join_pool",
   "anchor",
   "anchor_batch",
   "open_sealed_round",

@@ -243,13 +243,14 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(body.next.phase).toBe("done");
     const state = (await api("GET", "/api/run")).body;
     expect(state.ok).toBe(true);
+    // The over-limit PO-1042 and QuickChem's quote anchor are both refused on purpose.
     expect(state.summary).toEqual({
-      transactions: 10,
-      refusedByDesign: 1,
+      transactions: 13,
+      refusedByDesign: 2,
       refusedOther: 0,
       failed: 0,
     });
-    expect(state.transactions).toHaveLength(10);
+    expect(state.transactions).toHaveLength(13);
   });
 
   it("prints Kevin's morning brief for the run, as JSON and as a page", async () => {

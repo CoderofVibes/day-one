@@ -16,6 +16,7 @@
     "./chain/live": "./src/chain/live.ts",
     "./chain/policy": "./src/chain/policy.ts",
     "./chain/replay": "./src/chain/replay.ts",
+    "./chain/summary": "./src/chain/summary.ts",
     "./llm/client": "./src/llm/client.ts",
     "./llm/types": "./src/llm/types.ts",
     "./seed": "./src/seed/index.ts",

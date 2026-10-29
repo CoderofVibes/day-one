@@ -10,6 +10,7 @@
 // those plants' directors. Each director approves only their own plant's share.
 
 import { type ChainClient, explorerUrl, type LoggedOutcome } from "@day-one/server/chain/client";
+import { NEEDS_APPROVAL, summarizeChainTx } from "@day-one/server/chain/summary";
 import type { Ledger } from "@day-one/server/ledger/db";
 import {
   approvals,
@@ -79,9 +80,6 @@ export const GROUP_PLANNED_BATCH = {
   batchTablets: 800_000,
 } as const;
 
-const NEEDS_APPROVAL = "director approval required.";
-const NOT_A_SUPPLIER =
-  "Only a registered purchasing agent or an approved supplier can anchor records.";
 const RECEIVER = "Tommy Reyes";
 const QC = "Priya Natarajan";
 const REPLY = /^\s*(YES|NO)\s+(?:PO-)?([A-Za-z0-9-]+)\s*$/i;
@@ -901,17 +899,7 @@ export async function runGroupDemo(deps: GroupDeps): Promise<GroupResult> {
     });
     spent[plant.code] = Number(value);
   }
-  const rows = db.select().from(chainTx).all();
-  const refused = rows.filter((r) => r.status === "refused");
-  const byDesign = (r: (typeof rows)[number]) =>
-    r.errorMessage?.endsWith(NEEDS_APPROVAL) ||
-    (r.method === "anchor" && r.errorMessage === NOT_A_SUPPLIER);
-  const summary = {
-    transactions: rows.length,
-    refusedByDesign: refused.filter(byDesign).length,
-    refusedOther: refused.filter((r) => !byDesign(r)).length,
-    failed: rows.filter((r) => r.status === "failed").length,
-  };
+  const summary = summarizeChainTx(db.select().from(chainTx).all());
   add(
     10,
     "Each plant's books",

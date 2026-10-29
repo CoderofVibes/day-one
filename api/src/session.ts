@@ -22,6 +22,7 @@ import { verifyAttestation } from "@day-one/server/attestation/verify";
 import { explorerUrl } from "@day-one/server/chain/client";
 import { LiveTransport } from "@day-one/server/chain/live";
 import { type PolicyView, readPolicy, type ViewFn } from "@day-one/server/chain/policy";
+import { summarizeChainTx } from "@day-one/server/chain/summary";
 import { books, booksCsv } from "@day-one/server/ledger/books";
 import { plantInventory } from "@day-one/server/ledger/inventory";
 import { approvals, chainTx, staff, vendors } from "@day-one/server/ledger/schema";
@@ -371,19 +372,7 @@ export class DemoSession {
     const m = this.machine;
     const rows = db.select().from(chainTx).all();
     const finished = m.next === "done";
-    const refused = rows.filter((r) => r.status === "refused");
-    const summary = finished
-      ? {
-          transactions: rows.length,
-          refusedByDesign: refused.filter((r) =>
-            r.errorMessage?.endsWith("director approval required."),
-          ).length,
-          refusedOther: refused.filter(
-            (r) => !r.errorMessage?.endsWith("director approval required."),
-          ).length,
-          failed: rows.filter((r) => r.status === "failed").length,
-        }
-      : null;
+    const summary = finished ? summarizeChainTx(rows) : null;
     return {
       mode: this.env.live ? "live" : "replay",
       network: this.env.accounts.network,

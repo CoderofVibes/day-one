@@ -15,6 +15,7 @@
 // anchor their quote fingerprints from their own accounts, or a plain answer set.
 
 import { type ChainClient, explorerUrl, type LoggedOutcome } from "@day-one/server/chain/client";
+import { summarizeChainTx } from "@day-one/server/chain/summary";
 import type { Ledger } from "@day-one/server/ledger/db";
 import {
   batchRecords,
@@ -195,10 +196,6 @@ export interface DemoMachine {
   finish(): DemoResult;
 }
 
-const NEEDS_APPROVAL = "director approval required.";
-/** The contract's answer to an unapproved supplier anchoring its quote (QuickChem on step 5). */
-const NOT_A_SUPPLIER =
-  "Only a registered purchasing agent or an approved supplier can anchor records.";
 const DAY_MS = 86_400_000;
 const PURCHASER = "Ray Delgado";
 const RECEIVER = "Tommy Reyes";
@@ -700,17 +697,7 @@ class Demo implements DemoMachine {
     if (this.next !== "finish") throw new DemoOrderError(this.next, "finish");
     const { db } = this;
     // 14. What happened on chain.
-    const rows = db.select().from(chainTx).all();
-    const refused = rows.filter((r) => r.status === "refused");
-    const byDesign = (r: (typeof rows)[number]) =>
-      r.errorMessage?.endsWith(NEEDS_APPROVAL) ||
-      (r.method === "anchor" && r.errorMessage === NOT_A_SUPPLIER);
-    const summary = {
-      transactions: rows.length,
-      refusedByDesign: refused.filter(byDesign).length,
-      refusedOther: refused.filter((r) => !byDesign(r)).length,
-      failed: rows.filter((r) => r.status === "failed").length,
-    };
+    const summary = summarizeChainTx(db.select().from(chainTx).all());
     this.add(
       14,
       "Summary",

@@ -1,9 +1,9 @@
 {
   "network": "testnet",
-  "recordedAt": "2026-10-28T21:24:01.880Z",
+  "recordedAt": "2026-10-29T05:32:07.495Z",
   "summary": {
-    "transactions": 10,
-    "refusedByDesign": 1,
+    "transactions": 13,
+    "refusedByDesign": 2,
     "refusedOther": 0,
     "failed": 0
   },
@@ -16,8 +16,8 @@
   "attestation": {
     "model": "z-ai/glm-5.3-flash",
     "tier": "Private TEE",
-    "fetchedAt": "2026-10-29T01:11:38.449Z",
-    "nonce": "bb641433c2cd1bdd2cbe7542d7f9c76efca249dfe34ea6ede9a46a4c9bc4fc86",
+    "fetchedAt": "2026-10-29T05:36:22.679Z",
+    "nonce": "c9da39286cdbb5e7945372edf0a531bc34faef38a5255650eb5442f219ee2da9",
     "enclave": [
       {
         "name": "model TDX quote",
@@ -27,7 +27,7 @@
       {
         "name": "model nonce",
         "status": "verified",
-        "detail": "our nonce bb641433… echoed"
+        "detail": "our nonce c9da3928… echoed"
       },
       {
         "name": "model report_data",
@@ -42,32 +42,32 @@
       {
         "name": "model compose hash",
         "status": "verified",
-        "detail": "app_compose hashes to MRCONFIGID a0e3c6f4…"
+        "detail": "app_compose hashes to MRCONFIGID 5f7ebd85…"
       },
       {
         "name": "model event log",
         "status": "verified",
-        "detail": "replays to RTMR3 463b2e18…"
+        "detail": "replays to RTMR3 e0f6c83e…"
       },
       {
         "name": "model Intel collateral",
         "status": "verified",
-        "detail": "TCB UpToDate (checked 2026-10-29 01:11Z)"
+        "detail": "TCB UpToDate (checked 2026-10-29 05:36Z)"
       },
       {
         "name": "model NVIDIA GPU",
         "status": "verified",
-        "detail": "NRAS overall attestation result true (checked 2026-10-29 01:11Z)"
+        "detail": "NRAS overall attestation result true (checked 2026-10-29 05:36Z)"
       },
       {
         "name": "gateway TDX quote",
         "status": "verified",
-        "detail": "v4, MRTD f06dfda6…"
+        "detail": "v4, MRTD 7fe60787…"
       },
       {
         "name": "gateway nonce",
         "status": "verified",
-        "detail": "our nonce bb641433… echoed"
+        "detail": "our nonce c9da3928… echoed"
       },
       {
         "name": "gateway report_data",
@@ -82,33 +82,33 @@
       {
         "name": "gateway compose hash",
         "status": "verified",
-        "detail": "app_compose hashes to MRCONFIGID 56444a2f…"
+        "detail": "app_compose hashes to MRCONFIGID f571e5da…"
       },
       {
         "name": "gateway event log",
         "status": "verified",
-        "detail": "replays to RTMR3 fd148086…"
+        "detail": "replays to RTMR3 b7cf9a69…"
       },
       {
         "name": "gateway Intel collateral",
         "status": "verified",
-        "detail": "TCB UpToDate (checked 2026-10-29 01:11Z)"
+        "detail": "TCB UpToDate (checked 2026-10-29 05:36Z)"
       }
     ],
     "answers": [
       {
-        "chatId": "1d553d3e20fb4967877ee4d8e90127af",
+        "chatId": "50f188629cb84a1ab9b64321afc01ddf",
         "model": "z-ai/glm-5.3-flash",
         "task": "vision",
         "promptStart": "Transcribe this batch record page.",
         "requestSha256": "193b33c1885e35c583bd042fbe7a41b58a19158663cc659961ba70fc1ec647a6",
-        "responseSha256": "20631cb8e157977271cf79a4ac76d52cd65df92678c2c88ed1213fd826b42b39",
+        "responseSha256": "095b78acae0a0d16b4f70761bbbbdfb6dba4ca7f408a21de925e3578b704bfa3",
         "signer": "0x3b753b4406613c5e70ae640508632b600424fa0c",
         "checks": [
           {
             "name": "signed text",
             "status": "verified",
-            "detail": "model, request 193b33c1…, response 20631cb8…"
+            "detail": "model, request 193b33c1…, response 095b78ac…"
           },
           {
             "name": "signer",
@@ -118,18 +118,18 @@
         ]
       },
       {
-        "chatId": "849a02030b724849a906dd1f7527d2f5",
+        "chatId": "bb147329717b4e9ab1c8571aeef1a45e",
         "model": "z-ai/glm-5.3-flash",
         "task": "reasoning",
         "promptStart": "Transcribe the invoice between the <document> tags into the JSON fields: invoice",
         "requestSha256": "0a28347b2c5646ccd3b81c680ece44ea714486c494e9ac607a0af0a6e1967817",
-        "responseSha256": "e45bb0986426c50e20b14f722342e45de3795f4664b1154b829ff6488b7b8bac",
+        "responseSha256": "d03924d89a6f63ce253264f0bb772a3d3e32a6e401936fe7c3739a7ea4730620",
         "signer": "0x3b753b4406613c5e70ae640508632b600424fa0c",
         "checks": [
           {
             "name": "signed text",
             "status": "verified",
-            "detail": "model, request 0a28347b…, response e45bb098…"
+            "detail": "model, request 0a28347b…, response d03924d8…"
           },
           {
             "name": "signer",
@@ -171,8 +171,8 @@
       ],
       "chain": [
         {
-          "line": "chain: anchored BR-B-1045 0xd7de24f4… ✓ (tx Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN)",
-          "tx": "Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN"
+          "line": "chain: anchored BR-B-1045 0x25c6caff… ✓ (tx GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS)",
+          "tx": "GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS"
         }
       ]
     },
@@ -198,7 +198,20 @@
       "staff": [
         "3 quotes. QuickChem Direct $5.90/kg excluded: vendor not qualified. Northgate $7.10/kg, 7 days — selected. Ridgeway $7.35/kg, 5 days — runner-up."
       ],
-      "chain": []
+      "chain": [
+        {
+          "line": "chain: anchor quote RFQ-2611-01 ✗ REFUSED \"Only a registered purchasing agent or an approved supplier can anchor records.\" (tx 6qNuBF16LW63gRCJ1QmLRY3RQ6k4RcX1NUN2V5scH3jJ)",
+          "tx": "6qNuBF16LW63gRCJ1QmLRY3RQ6k4RcX1NUN2V5scH3jJ"
+        },
+        {
+          "line": "chain: anchor quote RFQ-2611-01 ✓ signed by northgate-ingredients.testnet (tx FMLQyTJ7yZvFW5qyqoNUHnKuc3JTvkv3dPfjcW9nkyC5)",
+          "tx": "FMLQyTJ7yZvFW5qyqoNUHnKuc3JTvkv3dPfjcW9nkyC5"
+        },
+        {
+          "line": "chain: anchor quote RFQ-2611-01 ✓ signed by ridgeway-ascorbics.testnet (tx 4mBN5CwJBrkdn3e6CmaWWEzY7MVgdah1jcCo1t9pKjo2)",
+          "tx": "4mBN5CwJBrkdn3e6CmaWWEzY7MVgdah1jcCo1t9pKjo2"
+        }
+      ]
     },
     {
       "step": 6,
@@ -208,8 +221,8 @@
       ],
       "chain": [
         {
-          "line": "chain: submit_po PO-1041 ✓ (tx DYHsrENhyw2N12D2v9eVcX4kspFrChBM4pbuh42SfS8x) · escrow funded 612.00 DTUSD",
-          "tx": "DYHsrENhyw2N12D2v9eVcX4kspFrChBM4pbuh42SfS8x"
+          "line": "chain: submit_po PO-1041 ✓ (tx D28BgcP34ruXdczobk6WhvrgJxBWEm73qjQK5uxmzH1A) · escrow funded 612.00 DTUSD",
+          "tx": "D28BgcP34ruXdczobk6WhvrgJxBWEm73qjQK5uxmzH1A"
         }
       ]
     },
@@ -221,8 +234,8 @@
       ],
       "chain": [
         {
-          "line": "chain: submit_po PO-1042 ✗ REFUSED \"PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required.\" (tx DZx3MwK8DxAghCAC7uRHor4jFVRsqPfjSCErGukrwwPW)",
-          "tx": "DZx3MwK8DxAghCAC7uRHor4jFVRsqPfjSCErGukrwwPW"
+          "line": "chain: submit_po PO-1042 ✗ REFUSED \"PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required.\" (tx FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af)",
+          "tx": "FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af"
         }
       ]
     },
@@ -234,8 +247,8 @@
       ],
       "chain": [
         {
-          "line": "chain: approve_po PO-1042 ✓ signed by director.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx 3pC54Z3zQJtxpYRBa3jAtzeWHmnstXft84YzWoPpYP8e)",
-          "tx": "3pC54Z3zQJtxpYRBa3jAtzeWHmnstXft84YzWoPpYP8e"
+          "line": "chain: approve_po PO-1042 ✓ signed by director.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8)",
+          "tx": "EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8"
         }
       ]
     },
@@ -247,8 +260,8 @@
       ],
       "chain": [
         {
-          "line": "chain: submit_po PO-1042 ✓ (tx B3Hnh7CCwrrYiqbEDdSr3YuNTgk1NeqgZw3rJjGoUsTx) · escrow funded 5,150.00 DTUSD",
-          "tx": "B3Hnh7CCwrrYiqbEDdSr3YuNTgk1NeqgZw3rJjGoUsTx"
+          "line": "chain: submit_po PO-1042 ✓ (tx 3sUEp63gHQFSr6FvrjTDvarFh2zM2i1Zp9bhzumfbpmQ) · escrow funded 5,150.00 DTUSD",
+          "tx": "3sUEp63gHQFSr6FvrjTDvarFh2zM2i1Zp9bhzumfbpmQ"
         }
       ]
     },
@@ -258,12 +271,12 @@
       "staff": [],
       "chain": [
         {
-          "line": "chain: accept_po PO-1042 ✓ signed by northgate-ingredients.testnet (tx FG8ETbHUfQBGTJq1zV3EbjDCnBH8JeqaZoSLihy2iJZg)",
-          "tx": "FG8ETbHUfQBGTJq1zV3EbjDCnBH8JeqaZoSLihy2iJZg"
+          "line": "chain: accept_po PO-1042 ✓ signed by northgate-ingredients.testnet (tx AsDTwnSwqeSLh3gNREJPgU5ckMeGhqsM2FMAWfTk1Ma7)",
+          "tx": "AsDTwnSwqeSLh3gNREJPgU5ckMeGhqsM2FMAWfTk1Ma7"
         },
         {
-          "line": "chain: mark_shipped PO-1042 ✓ signed by northgate-ingredients.testnet (tx HG1DD9fEb1A2cwM8c68SrjZ4AydFWPxUJcsj3PPwSVtQ)",
-          "tx": "HG1DD9fEb1A2cwM8c68SrjZ4AydFWPxUJcsj3PPwSVtQ"
+          "line": "chain: mark_shipped PO-1042 ✓ signed by northgate-ingredients.testnet (tx BU6SLGGUxjkrXVdQQHv8c6G2iYFDQv8cyZ72q97MarBD)",
+          "tx": "BU6SLGGUxjkrXVdQQHv8c6G2iYFDQv8cyZ72q97MarBD"
         }
       ]
     },
@@ -275,8 +288,8 @@
       ],
       "chain": [
         {
-          "line": "chain: confirm_receipt PO-1042 ✓ signed by receiving.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx 3vK7eacZDkDdW6YtC1bkt4vbToiFB1Tn9WEUM5gbNPEr)",
-          "tx": "3vK7eacZDkDdW6YtC1bkt4vbToiFB1Tn9WEUM5gbNPEr"
+          "line": "chain: confirm_receipt PO-1042 ✓ signed by receiving.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx 7pCauyEYJSMeCLW1gNCgZ6bze6dqQasNvq7Twf8yJozm)",
+          "tx": "7pCauyEYJSMeCLW1gNCgZ6bze6dqQasNvq7Twf8yJozm"
         }
       ]
     },
@@ -288,8 +301,8 @@
       ],
       "chain": [
         {
-          "line": "chain: qc_release PO-1042 ✓ (tx 14QHzV9PisQz7TqhnT6WRZ9QmmPfeaTSnbuZLiWVMC4d) · 5,150.00 DTUSD → northgate-ingredients.testnet",
-          "tx": "14QHzV9PisQz7TqhnT6WRZ9QmmPfeaTSnbuZLiWVMC4d"
+          "line": "chain: qc_release PO-1042 ✓ (tx 2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn) · 5,150.00 DTUSD → northgate-ingredients.testnet",
+          "tx": "2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn"
         }
       ]
     },
@@ -301,8 +314,8 @@
       ],
       "chain": [
         {
-          "line": "chain: anchored receipt PO-1042 ✓ (tx ETfe8JQbV4NNkzAAtBMfNi5Wef77zivsDgTFcKwjHivP)",
-          "tx": "ETfe8JQbV4NNkzAAtBMfNi5Wef77zivsDgTFcKwjHivP"
+          "line": "chain: anchored receipt PO-1042 ✓ (tx 2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV)",
+          "tx": "2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV"
         }
       ]
     },
@@ -312,7 +325,7 @@
       "staff": [],
       "chain": [
         {
-          "line": "chain: 10 transactions, 1 refused by design, 0 failed.",
+          "line": "chain: 13 transactions, 2 refused by design, 0 failed.",
           "tx": null
         }
       ]
@@ -320,8 +333,8 @@
   ],
   "transactions": [
     {
-      "tx": "Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN",
-      "url": "https://testnet.nearblocks.io/txns/Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN",
+      "tx": "GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS",
+      "url": "https://testnet.nearblocks.io/txns/GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS",
       "method": "anchor_batch",
       "contract": "spend-policy.acme-holdings.testnet",
       "signer": "kevin.plant-b.acme-holdings.testnet",
@@ -333,8 +346,45 @@
       ]
     },
     {
-      "tx": "DYHsrENhyw2N12D2v9eVcX4kspFrChBM4pbuh42SfS8x",
-      "url": "https://testnet.nearblocks.io/txns/DYHsrENhyw2N12D2v9eVcX4kspFrChBM4pbuh42SfS8x",
+      "tx": "6qNuBF16LW63gRCJ1QmLRY3RQ6k4RcX1NUN2V5scH3jJ",
+      "url": "https://testnet.nearblocks.io/txns/6qNuBF16LW63gRCJ1QmLRY3RQ6k4RcX1NUN2V5scH3jJ",
+      "method": "anchor",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "quickchem-direct.testnet",
+      "paidBy": "quickchem-direct.testnet",
+      "status": "refused",
+      "error": "Only a registered purchasing agent or an approved supplier can anchor records.",
+      "events": []
+    },
+    {
+      "tx": "FMLQyTJ7yZvFW5qyqoNUHnKuc3JTvkv3dPfjcW9nkyC5",
+      "url": "https://testnet.nearblocks.io/txns/FMLQyTJ7yZvFW5qyqoNUHnKuc3JTvkv3dPfjcW9nkyC5",
+      "method": "anchor",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "northgate-ingredients.testnet",
+      "paidBy": "northgate-ingredients.testnet",
+      "status": "success",
+      "error": null,
+      "events": [
+        "record_anchored"
+      ]
+    },
+    {
+      "tx": "4mBN5CwJBrkdn3e6CmaWWEzY7MVgdah1jcCo1t9pKjo2",
+      "url": "https://testnet.nearblocks.io/txns/4mBN5CwJBrkdn3e6CmaWWEzY7MVgdah1jcCo1t9pKjo2",
+      "method": "anchor",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "ridgeway-ascorbics.testnet",
+      "paidBy": "ridgeway-ascorbics.testnet",
+      "status": "success",
+      "error": null,
+      "events": [
+        "record_anchored"
+      ]
+    },
+    {
+      "tx": "D28BgcP34ruXdczobk6WhvrgJxBWEm73qjQK5uxmzH1A",
+      "url": "https://testnet.nearblocks.io/txns/D28BgcP34ruXdczobk6WhvrgJxBWEm73qjQK5uxmzH1A",
       "method": "submit_po",
       "contract": "spend-policy.acme-holdings.testnet",
       "signer": "kevin.plant-b.acme-holdings.testnet",
@@ -347,8 +397,8 @@
       ]
     },
     {
-      "tx": "DZx3MwK8DxAghCAC7uRHor4jFVRsqPfjSCErGukrwwPW",
-      "url": "https://testnet.nearblocks.io/txns/DZx3MwK8DxAghCAC7uRHor4jFVRsqPfjSCErGukrwwPW",
+      "tx": "FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af",
+      "url": "https://testnet.nearblocks.io/txns/FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af",
       "method": "submit_po",
       "contract": "spend-policy.acme-holdings.testnet",
       "signer": "kevin.plant-b.acme-holdings.testnet",
@@ -360,8 +410,8 @@
       ]
     },
     {
-      "tx": "3pC54Z3zQJtxpYRBa3jAtzeWHmnstXft84YzWoPpYP8e",
-      "url": "https://testnet.nearblocks.io/txns/3pC54Z3zQJtxpYRBa3jAtzeWHmnstXft84YzWoPpYP8e",
+      "tx": "EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8",
+      "url": "https://testnet.nearblocks.io/txns/EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8",
       "method": "approve_po",
       "contract": "spend-policy.acme-holdings.testnet",
       "signer": "director.plant-b.acme-holdings.testnet",
@@ -373,8 +423,8 @@
       ]
     },
     {
-      "tx": "B3Hnh7CCwrrYiqbEDdSr3YuNTgk1NeqgZw3rJjGoUsTx",
-      "url": "https://testnet.nearblocks.io/txns/B3Hnh7CCwrrYiqbEDdSr3YuNTgk1NeqgZw3rJjGoUsTx",
+      "tx": "3sUEp63gHQFSr6FvrjTDvarFh2zM2i1Zp9bhzumfbpmQ",
+      "url": "https://testnet.nearblocks.io/txns/3sUEp63gHQFSr6FvrjTDvarFh2zM2i1Zp9bhzumfbpmQ",
       "method": "submit_po",
       "contract": "spend-policy.acme-holdings.testnet",
       "signer": "kevin.plant-b.acme-holdings.testnet",
@@ -387,8 +437,8 @@
       ]
     },
     {
-      "tx": "FG8ETbHUfQBGTJq1zV3EbjDCnBH8JeqaZoSLihy2iJZg",
-      "url": "https://testnet.nearblocks.io/txns/FG8ETbHUfQBGTJq1zV3EbjDCnBH8JeqaZoSLihy2iJZg",
+      "tx": "AsDTwnSwqeSLh3gNREJPgU5ckMeGhqsM2FMAWfTk1Ma7",
+      "url": "https://testnet.nearblocks.io/txns/AsDTwnSwqeSLh3gNREJPgU5ckMeGhqsM2FMAWfTk1Ma7",
       "method": "accept_po",
       "contract": "spend-policy.acme-holdings.testnet",
       "signer": "northgate-ingredients.testnet",
@@ -400,8 +450,8 @@
       ]
     },
     {
-      "tx": "HG1DD9fEb1A2cwM8c68SrjZ4AydFWPxUJcsj3PPwSVtQ",
-      "url": "https://testnet.nearblocks.io/txns/HG1DD9fEb1A2cwM8c68SrjZ4AydFWPxUJcsj3PPwSVtQ",
+      "tx": "BU6SLGGUxjkrXVdQQHv8c6G2iYFDQv8cyZ72q97MarBD",
+      "url": "https://testnet.nearblocks.io/txns/BU6SLGGUxjkrXVdQQHv8c6G2iYFDQv8cyZ72q97MarBD",
       "method": "mark_shipped",
       "contract": "spend-policy.acme-holdings.testnet",
       "signer": "northgate-ingredients.testnet",
@@ -413,8 +463,8 @@
       ]
     },
     {
-      "tx": "3vK7eacZDkDdW6YtC1bkt4vbToiFB1Tn9WEUM5gbNPEr",
-      "url": "https://testnet.nearblocks.io/txns/3vK7eacZDkDdW6YtC1bkt4vbToiFB1Tn9WEUM5gbNPEr",
+      "tx": "7pCauyEYJSMeCLW1gNCgZ6bze6dqQasNvq7Twf8yJozm",
+      "url": "https://testnet.nearblocks.io/txns/7pCauyEYJSMeCLW1gNCgZ6bze6dqQasNvq7Twf8yJozm",
       "method": "confirm_receipt",
       "contract": "spend-policy.acme-holdings.testnet",
       "signer": "receiving.plant-b.acme-holdings.testnet",
@@ -426,8 +476,8 @@
       ]
     },
     {
-      "tx": "14QHzV9PisQz7TqhnT6WRZ9QmmPfeaTSnbuZLiWVMC4d",
-      "url": "https://testnet.nearblocks.io/txns/14QHzV9PisQz7TqhnT6WRZ9QmmPfeaTSnbuZLiWVMC4d",
+      "tx": "2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn",
+      "url": "https://testnet.nearblocks.io/txns/2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn",
       "method": "qc_release",
       "contract": "spend-policy.acme-holdings.testnet",
       "signer": "qc.plant-b.acme-holdings.testnet",
@@ -436,12 +486,13 @@
       "error": null,
       "events": [
         "ft_transfer",
-        "po_released"
+        "po_released",
+        "delivery_recorded"
       ]
     },
     {
-      "tx": "ETfe8JQbV4NNkzAAtBMfNi5Wef77zivsDgTFcKwjHivP",
-      "url": "https://testnet.nearblocks.io/txns/ETfe8JQbV4NNkzAAtBMfNi5Wef77zivsDgTFcKwjHivP",
+      "tx": "2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV",
+      "url": "https://testnet.nearblocks.io/txns/2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV",
       "method": "anchor_batch",
       "contract": "spend-policy.acme-holdings.testnet",
       "signer": "kevin.plant-b.acme-holdings.testnet",

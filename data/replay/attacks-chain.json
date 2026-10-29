@@ -1,7 +1,7 @@
 {
   "version": 1,
   "network": "testnet",
-  "recordedAt": "2026-10-28T23:58:17.535Z",
+  "recordedAt": "2026-10-29T05:36:09.812Z",
   "entries": [
     {
       "type": "call",
@@ -24,7 +24,7 @@
         "status": "refused",
         "errorMessage": "northgate-lngredients.testnet is not an approved supplier; no approval can override this.",
         "returnValue": null,
-        "txHash": "Ao17dPxka7U6yuCoPrKKWZSBEVD36GDB5QoWfXSL4tun",
+        "txHash": "BKjdSJD49LVSpDYgo9LrMnbbCiNrs2wgz7GDt2suBRB7",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -40,7 +40,7 @@
             }
           }
         ],
-        "blockHeight": 275221790
+        "blockHeight": 275256835
       }
     },
     {
@@ -49,26 +49,26 @@
         "contractId": "spend-policy.acme-holdings.testnet",
         "method": "get_po",
         "args": {
-          "po_id": "PO-T1043"
+          "po_id": "PO-1042"
         }
       },
       "result": {
-        "po_id": "PO-T1043",
+        "po_id": "PO-1042",
         "agent": "kevin.plant-b.acme-holdings.testnet",
         "plant": "plant-b.acme-holdings.testnet",
         "supplier": "northgate-ingredients.testnet",
-        "amount": "10000000",
+        "amount": "5150000000",
         "category": "raw_material",
-        "po_hash": "7e577e577e577e577e577e577e577e577e577e577e577e577e577e577e577e57",
+        "po_hash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3",
         "period": 202610,
-        "status": "Cancelled",
-        "approved_by": null,
-        "supplier_lot": "NG-TEST-0001",
-        "funded_at": "1793218671035012915",
-        "accepted_at": "1793218673470260163",
-        "shipped_at": "1793218675852499106",
-        "received_at": null,
-        "released_at": null
+        "status": "Released",
+        "approved_by": "director.plant-b.acme-holdings.testnet",
+        "supplier_lot": "NG-24-8812",
+        "funded_at": "1793251906049083632",
+        "accepted_at": "1793251908478301558",
+        "shipped_at": "1793251910945249317",
+        "received_at": "1793251914576303933",
+        "released_at": "1793251923725205124"
       }
     },
     {
@@ -90,36 +90,36 @@
         "receiverId": "spend-policy.acme-holdings.testnet",
         "method": "submit_po",
         "args": {
-          "po_id": "PO-T1043",
+          "po_id": "PO-1042",
           "supplier": "northgate-ingredients.testnet",
           "amount": "1000000000",
           "category": "raw_material",
-          "po_hash": "73830ca760feed0bee36282bb2891bafd00b100b615f0d0b3f403f4a2b5b68bc"
+          "po_hash": "05baf5a554a3ae0744c0f30bd7cea70b84a32567b362671ac9d3c8c868422a40"
         },
         "depositYocto": "0",
         "viaRelayer": false
       },
       "outcome": {
         "status": "refused",
-        "errorMessage": "PO-T1043 was already submitted.",
+        "errorMessage": "PO-1042 was already submitted.",
         "returnValue": null,
-        "txHash": "Af3nfZJULmUaS8bXVynCfy5bb9kASB6qG3bqys4CBpCW",
+        "txHash": "8CdDArQXLL3kiLpXpZBFUESamAttE1gafFXcYRifg2ic",
         "events": [
           {
             "standard": "dayone_spend_policy",
             "version": "1.0.0",
             "event": "po_refused",
             "data": {
-              "po_id": "PO-T1043",
+              "po_id": "PO-1042",
               "agent": "kevin.plant-b.acme-holdings.testnet",
               "supplier": "northgate-ingredients.testnet",
               "amount": "1000000000",
               "category": "raw_material",
-              "reason": "PO-T1043 was already submitted."
+              "reason": "PO-1042 was already submitted."
             }
           }
         ],
-        "blockHeight": 275221802
+        "blockHeight": 275256854
       }
     },
     {
@@ -138,16 +138,16 @@
         "supplier": "northgate-ingredients.testnet",
         "amount": "5150000000",
         "category": "raw_material",
-        "po_hash": "f6755772331c88748f4c1b221932be2406be392e8c2f51a385024e79cf0cbef6",
+        "po_hash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3",
         "period": 202610,
         "status": "Released",
         "approved_by": "director.plant-b.acme-holdings.testnet",
         "supplier_lot": "NG-24-8812",
-        "funded_at": "1793222622154284686",
-        "accepted_at": "1793222624675919810",
-        "shipped_at": "1793222626671374927",
-        "received_at": "1793222630329829466",
-        "released_at": "1793222634940479421"
+        "funded_at": "1793251906049083632",
+        "accepted_at": "1793251908478301558",
+        "shipped_at": "1793251910945249317",
+        "received_at": "1793251914576303933",
+        "released_at": "1793251923725205124"
       }
     },
     {
@@ -180,11 +180,11 @@
         "receiverId": "spend-policy.acme-holdings.testnet",
         "method": "submit_po",
         "args": {
-          "po_id": "PO-T9101",
+          "po_id": "PO-T9103",
           "supplier": "bayfront-labsupply.testnet",
           "amount": "695000000",
           "category": "lab_chemical",
-          "po_hash": "9b581b0346946c66c2767156a2f0be6e8624a22ff1af67a8d3d27f20648ef8c6"
+          "po_hash": "264b4100327976b02a6036fc40c60f55f18a3f99118706a0fda8daf1a6ad2427"
         },
         "depositYocto": "0",
         "viaRelayer": false
@@ -193,36 +193,36 @@
         "status": "success",
         "errorMessage": null,
         "returnValue": {
-          "po_id": "PO-T9101",
+          "po_id": "PO-T9103",
           "agent": "kevin.plant-b.acme-holdings.testnet",
           "plant": "plant-b.acme-holdings.testnet",
           "supplier": "bayfront-labsupply.testnet",
           "amount": "695000000",
           "category": "lab_chemical",
-          "po_hash": "9b581b0346946c66c2767156a2f0be6e8624a22ff1af67a8d3d27f20648ef8c6",
+          "po_hash": "264b4100327976b02a6036fc40c60f55f18a3f99118706a0fda8daf1a6ad2427",
           "period": 202610,
           "status": "Funded",
           "approved_by": null,
           "supplier_lot": null,
-          "funded_at": "1793231890661919936",
+          "funded_at": "1793252162769551830",
           "accepted_at": null,
           "shipped_at": null,
           "received_at": null,
           "released_at": null
         },
-        "txHash": "3FApPbHR6DX4pZ4Xm9AuwPGkHZtZpMrXUhV8pSnE3KUM",
+        "txHash": "EsVds3nMCTfLvBfhuEy5erVSjTA2Vo9w4CkWAyfEdT39",
         "events": [
           {
             "standard": "dayone_spend_policy",
             "version": "1.0.0",
             "event": "po_authorized",
             "data": {
-              "po_id": "PO-T9101",
+              "po_id": "PO-T9103",
               "agent": "kevin.plant-b.acme-holdings.testnet",
               "supplier": "bayfront-labsupply.testnet",
               "amount": "695000000",
               "category": "lab_chemical",
-              "po_hash": "9b581b0346946c66c2767156a2f0be6e8624a22ff1af67a8d3d27f20648ef8c6",
+              "po_hash": "264b4100327976b02a6036fc40c60f55f18a3f99118706a0fda8daf1a6ad2427",
               "approved_by": null
             }
           },
@@ -231,14 +231,14 @@
             "version": "1.0.0",
             "event": "po_funded",
             "data": {
-              "po_id": "PO-T9101",
+              "po_id": "PO-T9103",
               "amount": "695000000",
               "budget": "18543000000",
               "escrowed": "1307000000"
             }
           }
         ],
-        "blockHeight": 275221814
+        "blockHeight": 275256871
       }
     },
     {
@@ -249,36 +249,36 @@
         "receiverId": "spend-policy.acme-holdings.testnet",
         "method": "submit_po",
         "args": {
-          "po_id": "PO-T9102",
+          "po_id": "PO-T9104",
           "supplier": "bayfront-labsupply.testnet",
           "amount": "695000000",
           "category": "lab_chemical",
-          "po_hash": "8a64e4f5624312b4959f805dcd26e96935022d3047f97e3ce1ca57a70e12a197"
+          "po_hash": "6aa7456fec878e48c6443e090e5bd8aa15f5c9ae5b6f3a1d5250ca97235796b8"
         },
         "depositYocto": "0",
         "viaRelayer": false
       },
       "outcome": {
         "status": "refused",
-        "errorMessage": "PO-T9102: $695.00 would take lab chemical spending this month to $2,002.00, over the cap of $2,000.00; director approval required.",
+        "errorMessage": "PO-T9104: $695.00 would take lab chemical spending this month to $2,002.00, over the cap of $2,000.00; director approval required.",
         "returnValue": null,
-        "txHash": "AfDDTbxfpr9nEvdsAcEGHZzGEZZMhJCmLGhigySgo8kA",
+        "txHash": "2w9YEuciywGFCRkTk6vMDoBb94ECzYB4BLayhYU5JVM3",
         "events": [
           {
             "standard": "dayone_spend_policy",
             "version": "1.0.0",
             "event": "po_refused",
             "data": {
-              "po_id": "PO-T9102",
+              "po_id": "PO-T9104",
               "agent": "kevin.plant-b.acme-holdings.testnet",
               "supplier": "bayfront-labsupply.testnet",
               "amount": "695000000",
               "category": "lab_chemical",
-              "reason": "PO-T9102: $695.00 would take lab chemical spending this month to $2,002.00, over the cap of $2,000.00; director approval required."
+              "reason": "PO-T9104: $695.00 would take lab chemical spending this month to $2,002.00, over the cap of $2,000.00; director approval required."
             }
           }
         ],
-        "blockHeight": 275221818
+        "blockHeight": 275256875
       }
     },
     {
@@ -325,7 +325,7 @@
         "status": "refused",
         "errorMessage": "harrow-chemical.testnet is not an approved supplier; no approval can override this.",
         "returnValue": null,
-        "txHash": "AzxvCyHdTKcDDuHjmHmJNheAyM7VB6HEAtJZE8aGp5cJ",
+        "txHash": "9FAzfv5KqbsqcbaYk2cjP3WfS5AY1UcK5iumcaXpLcKf",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -341,7 +341,7 @@
             }
           }
         ],
-        "blockHeight": 275221823
+        "blockHeight": 275256880
       }
     },
     {
