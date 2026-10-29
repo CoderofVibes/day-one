@@ -36,11 +36,11 @@ A wins on every axis that matters for the gate. The standard's single-contract c
 
 ### Design choices (recorded here; the spec is CONTRACTS.md §3.1)
 - **One token per supplier.** Re-issuing renews the same token id (`renew` event) and keeps the delivery record. A revoked token is not burned (`burn = false`, so the history stays), and the standard views report its expiry as the revocation time, as NEP-393 prescribes.
-- **Additive storage.** No new field in the root state struct: the credentials, the token index, the token counter and the suspension rule sit under their own byte-string prefixes (`sc`, `st`, `sn`, `sr`), constructed per call. Existing method signatures are unchanged.
+- **Additive storage.** No new field in the root state struct: the credentials, the token index, the token counter and the suspension rule sit under their own byte-string prefixes (`cred:s`, `cred:t`, `cred:n`, `cred:r`), opened per call. Byte strings rather than new `StorageKey` variants, so the two other sessions changing this contract cannot pick the same prefix by adding variants in a different order. Existing method signatures are unchanged.
 - **The credential is the permission.** `submit_po` refuses a supplier whose credential is missing, revoked, expired, suspended or without the PO's category, before the approval branch, so no director approval overrides it. The status (`Qualified` / `Conditional`) stays in the existing supplier list; `issue_credential` writes both.
 - **Reputation counts settled outcomes only.** A delivery counts as released when the payout transfer succeeds (`on_payout`), not when QC clicks release, so a failed payout and a second release never count twice. A QC reject counts at once. HQ's `cancel` is not a delivery and does not count.
 - **Times.** The contract stores nanoseconds like every other field; the NEP-393 views convert to milliseconds.
-- **Rehearsals reject Northgate.** `npm run rehearse` ends with a QC reject of a throwaway PO to Northgate. With the default rule two rehearsals in a row would suspend Northgate, so the rehearsal prints Northgate's standing and the HQ reinstate command when the next reject would suspend it.
+- **Rehearsals reject Northgate.** `npm run rehearse` ends with a QC reject of a throwaway PO to Northgate. With the default rule two rehearsals in a row (with no release between them) suspend Northgate. So the rehearsal prints Northgate's delivery record after the reject, prints HQ's `reinstate_supplier` command when Northgate is suspended, and stops before placing a PO if Northgate is already suspended. A live demo's PO-1042 release ends the run of rejects.
 
 ### Sources
 - NEP-393 text: https://github.com/near/NEPs/blob/master/neps/nep-0393.md (read Oct 28 2026)
