@@ -98,12 +98,30 @@ export interface Flow {
   chainTx?: { hash: string; status: string; error: string | null };
 }
 
+export type QuoteStanding = "selected" | "runner-up" | "excluded";
+
+/** A supplier's quote and standing, from the Quotes step (FICTIONAL_DATA §5). */
+export interface TwinQuote {
+  supplier: string;
+  /** "$7.10/kg" */
+  price: string;
+  /** "7 days", when the line gives one. */
+  leadTime?: string;
+  standing: QuoteStanding;
+  /** Why it was excluded: "vendor not qualified". */
+  reason?: string;
+  /** The supplier agent's quote anchor, shown only behind the curtain. */
+  chainTx?: { hash: string; status: string; error: string | null; signer: string };
+}
+
 export interface TwinState {
   /** The step index the map shows. */
   t: number;
   facilities: Facility[];
   lots: TwinLot[];
   flows: Flow[];
+  /** The supplier quotes once Kevin has them; empty before. The 2D map does not draw these. */
+  quotes: TwinQuote[];
   /** What the escrow holds right now, in cents. */
   escrowHeldCents: number;
   /** "Plant B: 6 of 9 departments online." (DEMO_SCRIPT step 14) */
@@ -127,6 +145,7 @@ class Twin {
   private readonly flows: PendingFlow[] = [];
   private readonly lots: TwinLot[] = [];
   private readonly alerts: Record<FacilityId, string[]> = { A: [], B: [], C: [] };
+  private readonly quotes: TwinQuote[] = [];
   private escrowCents = 0;
 
   constructor(private readonly byHash: Map<string, Transaction>) {}
@@ -146,7 +165,11 @@ class Twin {
     else if (title.endsWith(" confirms"))
       for (const d of BATCH_RECORD_DEPTS) this.light(d, "online");
     else if (title === "Discrepancy") this.discrepancy(staff, i);
-    else if (title === "Forecast" || title === "Quotes") this.light("purchasing", "onboarding");
+    else if (title === "Forecast") this.light("purchasing", "onboarding");
+    else if (title === "Quotes") {
+      this.light("purchasing", "onboarding");
+      this.quote(step);
+    }
 
     for (const line of step.staff) {
       const m = /^(PO-\d+) to ([^,]+), (\$[\d,]+\.\d{2})/.exec(line);
@@ -272,6 +295,36 @@ class Twin {
     }
   }
 
+  /**
+   * The quotes as Kevin ranked them: "QuickChem Direct $5.90/kg excluded: vendor not qualified.
+   * Northgate $7.10/kg, 7 days — selected. Ridgeway $7.35/kg, 5 days — runner-up." Each
+   * supplier agent's anchor (or the contract's refusal of it) is matched by the signer's name.
+   */
+  private quote(step: Step) {
+    const line = step.staff.join(" ");
+    const re =
+      /([A-Z][A-Za-z]+(?: [A-Z][A-Za-z]+)*) (\$[\d.]+\/kg)(?:, (\d+ days?))?(?: excluded: ([^.]+)| — (selected|runner-up))/g;
+    for (const m of line.matchAll(re)) {
+      const [, supplier, price, leadTime, reason, standing] = m;
+      if (!supplier || !price) continue;
+      const q: TwinQuote = {
+        supplier,
+        price,
+        standing: standing === "selected" || standing === "runner-up" ? standing : "excluded",
+      };
+      if (leadTime) q.leadTime = leadTime;
+      if (reason) q.reason = reason;
+      this.quotes.push(q);
+    }
+    for (const c of step.chain) {
+      const tx = c.tx ? this.byHash.get(c.tx) : undefined;
+      if (!tx || !/anchor quote/.test(c.line)) continue;
+      const first = (q: TwinQuote) => q.supplier.split(" ")[0]?.toLowerCase() ?? "";
+      const q = this.quotes.find((q) => tx.signer.startsWith(first(q)));
+      if (q) q.chainTx = { hash: tx.tx, status: tx.status, error: tx.error, signer: tx.signer };
+    }
+  }
+
   /** Plant A still books part of a lot that Plant B weighed in (FICTIONAL_DATA §8). */
   private discrepancy(staff: string, i: number) {
     const lot = /\blot (\S+),/.exec(staff)?.[1] ?? "a transferred lot";
@@ -343,6 +396,7 @@ class Twin {
         ...f,
         progress: progress(f.kind, fromStep, toStep, t),
       })),
+      quotes: this.quotes.map((q) => ({ ...q })),
       escrowHeldCents: this.escrowCents,
       summary: `Plant B: ${b?.online ?? 0} of ${b?.departments.length ?? 0} departments online.`,
     };
@@ -430,4 +484,20 @@ export function formatTwinState(state: TwinState, curtain = false): string[] {
   }
   if (state.escrowHeldCents > 0) lines.push(`Escrow holds ${formatCents(state.escrowHeldCents)}.`);
   return lines;
+}
+
+/** The supplier standing in plain text, one line per quote; the 3D view adds these to its caption. */
+export function formatQuotes(state: TwinState, curtain = false): string[] {
+  return state.quotes.map((q) => {
+    const terms = q.leadTime ? `${q.price}, ${q.leadTime}` : q.price;
+    const standing = q.standing === "excluded" ? `excluded: ${q.reason ?? "not qualified"}` : q.standing;
+    let tx = "";
+    if (curtain && q.chainTx) {
+      tx =
+        q.chainTx.status === "success"
+          ? ` (quote anchored by ${q.chainTx.signer}, tx ${q.chainTx.hash.slice(0, 8)}…)`
+          : ` (anchor refused by the contract, tx ${q.chainTx.hash.slice(0, 8)}…)`;
+    }
+    return `Quote: ${q.supplier} ${terms}, ${standing}${tx}.`;
+  });
 }
