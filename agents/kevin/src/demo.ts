@@ -762,7 +762,7 @@ function firstName(name: string) {
 }
 
 /** `chain: submit_po PO-1042 ✓ (tx …) · extra` or `✗ REFUSED "reason" (tx …)`. */
-function chainLine(what: string, o: LoggedOutcome, extra?: string) {
+export function chainLine(what: string, o: LoggedOutcome, extra?: string) {
   const tx = `(tx ${o.txHash ?? "none"})`;
   if (o.status === "refused") return `chain: ${what} ✗ REFUSED "${o.errorMessage ?? ""}" ${tx}`;
   if (o.status === "failed") return `chain: ${what} ✗ FAILED "${o.errorMessage ?? ""}" ${tx}`;

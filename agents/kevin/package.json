@@ -15,6 +15,7 @@
     "./payments": "./src/payments.ts",
     "./attacks": "./src/attacks.ts",
     "./demo": "./src/demo.ts",
+    "./groupBuy": "./src/groupBuy.ts",
     "./erp": "./src/erp.ts"
   },
   "dependencies": {
