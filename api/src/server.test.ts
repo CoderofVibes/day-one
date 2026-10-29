@@ -331,3 +331,50 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect((await api("GET", "/api/run")).body.transactions).toEqual([]);
   });
 });
+
+describe("the import wizard over HTTP", () => {
+  const FILE = "INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx";
+
+  it("reads an uploaded workbook and posts it once Ray has answered every flag", async () => {
+    const bytes = readFileSync(join(REPO_ROOT, "data", "imports", FILE));
+    const up = await api(
+      "POST",
+      `/api/imports?name=${encodeURIComponent(FILE)}`,
+      bytes,
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    expect(up.status).toBe(200);
+    expect(up.body.analysis.message).toMatch(/^Found 19 rows\. 9 need your eyes:/);
+    expect(up.body.analysis.flags).toHaveLength(9);
+    expect(up.body.sales.mismatches).toHaveLength(1);
+    expect(up.body.posted).toBe(false);
+
+    const id = up.body.id as string;
+    const partial = await api("POST", `/api/imports/${id}/confirm`, {
+      answers: { F1: { answer: "accept" } },
+    });
+    expect(partial.body.result.status).toBe("unresolved");
+    expect((await api("GET", "/api/imports")).body.opening).toEqual([]);
+
+    const done = await api("POST", `/api/imports/${id}/confirm`, {
+      answers: up.body.suggestedAnswers,
+    });
+    expect(done.body.result.status).toBe("posted");
+    const asc = done.body.opening.find((l: { material: string }) => l.material === "ASC");
+    expect(asc.availableBase).toBe(562_500_000);
+
+    const again = await api("POST", `/api/imports/${id}/confirm`, {
+      answers: up.body.suggestedAnswers,
+    });
+    expect(again.body.result.status).toBe("already_imported");
+    const state = (await api("GET", "/api/imports")).body;
+    expect(state.imports).toHaveLength(1);
+    expect(state.imports[0].review.map((r: { item: string }) => r.item)).toEqual(["Xanthan Gum"]);
+  });
+
+  it("names the file it cannot find and refuses an unknown upload id", async () => {
+    expect((await api("POST", "/api/imports", { file: "nope.xlsx" })).status).toBe(404);
+    const id = "0".repeat(64);
+    expect((await api("POST", `/api/imports/${id}/confirm`, { answers: {} })).status).toBe(404);
+  });
+});

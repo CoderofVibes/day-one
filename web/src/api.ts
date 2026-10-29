@@ -227,6 +227,85 @@ export function postImage(path: string, file: Blob, name: string): Promise<Actio
   return request<ActionResult>("POST", `${path}${query}`, file, file.type || "image/jpeg");
 }
 
+/** The import wizard (api/src/imports.ts). */
+export type ImportAnswer =
+  | { answer: "accept" }
+  | { answer: "review" }
+  | { answer: "quantity"; qty: number; unit: string };
+export interface ImportFlag {
+  id: string;
+  row: number;
+  kind: string;
+  message: string;
+  proposal: string | null;
+  answers: ("accept" | "quantity" | "review")[];
+}
+export interface ImportView {
+  id: string;
+  fileName: string;
+  sheets: string[];
+  analysis: {
+    sheet: string;
+    headerRow: number;
+    mapping: Record<string, number>;
+    rows: { row: number }[];
+    flags: ImportFlag[];
+    message: string;
+  };
+  sales: { message: string; mismatches: { message: string }[] } | null;
+  suggestedAnswers: Record<string, ImportAnswer> | null;
+  posted: boolean;
+  opening: OpeningLine[];
+}
+export interface OpeningLine {
+  material: string;
+  name: string;
+  lots: string[];
+  availableBase: number;
+  holdBase: number;
+}
+export interface ImportReview {
+  row: number;
+  item: string;
+  reason: string;
+}
+export type ImportResult =
+  | { status: "posted"; plan: { lots: unknown[]; review: ImportReview[]; skipped: unknown[] } }
+  | { status: "already_imported"; importId: number }
+  | { status: "unresolved"; plan: { unresolved: string[] } };
+
+export const IMPORT_FIXTURE = "INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx";
+
+export function postImportFile(file: Blob, name: string): Promise<ImportView> {
+  return request(
+    "POST",
+    `api/imports?name=${encodeURIComponent(name)}`,
+    file,
+    "application/octet-stream",
+  );
+}
+
+export function postImportFixture(): Promise<ImportView> {
+  return request(
+    "POST",
+    "api/imports",
+    JSON.stringify({ file: IMPORT_FIXTURE }),
+    "application/json",
+  );
+}
+
+export function postImportConfirm(
+  id: string,
+  answers: Record<string, ImportAnswer>,
+): Promise<{ result: ImportResult; opening: OpeningLine[] }> {
+  return request(
+    "POST",
+    `api/imports/${id}/confirm`,
+    JSON.stringify({ answers }),
+    "application/json",
+  );
+}
+
 async function request<T>(method: string, path: string, body?: BodyInit, type?: string) {
   const init: RequestInit = { method };
   if (body !== undefined) {

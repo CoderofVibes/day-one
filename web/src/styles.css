@@ -930,3 +930,30 @@ button {
     animation: none;
   }
 }
+
+/* The import wizard: one card per flag, answered cards dim, the quantity box inline. */
+.flags {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+
+.flag.answered {
+  border-color: var(--line);
+  background: transparent;
+}
+
+.qty {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.qty input {
+  width: 6em;
+}
+
+.import {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

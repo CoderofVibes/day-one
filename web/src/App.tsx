@@ -17,6 +17,7 @@ import {
   postReview,
   probeApi,
 } from "./api.ts";
+import { ImportPane } from "./ImportPane.tsx";
 import { type Action, actionsFor, actorOf, quantity } from "./live.ts";
 import {
   type Attestation,
@@ -136,6 +137,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<{ message: string; hint?: string } | null>(null);
   const [plants, setPlants] = useState(false);
+  const [sheet, setSheet] = useState(false);
   const [map, setMap] = useState(true);
   const [inventory, setInventory] = useState<PlantInventory | null>(null);
   const [mass, setMass] = useState<MassBalance | null>(null);
@@ -204,6 +206,10 @@ function LiveApp({ initial }: { initial: LiveState }) {
             <input type="checkbox" checked={plants} onChange={(e) => setPlants(e.target.checked)} />
             <span>Three plants</span>
           </label>
+          <label className="switch">
+            <input type="checkbox" checked={sheet} onChange={(e) => setSheet(e.target.checked)} />
+            <span>Spreadsheet</span>
+          </label>
         </>
       }
     >
@@ -218,6 +224,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
 
       <main className="panes">
         {map && <PlantMap state={deriveTwinState(state, last)} curtain={curtain} />}
+        {sheet && <ImportPane />}
         {plants && (
           <PlantsPane
             inventory={inventory}

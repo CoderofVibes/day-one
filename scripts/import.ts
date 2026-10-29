@@ -16,6 +16,7 @@ import {
   postImport,
   type Resolution,
 } from "../server/src/import/inventory.ts";
+import { analyzeSalesSheets, type SalesAnalysis } from "../server/src/import/sales.ts";
 import { readCsv, readXlsx } from "../server/src/import/xlsx.ts";
 import { openLedger } from "../server/src/ledger/db.ts";
 import { facilities, lotBalances, lots, materials } from "../server/src/ledger/schema.ts";
@@ -130,6 +131,15 @@ if (answersFile) {
   }
 }
 
+// A workbook with a sales tab (FICTIONAL_DATA §14) gets Kevin's reading of it too.
+let sales: SalesAnalysis | null = null;
+if (sheets.some((s) => /sales/i.test(s.name))) {
+  sales = analyzeSalesSheets(sheets);
+  lines.push("");
+  lines.push(`Kevin on "${sheets.find((s) => /sales/i.test(s.name))?.name}": ${sales.message}`);
+  for (const m of sales.mismatches) lines.push(`  ${m.message}`);
+}
+
 console.log(lines.join("\n"));
 if (json) {
   console.log(
@@ -143,6 +153,7 @@ if (json) {
       flags: analysis.flags,
       result,
       inventory,
+      sales,
     }),
   );
 }

@@ -18,6 +18,10 @@
 //   GET  /api/books/export.csv                 the settled POs as the CSV Ruth imports (text/csv)
 //   GET  /api/policy                           HQ's view: the limits the contract enforces now, policy changes
 //   POST /api/discrepancies/:id/review         JSON {"decision": "apply" | "dismiss", "staff"?: …}
+//   GET  /api/imports                          the import plant's opening inventory, posted imports, review queue
+//   POST /api/imports                          the .xlsx or .csv body (?name=), or JSON {"file": "<name in data/imports>"}
+//   POST /api/imports/:id/mapping              JSON {"mapping": {"item": 0, …}}: Kevin reads the sheet again
+//   POST /api/imports/:id/confirm              JSON {"answers": {"F1": {"answer": "accept"}, …}, "staff"?: …}
 //
 // Anything else is served from the built web UI (web/dist) when it exists.
 
@@ -31,6 +35,7 @@ import { extname, join, normalize, resolve, sep } from "node:path";
 import { DemoOrderError } from "@day-one/kevin/demo";
 import { ExtractionError } from "@day-one/kevin/extraction";
 import { DemoEnvError } from "./env.ts";
+import { ImportDesk } from "./imports.ts";
 import { type DemoSession, SessionError, type StepView, stepView } from "./session.ts";
 
 export interface ServerOptions {
@@ -38,6 +43,8 @@ export interface ServerOptions {
   staticDir?: string;
   /** Largest accepted upload, in bytes. */
   maxBodyBytes?: number;
+  /** The import wizard's own ledger; a fresh empty plant by default. */
+  imports?: ImportDesk;
 }
 
 export const API_MARK = '<meta name="day-one-api" content="live" />';
@@ -57,9 +64,10 @@ const TYPES: Record<string, string> = {
 
 export function createServer(session: DemoSession, options: ServerOptions = {}) {
   const maxBody = options.maxBodyBytes ?? 10 * 1024 * 1024;
+  const desk = options.imports ?? new ImportDesk();
   return createHttpServer(async (req, res) => {
     try {
-      await route(session, req, res, options.staticDir, maxBody);
+      await route(session, desk, req, res, options.staticDir, maxBody);
     } catch (error) {
       reply(res, ...statusOf(error, session));
     }
@@ -68,6 +76,7 @@ export function createServer(session: DemoSession, options: ServerOptions = {}) 
 
 async function route(
   session: DemoSession,
+  desk: ImportDesk,
   req: IncomingMessage,
   res: ServerResponse,
   staticDir: string | undefined,
@@ -88,6 +97,7 @@ async function route(
   if (method === "GET" && path === "/api/mass-balance")
     return reply(res, 200, session.massBalance());
   if (method === "GET" && path === "/api/books") return reply(res, 200, session.books());
+  if (method === "GET" && path === "/api/imports") return reply(res, 200, desk.state());
   if (method === "GET" && path === "/api/policy") return reply(res, 200, await session.policy());
   if (method === "GET" && path === "/api/books/export.csv") {
     res.writeHead(200, {
@@ -107,7 +117,44 @@ async function route(
     });
   }
 
-  if (path === "/api/run/reset") return steps(res, session, await session.reset());
+  if (path === "/api/run/reset") {
+    desk.reset();
+    return steps(res, session, await session.reset());
+  }
+
+  if (path === "/api/imports") {
+    const type = req.headers["content-type"] ?? "";
+    if (!type.startsWith("application/json")) {
+      const bytes = await readBody(req, maxBody);
+      if (!bytes.length) throw new SessionError(400, "the upload is empty");
+      const name = url.searchParams.get("name") ?? undefined;
+      return reply(res, 200, desk.upload(name ? { bytes, name } : { bytes }));
+    }
+    const body = await readJson(req, maxBody);
+    const file = text(body.file);
+    if (!file) throw new SessionError(400, "send the spreadsheet as the body, or JSON {file}");
+    return reply(res, 200, desk.upload({ file }));
+  }
+
+  const imported = /^\/api\/imports\/([0-9a-f]{64})\/(mapping|confirm)$/.exec(path);
+  if (imported) {
+    const body = await readJson(req, maxBody);
+    const id = imported[1] ?? "";
+    if (imported[2] === "mapping") {
+      if (!body.mapping || typeof body.mapping !== "object") {
+        throw new SessionError(400, "a mapping needs {mapping: {item: 0, lot: 1, …}}");
+      }
+      return reply(res, 200, desk.remap(id, body.mapping as Record<string, number>));
+    }
+    if (!body.answers || typeof body.answers !== "object") {
+      throw new SessionError(400, 'a confirm needs {answers: {F1: {answer: "accept"}, …}}');
+    }
+    return reply(
+      res,
+      200,
+      desk.confirm(id, body.answers as Parameters<ImportDesk["confirm"]>[1], text(body.staff)),
+    );
+  }
 
   if (path === "/api/batch-records") {
     const type = req.headers["content-type"] ?? "";
