@@ -301,7 +301,8 @@ export async function verifyGpuOnline(
 
 export function modelEntryOf(fixture: AttestationFixture): AttestationEntry | undefined {
   const entries = fixture.report.model_attestations ?? [];
-  return entries.find((e) => e.model_name === fixture.model) ?? entries[0];
+  // Only Kevin's model counts: a report without it fails the "model report" check.
+  return entries.find((e) => e.model_name === fixture.model);
 }
 
 /** The network checks a fixture recorded when it was fetched, as checks dated to that time. */

@@ -127,9 +127,8 @@ function ReplayApp() {
       </main>
 
       <footer className="muted foot">
-        Replay of a run recorded on NEAR {data.network} on{" "}
-        {new Date(data.recordedAt).toISOString().slice(0, 10)}. All companies, people and numbers
-        are fictional.
+        Replay of a run recorded on {new Date(data.recordedAt).toISOString().slice(0, 10)}. All
+        companies, people and numbers are fictional.
       </footer>
     </Frame>
   );
@@ -146,6 +145,9 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const [sheet, setSheet] = useState(false);
   const [map, setMap] = useState(true);
   const [inventory, setInventory] = useState<PlantInventory | null>(null);
+  const [plantsError, setPlantsError] = useState<string | null>(null);
+  /** Bumped by "Start over" so panes that keep their own state (the import wizard) restart. */
+  const [runs, setRuns] = useState(0);
   const [mass, setMass] = useState<MassBalance | null>(null);
   const [books, setBooks] = useState<Books | null>(null);
   const [policy, setPolicy] = useState<PolicyState | null>(null);
@@ -157,21 +159,21 @@ function LiveApp({ initial }: { initial: LiveState }) {
   useEffect(() => {
     if (!plants) return;
     let stale = false;
-    getInventory().then((inv) => {
-      if (!stale) setInventory(inv);
-    });
-    getPolicy().then((p) => {
-      if (!stale) setPolicy(p);
-    });
-    getMassBalance().then((m) => {
-      if (!stale) setMass(m);
-    });
-    getBooks().then((b) => {
-      if (!stale) setBooks(b);
-    });
-    getTransferSuggestions().then((t) => {
-      if (!stale) setMoves(t);
-    });
+    setPlantsError(null);
+    const load = <T,>(get: () => Promise<T>, set: (value: T) => void) =>
+      get().then(
+        (value) => {
+          if (!stale) set(value);
+        },
+        (e: unknown) => {
+          if (!stale) setPlantsError(e instanceof Error ? e.message : String(e));
+        },
+      );
+    load(getInventory, setInventory);
+    load(getPolicy, setPolicy);
+    load(getMassBalance, setMass);
+    load(getBooks, setBooks);
+    load(getTransferSuggestions, setMoves);
     return () => {
       stale = true;
     };
@@ -250,15 +252,17 @@ function LiveApp({ initial }: { initial: LiveState }) {
         onUpload={uploadFile}
         onReset={() => {
           setMoveNote([]);
+          setRuns((n) => n + 1);
           send("Start over", () => postJson("api/run/reset"));
         }}
       />
 
       <main className="panes">
         {map && <PlantMap state={deriveTwinState(state, last)} curtain={curtain} />}
-        {sheet && <ImportPane />}
+        {sheet && <ImportPane key={runs} />}
         {plants && (
           <PlantsPane
+            error={plantsError}
             inventory={inventory}
             mass={mass}
             books={books}
@@ -277,8 +281,8 @@ function LiveApp({ initial }: { initial: LiveState }) {
 
       <footer className="muted foot">
         {state.mode === "live"
-          ? `Live on NEAR ${state.network}: each step sends a real transaction.`
-          : `Step by step through the run recorded on NEAR ${state.network}: each step replays its real transaction.`}{" "}
+          ? "Live: each step is real and takes a moment."
+          : "Step by step through the recorded run."}{" "}
         All companies, people and numbers are fictional.
       </footer>
     </Frame>
@@ -395,6 +399,7 @@ function ActionButton({
 
 /** Three facilities, one truth: stock by plant, and the transfer discrepancies with their review. */
 function PlantsPane({
+  error,
   inventory,
   mass,
   books,
@@ -406,6 +411,7 @@ function PlantsPane({
   onDecideMove,
   onReceiveMove,
 }: {
+  error: string | null;
   inventory: PlantInventory | null;
   mass: MassBalance | null;
   books: Books | null;
@@ -421,7 +427,9 @@ function PlantsPane({
     return (
       <section className="pane plants" aria-label="Three plants">
         <h2>Three plants</h2>
-        <p className="muted">Loading…</p>
+        <p className={error ? "disc" : "muted"}>
+          {error ? `The plant figures could not be read: ${error}` : "Loading…"}
+        </p>
       </section>
     );
   }
@@ -658,9 +666,7 @@ function GroupBuyBlock({ plants }: { plants: PlantInventory["facilities"] }) {
         {po.status === "paid"
           ? "Delivered to Plant B and paid on QC release"
           : `Status: ${po.status}`}
-        {groupBuy.network === "sandbox"
-          ? "; recorded on a local NEAR sandbox."
-          : `; recorded on NEAR ${groupBuy.network}.`}
+        ; from the recorded group purchase, not this run.
       </p>
     </div>
   );
@@ -853,7 +859,7 @@ function MassBalanceBlock({
 function summaryLine(state: LiveState) {
   const s = state.summary;
   if (!s) return "The run is complete.";
-  return `Done: ${s.transactions} transactions, ${s.refusedByDesign} refused by design, ${s.failed} failed.`;
+  return `Done: ${s.transactions} actions recorded, ${s.refusedByDesign} refused on purpose, ${s.failed} failed.`;
 }
 
 // ------------------------------------------------------------------ shared pieces

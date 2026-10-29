@@ -83,7 +83,11 @@ export async function submitPo(
     };
   }
 
-  const reason = outcome.errorMessage ?? "";
+  // Staff read vendor names, not accounts: the contract's reason names the supplier account.
+  const reason = (outcome.errorMessage ?? "").replaceAll(
+    po.vendor.account ?? "\u0000",
+    po.vendor.name,
+  );
   if (!reason.endsWith(NEEDS_APPROVAL)) {
     setStatus("refused");
     return { outcome, status: "refused", sentence: `${head} was refused: ${reason}` };

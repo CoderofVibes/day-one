@@ -298,7 +298,9 @@ export class MockNetSuiteConnector implements ErpConnector {
 
   async postQcDecision(decision: QcPost): Promise<ErpRef> {
     const existing = await this.get<{ items: Json[] }>(
-      `/inventoryStatusChange?externalId=${encodeURIComponent(decision.poNo ? decision.ref : decision.ref)}`,
+      // The ERP stores a rejected PO lot's status change under `<ref>:status` (its return under
+      // `<ref>:return`); every other decision under the ref itself. The lookup matches.
+      `/inventoryStatusChange?externalId=${encodeURIComponent(decision.decision === "reject" && decision.poNo ? `${decision.ref}:status` : decision.ref)}`,
     );
     const found = existing?.items[0];
     if (found) return { ...this.refOf(found), created: false };

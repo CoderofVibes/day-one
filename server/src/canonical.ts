@@ -12,7 +12,10 @@ export function canonicalJson(value: unknown): string {
     if (typeof value === "bigint") return value.toString();
     return JSON.stringify(value);
   }
-  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  // JSON.stringify writes an undefined element as null; the fingerprint must agree with it.
+  if (Array.isArray(value)) {
+    return `[${value.map((v) => (v === undefined ? "null" : canonicalJson(v))).join(",")}]`;
+  }
   const entries = Object.entries(value)
     .filter(([, v]) => v !== undefined)
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));

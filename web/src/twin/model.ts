@@ -186,6 +186,8 @@ class Twin {
         });
         this.escrowCents += cents(amount);
         this.amounts.set(po, amount);
+        // The approval is spent once the PO is funded: nothing is left to review.
+        this.alerts.B = this.alerts.B.filter((line) => !line.startsWith(`${po} approved by`));
       } else if (tx.events.includes("po_refused")) {
         this.light("purchasing", "online");
         this.flows.push({

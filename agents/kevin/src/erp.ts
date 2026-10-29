@@ -158,6 +158,12 @@ export class KevinErp {
       .where(eq(poLines.poId, po.po.id))
       .orderBy(asc(poLines.lineNo))
       .all();
+    const receivedOn = db
+      .select({ at: receipts.receivedAt })
+      .from(receipts)
+      .where(and(eq(receipts.poId, po.po.id), eq(receipts.matchStatus, "matched")))
+      .get()
+      ?.at.slice(0, 10);
     const money = (text: string) => {
       const m = /-?[\d,]+(?:\.\d+)?/.exec(text.replace(/\s/g, ""));
       return m ? Math.round(Number(m[0].replaceAll(",", "")) * 1_000_000) : 0;
@@ -166,7 +172,8 @@ export class KevinErp {
       invoiceNo: reading.invoice_no,
       vendorCode: po.vendor.code,
       poNo: po.po.poNo,
-      date: po.po.needBy?.slice(0, 10) ?? "2026-11-16",
+      // The invoice arrives with the delivery; the model reads no date off it.
+      date: receivedOn ?? po.po.needBy?.slice(0, 10) ?? "2026-11-16",
       freightUsdc: money(reading.freight || "0"),
       totalUsdc: money(reading.total),
       lines: reading.lines.map((l, i) => {
