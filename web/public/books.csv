@@ -1,0 +1,11 @@
+PO,Vendor,Received,Released,Material,Description,Quantity,Unit,Unit price,Amount,Payment ref,Record ref
+PO-1035,Pacific Excipient Co.,2026-10-01,2026-10-03,MGS,Magnesium stearate,50.000,kg,8.20,410.00,,
+PO-1035,Pacific Excipient Co.,2026-10-01,2026-10-03,MCC,Microcrystalline cellulose 102,500.000,kg,3.40,1700.00,,
+PO-1036,Fennimore Polyols,2026-10-04,2026-10-06,SOR,Sorbitol,1000.000,kg,2.15,2150.00,,
+PO-1037,Lowell Packaging,2026-10-07,2026-10-09,BTL,150 cc HDPE bottle,100000,ea,0.021,2100.00,,
+PO-1038,Orchard Flavor House,2026-10-11,2026-10-13,FOR,Natural orange flavor,25.000,kg,46.00,1150.00,,
+PO-1039,Sierra Mineral Supply,2026-10-14,2026-10-16,CAC,Calcium carbonate,1500.000,kg,0.62,930.00,,
+PO-1039,Sierra Mineral Supply,2026-10-14,2026-10-16,MGO,Magnesium oxide,250.000,kg,2.90,725.00,,
+PO-1040,Pacific Excipient Co.,2026-10-21,2026-10-23,MGS,Magnesium stearate,50.000,kg,9.35,467.50,,
+PO-1042,Northgate Ingredients,2026-11-16,2026-11-16,ASC,Ascorbic acid,700.000,kg,7.10,4970.00,2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn,2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV
+PO-1042,Northgate Ingredients,2026-11-16,2026-11-16,,Freight,1,,180.00,180.00,2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn,2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV

@@ -157,6 +157,8 @@ button {
 
 .panes {
   display: grid;
+  /* One column that never grows past the page, so a wide table scrolls inside its pane. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
@@ -442,6 +444,53 @@ button {
 .foot {
   margin-top: 24px;
   font-size: 0.8rem;
+}
+
+/* The static replay's note for a first-time visitor, and the last step's closing line. */
+.guide {
+  position: relative;
+  margin: 14px 0 4px;
+  padding: 12px 40px 12px 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  background: var(--panel);
+  font-size: 0.92rem;
+}
+
+.guide p {
+  margin: 0;
+}
+
+.guide p + p {
+  margin-top: 6px;
+}
+
+.guide-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.guide-close:hover {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.closing {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--current);
 }
 
 /* Live mode: the action bar for whoever is up next. */
