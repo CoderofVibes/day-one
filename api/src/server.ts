@@ -16,6 +16,7 @@
 //   GET  /api/mass-balance                     issued vs tablets, QC and waste per batch and period
 //   GET  /api/books                            settled POs, price-drift alerts, Kevin's note
 //   GET  /api/books/export.csv                 the settled POs as the CSV Ruth imports (text/csv)
+//   GET  /api/policy                           HQ's view: the limits the contract enforces now, policy changes
 //   POST /api/discrepancies/:id/review         JSON {"decision": "apply" | "dismiss", "staff"?: …}
 //
 // Anything else is served from the built web UI (web/dist) when it exists.
@@ -87,6 +88,7 @@ async function route(
   if (method === "GET" && path === "/api/mass-balance")
     return reply(res, 200, session.massBalance());
   if (method === "GET" && path === "/api/books") return reply(res, 200, session.books());
+  if (method === "GET" && path === "/api/policy") return reply(res, 200, await session.policy());
   if (method === "GET" && path === "/api/books/export.csv") {
     res.writeHead(200, {
       "content-type": "text/csv; charset=utf-8",

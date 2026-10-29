@@ -165,6 +165,45 @@ export function getBooks(): Promise<Books> {
 }
 
 /** The CSV the accounting view links to; the API answers with text/csv as a download. */
+export interface PolicyAgent {
+  account: string;
+  name: string;
+  perPoLimit: string;
+  monthlyLimit: string;
+  categories: string[];
+  approver: string;
+  active: boolean;
+  spentThisMonth: string;
+}
+export interface PolicyChange {
+  method: string;
+  signer: string;
+  tx: string;
+  url: string | null;
+  events: string[];
+}
+/** HQ's view of the limits the contract enforces now (api/src/session.ts PolicyState). */
+export type PolicyState =
+  | {
+      reachable: true;
+      policy: {
+        readAt: string;
+        period: number;
+        budget: string;
+        escrowed: string;
+        agent: PolicyAgent | null;
+        categories: { category: string; cap: string | null; spentThisMonth: string }[];
+        suppliers: { account: string; status: string | null }[];
+      };
+      names: Record<string, string>;
+      history: PolicyChange[];
+    }
+  | { reachable: false; error: string; history: PolicyChange[] };
+
+export function getPolicy(): Promise<PolicyState> {
+  return request<PolicyState>("GET", "api/policy");
+}
+
 export const BOOKS_EXPORT_URL = "api/books/export.csv";
 
 export function postReview(

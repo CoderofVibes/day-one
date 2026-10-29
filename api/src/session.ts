@@ -12,9 +12,11 @@ import { readAttestationFixture, recordedReceipts } from "@day-one/server/attest
 import type { AttestationResult } from "@day-one/server/attestation/types";
 import { verifyAttestation } from "@day-one/server/attestation/verify";
 import { explorerUrl } from "@day-one/server/chain/client";
+import { LiveTransport } from "@day-one/server/chain/live";
+import { type PolicyView, readPolicy, type ViewFn } from "@day-one/server/chain/policy";
 import { books, booksCsv } from "@day-one/server/ledger/books";
 import { plantInventory } from "@day-one/server/ledger/inventory";
-import { approvals, chainTx, staff } from "@day-one/server/ledger/schema";
+import { approvals, chainTx, staff, vendors } from "@day-one/server/ledger/schema";
 import { eq } from "drizzle-orm";
 import {
   type DemoEnv,
@@ -80,13 +82,50 @@ export interface RunState {
 
 const TX = /\(tx ([1-9A-HJ-NP-Za-km-z]{43,44})\)/;
 
+/** The events that change the policy (CONTRACTS §5); HQ's view lists the ones this run logged. */
+const POLICY_EVENTS = new Set([
+  "agent_policy_set",
+  "category_cap_set",
+  "supplier_set",
+  "roles_set",
+  "agent_paused",
+  "agent_resumed",
+]);
+const CATEGORIES = ["raw_material", "packaging", "lab_chemical"];
+
+export interface PolicyChange {
+  method: string;
+  signer: string;
+  tx: string;
+  url: string | null;
+  events: string[];
+}
+/** HQ's view: the policy the contract enforces now, or why it could not be read. */
+export type PolicyState =
+  | {
+      reachable: true;
+      policy: PolicyView;
+      /** Staff and vendor names by NEAR account, so the screen shows people, not accounts. */
+      names: Record<string, string>;
+      history: PolicyChange[];
+    }
+  | { reachable: false; error: string; history: PolicyChange[] };
+
+export interface SessionExtras {
+  /** View calls on the policy contract; by default keyless calls on the network. */
+  policyView?: ViewFn;
+}
+
 export class DemoSession {
   private env!: DemoEnv;
   private machine!: ReturnType<typeof startDemo>;
   private queue: Promise<unknown> = Promise.resolve();
   private attestation: AttestationResult | null = null;
 
-  constructor(private readonly options: DemoEnvOptions = {}) {}
+  constructor(
+    private readonly options: DemoEnvOptions = {},
+    private readonly extras: SessionExtras = {},
+  ) {}
 
   /** Seeds a fresh ledger and plays step 0. */
   async start() {
@@ -178,6 +217,54 @@ export class DemoSession {
 
   booksCsv() {
     return booksCsv(this.env.db);
+  }
+
+  /**
+   * HQ's read of the policy the contract enforces right now (view calls, no keys, the network
+   * even in replay) and the policy changes this run has logged. Never cached: HQ sees the chain.
+   */
+  async policy(): Promise<PolicyState> {
+    const { db, accounts } = this.env;
+    const history: PolicyChange[] = db
+      .select()
+      .from(chainTx)
+      .all()
+      .filter((r) => r.txHash && eventsOf(r.eventsJson).some((e) => POLICY_EVENTS.has(e)))
+      .map((r) => ({
+        method: r.method,
+        signer: r.signerId,
+        tx: r.txHash ?? "",
+        url: explorerUrl(r.network, r.txHash),
+        events: eventsOf(r.eventsJson),
+      }));
+    const view = this.extras.policyView ?? this.keylessView();
+    const vendorRows = db.select().from(vendors).all();
+    try {
+      const policy = await readPolicy(view, {
+        contract: accounts.spendPolicy,
+        network: accounts.network,
+        agent: `kevin.plant-b.${accounts.root}`,
+        plant: `plant-b.${accounts.root}`,
+        categories: CATEGORIES,
+        suppliers: vendorRows.flatMap((v) => (v.nearAccountId ? [v.nearAccountId] : [])),
+      });
+      const names: Record<string, string> = {};
+      for (const v of vendorRows) if (v.nearAccountId) names[v.nearAccountId] = v.name;
+      for (const s of db.select().from(staff).all()) {
+        if (s.nearAccountId) names[s.nearAccountId] = s.name;
+      }
+      return { reachable: true, policy, names, history };
+    } catch (error) {
+      return { reachable: false, error: (error as Error).message, history };
+    }
+  }
+
+  private keylessView(): ViewFn {
+    const { accounts } = this.env;
+    const chain = new LiveTransport(accounts.network, () => {
+      throw new Error("HQ's policy view signs nothing");
+    });
+    return (method, args = {}) => chain.view({ contractId: accounts.spendPolicy, method, args });
   }
 
   /**

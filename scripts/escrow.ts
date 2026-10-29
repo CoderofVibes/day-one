@@ -1,11 +1,12 @@
 // npm run escrow — what the spend-policy contract holds right now, read with view calls only:
-// the plant budget, the amount in escrow, Kevin's spend this month and every PO with its status.
-// No keys.
+// the plant budget, the amount in escrow, Kevin's spend this month, every PO with its status,
+// and the policy HQ set (limits, caps, suppliers, roles). No keys.
 //   --json   print one JSON line after the readable text
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { LiveTransport } from "../server/src/chain/live.ts";
+import { formatPolicy, readPolicy } from "../server/src/chain/policy.ts";
 import { formatUsd } from "../server/src/money.ts";
 
 const json = process.argv.slice(2).includes("--json");
@@ -50,6 +51,20 @@ const lines = [
       (p.supplier_lot ? `, lot ${p.supplier_lot}` : ""),
   ),
 ];
+const policy = await readPolicy(view, {
+  contract: accounts.spendPolicy,
+  network: accounts.network,
+  agent: kevin,
+  plant: `plant-b.${accounts.root}`,
+  categories: ["raw_material", "packaging", "lab_chemical"],
+  suppliers: [
+    "northgate-ingredients.testnet",
+    "ridgeway-ascorbics.testnet",
+    "bayfront-labsupply.testnet",
+    "quickchem-direct.testnet",
+  ],
+});
+lines.push(...formatPolicy(policy));
 console.log(lines.join("\n"));
 if (json) {
   console.log(
@@ -60,6 +75,7 @@ if (json) {
       escrowed: budget.escrowed,
       kevinSpentThisMonth: spent,
       pos,
+      policy,
     }),
   );
 }

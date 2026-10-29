@@ -18,6 +18,39 @@ interface Added {
 }
 
 let server: ReturnType<typeof createServer>;
+/** The policy contract as deploy:testnet configures it; the test never touches the network. */
+let chainDown = false;
+const DOLLAR = 1_000_000n;
+const policyView = async (method: string, args: Record<string, unknown> = {}) => {
+  if (chainDown) throw new Error("RPC unreachable");
+  switch (method) {
+    case "get_budget":
+      return { budget: (25_000n * DOLLAR).toString(), escrowed: "0" };
+    case "get_period":
+      return 202611;
+    case "get_agent_policy":
+      return {
+        name: "Kevin",
+        plant: "plant-b.acme-holdings.testnet",
+        per_po_limit: (2_500n * DOLLAR).toString(),
+        monthly_limit: (60_000n * DOLLAR).toString(),
+        categories: ["raw_material", "packaging", "lab_chemical"],
+        approver: "director.plant-b.acme-holdings.testnet",
+        active: true,
+      };
+    case "get_category_cap":
+      return args.category === "lab_chemical" ? (2_000n * DOLLAR).toString() : null;
+    case "get_supplier":
+      return args.supplier === "quickchem-direct.testnet" ? null : "Qualified";
+    case "get_roles":
+      return {
+        receiver: "receiving.plant-b.acme-holdings.testnet",
+        qc: "qc.plant-b.acme-holdings.testnet",
+      };
+    default:
+      return "0";
+  }
+};
 let base: string;
 
 const api = async (method: string, path: string, body?: unknown, type = "application/json") => {
@@ -32,7 +65,7 @@ const api = async (method: string, path: string, body?: unknown, type = "applica
 };
 
 beforeAll(async () => {
-  const session = await new DemoSession({ root: REPO_ROOT }).start();
+  const session = await new DemoSession({ root: REPO_ROOT }, { policyView }).start();
   server = createServer(session, { staticDir: join(REPO_ROOT, "web/does-not-exist") });
   await new Promise<void>((done) => server.listen(0, done));
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
@@ -54,6 +87,23 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     // the recording, not of the step the screen is on.
     expect(body.attestation).toMatchObject({ model: "z-ai/glm-5.3-flash", ok: true });
     expect(body.attestation.answers).toHaveLength(2);
+    const policy = (await api("GET", "/api/policy")).body;
+    expect(policy.reachable).toBe(true);
+    expect(policy.policy.agent).toMatchObject({ name: "Kevin", perPoLimit: "2500000000" });
+    expect(
+      policy.policy.suppliers.find(
+        (s: { account: string }) => s.account === "quickchem-direct.testnet",
+      ).status,
+    ).toBeNull();
+    expect(policy.names["director.plant-b.acme-holdings.testnet"]).toBe("Linda Park");
+    expect(policy.names["northgate-ingredients.testnet"]).toBe("Northgate Ingredients");
+    expect(policy.history).toEqual([]);
+    chainDown = true;
+    expect((await api("GET", "/api/policy")).body).toMatchObject({
+      reachable: false,
+      error: "RPC unreachable",
+    });
+    chainDown = false;
     const inv = (await api("GET", "/api/inventory")).body;
     expect(inv.facilities.map((f: { code: string }) => f.code)).toEqual(["A", "B", "C"]);
     const asc = inv.materials.find((m: { code: string }) => m.code === "ASC");

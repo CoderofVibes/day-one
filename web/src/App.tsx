@@ -6,10 +6,12 @@ import {
   getBooks,
   getInventory,
   getMassBalance,
+  getPolicy,
   getState,
   type LiveState,
   type MassBalance,
   type PlantInventory,
+  type PolicyState,
   postImage,
   postJson,
   postReview,
@@ -138,6 +140,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const [inventory, setInventory] = useState<PlantInventory | null>(null);
   const [mass, setMass] = useState<MassBalance | null>(null);
   const [books, setBooks] = useState<Books | null>(null);
+  const [policy, setPolicy] = useState<PolicyState | null>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: refresh whenever the run (state) moves
   useEffect(() => {
@@ -145,6 +148,9 @@ function LiveApp({ initial }: { initial: LiveState }) {
     let stale = false;
     getInventory().then((inv) => {
       if (!stale) setInventory(inv);
+    });
+    getPolicy().then((p) => {
+      if (!stale) setPolicy(p);
     });
     getMassBalance().then((m) => {
       if (!stale) setMass(m);
@@ -217,6 +223,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
             inventory={inventory}
             mass={mass}
             books={books}
+            policy={policy}
             busy={busy !== null}
             onReview={review}
           />
@@ -348,12 +355,14 @@ function PlantsPane({
   inventory,
   mass,
   books,
+  policy,
   busy,
   onReview,
 }: {
   inventory: PlantInventory | null;
   mass: MassBalance | null;
   books: Books | null;
+  policy: PolicyState | null;
   busy: boolean;
   onReview: (id: number, decision: "apply" | "dismiss") => void;
 }) {
@@ -369,6 +378,14 @@ function PlantsPane({
   return (
     <section className="pane plants" aria-label="Three plants">
       <h2>Three plants · stock on hand</h2>
+      {policy ? (
+        <PolicyBlock state={policy} />
+      ) : (
+        <div className="policy">
+          <h3>HQ · Kevin's limits on the contract</h3>
+          <p className="muted">Reading the contract…</p>
+        </div>
+      )}
       {inventory.discrepancies.length > 0 && (
         <ul className="discrepancies">
           {inventory.discrepancies.map((d) => (
@@ -491,6 +508,85 @@ function BooksBlock({ books }: { books: Books }) {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+const CATEGORY_WORDS: Record<string, string> = {
+  raw_material: "raw materials",
+  packaging: "packaging",
+  lab_chemical: "lab chemicals",
+};
+const SUPPLIER_WORDS: Record<string, string> = {
+  Qualified: "qualified",
+  Conditional: "needs approval every time",
+};
+
+/**
+ * HQ's view: the limits the contract enforces on Kevin right now, read from the chain each time
+ * the run moves (api/policy). People and companies by name; the accounts stay behind the curtain.
+ */
+function PolicyBlock({ state }: { state: PolicyState }) {
+  const usd = (units: string) =>
+    `$${(Number(units) / 1_000_000).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const who = (account: string, names: Record<string, string>) =>
+    names[account] ?? account.split(".")[0] ?? account;
+  const list = (words: string[]) =>
+    words.length <= 1 ? words.join("") : `${words.slice(0, -1).join(", ")} and ${words.at(-1)}`;
+  return (
+    <div className="policy">
+      <h3>HQ · Kevin's limits on the contract</h3>
+      {!state.reachable ? (
+        <p className="muted">The contract could not be read right now: {state.error}</p>
+      ) : !state.policy.agent ? (
+        <p className="muted">No spend policy is set for Kevin.</p>
+      ) : (
+        <>
+          <p className="kevin-line policy-line">
+            {state.policy.agent.name} may spend up to {usd(state.policy.agent.perPoLimit)} per PO
+            and {usd(state.policy.agent.monthlyLimit)} a month on{" "}
+            {list(state.policy.agent.categories.map((c) => CATEGORY_WORDS[c] ?? c))}. Over that,{" "}
+            {who(state.policy.agent.approver, state.names)} approves.{" "}
+            {state.policy.agent.active ? "" : "Kevin is paused. "}
+            Spent this month: {usd(state.policy.agent.spentThisMonth)}. Plant budget:{" "}
+            {usd(state.policy.budget)} unallocated, {usd(state.policy.escrowed)} held for open POs.
+          </p>
+          <div className="table-wrap">
+            <table className="stock">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Monthly cap</th>
+                  <th>Spent this month</th>
+                </tr>
+              </thead>
+              <tbody>
+                {state.policy.categories.map((c) => (
+                  <tr key={c.category}>
+                    <th scope="row">{CATEGORY_WORDS[c.category] ?? c.category}</th>
+                    <td>{c.cap ? usd(c.cap) : "Kevin's monthly limit"}</td>
+                    <td>{usd(c.spentThisMonth)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="small">
+            Suppliers Kevin may pay:{" "}
+            {state.policy.suppliers
+              .map(
+                (s) =>
+                  `${who(s.account, state.names)} (${s.status ? (SUPPLIER_WORDS[s.status] ?? s.status) : "not listed, refused"})`,
+              )
+              .join(" · ")}
+          </p>
+        </>
+      )}
+      <p className="small muted">
+        {state.history.length === 0
+          ? "No policy change has been made during this run; the limits above were set when the contract was configured."
+          : `Policy changes this run: ${state.history.map((h) => `${h.method} (${h.events.join(", ")})`).join("; ")}.`}
+      </p>
     </div>
   );
 }
