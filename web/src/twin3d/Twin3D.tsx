@@ -95,38 +95,40 @@ interface Theme {
   ok: string;
 }
 
+// The light tokens (src/tokens.css), read from the page at mount so dark mode and any later
+// token change reach the scene without touching this file.
 const FALLBACK: Theme = {
-  bg: "#f6f5f1",
+  bg: "#f4f3ee",
   panel: "#ffffff",
-  ink: "#1d1f22",
-  muted: "#646a73",
+  ink: "#1b1d20",
+  muted: "#5c6370",
   floor: "#e9e7e0",
   off: "#cfccc3",
   warm: "#9ed1c2",
   steady: "#8dbfae",
   pad: "#d8d5cc",
   accent: "#1f6f5c",
-  money: "#b8860b",
-  quarantine: "#d58a00",
-  warn: "#b3261e",
-  ok: "#1f6f5c",
+  money: "#9a6d00",
+  quarantine: "#b8731a",
+  warn: "#a9261d",
+  ok: "#1b6b3a",
 };
 
 const VARS: Record<keyof Theme, string> = {
-  bg: "--bg",
-  panel: "--panel",
+  bg: "--map-floor",
+  panel: "--surface",
   ink: "--ink",
-  muted: "--muted",
-  floor: "--map-floor",
+  muted: "--ink-2",
+  floor: "--surface-2",
   off: "--map-off",
   warm: "--map-warm",
   steady: "--map-steady",
   pad: "--map-pad",
-  accent: "--accent",
+  accent: "--brand",
   money: "--money",
   quarantine: "--quarantine",
-  warn: "--warn",
-  ok: "--ok",
+  warn: "--refused",
+  ok: "--paid",
 };
 
 function readTheme(): Theme {
@@ -1268,50 +1270,45 @@ export default function Twin3D({ run, at, curtain, record, onStep, options }: Tw
     return () => media.removeEventListener("change", update);
   }, []);
 
+  // The frame around the stage (switches, caption, legend) is PlantView's; the notes are the
+  // canvas's accessible description.
   return (
-    <>
-      <div className="t3-stage" data-record={record ? "1" : undefined}>
-        <Canvas
-          flat
-          shadows
-          dpr={record ? 1 : [1, 1.5]}
-          frameloop="always"
-          gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
-          camera={{
-            fov: 32,
-            near: 2,
-            far: 1200,
-            position: cameraPosition(framingFor(title, undefined, isPooled(next))),
-          }}
-          aria-label={`3D plant view. ${notes.join(" ")}`}
-          onCreated={({ gl }) => {
-            // For npm run web:shot:3d: the renderer's draw calls and triangles per frame.
-            window.dayOneTwin = {
-              info: () => ({ calls: gl.info.render.calls, triangles: gl.info.render.triangles }),
-            };
-          }}
-        >
-          <Scene
-            theme={theme}
-            prev={prev}
-            next={next}
-            at={at}
-            last={last}
-            title={title}
-            curtain={curtain}
-            record={record}
-            reduced={reduced}
-            hideLabels={narrow}
-            onStep={onStep}
-          />
-        </Canvas>
-      </div>
-      <ul className="map-notes">
-        {notes.map((n) => (
-          <li key={n}>{n}</li>
-        ))}
-      </ul>
-    </>
+    <div className="t3-stage" data-record={record ? "1" : undefined}>
+      <Canvas
+        flat
+        shadows
+        dpr={record ? 1 : [1, 1.5]}
+        frameloop="always"
+        gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
+        camera={{
+          fov: 32,
+          near: 2,
+          far: 1200,
+          position: cameraPosition(framingFor(title, undefined, isPooled(next))),
+        }}
+        aria-label={`3D plant view. ${notes.join(" ")}`}
+        onCreated={({ gl }) => {
+          // For npm run web:shot:3d: the renderer's draw calls and triangles per frame.
+          window.dayOneTwin = {
+            info: () => ({ calls: gl.info.render.calls, triangles: gl.info.render.triangles }),
+          };
+        }}
+      >
+        <Scene
+          theme={theme}
+          prev={prev}
+          next={next}
+          at={at}
+          last={last}
+          title={title}
+          curtain={curtain}
+          record={record}
+          reduced={reduced}
+          hideLabels={narrow}
+          onStep={onStep}
+        />
+      </Canvas>
+    </div>
   );
 }
 

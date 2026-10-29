@@ -7,9 +7,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import batchRecordPhoto from "../../data/batch-records/BR-B-1045.jpg?url";
 import packingSlipPhoto from "../../data/packing-slips/NG-PS-60417.jpg?url";
-import { Curtain, Lines, MassBalanceBlock, Phone, Who } from "./App.tsx";
+import { Curtain } from "./Curtain.tsx";
+import { StepCard } from "./feed.tsx";
+import { MassBalanceBlock } from "./panes.tsx";
 import { plantsSnapshot } from "./plants.ts";
-import { audienceOf, type RunData, run as recorded, shortAccount } from "./run.ts";
+import { audienceOf, type RunData, run as recorded } from "./run.ts";
 import { PlantView } from "./twin3d/PlantView.tsx";
 import { type Beat, clockLabel, FRAME_MS, frameAt, startOf, totalMs } from "./video.ts";
 import "./video.css";
@@ -102,20 +104,16 @@ export default function VideoApp() {
         <div className="video-panel" ref={panel}>
           {beat.panel === "feed" && <Feed data={data} upTo={step} beat={beat} />}
           {beat.panel === "plants" && (
-            <section className="pane plants">
+            <section className="panel plants">
               <MassBalanceBlock
                 mass={plantsSnapshot.massBalance}
                 plants={plantsSnapshot.inventory.facilities}
                 busy={false}
+                onPropose={() => undefined}
               />
             </section>
           )}
-          {beat.panel === "curtain" && (
-            <>
-              <Accounts data={data} />
-              <Curtain data={data} upTo={step} />
-            </>
-          )}
+          {beat.panel === "curtain" && <Curtain data={data} upTo={step} />}
         </div>
         {card && <Card beat={beat} />}
       </main>
@@ -142,52 +140,18 @@ function Feed({ data, upTo, beat }: { data: RunData; upTo: number; beat: Beat })
     .filter(({ step }) => audienceOf(step).channel !== "none")
     .slice(beat.photo ? -2 : -3);
   return (
-    <section className="pane feed">
+    <section className="feed">
       {beat.photo && (
         <img className="video-photo" src={PHOTOS[beat.photo]} alt="" aria-hidden="true" />
       )}
-      {shown.map(({ step, i }) => {
-        const who = audienceOf(step);
-        return (
-          <div
-            key={`${i}-${step.title}`}
-            className={i === upTo ? "card current still" : "card still"}
-          >
-            <Who who={who} title={step.title} />
-            {who.channel === "phone" ? (
-              <Phone step={step} approvals={data.approvals} />
-            ) : (
-              <Lines lines={step.staff} />
-            )}
-          </div>
-        );
-      })}
-    </section>
-  );
-}
-
-/** Who signed what in this run, and who paid for it: the account tree as the chain saw it. */
-function Accounts({ data }: { data: RunData }) {
-  const bySigner = new Map<string, { methods: Set<string>; paidBy: Set<string> }>();
-  for (const tx of data.transactions) {
-    const row = bySigner.get(tx.signer) ?? { methods: new Set(), paidBy: new Set() };
-    row.methods.add(tx.method);
-    if (tx.paidBy !== tx.signer) row.paidBy.add(tx.paidBy);
-    bySigner.set(tx.signer, row);
-  }
-  return (
-    <section className="curtain video-accounts" aria-label="Accounts in this run">
-      <h2>Every person and agent is an account</h2>
-      <ul>
-        {[...bySigner].map(([signer, row]) => (
-          <li key={signer}>
-            <code>{shortAccount(signer)}</code> {[...row.methods].join(", ")}
-            {row.paidBy.size > 0 && (
-              <span className="note"> · gas paid by {[...row.paidBy].join(", ")}</span>
-            )}
-          </li>
-        ))}
-      </ul>
+      {shown.map(({ step, i }) => (
+        <StepCard
+          key={`${i}-${step.title}`}
+          step={step}
+          approvals={data.approvals}
+          current={i === upTo}
+        />
+      ))}
     </section>
   );
 }

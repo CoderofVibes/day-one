@@ -1,0 +1,146 @@
+/* Day One design tokens (docs/UI_DESIGN.md §4). One set of colours, type sizes and spacing for
+   every screen, the map, the twin and the video page. No font download: the system stack, so the
+   page works offline and in record mode. Dark follows the system unless data-theme says otherwise. */
+
+:root {
+  /* Surfaces and ink */
+  --bg: #f4f3ee;
+  --surface: #ffffff;
+  --surface-2: #ecebe5;
+  --ink: #1b1d20;
+  --ink-2: #5c6370;
+  --line: #dcdad2;
+  --line-2: #c9c6bc;
+
+  /* Brand: Kevin's green. One accent, used for the current thing and the primary action only. */
+  --brand: #1f6f5c;
+  --brand-ink: #ffffff;
+  --brand-soft: #e3f1ec;
+
+  /* Status: colour never alone; every pill carries a word. */
+  --refused: #a9261d;
+  --refused-bg: #fbe9e7;
+  --waiting: #8a5a00;
+  --waiting-bg: #fff3d6;
+  --held: #1e5aa8;
+  --held-bg: #e4eefb;
+  --paid: #1b6b3a;
+  --paid-bg: #e2f3e8;
+  --neutral: #5c6370;
+  --neutral-bg: #eeede8;
+
+  /* Behind the curtain: dark in both themes, so it reads as "the other side". */
+  --curtain: #14171c;
+  --curtain-2: #1d2128;
+  --curtain-ink: #d9dde3;
+  --curtain-ink-2: #8f98a5;
+  --curtain-line: #2a2f37;
+  --curtain-refused: #ff9a92;
+  --curtain-ok: #74c69d;
+
+  /* Map and twin */
+  --map-floor: #e9e7e0;
+  --map-off: #cfccc3;
+  --map-warm: #9ed1c2;
+  --map-pad: #d8d5cc;
+  --map-steady: #8dbfae;
+  --money: #9a6d00;
+  --quarantine: #b8731a;
+
+  /* Type scale (px, so the twin's DOM labels and the map's SVG text agree) */
+  --t-xs: 12px;
+  --t-sm: 13px;
+  --t-md: 15px;
+  --t-lg: 17px;
+  --t-xl: 22px;
+  --t-2xl: 28px;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+
+  /* Spacing (4-pt) and radii */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --shadow: 0 1px 2px rgb(20 23 28 / 0.06), 0 4px 16px rgb(20 23 28 / 0.05);
+  --focus: 0 0 0 3px color-mix(in srgb, var(--brand) 45%, transparent);
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111417;
+    --surface: #1a1e23;
+    --surface-2: #232830;
+    --ink: #e8eaed;
+    --ink-2: #9ba3ad;
+    --line: #2d333c;
+    --line-2: #3a414c;
+    --brand: #4fb39a;
+    --brand-ink: #0d1412;
+    --brand-soft: #1b2f29;
+    --refused: #ff9a92;
+    --refused-bg: #3a1b19;
+    --waiting: #f2c35c;
+    --waiting-bg: #3a2d12;
+    --held: #8fb8f0;
+    --held-bg: #16263d;
+    --paid: #74c69d;
+    --paid-bg: #15301f;
+    --neutral: #9ba3ad;
+    --neutral-bg: #232830;
+    --curtain: #0b0d10;
+    --curtain-2: #14171c;
+    --curtain-line: #232830;
+    --map-floor: #23272e;
+    --map-off: #3a3f48;
+    --map-warm: #2f7d69;
+    --map-pad: #2c3139;
+    --map-steady: #2c5f51;
+    --money: #e0b23a;
+    --quarantine: #f0a93b;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px rgb(0 0 0 / 0.3);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #111417;
+  --surface: #1a1e23;
+  --surface-2: #232830;
+  --ink: #e8eaed;
+  --ink-2: #9ba3ad;
+  --line: #2d333c;
+  --line-2: #3a414c;
+  --brand: #4fb39a;
+  --brand-ink: #0d1412;
+  --brand-soft: #1b2f29;
+  --refused: #ff9a92;
+  --refused-bg: #3a1b19;
+  --waiting: #f2c35c;
+  --waiting-bg: #3a2d12;
+  --held: #8fb8f0;
+  --held-bg: #16263d;
+  --paid: #74c69d;
+  --paid-bg: #15301f;
+  --neutral: #9ba3ad;
+  --neutral-bg: #232830;
+  --curtain: #0b0d10;
+  --curtain-2: #14171c;
+  --curtain-line: #232830;
+  --map-floor: #23272e;
+  --map-off: #3a3f48;
+  --map-warm: #2f7d69;
+  --map-pad: #2c3139;
+  --map-steady: #2c5f51;
+  --money: #e0b23a;
+  --quarantine: #f0a93b;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px rgb(0 0 0 / 0.3);
+  color-scheme: dark;
+}

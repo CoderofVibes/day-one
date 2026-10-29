@@ -16,6 +16,7 @@ import {
   postImportFixture,
   postImportMapping,
 } from "./api.ts";
+import { KevinNote, Pill } from "./feed.tsx";
 
 /** 349_985_879 mg → "349.986 kg". */
 const kg = (mg: number) =>
@@ -72,8 +73,8 @@ export function ImportPane() {
   const answer = (id: string, a: ImportAnswer) => setAnswers((prev) => ({ ...prev, [id]: a }));
 
   return (
-    <section className="pane plants import" aria-label="Bring in a spreadsheet">
-      <h2>Bring in a spreadsheet · Plant B opening stock</h2>
+    <section className="import" aria-label="Bring in a spreadsheet">
+      <h3>Bring in a spreadsheet · Plant B opening stock</h3>
       <div className="actions">
         <button
           type="button"
@@ -114,7 +115,7 @@ export function ImportPane() {
                 {" "}
                 <button
                   type="button"
-                  className="quiet"
+                  className="link"
                   disabled={busy !== null}
                   onClick={() => setEditingColumns(true)}
                 >
@@ -139,12 +140,12 @@ export function ImportPane() {
               }
             />
           )}
-          {!view.posted && <p className="kevin-line">{view.analysis.message}</p>}
+          {!view.posted && <KevinNote>{view.analysis.message}</KevinNote>}
 
           {!result && !view.posted && (
             <>
               {flags.length > 0 && (
-                <ol className="flags">
+                <ol className="review">
                   {flags.map((f) => (
                     <FlagCard key={f.id} flag={f} chosen={answers[f.id]} onAnswer={answer} />
                   ))}
@@ -185,20 +186,20 @@ export function ImportPane() {
           {result && <Outcome result={result.result} opening={result.opening} />}
 
           {view.sales && (
-            <div className="mass">
+            <>
               <h3>Sales by customer</h3>
-              <p className="kevin-line">{view.sales.message}</p>
+              <KevinNote>{view.sales.message}</KevinNote>
               {view.sales.mismatches.map((m) => (
-                <p key={m.message} className="disc">
+                <KevinNote key={m.message} alert>
                   {m.message}
-                </p>
+                </KevinNote>
               ))}
-            </div>
+            </>
           )}
         </>
       )}
       {!view && (
-        <p className="muted small">
+        <p className="muted small" style={{ marginBottom: 0 }}>
           Ray's sheet is {IMPORT_FIXTURE}, the way Hollow Pine kept its stock before the
           acquisition. It goes into an empty Plant B ledger of its own.
         </p>
@@ -243,7 +244,7 @@ function ColumnEditor({
         ? `Pick the ${missing.map((f) => COLUMNS[f]).join(" and ")} column.`
         : null;
   return (
-    <div className="disc columns">
+    <div className="columns">
       <p>Which column holds what? Kevin reads the sheet again with your choice.</p>
       <div className="column-grid">
         {Object.entries(COLUMNS).map(([field, label]) => (
@@ -313,12 +314,15 @@ function FlagCard({
     chosen?.answer === "quantity" && String(chosen.qty) === qty && chosen.unit === unit;
   const accept = flag.kind === "totals_row" ? "Skip it" : "Yes, do that";
   return (
-    <li className={`disc flag ${chosen ? "answered" : ""}`} data-flag={flag.id}>
-      <p>
-        {!flag.message.startsWith(`Row ${flag.row}`) && <strong>Row {flag.row}. </strong>}
-        {flag.message}
-        {flag.proposal && <span className="muted"> Kevin: {flag.proposal}.</span>}
-      </p>
+    <li className={chosen ? "done" : undefined} data-flag={flag.id}>
+      <div className="cont">
+        <Pill tone={chosen ? "ok" : "waiting"}>{chosen ? "answered" : `row ${flag.row}`}</Pill>
+        <p>
+          {!flag.message.startsWith(`Row ${flag.row}`) && <strong>Row {flag.row}. </strong>}
+          {flag.message}
+          {flag.proposal && <span className="muted"> Kevin: {flag.proposal}.</span>}
+        </p>
+      </div>
       <div className="actions">
         {flag.answers.includes("accept") && (
           <button
@@ -379,7 +383,7 @@ function Outcome({ result, opening }: { result: ImportResult; opening: OpeningLi
   }
   return (
     <>
-      <p className="kevin-line">
+      <KevinNote>
         {result.status === "already_imported"
           ? "This file is already in. Nothing changed."
           : `Posted ${result.plan.lots.length} lots as opening stock. ${result.plan.skipped.length} rows skipped${
@@ -387,23 +391,23 @@ function Outcome({ result, opening }: { result: ImportResult; opening: OpeningLi
                 ? `; held for review: ${result.plan.review.map((r) => r.item).join(", ")}`
                 : ""
             }.`}
-      </p>
+      </KevinNote>
       <div className="table-wrap">
         <table className="stock">
           <thead>
             <tr>
               <th>Material</th>
-              <th>Available</th>
-              <th>On hold</th>
+              <th className="n">Available</th>
+              <th className="n">On hold</th>
               <th>Lots</th>
             </tr>
           </thead>
           <tbody>
             {opening.map((l) => (
               <tr key={l.material}>
-                <th>{l.name}</th>
-                <td>{kg(l.availableBase)}</td>
-                <td>{l.holdBase ? kg(l.holdBase) : ""}</td>
+                <th scope="row">{l.name}</th>
+                <td className="n">{kg(l.availableBase)}</td>
+                <td className="n">{l.holdBase ? kg(l.holdBase) : ""}</td>
                 <td className="small">{l.lots.join(", ")}</td>
               </tr>
             ))}
