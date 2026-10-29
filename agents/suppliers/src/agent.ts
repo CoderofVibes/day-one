@@ -14,6 +14,7 @@ import {
   type RfqRequest,
 } from "@day-one/server/quotes";
 import type { QuoteSpec, SupplierSpec } from "@day-one/server/seed/quotes";
+import { priceFor } from "./pricing.ts";
 
 /** A quote as the bus delivers it to Kevin. */
 export interface QuoteReply extends QuoteSpec {
@@ -46,9 +47,12 @@ export class SupplierAgent {
     return material in this.spec.prices;
   }
 
-  /** Quotes the RFQ, or null when the agent does not sell the material. */
+  /**
+   * Quotes the RFQ, or null when the agent does not sell the material. A pooled RFQ large
+   * enough to reach one of the supplier's volume breaks (pricing.ts) gets the break price.
+   */
   async quote(rfq: RfqRequest): Promise<QuoteReply | null> {
-    const price = this.spec.prices[rfq.material];
+    const price = priceFor(this.spec, rfq.material, rfq.qtyBase);
     if (!price) return null;
     const terms = quoteTermsOf(rfq, this.spec.account, price);
     const salt = this.ctx.salt(this.spec.account);

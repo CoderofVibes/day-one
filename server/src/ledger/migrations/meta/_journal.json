@@ -43,6 +43,13 @@
       "when": 1793220193412,
       "tag": "0005_yield_variance_flag",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1793237141640,
+      "tag": "0006_group_buy_tx_kinds",
+      "breakpoints": true
     }
   ]
 }
