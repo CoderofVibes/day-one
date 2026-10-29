@@ -13,4 +13,6 @@ In both, the plant-floor pane shows each step as the person who sees it, and the
 
 Screenshots: `npm run web:shot -- <dir>` (static), `URL=http://localhost:8787/ npm run web:shot -- <dir>` (live, clicks through the run; `PLANTS=1` opens the three-plant view, `FULL=1` captures the whole page).
 
-Not built yet: the plant map and the HQ policy view.
+The static replay also has "Three plants", read-only: the ledger as it stands at the end of the recorded run (`src/data/plants.json`), with Kevin's 5am brief and the bookkeeper CSV beside the page (`public/`), all written by `npm run web:data`; HQ's live read of the contract needs the API. A short guide on first visit says what the page is; `npm run host:build` prepares `dist/` for a public host (docs/HOSTING.md).
+
+The video page, `?video=1` (`&view=3d`, `&from=<beat>`), plays the recorded run to the storyboard on a fixed clock with captions (`src/video.ts`, `src/VideoApp.tsx`; docs/RECORDING.md).
