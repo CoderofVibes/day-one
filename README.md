@@ -29,7 +29,7 @@ Requires Node 24 (`.nvmrc`). Step 5 requires Rust in Linux, macOS or WSL2.
 4. Add 1 g (`1000` mg) to any `actual_mg` in that file and repeat step 3 → `MISMATCH`, exit code 1.
 5. `cd contracts && cargo test` → 43 unit tests and one sandbox test that runs the whole loop on a local NEAR node with our own test token (`purchasing_loop_on_sandbox`).
 
-To see the same run in a browser: `npm run web:build`, then open `web/dist/` from any static file server; the "Behind the curtain" switch shows each transaction with its signer, who paid the gas and an explorer link.
+To see the same run in a browser: `npm run web:build`, then open `web/dist/` from any static file server; the plant map shows Plant B's departments coming online, the quarantined lot and the material and money flows as the run advances, and the "Behind the curtain" switch shows each transaction with its signer, who paid the gas and an explorer link.
 
 Also without keys: `npm run test:attacks` (four attacks on Kevin, each shown failing) and `npm run escrow` (the contract's budget, escrow and every PO, read live from testnet). Each takes `-- --json` for one machine-readable line.
 
@@ -101,7 +101,7 @@ Kevin is the purchasing agent. The contract limits are one enforced layer around
 - The demo settles in DTUSD, a test token we deployed, because the Circle testnet faucet gives 20 USDC per two hours.
 - Staff keys are held by the server because the phone is simulated. Production would have each person hold their own key through a login provider.
 - PO totals and supplier accounts are visible on chain; line items and prices are not.
-- The web UI replays the recorded run; the live staff screens are not built yet.
+- The web UI replays the recorded run on a static host; `npm run api` serves the same screens live, one staff action at a time. The plant map is plain 2D SVG; there is no 3D twin.
 - Contract accounts still hold full-access keys so we can redeploy.
 - Audit-friendly records, not a compliance claim.
 - Commits before the `pre-hackathon` tag are planning documents only (`docs/`).

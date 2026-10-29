@@ -25,6 +25,8 @@ import {
   shortAccount,
   transactionsThrough,
 } from "./run.ts";
+import { deriveTwinState } from "./twin/model.ts";
+import { PlantMap } from "./twin/PlantMap.tsx";
 
 const PLAY_MS = 2600;
 
@@ -49,6 +51,7 @@ function ReplayApp() {
   const last = data.steps.length - 1;
   const [at, setAt] = useState(0);
   const [curtain, setCurtain] = useState(false);
+  const [map, setMap] = useState(true);
   const [playing, setPlaying] = useState(false);
 
   const go = useCallback((to: number) => setAt(Math.max(0, Math.min(last, to))), [last]);
@@ -75,7 +78,7 @@ function ReplayApp() {
   const current = data.steps[at] as Step;
 
   return (
-    <Frame curtain={curtain} setCurtain={setCurtain}>
+    <Frame curtain={curtain} setCurtain={setCurtain} extra={<MapSwitch on={map} setOn={setMap} />}>
       <nav className="controls" aria-label="Demo steps">
         <button type="button" onClick={() => go(at - 1)} disabled={at === 0}>
           ← Back
@@ -107,6 +110,7 @@ function ReplayApp() {
       </nav>
 
       <main className="panes">
+        {map && <PlantMap state={deriveTwinState(data, at)} curtain={curtain} />}
         <StaffFeed data={data} upTo={at} onPick={go} curtain={curtain} />
         {curtain && <Curtain data={data} upTo={at} />}
       </main>
@@ -128,6 +132,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<{ message: string; hint?: string } | null>(null);
   const [plants, setPlants] = useState(false);
+  const [map, setMap] = useState(true);
   const [inventory, setInventory] = useState<PlantInventory | null>(null);
   const [mass, setMass] = useState<MassBalance | null>(null);
   const [books, setBooks] = useState<Books | null>(null);
@@ -185,10 +190,13 @@ function LiveApp({ initial }: { initial: LiveState }) {
       curtain={curtain}
       setCurtain={setCurtain}
       extra={
-        <label className="switch">
-          <input type="checkbox" checked={plants} onChange={(e) => setPlants(e.target.checked)} />
-          <span>Three plants</span>
-        </label>
+        <>
+          <MapSwitch on={map} setOn={setMap} />
+          <label className="switch">
+            <input type="checkbox" checked={plants} onChange={(e) => setPlants(e.target.checked)} />
+            <span>Three plants</span>
+          </label>
+        </>
       }
     >
       <ActionBar
@@ -201,6 +209,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
       />
 
       <main className="panes">
+        {map && <PlantMap state={deriveTwinState(state, last)} curtain={curtain} />}
         {plants && (
           <PlantsPane
             inventory={inventory}
@@ -544,6 +553,15 @@ function summaryLine(state: LiveState) {
 }
 
 // ------------------------------------------------------------------ shared pieces
+
+function MapSwitch({ on, setOn }: { on: boolean; setOn: (on: boolean) => void }) {
+  return (
+    <label className="switch">
+      <input type="checkbox" checked={on} onChange={(e) => setOn(e.target.checked)} />
+      <span>Plant map</span>
+    </label>
+  );
+}
 
 function Frame({
   curtain,
