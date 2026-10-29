@@ -14,6 +14,8 @@
     "./invoices": "./src/invoices.ts",
     "./payments": "./src/payments.ts",
     "./attacks": "./src/attacks.ts",
+    "./sealed": "./src/sealed.ts",
+    "./sealedRound": "./src/sealedRound.ts",
     "./demo": "./src/demo.ts",
     "./erp": "./src/erp.ts"
   },

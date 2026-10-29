@@ -5,6 +5,7 @@
   "exports": {
     "./agent": "./src/agent.ts",
     "./bus": "./src/bus.ts",
+    "./sealed": "./src/sealed.ts",
     "./shipping": "./src/shipping.ts"
   },
   "dependencies": {

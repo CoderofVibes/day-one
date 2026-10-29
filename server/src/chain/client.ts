@@ -59,7 +59,8 @@ export class ChainProgramError extends Error {
 }
 
 export function explorerUrl(network: string, txHash: string | null): string | null {
-  if (!txHash) return null;
+  // A local sandbox node has no explorer.
+  if (!txHash || network === "sandbox") return null;
   const host = network === "mainnet" ? "nearblocks.io" : `${network}.nearblocks.io`;
   return `https://${host}/txns/${txHash}`;
 }

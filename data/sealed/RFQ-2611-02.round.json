@@ -1,0 +1,71 @@
+{
+  "kind": "sealed_round",
+  "network": "sandbox",
+  "contract": "spend-policy.acme-holdings.testnet",
+  "round": {
+    "round_id": "RFQ-2611-02",
+    "agent": "kevin.plant-b.acme-holdings.testnet",
+    "opened_at": "1793237465418707676",
+    "closes_at": "1793244665418707676",
+    "reveal_ends_at": "1793248265418707676",
+    "bids": [
+      {
+        "supplier": "northgate-ingredients.testnet",
+        "hash": "1201b52c3e7cf3824096391145fd72192e3421e60e6433dc18c16b300d34c6cd",
+        "committed_at": "1793237466173626282",
+        "quote": "{\"record\":{\"freightUsdc\":180000000,\"leadTimeDays\":7,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"northgate-ingredients.testnet\",\"unitPriceUsdc\":7100000},\"salt\":\"d5205c3d9b325d6284e1e4a573f41696\"}",
+        "revealed_at": "1793244966091188845"
+      },
+      {
+        "supplier": "ridgeway-ascorbics.testnet",
+        "hash": "3be40a2737ca06995b34cd95f722dbc63c4409eb55a77f6efc9c3ac70f3234d9",
+        "committed_at": "1793237466555762855",
+        "quote": "{\"record\":{\"freightUsdc\":165000000,\"leadTimeDays\":5,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"ridgeway-ascorbics.testnet\",\"unitPriceUsdc\":7350000},\"salt\":\"b7efc3e7000d6993b81edeac54921a1c\"}",
+        "revealed_at": "1793244967218264072"
+      }
+    ],
+    "awarded": "northgate-ingredients.testnet",
+    "awarded_at": "1793244967591510493",
+    "phase": "closed"
+  },
+  "txs": {
+    "open": "GiFkj6BY4BDsHvedCEWfasE8sJBd4E54UovR8khrsofx",
+    "commit:northgate-ingredients.testnet": "GihCt29D8j58oDv8GrSDRQKe1VvAL3dsWcincxjxCLdu",
+    "commit:ridgeway-ascorbics.testnet": "BiHqFVMKyosxbXpM1PxD9rwWKajhcMpcCWBTo2g5D8YS",
+    "reveal:northgate-ingredients.testnet": "HfJnckaoKdp7vh92MVbTa5DTfQAPpcZaPQAqhiYo3CZ8",
+    "reveal:ridgeway-ascorbics.testnet": "87wJQLKSkjqQrUiSk4dtmXFWgGUsnF6mw6yYcYx5MEjk",
+    "award": "DkqrHMaD6BBxjmnmXT6pfbMbaQGSEUyJueVQ8bRo6gUQ"
+  },
+  "refused": [
+    {
+      "account": "quickchem-direct.testnet",
+      "method": "commit_quote",
+      "reason": "quickchem-direct.testnet is not an approved supplier and cannot quote.",
+      "tx": "EwUkRnGiQr2upVTme2fBzbWMp9aQwv37RJvne1qp8Mvh"
+    },
+    {
+      "account": "kevin.plant-b.acme-holdings.testnet",
+      "method": "award_sealed_round",
+      "reason": "RFQ-2611-02 is still sealed; no quote can be awarded before the deadline.",
+      "tx": "4wkUQVaStN52RnMqRbksveAyhRvNUGo2qraPK8LbGEpW"
+    },
+    {
+      "account": "northgate-ingredients.testnet",
+      "method": "reveal_quote",
+      "reason": "RFQ-2611-02 is still sealed; quotes open after the deadline.",
+      "tx": "BA9HRQ1QVG2qK8BtASHwmdbmwWUE3q3NR6ZoLP4HLrfJ"
+    },
+    {
+      "account": "ridgeway-ascorbics.testnet",
+      "method": "reveal_quote",
+      "reason": "This quote does not match what ridgeway-ascorbics.testnet sealed for RFQ-2611-02.",
+      "tx": "9jJi8Wg3D7mrNdHiJHQNadoGEwkEdiEuY5SNwXXQBMUu"
+    },
+    {
+      "account": "ridgeway-ascorbics.testnet",
+      "method": "commit_quote",
+      "reason": "Quotes for RFQ-2611-02 closed at the deadline; this one came in late.",
+      "tx": "Aw17H798VzZcrCY6vSVcbQKBFChCgkfXcawgL5pupdY9"
+    }
+  ]
+}

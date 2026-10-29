@@ -98,6 +98,8 @@ export interface AttackResult {
   held: boolean;
   evidence: string[];
   txHashes: string[];
+  /** Where the transactions are, when not testnet (the sealed round's local sandbox run). */
+  network?: string;
 }
 
 const usd = (units: number | bigint) => formatUsd(BigInt(units));

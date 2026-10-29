@@ -4,6 +4,7 @@
 // and the salt over the bus. The chain holds the hash alone, so a price can neither be read nor
 // guessed from it, and a quote changed after the fact no longer matches its anchor.
 
+import { canonicalJson } from "./canonical.ts";
 import { parseUsd } from "./money.ts";
 import { fingerprint } from "./records/anchors.ts";
 
@@ -67,4 +68,25 @@ export function quoteProof(terms: QuoteTerms, salt: string, anchoredTx: string |
     record: terms,
     anchored_tx: anchoredTx,
   };
+}
+
+/**
+ * The exact text a supplier seals in a sealed quote round and reveals after the deadline
+ * (CONTRACTS.md §9). Its SHA-256 is the quote's fingerprint, so the contract can check a reveal
+ * against its commitment by hashing the text alone.
+ */
+export function sealedQuoteText(terms: QuoteTerms, salt: string) {
+  return canonicalJson({ record: terms, salt });
+}
+
+/** The terms and salt in a revealed quote, or null when the text is not a quote. */
+export function parseSealedQuote(text: string): { terms: QuoteTerms; salt: string } | null {
+  try {
+    const parsed = JSON.parse(text) as { record?: QuoteTerms; salt?: unknown };
+    const terms = parsed.record;
+    if (!terms || typeof parsed.salt !== "string" || typeof terms.rfq !== "string") return null;
+    return { terms, salt: parsed.salt };
+  } catch {
+    return null;
+  }
 }
