@@ -15,7 +15,10 @@
 //   GET  /api/inventory                        stock by plant and material, transfer discrepancies
 //   GET  /api/mass-balance                     issued vs tablets, QC and waste per batch and period
 //   GET  /api/books                            settled POs, price-drift alerts, Kevin's note
-//   GET  /api/transfer-suggestions             spare stock at one plant that covers another's reorder
+//   GET  /api/transfer-suggestions             spare stock at one plant that covers another's reorder, transfers in transit
+//   POST /api/transfer-suggestions/:key/approve  JSON {"staff"?: …}: the lots leave the sending plant (key "BTL:C-B")
+//   POST /api/transfer-suggestions/:key/dismiss  JSON {"staff"?: …}: not proposed again for the same shortfall
+//   POST /api/transfers/:transferNo/receive    JSON {"receivedBase"?: n, "staff"?: …}: booked in, then Kevin's transfer check
 //   GET  /api/books/export.csv                the settled POs as the CSV Ruth imports (text/csv)
 //   GET  /api/policy                           HQ's view: the limits the contract enforces now, policy changes
 //   POST /api/discrepancies/:id/review         JSON {"decision": "apply" | "dismiss", "staff"?: …}
@@ -192,6 +195,32 @@ async function route(
     const slipNo = text(body.slipNo);
     if (!slipNo) throw new SessionError(400, "a delivery needs {slipNo}");
     return steps(res, session, await session.delivery(slipNo, text(body.staff)));
+  }
+
+  const decide = /^\/api\/transfer-suggestions\/([^/]+)\/(approve|dismiss)$/.exec(path);
+  if (decide) {
+    const body = await readJson(req, maxBody);
+    const key = decodeURIComponent(decide[1] ?? "");
+    const decision = decide[2] === "approve" ? "approve" : "dismiss";
+    return reply(res, 200, await session.decideTransfer(key, decision, text(body.staff)));
+  }
+
+  const receive = /^\/api\/transfers\/([\w-]+)\/receive$/.exec(path);
+  if (receive) {
+    const body = await readJson(req, maxBody);
+    const counted = body.receivedBase;
+    if (counted !== undefined && !(Number.isInteger(counted) && (counted as number) > 0)) {
+      throw new SessionError(400, "receivedBase is a positive whole number of base units");
+    }
+    return reply(
+      res,
+      200,
+      await session.receiveTransfer(
+        receive[1] ?? "",
+        counted as number | undefined,
+        text(body.staff),
+      ),
+    );
   }
 
   const review = /^\/api\/discrepancies\/(\d+)\/review$/.exec(path);

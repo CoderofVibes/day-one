@@ -218,6 +218,57 @@ export function postReview(
   );
 }
 
+/** Kevin's proposed moves between plants and the approved ones still on the road. */
+export interface TransferSuggestion {
+  key: string;
+  material: string;
+  materialName: string;
+  from: string;
+  fromName: string;
+  to: string;
+  toName: string;
+  qtyBase: number;
+  valueUsdc: number | null;
+  sentence: string;
+}
+export interface TransferInTransit {
+  transferNo: string;
+  lotCode: string;
+  material: string;
+  materialName: string;
+  dimension: string;
+  from: string;
+  to: string;
+  qtyBase: number;
+}
+export interface TransferSuggestions {
+  suggestions: TransferSuggestion[];
+  inTransit: TransferInTransit[];
+  /** Set after a decision or a receipt: Kevin's line about it. */
+  sentence?: string;
+  discrepancies?: { sentence: string }[];
+}
+
+export function getTransferSuggestions(): Promise<TransferSuggestions> {
+  return request<TransferSuggestions>("GET", "api/transfer-suggestions");
+}
+
+export function postTransferDecision(
+  key: string,
+  decision: "approve" | "dismiss",
+): Promise<TransferSuggestions> {
+  return request(
+    "POST",
+    `api/transfer-suggestions/${encodeURIComponent(key)}/${decision}`,
+    "{}",
+    "application/json",
+  );
+}
+
+export function postTransferReceipt(transferNo: string): Promise<TransferSuggestions> {
+  return request("POST", `api/transfers/${transferNo}/receive`, "{}", "application/json");
+}
+
 export function postJson(path: string, body: unknown = {}): Promise<ActionResult> {
   return request<ActionResult>("POST", path, JSON.stringify(body), "application/json");
 }

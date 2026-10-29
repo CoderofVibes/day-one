@@ -324,6 +324,24 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(again.status).toBe(409);
   });
 
+  it("lets HQ approve Kevin's bottle transfer and Hollow Pine receive it", async () => {
+    const key = encodeURIComponent("BTL:C-B");
+    const { status, body } = await api("POST", `/api/transfer-suggestions/${key}/approve`, {});
+    expect(status).toBe(200);
+    expect(body.sentence).toMatch(/^Approved: 16,000 of 150 cc HDPE bottle leaves Acme Lakeview/);
+    expect(body.suggestions.some((s: { key: string }) => s.key === "BTL:C-B")).toBe(false);
+    const [moving] = body.inTransit;
+    expect(moving).toMatchObject({ from: "C", to: "B", qtyBase: 16_000 });
+    expect((await api("POST", `/api/transfer-suggestions/${key}/approve`, {})).status).toBe(409);
+    const bad = { receivedBase: -1 };
+    expect((await api("POST", `/api/transfers/${moving.transferNo}/receive`, bad)).status).toBe(
+      400,
+    );
+    const got = await api("POST", `/api/transfers/${moving.transferNo}/receive`, {});
+    expect(got.status).toBe(200);
+    expect(got.body).toMatchObject({ receivedBase: 16_000, discrepancies: [], inTransit: [] });
+  });
+
   it("resets to the seed", async () => {
     const { status, body } = (await api("POST", "/api/run/reset")) as {
       status: number;

@@ -8,7 +8,13 @@ import { join } from "node:path";
 import { type DemoPhase, type DemoStep, formatTranscript, startDemo } from "@day-one/kevin/demo";
 import { reviewDiscrepancy } from "@day-one/kevin/discrepancies";
 import { massBalance } from "@day-one/kevin/massBalance";
-import { suggestTransfers } from "@day-one/kevin/transferSuggestions";
+import {
+  approveTransfer,
+  dismissTransfer,
+  receiveTransfer,
+  suggestTransfers,
+  transfersInTransit,
+} from "@day-one/kevin/transferSuggestions";
 import { readAttestationFixture, recordedReceipts } from "@day-one/server/attestation/fixture";
 import type { AttestationResult } from "@day-one/server/attestation/types";
 import { verifyAttestation } from "@day-one/server/attestation/verify";
@@ -214,7 +220,57 @@ export class DemoSession {
   /** Spare stock at one plant that covers another's reorder, before anyone buys (FEATURES_V2 §3). */
   transferSuggestions() {
     const suggestions = suggestTransfers(this.env.db, { now: this.env.clock() });
-    return { suggestions, sentences: suggestions.map((s) => s.sentence) };
+    return {
+      suggestions,
+      sentences: suggestions.map((s) => s.sentence),
+      inTransit: transfersInTransit(this.env.db),
+    };
+  }
+
+  /**
+   * A person approves or dismisses Kevin's proposed move: ledger events only, no chain call, so
+   * it never disturbs a replay. HQ's integration lead decides unless a name is given.
+   */
+  decideTransfer(key: string, decision: "approve" | "dismiss", staffName?: string) {
+    return this.run(async () => {
+      const input = { staffId: this.staffId(staffName), now: this.env.clock() };
+      try {
+        const done =
+          decision === "approve"
+            ? approveTransfer(this.env.db, key, input)
+            : dismissTransfer(this.env.db, key, input);
+        return { sentence: done.sentence, ...this.transferSuggestions() };
+      } catch (error) {
+        throw new SessionError(409, error instanceof Error ? error.message : String(error));
+      }
+    });
+  }
+
+  /** The receiving plant books an approved transfer in, at the count it took. */
+  receiveTransfer(transferNo: string, receivedBase?: number, staffName?: string) {
+    return this.run(async () => {
+      const input = {
+        staffId: this.staffId(staffName),
+        now: this.env.clock(),
+        ...(receivedBase === undefined ? {} : { receivedBase }),
+      };
+      try {
+        const done = receiveTransfer(this.env.db, transferNo, input);
+        return { ...done, ...this.transferSuggestions() };
+      } catch (error) {
+        throw new SessionError(409, error instanceof Error ? error.message : String(error));
+      }
+    });
+  }
+
+  private staffId(staffName = "Jordan Pike") {
+    const row = this.env.db
+      .select({ id: staff.id })
+      .from(staff)
+      .where(eq(staff.name, staffName))
+      .get();
+    if (!row) throw new SessionError(400, `${staffName} is not on the staff list`);
+    return row.id;
   }
 
   /** The bookkeeper export: settled POs, price-drift alerts and Kevin's note (FEATURES_V2 §2). */
@@ -280,15 +336,10 @@ export class DemoSession {
    */
   review(discrepancyId: number, decision: "apply" | "dismiss", staffName = "Jordan Pike") {
     return this.run(async () => {
-      const reviewer = this.env.db
-        .select({ id: staff.id })
-        .from(staff)
-        .where(eq(staff.name, staffName))
-        .get();
-      if (!reviewer) throw new SessionError(400, `${staffName} is not on the staff list`);
+      const staffId = this.staffId(staffName);
       try {
         return reviewDiscrepancy(this.env.db, discrepancyId, {
-          staffId: reviewer.id,
+          staffId,
           decision,
           now: this.env.clock(),
         });

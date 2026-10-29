@@ -419,6 +419,26 @@ export const spreadsheetImports = sqliteTable(
   (t) => [unique("spreadsheet_imports_file").on(t.facilityId, t.fileSha256)],
 );
 
+/**
+ * A transfer Kevin proposed and a person turned down (FEATURES_V2 §3). Kevin does not propose
+ * the same move again while the receiving plant's shortfall is unchanged.
+ */
+export const transferDismissals = sqliteTable("transfer_dismissals", {
+  id: id(),
+  materialId: integer()
+    .notNull()
+    .references(() => materials.id),
+  fromFacilityId: integer()
+    .notNull()
+    .references(() => facilities.id),
+  toFacilityId: integer()
+    .notNull()
+    .references(() => facilities.id),
+  shortBase: integer().notNull(),
+  dismissedBy: integer().references(() => staff.id),
+  dismissedAt: text().notNull(),
+});
+
 // ---------------------------------------------------------------- 6. Production and genealogy
 
 export const PLAN_STATUS = ["planned", "done", "cancelled"] as const;

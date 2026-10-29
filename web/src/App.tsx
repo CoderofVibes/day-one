@@ -8,6 +8,7 @@ import {
   getMassBalance,
   getPolicy,
   getState,
+  getTransferSuggestions,
   type LiveState,
   type MassBalance,
   type PlantInventory,
@@ -15,7 +16,10 @@ import {
   postImage,
   postJson,
   postReview,
+  postTransferDecision,
+  postTransferReceipt,
   probeApi,
+  type TransferSuggestions,
 } from "./api.ts";
 import { ImportPane } from "./ImportPane.tsx";
 import { type Action, actionsFor, actorOf, quantity } from "./live.ts";
@@ -143,6 +147,9 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const [mass, setMass] = useState<MassBalance | null>(null);
   const [books, setBooks] = useState<Books | null>(null);
   const [policy, setPolicy] = useState<PolicyState | null>(null);
+  const [moves, setMoves] = useState<TransferSuggestions | null>(null);
+  // Kevin's line about the last approve, dismiss or receipt; the refresh below does not clear it.
+  const [moveNote, setMoveNote] = useState<string[]>([]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: refresh whenever the run (state) moves
   useEffect(() => {
@@ -159,6 +166,9 @@ function LiveApp({ initial }: { initial: LiveState }) {
     });
     getBooks().then((b) => {
       if (!stale) setBooks(b);
+    });
+    getTransferSuggestions().then((t) => {
+      if (!stale) setMoves(t);
     });
     return () => {
       stale = true;
@@ -194,6 +204,23 @@ function LiveApp({ initial }: { initial: LiveState }) {
       setInventory(result.inventory);
     });
 
+  const moved = (label: string, call: () => Promise<TransferSuggestions>) =>
+    send(label, async () => {
+      const result = await call();
+      setMoves(result);
+      setMoveNote([
+        ...(result.sentence ? [result.sentence] : []),
+        ...(result.discrepancies ?? []).map((d) => d.sentence),
+      ]);
+      setInventory(await getInventory());
+    });
+  const decideMove = (key: string, decision: "approve" | "dismiss") =>
+    moved(decision === "approve" ? "Approve the transfer" : "Dismiss", () =>
+      postTransferDecision(key, decision),
+    );
+  const receiveMove = (transferNo: string) =>
+    moved(`Receive ${transferNo}`, () => postTransferReceipt(transferNo));
+
   const last = state.steps.length - 1;
   return (
     <Frame
@@ -219,7 +246,10 @@ function LiveApp({ initial }: { initial: LiveState }) {
         error={error}
         onAct={act}
         onUpload={uploadFile}
-        onReset={() => send("Start over", () => postJson("api/run/reset"))}
+        onReset={() => {
+          setMoveNote([]);
+          send("Start over", () => postJson("api/run/reset"));
+        }}
       />
 
       <main className="panes">
@@ -231,8 +261,12 @@ function LiveApp({ initial }: { initial: LiveState }) {
             mass={mass}
             books={books}
             policy={policy}
+            moves={moves}
+            moveNote={moveNote}
             busy={busy !== null}
             onReview={review}
+            onDecideMove={decideMove}
+            onReceiveMove={receiveMove}
           />
         )}
         <StaffFeed data={state} upTo={last} curtain={curtain} />
@@ -363,15 +397,23 @@ function PlantsPane({
   mass,
   books,
   policy,
+  moves,
+  moveNote,
   busy,
   onReview,
+  onDecideMove,
+  onReceiveMove,
 }: {
   inventory: PlantInventory | null;
   mass: MassBalance | null;
   books: Books | null;
   policy: PolicyState | null;
+  moves: TransferSuggestions | null;
+  moveNote: string[];
   busy: boolean;
   onReview: (id: number, decision: "apply" | "dismiss") => void;
+  onDecideMove: (key: string, decision: "approve" | "dismiss") => void;
+  onReceiveMove: (transferNo: string) => void;
 }) {
   if (!inventory) {
     return (
@@ -424,6 +466,15 @@ function PlantsPane({
           ))}
         </ul>
       )}
+      {moves && (
+        <TransfersBlock
+          moves={moves}
+          note={moveNote}
+          busy={busy}
+          onDecide={onDecideMove}
+          onReceive={onReceiveMove}
+        />
+      )}
       <div className="table-wrap">
         <table className="stock">
           <thead>
@@ -464,6 +515,80 @@ function PlantsPane({
       {mass && <MassBalanceBlock mass={mass} plants={plants} />}
       {books && <BooksBlock books={books} />}
     </section>
+  );
+}
+
+/**
+ * Before you buy (FEATURES_V2 §3): one card per move Kevin proposes between plants, with
+ * Approve and Dismiss, then the approved moves on the road with Receive for the other plant.
+ */
+function TransfersBlock({
+  moves,
+  note,
+  busy,
+  onDecide,
+  onReceive,
+}: {
+  moves: TransferSuggestions;
+  note: string[];
+  busy: boolean;
+  onDecide: (key: string, decision: "approve" | "dismiss") => void;
+  onReceive: (transferNo: string) => void;
+}) {
+  const { suggestions, inTransit } = moves;
+  if (!suggestions.length && !inTransit.length && !note.length) return null;
+  return (
+    <div className="transfers">
+      <h3>Before you buy · stock another plant can spare</h3>
+      {note.map((line) => (
+        <p key={line} className="kevin-line">
+          {line}
+        </p>
+      ))}
+      <ul className="discrepancies">
+        {suggestions.map((s) => (
+          <li key={s.key} className="disc move">
+            <p>{s.sentence}</p>
+            <div className="actions">
+              <button
+                type="button"
+                className="primary"
+                disabled={busy}
+                onClick={() => onDecide(s.key, "approve")}
+              >
+                Approve the move
+              </button>
+              <button
+                type="button"
+                className="secondary"
+                disabled={busy}
+                onClick={() => onDecide(s.key, "dismiss")}
+              >
+                Dismiss
+              </button>
+            </div>
+          </li>
+        ))}
+        {inTransit.map((t) => (
+          <li key={t.transferNo} className="disc move">
+            <p>
+              {t.transferNo}: {quantity(t.qtyBase, t.dimension)} of {t.materialName} (lot{" "}
+              {t.lotCode}) on the way from Plant {t.from} to Plant {t.to}.
+            </p>
+            <div className="actions">
+              <button
+                type="button"
+                className="primary"
+                disabled={busy}
+                onClick={() => onReceive(t.transferNo)}
+              >
+                Received at Plant {t.to}
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

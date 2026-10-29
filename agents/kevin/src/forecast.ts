@@ -18,6 +18,7 @@ import {
   productionPlan,
   products,
   purchaseOrders,
+  transfers,
 } from "@day-one/server/ledger/schema";
 import { and, eq, gte, inArray, lte, sql } from "drizzle-orm";
 
@@ -187,7 +188,21 @@ export function projectMaterial(db: Ledger, input: ForecastInput): Omit<Forecast
         ),
       )
       .get()?.base ?? 0;
-  const onOrderBase = stock(INCOMING) + openPoBase;
+  // A transfer on the road from a sister plant is on order too: it has left the other plant's book.
+  const inTransitBase =
+    db
+      .select({ base: sql<number>`coalesce(sum(${transfers.qtyShippedBase}), 0)` })
+      .from(transfers)
+      .innerJoin(lots, eq(lots.id, transfers.lotId))
+      .where(
+        and(
+          eq(lots.materialId, material.id),
+          eq(transfers.toFacilityId, facility.id),
+          eq(transfers.state, "in_transit"),
+        ),
+      )
+      .get()?.base ?? 0;
+  const onOrderBase = stock(INCOMING) + openPoBase + inTransitBase;
 
   const afterBase = onHandBase + onOrderBase - needBase;
   let covered = onHandBase + onOrderBase;
