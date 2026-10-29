@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "network": "sandbox",
-  "recordedAt": "2026-10-29T01:35:37.583Z",
+  "network": "testnet",
+  "recordedAt": "2026-10-29T15:08:13.759Z",
   "entries": [
     {
       "type": "call",
@@ -12,8 +12,8 @@
         "method": "open_sealed_round",
         "args": {
           "round_id": "RFQ-2611-02",
-          "commit_secs": 7200,
-          "reveal_secs": 3600
+          "commit_secs": 180,
+          "reveal_secs": 600
         },
         "depositYocto": "0",
         "viaRelayer": false
@@ -22,7 +22,7 @@
         "status": "success",
         "errorMessage": null,
         "returnValue": null,
-        "txHash": "GiFkj6BY4BDsHvedCEWfasE8sJBd4E54UovR8khrsofx",
+        "txHash": "D9q22WferaPaYE6jzavMTQ8PU7NzqUELDb5mkuF7jxCc",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -31,12 +31,12 @@
             "data": {
               "round_id": "RFQ-2611-02",
               "agent": "kevin.plant-b.acme-holdings.testnet",
-              "closes_at": "1793244665418707676",
-              "reveal_ends_at": "1793248265418707676"
+              "closes_at": "1793286479450870743",
+              "reveal_ends_at": "1793287079450870743"
             }
           }
         ],
-        "blockHeight": 210
+        "blockHeight": 275315829
       }
     },
     {
@@ -48,7 +48,7 @@
         "method": "commit_quote",
         "args": {
           "round_id": "RFQ-2611-02",
-          "hash": "b61cd75c28cbea267921230c754afc9c7c90d050bfcb3374511e581779f72ee5"
+          "hash": "0dbc5cd01c0ed9837ae0c48410f5ea7a8be78c280fed94e208979536f840bacc"
         },
         "depositYocto": "0",
         "viaRelayer": false
@@ -57,9 +57,9 @@
         "status": "refused",
         "errorMessage": "quickchem-direct.testnet is not an approved supplier and cannot quote.",
         "returnValue": null,
-        "txHash": "EwUkRnGiQr2upVTme2fBzbWMp9aQwv37RJvne1qp8Mvh",
+        "txHash": "CtR5GtAxzmXc3WeVk94XxkuJmU5Nmc7ixkzqxFH7ntH6",
         "events": [],
-        "blockHeight": 213
+        "blockHeight": 275315833
       }
     },
     {
@@ -71,7 +71,7 @@
         "method": "commit_quote",
         "args": {
           "round_id": "RFQ-2611-02",
-          "hash": "1201b52c3e7cf3824096391145fd72192e3421e60e6433dc18c16b300d34c6cd"
+          "hash": "5040243f13bc588b46b24a4dbc563531b5fd956870728ff794c9fe0bf87f102f"
         },
         "depositYocto": "0",
         "viaRelayer": false
@@ -80,7 +80,7 @@
         "status": "success",
         "errorMessage": null,
         "returnValue": null,
-        "txHash": "GihCt29D8j58oDv8GrSDRQKe1VvAL3dsWcincxjxCLdu",
+        "txHash": "D8rmZcfTtHXkH3cETFDcFYyLTZUEHZ9Z3qmjH1rBLuWS",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -89,11 +89,11 @@
             "data": {
               "round_id": "RFQ-2611-02",
               "supplier": "northgate-ingredients.testnet",
-              "hash": "1201b52c3e7cf3824096391145fd72192e3421e60e6433dc18c16b300d34c6cd"
+              "hash": "5040243f13bc588b46b24a4dbc563531b5fd956870728ff794c9fe0bf87f102f"
             }
           }
         ],
-        "blockHeight": 216
+        "blockHeight": 275315837
       }
     },
     {
@@ -105,7 +105,7 @@
         "method": "commit_quote",
         "args": {
           "round_id": "RFQ-2611-02",
-          "hash": "3be40a2737ca06995b34cd95f722dbc63c4409eb55a77f6efc9c3ac70f3234d9"
+          "hash": "35377a272a85528587fa036f74d58e09ab4e49335ad6320b440abbdd9230cc67"
         },
         "depositYocto": "0",
         "viaRelayer": false
@@ -114,7 +114,7 @@
         "status": "success",
         "errorMessage": null,
         "returnValue": null,
-        "txHash": "BiHqFVMKyosxbXpM1PxD9rwWKajhcMpcCWBTo2g5D8YS",
+        "txHash": "BDpgE9pgJeVDAQQTGf6Dx2cXRxdp9znGmtHXaojdqiQ6",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -123,11 +123,11 @@
             "data": {
               "round_id": "RFQ-2611-02",
               "supplier": "ridgeway-ascorbics.testnet",
-              "hash": "3be40a2737ca06995b34cd95f722dbc63c4409eb55a77f6efc9c3ac70f3234d9"
+              "hash": "35377a272a85528587fa036f74d58e09ab4e49335ad6320b440abbdd9230cc67"
             }
           }
         ],
-        "blockHeight": 219
+        "blockHeight": 275315841
       }
     },
     {
@@ -142,21 +142,21 @@
       "result": {
         "round_id": "RFQ-2611-02",
         "agent": "kevin.plant-b.acme-holdings.testnet",
-        "opened_at": "1793237465418707676",
-        "closes_at": "1793244665418707676",
-        "reveal_ends_at": "1793248265418707676",
+        "opened_at": "1793286299450870743",
+        "closes_at": "1793286479450870743",
+        "reveal_ends_at": "1793287079450870743",
         "bids": [
           {
             "supplier": "northgate-ingredients.testnet",
-            "hash": "1201b52c3e7cf3824096391145fd72192e3421e60e6433dc18c16b300d34c6cd",
-            "committed_at": "1793237466173626282",
+            "hash": "5040243f13bc588b46b24a4dbc563531b5fd956870728ff794c9fe0bf87f102f",
+            "committed_at": "1793286304354049094",
             "quote": null,
             "revealed_at": null
           },
           {
             "supplier": "ridgeway-ascorbics.testnet",
-            "hash": "3be40a2737ca06995b34cd95f722dbc63c4409eb55a77f6efc9c3ac70f3234d9",
-            "committed_at": "1793237466555762855",
+            "hash": "35377a272a85528587fa036f74d58e09ab4e49335ad6320b440abbdd9230cc67",
+            "committed_at": "1793286306715113366",
             "quote": null,
             "revealed_at": null
           }
@@ -184,9 +184,9 @@
         "status": "refused",
         "errorMessage": "RFQ-2611-02 is still sealed; no quote can be awarded before the deadline.",
         "returnValue": null,
-        "txHash": "4wkUQVaStN52RnMqRbksveAyhRvNUGo2qraPK8LbGEpW",
+        "txHash": "BKN5hwUP8YB3pkD2iJgAPr2bQUCNRDqf9s8ZHVP7r5r4",
         "events": [],
-        "blockHeight": 222
+        "blockHeight": 275315845
       }
     },
     {
@@ -198,7 +198,7 @@
         "method": "reveal_quote",
         "args": {
           "round_id": "RFQ-2611-02",
-          "quote": "{\"record\":{\"freightUsdc\":180000000,\"leadTimeDays\":7,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"northgate-ingredients.testnet\",\"unitPriceUsdc\":7100000},\"salt\":\"d5205c3d9b325d6284e1e4a573f41696\"}"
+          "quote": "{\"record\":{\"freightUsdc\":180000000,\"leadTimeDays\":7,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"northgate-ingredients.testnet\",\"unitPriceUsdc\":7100000},\"salt\":\"6bfc3913d1f9135402a21c8209f3f920\"}"
         },
         "depositYocto": "0",
         "viaRelayer": false
@@ -207,9 +207,9 @@
         "status": "refused",
         "errorMessage": "RFQ-2611-02 is still sealed; quotes open after the deadline.",
         "returnValue": null,
-        "txHash": "BA9HRQ1QVG2qK8BtASHwmdbmwWUE3q3NR6ZoLP4HLrfJ",
+        "txHash": "AohNNRtGcA8KXm2so8THhT6ZMGTpaQ5EVHq9xisxwkpg",
         "events": [],
-        "blockHeight": 225
+        "blockHeight": 275315849
       }
     },
     {
@@ -221,7 +221,7 @@
         "method": "reveal_quote",
         "args": {
           "round_id": "RFQ-2611-02",
-          "quote": "{\"record\":{\"freightUsdc\":180000000,\"leadTimeDays\":7,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"northgate-ingredients.testnet\",\"unitPriceUsdc\":7100000},\"salt\":\"d5205c3d9b325d6284e1e4a573f41696\"}"
+          "quote": "{\"record\":{\"freightUsdc\":180000000,\"leadTimeDays\":7,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"northgate-ingredients.testnet\",\"unitPriceUsdc\":7100000},\"salt\":\"6bfc3913d1f9135402a21c8209f3f920\"}"
         },
         "depositYocto": "0",
         "viaRelayer": false
@@ -230,7 +230,7 @@
         "status": "success",
         "errorMessage": null,
         "returnValue": null,
-        "txHash": "HfJnckaoKdp7vh92MVbTa5DTfQAPpcZaPQAqhiYo3CZ8",
+        "txHash": "GrkhCxBL5st6RCiBLiTuAwgxqnSfw4Yyoj8CgdtcsRpe",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -239,11 +239,11 @@
             "data": {
               "round_id": "RFQ-2611-02",
               "supplier": "northgate-ingredients.testnet",
-              "hash": "1201b52c3e7cf3824096391145fd72192e3421e60e6433dc18c16b300d34c6cd"
+              "hash": "5040243f13bc588b46b24a4dbc563531b5fd956870728ff794c9fe0bf87f102f"
             }
           }
         ],
-        "blockHeight": 25689
+        "blockHeight": 275316148
       }
     },
     {
@@ -255,7 +255,7 @@
         "method": "reveal_quote",
         "args": {
           "round_id": "RFQ-2611-02",
-          "quote": "{\"record\":{\"freightUsdc\":165000000,\"leadTimeDays\":5,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"ridgeway-ascorbics.testnet\",\"unitPriceUsdc\":6950000},\"salt\":\"b7efc3e7000d6993b81edeac54921a1c\"}"
+          "quote": "{\"record\":{\"freightUsdc\":165000000,\"leadTimeDays\":5,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"ridgeway-ascorbics.testnet\",\"unitPriceUsdc\":6950000},\"salt\":\"bc15fb36eef39da1080ec45f93ff2c02\"}"
         },
         "depositYocto": "0",
         "viaRelayer": false
@@ -264,9 +264,9 @@
         "status": "refused",
         "errorMessage": "This quote does not match what ridgeway-ascorbics.testnet sealed for RFQ-2611-02.",
         "returnValue": null,
-        "txHash": "9jJi8Wg3D7mrNdHiJHQNadoGEwkEdiEuY5SNwXXQBMUu",
+        "txHash": "2Q9JfmLorrwR7DnazJvwV7otNAWkbhanu6AVPXAWFi2J",
         "events": [],
-        "blockHeight": 25692
+        "blockHeight": 275316152
       }
     },
     {
@@ -278,7 +278,7 @@
         "method": "commit_quote",
         "args": {
           "round_id": "RFQ-2611-02",
-          "hash": "51bb3ddd0046b2c08ead61de6727f8712e53c3e7c6cf5988e09080c5000a4ca2"
+          "hash": "0eb8bdd9d6f6a6abaea05fd4042b666e6646c154ecb7aa86ca569be01de006ee"
         },
         "depositYocto": "0",
         "viaRelayer": false
@@ -287,9 +287,9 @@
         "status": "refused",
         "errorMessage": "Quotes for RFQ-2611-02 closed at the deadline; this one came in late.",
         "returnValue": null,
-        "txHash": "Aw17H798VzZcrCY6vSVcbQKBFChCgkfXcawgL5pupdY9",
+        "txHash": "9EWsVWgxenRParrUFJqsZTxnc5V23P211LM2fyuo3eBz",
         "events": [],
-        "blockHeight": 25695
+        "blockHeight": 275316156
       }
     },
     {
@@ -301,7 +301,7 @@
         "method": "reveal_quote",
         "args": {
           "round_id": "RFQ-2611-02",
-          "quote": "{\"record\":{\"freightUsdc\":165000000,\"leadTimeDays\":5,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"ridgeway-ascorbics.testnet\",\"unitPriceUsdc\":7350000},\"salt\":\"b7efc3e7000d6993b81edeac54921a1c\"}"
+          "quote": "{\"record\":{\"freightUsdc\":165000000,\"leadTimeDays\":5,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"ridgeway-ascorbics.testnet\",\"unitPriceUsdc\":7350000},\"salt\":\"bc15fb36eef39da1080ec45f93ff2c02\"}"
         },
         "depositYocto": "0",
         "viaRelayer": false
@@ -310,7 +310,7 @@
         "status": "success",
         "errorMessage": null,
         "returnValue": null,
-        "txHash": "87wJQLKSkjqQrUiSk4dtmXFWgGUsnF6mw6yYcYx5MEjk",
+        "txHash": "8Z5wE9EsE7JJLcdUNmMgAWJmj85MyYP4Diyq2KBBoCBR",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -319,11 +319,11 @@
             "data": {
               "round_id": "RFQ-2611-02",
               "supplier": "ridgeway-ascorbics.testnet",
-              "hash": "3be40a2737ca06995b34cd95f722dbc63c4409eb55a77f6efc9c3ac70f3234d9"
+              "hash": "35377a272a85528587fa036f74d58e09ab4e49335ad6320b440abbdd9230cc67"
             }
           }
         ],
-        "blockHeight": 25698
+        "blockHeight": 275316160
       }
     },
     {
@@ -338,23 +338,23 @@
       "result": {
         "round_id": "RFQ-2611-02",
         "agent": "kevin.plant-b.acme-holdings.testnet",
-        "opened_at": "1793237465418707676",
-        "closes_at": "1793244665418707676",
-        "reveal_ends_at": "1793248265418707676",
+        "opened_at": "1793286299450870743",
+        "closes_at": "1793286479450870743",
+        "reveal_ends_at": "1793287079450870743",
         "bids": [
           {
             "supplier": "northgate-ingredients.testnet",
-            "hash": "1201b52c3e7cf3824096391145fd72192e3421e60e6433dc18c16b300d34c6cd",
-            "committed_at": "1793237466173626282",
-            "quote": "{\"record\":{\"freightUsdc\":180000000,\"leadTimeDays\":7,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"northgate-ingredients.testnet\",\"unitPriceUsdc\":7100000},\"salt\":\"d5205c3d9b325d6284e1e4a573f41696\"}",
-            "revealed_at": "1793244966091188845"
+            "hash": "5040243f13bc588b46b24a4dbc563531b5fd956870728ff794c9fe0bf87f102f",
+            "committed_at": "1793286304354049094",
+            "quote": "{\"record\":{\"freightUsdc\":180000000,\"leadTimeDays\":7,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"northgate-ingredients.testnet\",\"unitPriceUsdc\":7100000},\"salt\":\"6bfc3913d1f9135402a21c8209f3f920\"}",
+            "revealed_at": "1793286483024041660"
           },
           {
             "supplier": "ridgeway-ascorbics.testnet",
-            "hash": "3be40a2737ca06995b34cd95f722dbc63c4409eb55a77f6efc9c3ac70f3234d9",
-            "committed_at": "1793237466555762855",
-            "quote": "{\"record\":{\"freightUsdc\":165000000,\"leadTimeDays\":5,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"ridgeway-ascorbics.testnet\",\"unitPriceUsdc\":7350000},\"salt\":\"b7efc3e7000d6993b81edeac54921a1c\"}",
-            "revealed_at": "1793244967218264072"
+            "hash": "35377a272a85528587fa036f74d58e09ab4e49335ad6320b440abbdd9230cc67",
+            "committed_at": "1793286306715113366",
+            "quote": "{\"record\":{\"freightUsdc\":165000000,\"leadTimeDays\":5,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"ridgeway-ascorbics.testnet\",\"unitPriceUsdc\":7350000},\"salt\":\"bc15fb36eef39da1080ec45f93ff2c02\"}",
+            "revealed_at": "1793286489137929140"
           }
         ],
         "awarded": null,
@@ -380,7 +380,7 @@
         "status": "success",
         "errorMessage": null,
         "returnValue": null,
-        "txHash": "DkqrHMaD6BBxjmnmXT6pfbMbaQGSEUyJueVQ8bRo6gUQ",
+        "txHash": "8wSk1QnG7Ysgaq1VSNXG5Rt1iVNttc8LFNCzNYsDeeDZ",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -393,7 +393,7 @@
             }
           }
         ],
-        "blockHeight": 25701
+        "blockHeight": 275316165
       }
     },
     {
@@ -408,27 +408,27 @@
       "result": {
         "round_id": "RFQ-2611-02",
         "agent": "kevin.plant-b.acme-holdings.testnet",
-        "opened_at": "1793237465418707676",
-        "closes_at": "1793244665418707676",
-        "reveal_ends_at": "1793248265418707676",
+        "opened_at": "1793286299450870743",
+        "closes_at": "1793286479450870743",
+        "reveal_ends_at": "1793287079450870743",
         "bids": [
           {
             "supplier": "northgate-ingredients.testnet",
-            "hash": "1201b52c3e7cf3824096391145fd72192e3421e60e6433dc18c16b300d34c6cd",
-            "committed_at": "1793237466173626282",
-            "quote": "{\"record\":{\"freightUsdc\":180000000,\"leadTimeDays\":7,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"northgate-ingredients.testnet\",\"unitPriceUsdc\":7100000},\"salt\":\"d5205c3d9b325d6284e1e4a573f41696\"}",
-            "revealed_at": "1793244966091188845"
+            "hash": "5040243f13bc588b46b24a4dbc563531b5fd956870728ff794c9fe0bf87f102f",
+            "committed_at": "1793286304354049094",
+            "quote": "{\"record\":{\"freightUsdc\":180000000,\"leadTimeDays\":7,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"northgate-ingredients.testnet\",\"unitPriceUsdc\":7100000},\"salt\":\"6bfc3913d1f9135402a21c8209f3f920\"}",
+            "revealed_at": "1793286483024041660"
           },
           {
             "supplier": "ridgeway-ascorbics.testnet",
-            "hash": "3be40a2737ca06995b34cd95f722dbc63c4409eb55a77f6efc9c3ac70f3234d9",
-            "committed_at": "1793237466555762855",
-            "quote": "{\"record\":{\"freightUsdc\":165000000,\"leadTimeDays\":5,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"ridgeway-ascorbics.testnet\",\"unitPriceUsdc\":7350000},\"salt\":\"b7efc3e7000d6993b81edeac54921a1c\"}",
-            "revealed_at": "1793244967218264072"
+            "hash": "35377a272a85528587fa036f74d58e09ab4e49335ad6320b440abbdd9230cc67",
+            "committed_at": "1793286306715113366",
+            "quote": "{\"record\":{\"freightUsdc\":165000000,\"leadTimeDays\":5,\"material\":\"ASC\",\"qtyBase\":700000000,\"rfq\":\"RFQ-2611-02\",\"supplier\":\"ridgeway-ascorbics.testnet\",\"unitPriceUsdc\":7350000},\"salt\":\"bc15fb36eef39da1080ec45f93ff2c02\"}",
+            "revealed_at": "1793286489137929140"
           }
         ],
         "awarded": "northgate-ingredients.testnet",
-        "awarded_at": "1793244967591510493",
+        "awarded_at": "1793286492164596350",
         "phase": "closed"
       }
     }

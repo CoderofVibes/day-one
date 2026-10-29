@@ -1,27 +1,27 @@
-1:00 PM  Kevin asked 3 suppliers for sealed quotes on 700 kg ascorbic acid (RFQ-2611-02). Quotes stay sealed until 3:00 PM.
+1:00 PM  Kevin asked 3 suppliers for sealed quotes on 700 kg ascorbic acid (RFQ-2611-02). Quotes stay sealed until 1:03 PM.
 1:00 PM  2 sealed quotes received. QuickChem Direct's was refused: not an approved supplier.
-3:00 PM  2 sealed quotes, opened at 3:00 PM. Each matched the quote sealed before the deadline.
-3:00 PM  Ridgeway Ascorbics tried to lower its price after the opening. Refused: its sealed price stands.
-3:00 PM  2 quotes. Northgate $7.10/kg, 7 days — selected. Ridgeway $7.35/kg, 5 days — runner-up.
-3:00 PM  Kevin chose Northgate Ingredients. The award is on record.
+1:03 PM  2 sealed quotes, opened at 1:03 PM. Each matched the quote sealed before the deadline.
+1:03 PM  Ridgeway Ascorbics tried to lower its price after the opening. Refused: its sealed price stands.
+1:03 PM  2 quotes. Northgate $7.10/kg, 7 days — selected. Ridgeway $7.35/kg, 5 days — runner-up.
+1:03 PM  Kevin chose Northgate Ingredients. The award is on record.
 
 Behind the curtain:
-  open_sealed_round RFQ-2611-02, 7200 s to seal, 3600 s to open ✓ (tx GiFkj6BY4BDsHvedCEWfasE8sJBd4E54UovR8khrsofx)
-  commit_quote by quickchem-direct.testnet: seal b61cd75c28… ✗ REFUSED "quickchem-direct.testnet is not an approved supplier and cannot quote." (tx EwUkRnGiQr2upVTme2fBzbWMp9aQwv37RJvne1qp8Mvh)
-  commit_quote by northgate-ingredients.testnet: seal 1201b52c3e… ✓ (tx GihCt29D8j58oDv8GrSDRQKe1VvAL3dsWcincxjxCLdu)
-  commit_quote by ridgeway-ascorbics.testnet: seal 3be40a2737… ✓ (tx BiHqFVMKyosxbXpM1PxD9rwWKajhcMpcCWBTo2g5D8YS)
-  get_sealed_round before the deadline: phase sealed, northgate-ingredients.testnet 1201b52c3e… (quote hidden), ridgeway-ascorbics.testnet 3be40a2737… (quote hidden)
+  open_sealed_round RFQ-2611-02, 180 s to seal, 600 s to open ✓ (tx D9q22WferaPaYE6jzavMTQ8PU7NzqUELDb5mkuF7jxCc)
+  commit_quote by quickchem-direct.testnet: seal 0dbc5cd01c… ✗ REFUSED "quickchem-direct.testnet is not an approved supplier and cannot quote." (tx CtR5GtAxzmXc3WeVk94XxkuJmU5Nmc7ixkzqxFH7ntH6)
+  commit_quote by northgate-ingredients.testnet: seal 5040243f13… ✓ (tx D8rmZcfTtHXkH3cETFDcFYyLTZUEHZ9Z3qmjH1rBLuWS)
+  commit_quote by ridgeway-ascorbics.testnet: seal 35377a272a… ✓ (tx BDpgE9pgJeVDAQQTGf6Dx2cXRxdp9znGmtHXaojdqiQ6)
+  get_sealed_round before the deadline: phase sealed, northgate-ingredients.testnet 5040243f13… (quote hidden), ridgeway-ascorbics.testnet 35377a272a… (quote hidden)
   Kevin's ranking: refused, "RFQ-2611-02 is sealed until the deadline; 2 fingerprints and no prices to rank"
-  award_sealed_round by Kevin before the deadline ✗ REFUSED "RFQ-2611-02 is still sealed; no quote can be awarded before the deadline." (tx 4wkUQVaStN52RnMqRbksveAyhRvNUGo2qraPK8LbGEpW)
-  reveal_quote by northgate-ingredients.testnet before the deadline ✗ REFUSED "RFQ-2611-02 is still sealed; quotes open after the deadline." (tx BA9HRQ1QVG2qK8BtASHwmdbmwWUE3q3NR6ZoLP4HLrfJ)
-  reveal_quote by northgate-ingredients.testnet ✓ (tx HfJnckaoKdp7vh92MVbTa5DTfQAPpcZaPQAqhiYo3CZ8)
-  reveal_quote by ridgeway-ascorbics.testnet at $6.95/kg ✗ REFUSED "This quote does not match what ridgeway-ascorbics.testnet sealed for RFQ-2611-02." (tx 9jJi8Wg3D7mrNdHiJHQNadoGEwkEdiEuY5SNwXXQBMUu)
-  commit_quote by ridgeway-ascorbics.testnet after the deadline ✗ REFUSED "Quotes for RFQ-2611-02 closed at the deadline; this one came in late." (tx Aw17H798VzZcrCY6vSVcbQKBFChCgkfXcawgL5pupdY9)
-  reveal_quote by ridgeway-ascorbics.testnet ✓ (tx 87wJQLKSkjqQrUiSk4dtmXFWgGUsnF6mw6yYcYx5MEjk)
-  award_sealed_round to northgate-ingredients.testnet ✓ (tx DkqrHMaD6BBxjmnmXT6pfbMbaQGSEUyJueVQ8bRo6gUQ)
-  northgate-ingredients.testnet: sealed at block time 1793237466173626282, opened at 1793244966091188845, quote {"record":{"freightUsdc":180000000,"leadTimeDays":7,"material":"ASC","qtyBase":700000000,"rfq":"RFQ-2611-02","supplier":"northgate-ingredients.testnet","unitPriceUsdc":7100000},"salt":"d5205c3d9b325d6284e1e4a573f41696"}
-  ridgeway-ascorbics.testnet: sealed at block time 1793237466555762855, opened at 1793244967218264072, quote {"record":{"freightUsdc":165000000,"leadTimeDays":5,"material":"ASC","qtyBase":700000000,"rfq":"RFQ-2611-02","supplier":"ridgeway-ascorbics.testnet","unitPriceUsdc":7350000},"salt":"b7efc3e7000d6993b81edeac54921a1c"}
-  deadline at block time 1793244665418707676; awarded to northgate-ingredients.testnet
+  award_sealed_round by Kevin before the deadline ✗ REFUSED "RFQ-2611-02 is still sealed; no quote can be awarded before the deadline." (tx BKN5hwUP8YB3pkD2iJgAPr2bQUCNRDqf9s8ZHVP7r5r4)
+  reveal_quote by northgate-ingredients.testnet before the deadline ✗ REFUSED "RFQ-2611-02 is still sealed; quotes open after the deadline." (tx AohNNRtGcA8KXm2so8THhT6ZMGTpaQ5EVHq9xisxwkpg)
+  reveal_quote by northgate-ingredients.testnet ✓ (tx GrkhCxBL5st6RCiBLiTuAwgxqnSfw4Yyoj8CgdtcsRpe)
+  reveal_quote by ridgeway-ascorbics.testnet at $6.95/kg ✗ REFUSED "This quote does not match what ridgeway-ascorbics.testnet sealed for RFQ-2611-02." (tx 2Q9JfmLorrwR7DnazJvwV7otNAWkbhanu6AVPXAWFi2J)
+  commit_quote by ridgeway-ascorbics.testnet after the deadline ✗ REFUSED "Quotes for RFQ-2611-02 closed at the deadline; this one came in late." (tx 9EWsVWgxenRParrUFJqsZTxnc5V23P211LM2fyuo3eBz)
+  reveal_quote by ridgeway-ascorbics.testnet ✓ (tx 8Z5wE9EsE7JJLcdUNmMgAWJmj85MyYP4Diyq2KBBoCBR)
+  award_sealed_round to northgate-ingredients.testnet ✓ (tx 8wSk1QnG7Ysgaq1VSNXG5Rt1iVNttc8LFNCzNYsDeeDZ)
+  northgate-ingredients.testnet: sealed at block time 1793286304354049094, opened at 1793286483024041660, quote {"record":{"freightUsdc":180000000,"leadTimeDays":7,"material":"ASC","qtyBase":700000000,"rfq":"RFQ-2611-02","supplier":"northgate-ingredients.testnet","unitPriceUsdc":7100000},"salt":"6bfc3913d1f9135402a21c8209f3f920"}
+  ridgeway-ascorbics.testnet: sealed at block time 1793286306715113366, opened at 1793286489137929140, quote {"record":{"freightUsdc":165000000,"leadTimeDays":5,"material":"ASC","qtyBase":700000000,"rfq":"RFQ-2611-02","supplier":"ridgeway-ascorbics.testnet","unitPriceUsdc":7350000},"salt":"bc15fb36eef39da1080ec45f93ff2c02"}
+  deadline at block time 1793286479450870743; awarded to northgate-ingredients.testnet
 
 Round check: VALID
 Attack "Peek at sealed quotes": refused

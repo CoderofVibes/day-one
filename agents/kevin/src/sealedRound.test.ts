@@ -7,7 +7,7 @@ import { runSealedRound, sealedAttacks } from "./sealedRound.ts";
 
 const root = resolve(import.meta.dirname, "../../..");
 
-describe("a sealed quote round, replayed from the recorded sandbox run", async () => {
+describe("a sealed quote round, replayed from the recorded testnet run", async () => {
   const env = openSealedEnv({ root });
   const run = await runSealedRound(env.deps);
 
@@ -19,8 +19,10 @@ describe("a sealed quote round, replayed from the recorded sandbox run", async (
 
   it("tells staff the round in plain words, with no fingerprints or salts", () => {
     expect(run.staff).toContain(
-      "3:00 PM  2 sealed quotes, opened at 3:00 PM. Each matched the quote sealed before the deadline.",
+      "1:03 PM  2 sealed quotes, opened at 1:03 PM. Each matched the quote sealed before the deadline.",
     );
+    // The recorded windows set the staff times: three minutes on testnet.
+    expect(env.deps.windows).toEqual({ commitSecs: 180, revealSecs: 600 });
     expect(run.staff[1]).toBe(
       "1:00 PM  2 sealed quotes received. QuickChem Direct's was refused: not an approved supplier.",
     );
@@ -40,7 +42,7 @@ describe("a sealed quote round, replayed from the recorded sandbox run", async (
       ["Reveal a different price than the one sealed", true],
       ["Seal a quote after the deadline", true],
     ]);
-    expect(attacks.every((a) => a.network === "sandbox")).toBe(true);
+    expect(attacks.every((a) => a.network === "testnet")).toBe(true);
   });
 
   it("refuses to rank a round that is still sealed", () => {

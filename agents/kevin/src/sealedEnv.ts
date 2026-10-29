@@ -1,27 +1,39 @@
 // The sealed quote round's clients, shared by `npm run sealed` and the attack suite. Replay
-// (the default) answers every chain call from data/sealed/: no keys, no network. Recording
-// runs the round on a local NEAR sandbox node started by the contract's `host_for_recording`
-// test (contracts/spend-policy/tests/sealed_round.rs), whose host file names the node's RPC
-// address and the accounts' keys. The node is fast-forwarded past the round's deadline.
+// (the default) answers every chain call from data/sealed/: no keys, no network. Live runs the
+// round on testnet with the keys in .near-credentials and real windows (TESTNET_WINDOWS), and
+// waits out the deadline. The sandbox recording runs it on a local NEAR node started by the
+// contract's `host_for_recording` test (contracts/spend-policy/tests/sealed_round.rs), whose
+// host file names the node's RPC address and the accounts' keys; that node is fast-forwarded
+// past the deadline, so it keeps the demo's two-hour windows.
 
 import { randomBytes } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ChainClient } from "@day-one/server/chain/client";
 import { type KeyLookup, LiveTransport } from "@day-one/server/chain/live";
-import { RecordingTransport, ReplayTransport } from "@day-one/server/chain/replay";
+import {
+  type Fixture,
+  RecordingTransport,
+  ReplayTransport,
+  readFixture,
+} from "@day-one/server/chain/replay";
 import { openLedger } from "@day-one/server/ledger/db";
 import type { SealedRoundView } from "@day-one/server/sealed";
 import { seedLedger } from "@day-one/server/seed";
 import { SUPPLIERS } from "@day-one/server/seed/quotes";
 import { SealedQuoteAgent } from "@day-one/suppliers/sealed";
 import { forecastMaterial } from "./forecast.ts";
-import { DEMO_WINDOWS } from "./sealed.ts";
+import { DEMO_WINDOWS, type RoundWindows } from "./sealed.ts";
 import { SEALED_RFQ, type SealedRoundDeps } from "./sealedRound.ts";
 import { confirmBr1045 } from "./test/br-b-1045.ts";
 
-/** Kevin opens the round at 1 PM on the demo clock; it closes at 3 PM. */
+/** Kevin opens the round at 1 PM on the demo clock. */
 export const SEALED_OPENED_AT = "2026-11-09T13:00:00.000Z";
+/**
+ * On testnet nothing fast-forwards the chain, so the round runs on real time: three minutes to
+ * seal (the opening calls take about half a minute) and ten to open. Staff times follow.
+ */
+export const TESTNET_WINDOWS: RoundWindows = { commitSecs: 180, revealSecs: 600 };
 
 export function sealedFiles(root: string) {
   const dir = join(root, "data/sealed");
@@ -57,7 +69,25 @@ export interface SealedEnv {
   salts: Record<string, string>;
 }
 
-export function openSealedEnv(opts: { root: string; hostFile?: string }): SealedEnv {
+/** The windows the recorded round was opened with, read from its open_sealed_round call. */
+function recordedWindows(fixture: Fixture): RoundWindows {
+  for (const e of fixture.entries) {
+    if (e.type === "call" && e.request.method === "open_sealed_round") {
+      return {
+        commitSecs: Number(e.request.args.commit_secs),
+        revealSecs: Number(e.request.args.reveal_secs),
+      };
+    }
+  }
+  return DEMO_WINDOWS;
+}
+
+export function openSealedEnv(opts: {
+  root: string;
+  hostFile?: string;
+  /** Run on testnet with the repo's keys. */
+  live?: boolean;
+}): SealedEnv {
   const files = sealedFiles(opts.root);
   const accounts = JSON.parse(
     readFileSync(join(opts.root, "config/testnet-accounts.json"), "utf8"),
@@ -71,8 +101,30 @@ export function openSealedEnv(opts: { root: string; hostFile?: string }): Sealed
   let transport: RecordingTransport | ReplayTransport;
   let salts: Record<string, string>;
   let policyContract = accounts.spendPolicy;
+  let windows = DEMO_WINDOWS;
   let waitPastDeadline: (round: SealedRoundView) => Promise<void> = async () => {};
-  if (opts.hostFile) {
+  const freshSalts = () =>
+    Object.fromEntries(SUPPLIERS.map((s) => [s.account, randomBytes(16).toString("hex")]));
+  if (opts.live) {
+    const live = new LiveTransport("testnet");
+    transport = new RecordingTransport(live);
+    salts = freshSalts();
+    windows = TESTNET_WINDOWS;
+    // Polls go to the chain directly, so the recording holds only the round's own reads.
+    waitPastDeadline = async (round) => {
+      const deadline = Date.now() + (windows.commitSecs + 120) * 1_000;
+      while (Date.now() < deadline) {
+        const now = (await live.view({
+          contractId: policyContract,
+          method: "get_sealed_round",
+          args: { round_id: round.round_id },
+        })) as SealedRoundView;
+        if (now.phase !== "sealed") return;
+        await new Promise((r) => setTimeout(r, 5_000));
+      }
+      throw new Error(`${round.round_id} never passed its deadline`);
+    };
+  } else if (opts.hostFile) {
     const host = JSON.parse(readFileSync(opts.hostFile, "utf8")) as SandboxHost;
     const live = new LiveTransport(
       host.network,
@@ -85,7 +137,7 @@ export function openSealedEnv(opts: { root: string; hostFile?: string }): Sealed
     );
     transport = new RecordingTransport(live);
     policyContract = host.spendPolicy;
-    salts = Object.fromEntries(SUPPLIERS.map((s) => [s.account, randomBytes(16).toString("hex")]));
+    salts = freshSalts();
     // Polls go to the node directly, so the recording holds only the round's own reads.
     waitPastDeadline = async (round) => {
       for (let i = 0; i < 40; i++) {
@@ -101,7 +153,9 @@ export function openSealedEnv(opts: { root: string; hostFile?: string }): Sealed
       throw new Error(`${round.round_id} never passed its deadline`);
     };
   } else {
-    transport = ReplayTransport.fromFile(files.chain);
+    const fixture = readFixture(files.chain);
+    transport = new ReplayTransport(fixture);
+    windows = recordedWindows(fixture);
     salts = JSON.parse(readFileSync(files.salts, "utf8")) as Record<string, string>;
   }
   const chain = new ChainClient(db, transport, () => SEALED_OPENED_AT);
@@ -120,7 +174,7 @@ export function openSealedEnv(opts: { root: string; hostFile?: string }): Sealed
       policyContract,
       forecast,
       suppliers,
-      windows: DEMO_WINDOWS,
+      windows,
       openedAt: SEALED_OPENED_AT,
       waitPastDeadline,
       network: transport.network,

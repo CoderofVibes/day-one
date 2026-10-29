@@ -3,8 +3,8 @@
 // the three sealed-bid attacks of agents/kevin/src/sealedRound.ts.
 // Replays the recorded testnet calls and model answers by default: no keys, no network.
 // The credential attacks replay their testnet run (data/attacks/credentials-testnet.json,
-// written by `npm run record:credentials`) and the sealed-bid attacks a sandbox round
-// (data/sealed/).
+// written by `npm run record:credentials`) and the sealed-bid attacks the testnet round of
+// `npm run sealed -- --live --record` (data/sealed/).
 //   --record  run the first seven live on testnet and NEAR AI Cloud and rewrite their
 //             fixtures (needs .env keys); the credential and sealed-bid attacks still replay
 //   --json    print one JSON line after the readable text

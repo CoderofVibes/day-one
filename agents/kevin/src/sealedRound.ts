@@ -1,7 +1,7 @@
 // One sealed quote round end to end (`npm run sealed`, CONTRACTS.md §10): Kevin opens RFQ-2611-02
 // for 700 kg of ascorbic acid, the three ascorbic suppliers seal their quotes (QuickChem's is
-// refused: not an approved supplier), and nobody can read a price until the deadline two hours
-// later. The run includes
+// refused: not an approved supplier), and nobody can read a price until the deadline (two hours
+// on the fast-forwarded sandbox, three minutes on testnet). The run includes
 // the sealed-bid attacks of the attack suite, each refused:
 //
 //   peek     before the deadline Kevin tries to rank and to award, and Northgate tries to open
