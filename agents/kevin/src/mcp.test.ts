@@ -78,6 +78,7 @@ describe("Kevin's MCP server", () => {
     expect(tools.map((t) => t.name).sort()).toEqual([
       "draft_po",
       "get_books",
+      "get_brief",
       "get_forecast",
       "get_inventory",
       "get_mass_balance",
@@ -94,6 +95,12 @@ describe("Kevin's MCP server", () => {
     expect(data.materials).toHaveLength(1);
     expect(Object.keys(data.materials[0].byPlant)).toEqual(["B"]);
     expect(lines).toContain("1 material at Plant B.");
+  });
+
+  it("gives the morning brief for the acquired plant", async () => {
+    const { lines, data } = await call("get_brief");
+    expect(data.facility).toBe("B");
+    expect(lines).toContain("Good morning, Ray.");
   });
 
   it("reads Kevin's limits from the contract in dollars and names", async () => {

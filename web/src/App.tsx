@@ -3,6 +3,7 @@ import {
   ApiError,
   BOOKS_EXPORT_URL,
   type Books,
+  BRIEF_URL,
   getBooks,
   getInventory,
   getMassBalance,
@@ -427,6 +428,11 @@ function PlantsPane({
   return (
     <section className="pane plants" aria-label="Three plants">
       <h2>Three plants · stock on hand</h2>
+      <p className="small">
+        <a href={BRIEF_URL} target="_blank" rel="noreferrer">
+          Kevin's morning brief for Hollow Pine (printable)
+        </a>
+      </p>
       {policy ? (
         <PolicyBlock state={policy} />
       ) : (

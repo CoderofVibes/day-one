@@ -5,6 +5,7 @@
 
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
+import { briefHtml, morningBrief } from "@day-one/kevin/brief";
 import { type DemoPhase, type DemoStep, formatTranscript, startDemo } from "@day-one/kevin/demo";
 import { reviewDiscrepancy } from "@day-one/kevin/discrepancies";
 import { massBalance } from "@day-one/kevin/massBalance";
@@ -280,6 +281,22 @@ export class DemoSession {
 
   booksCsv() {
     return booksCsv(this.env.db);
+  }
+
+  /** Kevin's 5am brief for a plant at the run's clock; the acquired plant by default. */
+  brief(facility?: string) {
+    try {
+      return morningBrief(this.env.db, {
+        now: this.env.clock(),
+        ...(facility ? { facility } : {}),
+      });
+    } catch (error) {
+      throw new SessionError(400, (error as Error).message);
+    }
+  }
+
+  briefHtml(facility?: string) {
+    return briefHtml(this.brief(facility));
   }
 
   /**

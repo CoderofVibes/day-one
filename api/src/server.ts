@@ -20,6 +20,8 @@
 //   POST /api/transfer-suggestions/:key/dismiss  JSON {"staff"?: …}: not proposed again for the same shortfall
 //   POST /api/transfers/:transferNo/receive    JSON {"receivedBase"?: n, "staff"?: …}: booked in, then Kevin's transfer check
 //   GET  /api/books/export.csv                the settled POs as the CSV Ruth imports (text/csv)
+//   GET  /api/brief                            Kevin's 5am brief (?plant=A|B|C; the acquired plant by default)
+//   GET  /api/brief.html                       the same brief as one printable page
 //   GET  /api/policy                           HQ's view: the limits the contract enforces now, policy changes
 //   POST /api/discrepancies/:id/review         JSON {"decision": "apply" | "dismiss", "staff"?: …}
 //   GET  /api/imports                          the import plant's opening inventory, posted imports, review queue
@@ -105,6 +107,13 @@ async function route(
     return reply(res, 200, session.transferSuggestions());
   if (method === "GET" && path === "/api/imports") return reply(res, 200, desk.state());
   if (method === "GET" && path === "/api/policy") return reply(res, 200, await session.policy());
+  if (method === "GET" && path === "/api/brief")
+    return reply(res, 200, session.brief(url.searchParams.get("plant") ?? undefined));
+  if (method === "GET" && path === "/api/brief.html") {
+    const page = session.briefHtml(url.searchParams.get("plant") ?? undefined);
+    res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+    return res.end(page);
+  }
   if (method === "GET" && path === "/api/books/export.csv") {
     res.writeHead(200, {
       "content-type": "text/csv; charset=utf-8",

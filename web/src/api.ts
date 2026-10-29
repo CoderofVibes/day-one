@@ -206,6 +206,9 @@ export function getPolicy(): Promise<PolicyState> {
 
 export const BOOKS_EXPORT_URL = "api/books/export.csv";
 
+/** Kevin's 5am brief for the acquired plant, one printable page. */
+export const BRIEF_URL = "api/brief.html";
+
 export function postReview(
   id: number,
   decision: "apply" | "dismiss",

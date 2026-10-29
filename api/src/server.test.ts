@@ -252,6 +252,25 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(state.transactions).toHaveLength(10);
   });
 
+  it("prints Kevin's morning brief for the run, as JSON and as a page", async () => {
+    const { status, body } = await api("GET", "/api/brief");
+    expect(status).toBe(200);
+    expect(body.facility).toBe("B");
+    expect(body.sections.map((s: { key: string }) => s.key)).toEqual([
+      "moved",
+      "waiting",
+      "buying",
+      "watch",
+    ]);
+    // PO-1041 was paid into escrow during the run and has not arrived.
+    const buying = body.sections.find((s: { key: string }) => s.key === "buying").lines;
+    expect(buying.map((l: { ref?: string }) => l.ref)).toContain("PO-1041");
+    const page = await fetch(`${base}/api/brief.html?plant=C`);
+    expect(page.headers.get("content-type")).toBe("text/html; charset=utf-8");
+    expect(await page.text()).toContain("Acme Lakeview");
+    expect((await api("GET", "/api/brief?plant=Z")).status).toBe(400);
+  });
+
   it("exports the settled POs for the books: PO-1042 paid from escrow, PO-1041 still held", async () => {
     const { status, body } = await api("GET", "/api/books");
     expect(status).toBe(200);

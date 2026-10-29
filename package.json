@@ -35,6 +35,7 @@
     "escrow": "tsx scripts/escrow.ts",
     "mcp": "tsx scripts/kevin-mcp.ts",
     "books": "tsx scripts/books.ts",
+    "brief": "tsx scripts/brief.ts",
     "import": "tsx scripts/import.ts",
     "render:import": "tsx scripts/render-import.ts",
     "api": "tsx api/src/main.ts",

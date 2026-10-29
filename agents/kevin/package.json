@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./brief": "./src/brief.ts",
     "./forecast": "./src/forecast.ts",
     "./discrepancies": "./src/discrepancies.ts",
     "./massBalance": "./src/massBalance.ts",

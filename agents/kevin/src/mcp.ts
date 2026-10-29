@@ -14,6 +14,7 @@ import { DEMO_QUOTES } from "@day-one/server/seed/quotes";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { formatBrief, morningBrief } from "./brief.ts";
 import { forecastMaterial } from "./forecast.ts";
 import { massBalance } from "./massBalance.ts";
 import { draftPoFromRanking, openRfq, rankQuotes, recordQuotes } from "./purchasing.ts";
@@ -163,6 +164,26 @@ export function createKevinServer(options: KevinMcpOptions) {
     async () => {
       const result = books(db);
       return answer(result.sentences, result);
+    },
+  );
+
+  server.registerTool(
+    "get_brief",
+    {
+      title: "Kevin's morning brief",
+      description:
+        "Kevin's 5am brief for one plant: what moved since the last working day, what waits " +
+        "on a person (QC, approvals, flagged records, discrepancies, transfers to receive), what " +
+        "to buy or move from a sister plant first, and what is worth a look (price drift, mass " +
+        "balance, expiring lots). A read: nothing is drafted or sent.",
+      inputSchema: {
+        facility: z.string().optional().describe("Plant code; the acquired plant by default"),
+      },
+      annotations: readOnly,
+    },
+    async ({ facility }) => {
+      const brief = morningBrief(db, { now, ...(facility ? { facility } : {}) });
+      return answer(formatBrief(brief).split("\n"), brief);
     },
   );
 
