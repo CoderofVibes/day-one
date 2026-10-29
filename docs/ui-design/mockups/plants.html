@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup · Plants</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="mock.css">
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="#"><span class="mark" aria-hidden="true">K</span><span><b>Day One</b><small>Kevin · Hollow Pine Tablet Co. (Plant B)</small></span></a>
+  <nav class="tabs" aria-label="Screens">
+    <a href="#">Floor</a>
+    <a href="#" aria-current="page">Plants</a>
+    <a href="#">Books</a>
+    <a href="#">HQ</a>
+  </nav>
+  <label class="switch"><input type="checkbox"><span>Behind the curtain</span></label>
+</header>
+
+<main class="page">
+  <section class="panel" aria-label="Three plants">
+    <div class="panel-head"><h2>Three plants · one truth</h2><span class="right small muted">as of Mon Nov 16, 4:05 PM</span></div>
+    <div class="tiles">
+      <div class="tile"><small>Needs a person</small><b>6</b><span class="pill waiting">2 reviews · 4 moves</span></div>
+      <div class="tile"><small>Low stock</small><b>5 materials</b><span class="pill refused">below reorder point</span></div>
+      <div class="tile"><small>Mass balance</small><b>115.2 kg</b><span class="pill waiting">unaccounted at Riverside</span></div>
+      <div class="tile"><small>Open purchase orders</small><b>$612.00</b><span class="pill held">held in escrow</span></div>
+    </div>
+
+    <h3>Waiting on a person</h3>
+    <ul class="review">
+      <li>
+        <div class="cont"><span class="pill waiting">Plant A to review</span><p>Plant A still shows <b>12.55 kg</b> of lot ASC-261009-01, but Plant B weighed in 187.45 kg of the 200 kg sent. Kevin proposes writing the 12.55 kg off at Plant A.</p></div>
+        <div class="actions"><button class="btn primary">Apply at Plant A</button><button class="btn">Dismiss</button></div>
+      </li>
+      <li>
+        <div class="cont"><span class="pill waiting">before you buy</span><p>Acme Lakeview has 96,000 of 150 cc HDPE bottle above its own need and reorder point. Moving <b>16,000</b> (BTL-260905-01) to Hollow Pine keeps it at its reorder point instead of ordering 100,000. About $336.00 of stock at the last price paid.</p></div>
+        <div class="actions"><button class="btn primary">Approve the move</button><button class="btn">Dismiss</button><button class="btn quiet sm end">3 more moves</button></div>
+      </li>
+      <li>
+        <div class="cont"><span class="pill waiting">Plant A to review</span><p><b>P-CMD at Riverside:</b> 115.2 kg of material issued over two batches is in neither the tablets nor the recorded waste (6.84%). Hollow Pine balances to the gram. Pounds versus kilograms explains 0.005 kg of it. Riverside's waste looks under-recorded.</p></div>
+        <div class="actions"><button class="btn primary">Send Plant A a waste correction to review</button><span class="small muted">2 batches; the batch records stay as written.</span></div>
+      </li>
+    </ul>
+
+    <h3>Stock on hand</h3>
+    <div class="plant-tabs" role="tablist" aria-label="Plant"><button aria-pressed="true">All plants</button><button>A · Riverside</button><button>B · Hollow Pine</button><button>C · Lakeview</button></div>
+    <div class="actions" style="margin-bottom:8px"><label class="switch"><input type="checkbox" checked><span>Only low stock and reviews</span></label><span class="small muted end">33 materials · 5 shown</span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th class="sticky-col">Material</th><th class="n">A · Riverside</th><th class="n">B · Hollow Pine</th><th class="n">C · Lakeview</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><th class="sticky-col">Ascorbic acid<small>ASC</small></th><td class="n low">12.55 kg<small> · below 500</small></td><td class="n">722.35 kg</td><td class="n muted">—</td><td><span class="pill waiting">review at A</span></td></tr>
+          <tr><th class="sticky-col">Calcium carbonate<small>CAC</small></th><td class="n low">249.995 kg<small> · below 650</small></td><td class="n">875 kg</td><td class="n muted">—</td><td><span class="pill held">move proposed</span></td></tr>
+          <tr><th class="sticky-col">Acetonitrile, HPLC grade<small>ACN</small></th><td class="n muted">—</td><td class="n low">1<small> · below 2</small></td><td class="n muted">—</td><td><span class="pill held">PO-1041 on its way</span></td></tr>
+          <tr><th class="sticky-col">150 cc HDPE bottle<small>BTL</small></th><td class="n muted">—</td><td class="n low">24,000<small> · below 40,000</small></td><td class="n">136,000</td><td><span class="pill held">move proposed</span></td></tr>
+          <tr><th class="sticky-col">38 mm CR cap with liner<small>CAP</small></th><td class="n muted">—</td><td class="n low">24,000<small> · below 40,000</small></td><td class="n">96,000</td><td><span class="pill held">move proposed</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Mass balance · issued against tablets, QC samples and recorded waste</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Plant · product</th><th class="n">Batches</th><th class="n">Issued</th><th class="n">Unaccounted</th><th></th></tr></thead>
+        <tbody>
+          <tr><th>Hollow Pine <small>P-VC500</small></th><td class="n">2</td><td class="n">2,000 kg</td><td class="n">0 kg <span class="muted">(0.00%)</span></td><td><span class="pill ok">balances</span></td></tr>
+          <tr><th>Hollow Pine <small>P-ELX</small></th><td class="n">3</td><td class="n">2,025 kg</td><td class="n">0 kg <span class="muted">(0.00%)</span></td><td><span class="pill ok">balances</span></td></tr>
+          <tr><th>Acme Riverside <small>P-CMD</small></th><td class="n">2</td><td class="n">1,685.005 kg</td><td class="n low">115.199 kg <small>(6.84%)</small></td><td><span class="pill waiting">waste under-recorded?</span></td></tr>
+          <tr><th>Hollow Pine <small>P-CMD</small></th><td class="n">1</td><td class="n">842.5 kg</td><td class="n">0 kg <span class="muted">(0.00%)</span></td><td><span class="pill ok">balances</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted" style="margin:12px 0 0">Bring in a spreadsheet (Plant B opening stock) and Kevin's printable morning brief are under <a href="#">Books</a>.</p>
+  </section>
+  <p class="foot">Live from the plant ledger. All companies, people and numbers are fictional.</p>
+</main>
+</body>
+</html>

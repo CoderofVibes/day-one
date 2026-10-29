@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup · Floor · Ray's turn</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="mock.css">
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="#"><span class="mark" aria-hidden="true">K</span><span><b>Day One</b><small>Kevin · Hollow Pine Tablet Co. (Plant B)</small></span></a>
+  <nav class="tabs" aria-label="Screens">
+    <a href="#" aria-current="page">Floor <span class="badge">3</span></a>
+    <a href="#">Plants</a>
+    <a href="#">Books</a>
+    <a href="#">HQ</a>
+  </nav>
+  <label class="switch"><input type="checkbox"><span>Behind the curtain</span></label>
+</header>
+
+<main class="page floor">
+  <div class="col">
+    <section class="panel next" aria-label="Next action">
+      <div class="panel-head">
+        <h2>Up next</h2>
+        <span class="right pill waiting">waiting on Ray</span>
+      </div>
+      <div class="who"><span class="avatar">RD</span><span><b>Ray Delgado</b> <span class="muted">· Purchaser</span></span></div>
+      <p class="lead">Kevin read 3 batch records from the scan folder and has one question for you. Nothing is posted until you confirm.</p>
+      <ul class="queue" aria-label="Waiting for you">
+        <li><span class="doc" aria-hidden="true"></span><span class="t"><b>BR-B-1045 <span class="pill ok">ready to confirm</span></b><span>VC500, 800,000 tablets. 8 materials, all within tolerance. Yield 90.8%.</span></span><button class="btn primary">Open</button></li>
+        <li><span class="doc" aria-hidden="true"></span><span class="t"><b>BR-B-1046 <span class="pill waiting">1 question</span></b><span>CMD, 500,000 tablets. Line 3 (MGO) is hard to read; it looks like 83.040 kg.</span></span><button class="btn">Open</button></li>
+        <li><span class="doc" aria-hidden="true"></span><span class="t"><b>BR-B-1044 <span class="pill ok">ready to confirm</span></b><span>ELX, 300,000 tablets. Yield 86.2%, 3.8 points under the expected 90.0%.</span></span><button class="btn">Open</button></li>
+        <li class="dim"><span class="doc" aria-hidden="true"></span><span class="t"><b>NG-PS-60417.jpg <span class="pill">set aside</span></b><span>Not a batch record (a packing slip). Kevin left it out of the ledger.</span></span></li>
+      </ul>
+      <div class="actions" style="margin-top:12px">
+        <button class="btn quiet sm">or upload a photo…</button>
+        <button class="btn quiet sm end">Start over</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="The run so far">
+      <div class="panel-head"><h2>The run so far</h2><span class="right small muted">Mon Nov 16 · 1 step</span></div>
+      <div class="feed">
+        <article class="card">
+          <div class="head"><span class="avatar kevin">K</span><b>Kevin</b><span class="muted">· set up Plant B</span><time>8:00 AM</time></div>
+          <p>Loaded 3 facilities, 33 materials, 12 vendors, 7 batch records, 56 days of history.</p>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="panel map-frame sticky" aria-label="Plant map">
+      <div class="panel-head">
+        <h2>Plant map</h2>
+        <div class="right">
+          <div class="seg"><button aria-pressed="true">This run</button><button>Group buy</button></div>
+          <div class="seg"><button aria-pressed="true">Flat</button><button>3D</button></div>
+        </div>
+      </div>
+      <div class="stage"><img src="../before/pages/wide-map2d.png" alt="The flat plant map: three plants, the suppliers' pad, the escrow and Acme HQ"></div>
+      <p class="caption">Plant B: 0 of 9 departments online. Plants A and C were already on Acme's systems.</p>
+      <div class="legend"><span><i style="background:var(--brand)"></i>online</span><span><i style="background:var(--map-off)"></i>not yet</span><span><i style="background:var(--money)"></i>money</span><span><i style="background:var(--quarantine)"></i>quarantine</span><span><i style="background:var(--refused)"></i>refused / disputed</span></div>
+    </section>
+  </div>
+  <p class="foot">Step by step through the recorded run. All companies, people and numbers are fictional.</p>
+</main>
+</body>
+</html>

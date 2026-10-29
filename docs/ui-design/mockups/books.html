@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup · Books</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="mock.css">
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="#"><span class="mark" aria-hidden="true">K</span><span><b>Day One</b><small>Kevin · Hollow Pine Tablet Co. (Plant B)</small></span></a>
+  <nav class="tabs" aria-label="Screens">
+    <a href="#">Floor</a>
+    <a href="#">Plants</a>
+    <a href="#" aria-current="page">Books</a>
+    <a href="#">HQ</a>
+  </nav>
+  <label class="switch"><input type="checkbox"><span>Behind the curtain</span></label>
+</header>
+
+<main class="page">
+  <section class="panel" aria-label="Books">
+    <div class="panel-head"><h2>Books · Marcy Allen, Accounting</h2><div class="right"><a class="btn sm" href="#">Kevin's morning brief (printable)</a><a class="btn sm primary" href="#">Export for QuickBooks (CSV)</a></div></div>
+    <div class="note"><span class="avatar kevin">K</span><p>6 settled purchase orders, $9,632.50, each matched to a receipt, all paid by check before Day One.</p></div>
+    <div class="note alert"><span class="avatar">!</span><p>Pacific Excipient Co. billed magnesium stearate at $9.35/kg on PO-1040, up 14.0% on its $8.20/kg trailing price (PO-1035). It was a real, received order, so it is in the export with both prices; worth a call before the next one.</p></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>PO</th><th>Vendor</th><th>Released</th><th class="n">Total</th><th>Paid</th><th></th></tr></thead>
+        <tbody>
+          <tr><th>PO-1035</th><td>Pacific Excipient Co.</td><td>2026-10-03</td><td class="n">$2,110.00</td><td>by check</td><td></td></tr>
+          <tr><th>PO-1036</th><td>Fennimore Polyols</td><td>2026-10-06</td><td class="n">$2,150.00</td><td>by check</td><td></td></tr>
+          <tr><th>PO-1037</th><td>Lowell Packaging</td><td>2026-10-09</td><td class="n">$2,100.00</td><td>by check</td><td></td></tr>
+          <tr><th>PO-1038</th><td>Orchard Flavor House</td><td>2026-10-13</td><td class="n">$1,150.00</td><td>by check</td><td></td></tr>
+          <tr><th>PO-1039</th><td>Sierra Mineral Supply</td><td>2026-10-16</td><td class="n">$1,655.00</td><td>by check</td><td></td></tr>
+          <tr><th>PO-1040</th><td>Pacific Excipient Co.</td><td>2026-10-23</td><td class="n low">$467.50</td><td>by check</td><td><span class="pill waiting">price drift +14%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Bring in a spreadsheet · Plant B opening stock</h3>
+    <div class="actions" style="margin-bottom:12px"><button class="btn primary">Use Ray's sheet</button><button class="btn quiet">or choose a file…</button></div>
+    <p class="small muted" style="margin:0 0 8px">INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx · sheet “Inventory”, headings on row 2 · <a href="#">Change columns</a></p>
+    <div class="note"><span class="avatar kevin">K</span><p>Found 19 rows. 9 need your eyes: 1 looks like the same ascorbic acid lot entered twice, 1 uses a short name for ascorbic acid, 2 are in pounds, 1 lot expired in March, 1 quantity isn't a number, 1 has no lot number, 1 material (Xanthan Gum) isn't on your material list, and the last row is a total.</p></div>
+    <ul class="review">
+      <li class="done"><div class="cont"><span class="pill ok">answered</span><p><b>Row 2</b> has the same lot and quantity as row 1 (ASC-260815-01, 412.5 kg) under another name. <span class="muted">Kevin: count it once.</span></p></div></li>
+      <li><div class="cont"><span class="pill waiting">2 of 9</span><p><b>Row 3.</b> “ASC” is not a name on your material list; the lot code says ascorbic acid (ASC). <span class="muted">Kevin: map to Ascorbic acid (ASC).</span></p></div><div class="actions"><button class="btn primary">Yes, do that</button><button class="btn quiet">Hold for review</button></div></li>
+      <li><div class="cont"><span class="pill waiting">3 of 9</span><p><b>Row 6</b> (MCC PH102) is in pounds. <span class="muted">Kevin: 110.2 lb = 49.985 879 kg.</span></p></div><div class="actions"><button class="btn primary">Yes, do that</button><button class="btn quiet">Hold for review</button></div></li>
+    </ul>
+    <div class="actions"><button class="btn primary" disabled>Post opening stock</button><span class="small muted">1 of 9 answered</span><button class="btn quiet sm end">Fill in Ray's answers</button></div>
+  </section>
+  <p class="foot">One row per line, plain dates and numbers, totals to the cent. All companies, people and numbers are fictional.</p>
+</main>
+</body>
+</html>
