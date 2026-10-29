@@ -1,0 +1,180 @@
+/* The 3D twin's stage and its DOM labels (web/src/twin3d). Colours come from the page's
+   variables, so the view follows light and dark like the flat map. */
+
+.t3-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg);
+  touch-action: none;
+}
+
+.t3-stage canvas {
+  display: block;
+  outline: none;
+}
+
+@media (max-width: 860px) {
+  .t3-stage {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+.t3-label {
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  font-size: 12px;
+  line-height: 1.25;
+  color: var(--ink);
+  text-shadow:
+    0 0 3px var(--panel),
+    0 0 6px var(--panel);
+}
+
+.t3-label strong {
+  font-weight: 600;
+}
+
+.t3-label span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.t3-label.plant strong {
+  font-size: 14px;
+}
+
+.t3-label.dept {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--panel) 82%, transparent);
+  color: var(--muted);
+  text-shadow: none;
+}
+
+.t3-label.dept.online {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.t3-label.dept.onboarding {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--map-warm) 70%, var(--panel));
+}
+
+.t3-label.flow,
+.t3-label.lot,
+.t3-label.depot {
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  border: 1px solid var(--line);
+  text-shadow: none;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.t3-label.flow.money {
+  color: var(--money);
+}
+
+.t3-label.flow.refused,
+.t3-label.flow.disputed,
+.t3-label.lot.rejected {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.t3-label.lot.quarantine {
+  color: var(--quarantine);
+  border-color: var(--quarantine);
+}
+
+.t3-label.lot.released {
+  color: var(--ok);
+  border-color: var(--ok);
+}
+
+.t3-label.depot {
+  font-weight: 500;
+}
+
+.t3-label.depot.selected {
+  border-color: var(--accent);
+}
+
+.t3-label.depot.excluded {
+  border-color: var(--warn);
+}
+
+.t3-label.depot.excluded span:nth-of-type(2) {
+  color: var(--warn);
+}
+
+.t3-label.depot.selected span:nth-of-type(2) {
+  color: var(--ok);
+}
+
+.t3-label .hash {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+}
+
+/* The flat | 3D switch on the map pane. */
+.map-view {
+  grid-column: 1 / -1;
+  position: relative;
+}
+
+.map-view .view-switch {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.map-view .view-switch button {
+  border: 0;
+  border-radius: 0;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  background: var(--panel);
+  color: var(--muted);
+}
+
+.map-view .view-switch button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.map-view .view-note {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 560px) {
+  .t3-label.flow,
+  .t3-label.depot span {
+    display: none;
+  }
+}
+
+.map-view .pane.map h2 {
+  padding-right: 96px;
+}
+
+.t3-label.dept.far {
+  display: none;
+}

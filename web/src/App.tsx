@@ -36,8 +36,8 @@ import {
   shortAccount,
   transactionsThrough,
 } from "./run.ts";
-import { deriveTwinState } from "./twin/model.ts";
-import { PlantMap } from "./twin/PlantMap.tsx";
+
+import { PlantView } from "./twin3d/PlantView.tsx";
 
 const PLAY_MS = 2600;
 
@@ -121,7 +121,7 @@ function ReplayApp() {
       </nav>
 
       <main className="panes">
-        {map && <PlantMap state={deriveTwinState(data, at)} curtain={curtain} />}
+        {map && <PlantView run={data} at={at} curtain={curtain} onStep={go} />}
         <StaffFeed data={data} upTo={at} onPick={go} curtain={curtain} />
         {curtain && <Curtain data={data} upTo={at} />}
       </main>
@@ -258,7 +258,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
       />
 
       <main className="panes">
-        {map && <PlantMap state={deriveTwinState(state, last)} curtain={curtain} />}
+        {map && <PlantView run={state} at={last} curtain={curtain} />}
         {sheet && <ImportPane key={runs} />}
         {plants && (
           <PlantsPane

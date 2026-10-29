@@ -15,6 +15,7 @@ import type {
   TwinQuote,
   TwinState,
 } from "../twin/model.ts";
+import { topHeight } from "./buildings.ts";
 
 export type V3 = [number, number, number];
 
@@ -26,7 +27,7 @@ export const CAMERA_MS = 1800;
 export const RECORD_FRAME_MS = 1000 / 60;
 
 export function clamp01(u: number): number {
-  return u < 0 ? 0 : u > 1 ? 1 : u;
+  return Math.min(1, Math.max(0, u));
 }
 
 /** Cubic ease in and out: slow start, slow landing. */
@@ -129,12 +130,32 @@ export function anchor3(ref: NodeRef, state: TwinState): V3 {
         ?.departments.find((d) => d.code === ref.dept)?.status ?? "offline";
     if (box) {
       const [x, y] = centerOf(box);
-      return world(x, y, FLOOR_Z + heightOf(lookOf(ref.facility, status)) + 1);
+      return world(x, y, FLOOR_Z + topHeight(ref.dept, heightOf(lookOf(ref.facility, status))) + 1);
     }
   }
   const pad = PADS[ref.kind === "dept" ? "hq" : ref.kind];
   const [x, y] = centerOf(pad);
   return world(x, y, PAD_Z + 1);
+}
+
+/**
+ * Where a truck stops: on the ground just outside the side of the building that faces where it
+ * came from. A pad has no dock; the truck stops at its anchor on the ground.
+ */
+export function dock3(ref: NodeRef, from: V3): V3 {
+  if (ref.kind !== "dept") {
+    const pad = PADS[ref.kind];
+    const [x, y] = centerOf(pad);
+    return world(x, y, 0.1);
+  }
+  const box = deptBox(ref.facility, ref.dept);
+  if (!box) return [from[0], 0.1, from[2]];
+  const [cx, cy] = centerOf(box);
+  const dx = from[0] - cx;
+  const dz = from[2] - cy;
+  const gap = 2.5;
+  if (Math.abs(dx) > Math.abs(dz)) return world(cx + Math.sign(dx) * (box.w / 2 + gap), cy, 0.1);
+  return world(cx, cy + Math.sign(dz) * (box.d / 2 + gap), 0.1);
 }
 
 export interface Path {
@@ -291,14 +312,17 @@ export interface Depot {
   position: V3;
 }
 
-/** Three depots on the suppliers' pad: one per quote once Kevin has them, unnamed before. */
+/**
+ * Three depots on the suppliers' pad, one per quote once Kevin has them, unnamed before. They
+ * sit along the pad's diagonal so their labels spread across the screen from the map's corner.
+ */
 export function depots(state: TwinState): Depot[] {
   const pad = PADS.suppliers;
   const n = 3;
   return Array.from({ length: n }, (_, i) => {
     const quote = state.quotes[i];
     const x = pad.x + (pad.w * (i + 0.5)) / n;
-    const y = pad.y + pad.d * 0.5;
+    const y = pad.y + (pad.d * (n - i - 0.5)) / n;
     return quote ? { quote, position: world(x, y, PAD_Z) } : { position: world(x, y, PAD_Z) };
   });
 }
@@ -322,14 +346,17 @@ function around(box: Box, distance: number, lift = 2, azimuth = ISO, elevation =
   return { target: world(x, y, lift), distance, azimuth, elevation };
 }
 
-const SITE: Framing = { target: [12, 0, 18], distance: 190, azimuth: ISO, elevation: UP };
+/** Department labels hide beyond this camera distance; the whole-site view keeps plant names only. */
+export const LABEL_DISTANCE = 135;
+
+const SITE: Framing = { target: [14, 0, 20], distance: 160, azimuth: ISO, elevation: UP };
 const PLANT_B: Framing = {
   target: [19, 2, 19],
   distance: 78,
   azimuth: ISO - 0.15,
   elevation: 0.58,
 };
-const MONEY: Framing = { target: [62, 1, 2], distance: 80, azimuth: ISO + 0.35, elevation: 0.5 };
+const MONEY: Framing = { target: [56, 1, 4], distance: 92, azimuth: ISO + 0.3, elevation: 0.5 };
 const SUPPLIERS: Framing = {
   target: [10, 0, 46],
   distance: 100,
@@ -360,7 +387,7 @@ export function framingFor(title: string): Framing {
     case "QC release":
     case "QC reject": {
       const lab = deptBox("B", "qc_lab");
-      return lab ? around(lab, 52, 3, ISO - 0.2, 0.55) : PLANT_B;
+      return lab ? around(lab, 80, 3, ISO - 0.25, 0.5) : PLANT_B;
     }
     case "Paid":
       return PAYOUT;

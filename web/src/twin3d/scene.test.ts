@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { run } from "../run.ts";
 import { DEPT_Z, FLOOR_Z } from "../twin/layout.ts";
 import { DEPARTMENTS, deriveTwinState } from "../twin/model.ts";
+import { topHeight } from "./buildings.ts";
 import {
   anchor3,
   arc3,
@@ -11,6 +12,8 @@ import {
   blendLots,
   cameraPosition,
   depots,
+  deptBox,
+  dock3,
   ease,
   framingFor,
   lerpFraming,
@@ -122,7 +125,7 @@ describe("paths and anchors", () => {
   it("anchors a flow above the department roof at its current height", () => {
     const s = deriveTwinState(run, index("Delivery"));
     const [x, y, z] = anchor3({ kind: "dept", facility: "B", dept: "receiving" }, s);
-    expect(y).toBe(FLOOR_Z + DEPT_Z.online + 1);
+    expect(y).toBe(FLOOR_Z + topHeight("receiving", DEPT_Z.online) + 1);
     expect(x).toBeGreaterThan(0);
     expect(z).toBeGreaterThan(0);
     const [, py] = anchor3({ kind: "escrow" }, s);
@@ -140,6 +143,19 @@ describe("paths and anchors", () => {
     expect(road.points).toHaveLength(41);
     // Heading points along the way: at the end of a road running along +z it is about 0.
     expect(Math.abs(road.heading(1))).toBeLessThan(0.6);
+  });
+
+  it("stops the truck at the dock outside the building, on the side it came from", () => {
+    const s = deriveTwinState(run, index("Delivery"));
+    const from = anchor3({ kind: "suppliers" }, s);
+    const [dx, dy, dz] = dock3({ kind: "dept", facility: "B", dept: "receiving" }, from);
+    const box = deptBox("B", "receiving");
+    if (!box) throw new Error("no receiving at Plant B");
+    expect(dy).toBeCloseTo(0.1);
+    // The suppliers' pad lies beyond the receiving bay's far side (larger layout y).
+    expect(dz).toBeCloseTo(box.y + box.d + 2.5);
+    expect(dx).toBeCloseTo(box.x + box.w / 2);
+    expect(dock3({ kind: "hq" }, from)[1]).toBeCloseTo(0.1);
   });
 
   it("keeps the whole site in the ground box", () => {
