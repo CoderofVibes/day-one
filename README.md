@@ -4,7 +4,7 @@ An AI purchasing and inventory assistant, Kevin, for small manufacturing plants 
 
 Built at NEAR HACKATHON (Oct 19 – Nov 14, 2026). Tracks: `realworld`, `business`, `security`, `agents`. All company data is fictional. Runs on NEAR testnet.
 
-> Draft of Oct 28, 2026, written at the minimum-submittable checkpoint. Every command below was run from a clean clone on that date. Sections for features not yet built are left out rather than described.
+> First full draft, Oct 28, 2026 (the minimum-submittable draft was earlier the same day). Every command below was run on that date; the clean-clone test is repeated before submission. Features not yet built are left out rather than described.
 
 ## The problem
 
@@ -31,9 +31,22 @@ Requires Node 24 (`.nvmrc`). Step 5 requires Rust in Linux, macOS or WSL2.
 
 To see the same run in a browser: `npm run web:build`, then open `web/dist/` from any static file server; the plant map shows Plant B's departments coming online, the quarantined lot and the material and money flows as the run advances, and the "Behind the curtain" switch shows each transaction with its signer, who paid the gas and an explorer link.
 
-Also without keys: `npm run test:attacks` (four attacks on Kevin, each shown failing) and `npm run escrow` (the contract's budget, escrow and every PO, read live from testnet). Each takes `-- --json` for one machine-readable line.
+Also without keys:
 
-Another agent can hire Kevin: `npm run --silent mcp` is an MCP server on stdio with `get_inventory`, `get_forecast`, `get_mass_balance`, `get_books`, `get_policy` (his limits, read live from the contract) and `draft_po`. A draft is all it can make; only Day One's workflow submits, and the contract decides.
+| Command | Shows |
+|---|---|
+| `npm run test:attacks` | seven attacks, each failing: four on Kevin, three on the ERP path; ends `7 of 7 attacks failed against Kevin.` |
+| `npm run escrow` | the contract's budget, escrow, every PO and the policy HQ set, read live from testnet |
+| `npm run verify:attestation` | the recorded NEAR AI Cloud report for Kevin's model and every recorded answer's signature; ends `Every check verified.` (`-- --offline` skips Intel and NVIDIA) |
+| `npm run erp:reconcile` | Day One's ledger, the acquirer's mock ERP and the contract agree; ends `6 of 6 checks match.` |
+| `npm run books` | the bookkeeper's CSV of settled POs and Kevin's price-drift alert |
+| `npm run import -- "data/imports/INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx"` | Kevin reading the plant's messy inventory spreadsheet and flagging what he will not guess |
+
+Each takes `-- --json` and then prints one final JSON line, for example from `npm run test:attacks -- --json`:
+
+```
+{"mode":"replay","passed":true,"attacks":[{"attack":"Lookalike vendor","held":true,"evidence":[…]}, …]}
+```
 
 ## What happens in the demo
 
@@ -52,6 +65,22 @@ From `data/replay/transcript.txt` (recorded live on testnet, Oct 28, 2026):
 11. Kevin matches the invoice to the PO and receipt and anchors the receipt record.
 
 Ten transactions, one refused by design, none failed.
+
+## Around the purchasing loop
+
+`npm run api`, then open `http://localhost:8787/`, runs the same screens live over the ledger, one staff action at a time. The "Three plants" switch adds what HQ sees across Acme's plants:
+
+- **Inventory and discrepancies** (`server/src/ledger/inventory.ts`, `agents/kevin/src/discrepancies.ts`): stock per plant and material from the lot balances; a received transfer that is short raises a discrepancy with the adjustment Kevin proposes, which a reviewer applies or dismisses.
+- **Mass balance** (`agents/kevin/src/massBalance.ts`): material issued to each batch against tablets, QC samples and recorded waste. On the seed Riverside's two P-CMD batches are 6.84% short; Kevin says unit rounding explains 0.005 kg of it and that Riverside's waste looks under-recorded.
+- **Before you buy** (`agents/kevin/src/transferSuggestions.ts`): when one plant is short and another has surplus that outlasts the forecast, Kevin proposes a transfer instead of a PO (on the seed: 16,000 bottles from Lakeview to Hollow Pine, about $336.00, instead of ordering 100,000). Staff approve, dismiss or receive it.
+- **Kevin's limits** (`server/src/chain/policy.ts`): the per-PO and monthly limits, category caps, supplier statuses and roles HQ set, read live from the contract with view calls.
+- **Books** (`server/src/ledger/books.ts`): a QuickBooks-friendly CSV of settled POs, each row carrying its escrow payment and receipt anchor transactions, and a price-drift alert (on the seed: PO-1040's magnesium stearate, up 14.0%).
+
+The "Spreadsheet" switch is the import wizard (`server/src/import/`): Ray's inventory workbook, with its duplicate lot, pound units, expired lot, typed total and retyped summary, becomes opening stock only after he answers each flag. Kevin proposes an answer and never guesses.
+
+The acquirer's books live in a mock ERP shaped like NetSuite (`erp/`, `docs/ERP.md`), not in Day One. The ERP owns the vendor master, bills, the 3-way match and the general ledger; Day One owns lots, batch records and escrow; the connector (`server/src/erp-connector/`) moves records by PO number and transaction hash, and Kevin pays only bills the ERP has matched. `npm run erp:demo` replays the run with the ERP attached; `npm run erp` serves its web view at `http://localhost:8087/`. It is a mock, not NetSuite, and claims no compatibility.
+
+Another agent can hire Kevin: `npm run --silent mcp` is an MCP server on stdio with `get_inventory`, `get_forecast`, `get_mass_balance`, `get_books`, `get_policy` (his limits, read live from the contract) and `draft_po`. A draft is all it can make; only Day One's workflow submits, and the contract decides.
 
 ## Why NEAR
 
@@ -75,7 +104,10 @@ Kevin does not need crypto. The acquirer, the plant and the supplier need one sp
 | A QC rejection refunds the budget | `qc_reject` | `qc_reject_returns_the_amount_to_the_budget` | [relayed `qc_reject`](https://testnet.nearblocks.io/txns/FfFVEkAzPXxrGnDycHoAm81K1fpUUjd6yHqUhvo2AENn) (rehearsal PO-9043) |
 | Records are anchored and verifiable | `anchor_batch`, `server/src/records/anchors.ts`, `scripts/verify.ts` | `anchors_store_once_and_emit`; `server/src/records/anchors.test.ts` | [anchor tx](https://testnet.nearblocks.io/txns/Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN) |
 | Suppliers commit to their quotes from their own accounts; an unapproved supplier cannot | `agents/suppliers/src/agent.ts`, `anchor` (supplier gate in `contracts/spend-policy`) | `suppliers_anchor_only_their_own_quotes`; `agents/suppliers/src/agent.test.ts` | [Northgate's quote anchor](https://testnet.nearblocks.io/txns/FW14aVE2Wn3hWehaGrHqDRapLR16Uyyw6nE8oHZrT4FS): `npm run verify -- data/quotes/RFQ-9045.northgate-ingredients.testnet.json` → `MATCH … by northgate-ingredients.testnet`; [QuickChem refused](https://testnet.nearblocks.io/txns/E8g3yRDVpmy15teRskFf763WEAUtHGGtc36s3A2jtitg) |
-| Kevin is not fooled by four attacks | `agents/kevin/src/invoices.ts`, `payments.ts`, `purchasing.ts` | `agents/kevin/src/attacks.test.ts`; `npm run test:attacks` | [re-sent PO refused](https://testnet.nearblocks.io/txns/FWcSEZCP8iUkdJvbr6ypuRVePrt7JPmA3np4fiMtcmt4) |
+| Kevin is not fooled by four attacks on him: lookalike vendor, inflated invoice, fake "payment failed", hidden instructions | `agents/kevin/src/invoices.ts`, `payments.ts`, `purchasing.ts` | `agents/kevin/src/attacks.test.ts`; `npm run test:attacks` | [re-sent PO refused](https://testnet.nearblocks.io/txns/FWcSEZCP8iUkdJvbr6ypuRVePrt7JPmA3np4fiMtcmt4) |
+| A duplicate invoice, a purchase split under the per-PO limit and a ghost vendor fail on the ERP path | `erp/src/match.ts`, category caps in `submit_po`, `server/src/erp-connector/` | `erp/src/posting/payables.test.ts`; `npm run test:attacks` | [split refused by the category cap](https://testnet.nearblocks.io/txns/AfDDTbxfpr9nEvdsAcEGHZzGEZZMhJCmLGhigySgo8kA), [ghost vendor refused](https://testnet.nearblocks.io/txns/AzxvCyHdTKcDDuHjmHmJNheAyM7VB6HEAtJZE8aGp5cJ) |
+| Day One, the ERP and the contract agree | `server/src/erp-connector/reconcile.ts` | `server/src/erp-connector/reconcile.test.ts`; `npm run erp:reconcile` | views recorded from testnet |
+| Kevin's answers come from an attested NEAR AI Cloud model | `server/src/attestation/verify.ts` | `server/src/attestation/attestation.test.ts`; `npm run verify:attestation` | — (report and signatures in `data/replay/attestation.json`) |
 
 ## What is on chain and what is not
 
@@ -91,7 +123,7 @@ The PO escrow is scoped to purchase orders: one plant budget, one supplier per P
 
 ## Architecture
 
-Kevin (`agents/kevin`) runs the workflow: extraction, forecast, quotes, PO drafts, approvals, receiving, QC, invoices. The ledger (`server/src/ledger`) is SQLite with a hash-chained lot event log. The chain client (`server/src/chain`) logs every call, refusals included, and records or replays fixtures. Supplier agents (`agents/suppliers`) quote over an in-process bus, anchor their quote fingerprints and accept and ship, all signed from their own accounts. One contract, `contracts/spend-policy`, holds the plant budget and the escrow; `contracts/dtusd` is our labeled test token.
+Kevin (`agents/kevin`) runs the workflow: extraction, forecast, quotes, PO drafts, approvals, receiving, QC, invoices. The ledger (`server/src/ledger`) is SQLite with a hash-chained lot event log. The chain client (`server/src/chain`) logs every call, refusals included, and records or replays fixtures. Supplier agents (`agents/suppliers`) quote over an in-process bus, anchor their quote fingerprints and accept and ship, all signed from their own accounts. One contract, `contracts/spend-policy`, holds the plant budget and the escrow; `contracts/dtusd` is our labeled test token. The acquirer's mock ERP (`erp/`) is a separate package that depends on nothing else in the repo; the connector in `server/src/erp-connector` is the only code that talks to it. `api/` serves the HTTP API and the built web UI (`web/`).
 
 Contracts: Rust, near-sdk 5.29.1, cargo-near 0.22.0. Off chain: TypeScript on Node 24, near-api-js 7.3.1, better-sqlite3 13.0.3 with Drizzle 0.45.4. Model: NEAR AI Cloud `z-ai/glm-5.3-flash` for batch-record vision, chosen by a bake-off on the seven fictional records (`docs/research/13-llm-access.md`); Anthropic `claude-sonnet-5-5` is the fallback route.
 
@@ -103,14 +135,28 @@ Kevin is the purchasing agent. The contract limits are one enforced layer around
 - The demo settles in DTUSD, a test token we deployed, because the Circle testnet faucet gives 20 USDC per two hours.
 - Staff keys are held by the server because the phone is simulated. Production would have each person hold their own key through a login provider.
 - PO totals and supplier accounts are visible on chain; line items and prices are not.
-- The web UI replays the recorded run on a static host; `npm run api` serves the same screens live, one staff action at a time. The plant map is plain 2D SVG; there is no 3D twin.
+- The web UI replays the recorded run on a static host; `npm run api` serves the same screens live, one staff action at a time. The three-plant view, the import wizard and the transfer cards need `npm run api` (the static replay has no ledger). The plant map is plain 2D SVG and draws the recorded run, not later ledger changes; there is no 3D twin.
+- The attestation proves that an attested NEAR AI Cloud instance of Kevin's model signed each recorded answer. All instances of a model share one signing key, so it does not prove which instance answered (`docs/research/10-near-ai-cloud.md`). A live run's new answers are not shown as attested until `npm run attest` runs again.
+- The ERP is a mock shaped like NetSuite, not NetSuite; the connector interface (`server/src/erp-connector/types.ts`) is the part meant to carry over.
+- NEAR RPC does not list past events without an indexer, so the policy view shows Kevin's current limits and this run's policy events, not a full history.
 - Contract accounts still hold full-access keys so we can redeploy.
 - Audit-friendly records, not a compliance claim.
-- Commits before the `pre-hackathon` tag are planning documents only (`docs/`).
+
+## Who pays, and why it lasts
+
+The acquirer pays per plant onboarded. The buyers are private-equity buy-and-build platforms, where add-on acquisitions are most deals (see "The problem"). What is hard to copy is the plant-floor workflow, the operating data Kevin builds up (formulas, lot genealogy, yield and mass-balance variance), and spending rules that keep working whichever ERP the parent company runs, because they live in a contract rather than in the ERP. Kevin keeps small plants running and their people employed; the purchaser becomes the person who supervises the agents.
+
+## Roadmap
+
+A NetSuite adapter behind the existing connector interface; real SMS; a login provider such as NEAR Auth so each person holds their own key; multi-signer approval for very large POs; Merkle-batched anchors; more document types.
 
 ## Built with
 
 Built by DadMod (Tony Langford, solo entrant) with Claude Code; the code was written with Claude Code. Planning docs: `docs/`. Conventions for coding agents: `AGENTS.md`. License: MIT (`LICENSE`).
+
+DadMod is one human and two AI collaborators. Tony Langford is a chemical engineer with ten years on manufacturing floors, now a system engineer at an advanced nuclear reactor startup, building this between feedings of a newborn (hence the name: dad bod, but for shipping code). Muse, an AI project manager, keeps the plan honest. Claude, an AI engineer, writes the code. Kevin, the AI assistant in the product, does the paperwork. Tony runs the plant.
+
+**Hackathon window and baseline.** The window runs from the Oct 19 announcement to Nov 14, 2026. Commits before the `pre-hackathon` tag are baseline: planning documents only (`docs/`). Libraries used:
 
 | Library | Version | Use |
 |---|---|---|
@@ -120,6 +166,7 @@ Built by DadMod (Tony Langford, solo entrant) with Claude Code; the code was wri
 | better-sqlite3, drizzle-orm, drizzle-kit | 13.0.3, 0.45.4, 0.31.11 | ledger |
 | @anthropic-ai/sdk | 1.1.0 | fallback model route |
 | @modelcontextprotocol/sdk, zod | 1.32.1, 4.6.7 | Kevin's MCP server |
+| @phala/dcap-qvl, @noble/curves, @noble/hashes | 0.7.0, 2.2.0, 2.2.0 | verifying the model attestation and answer signatures |
 | React, React DOM | 19.3.1 | web UI |
 | Vite, @vitejs/plugin-react | 8.3.5, 6.1.2 | web UI build |
 | playwright-core (dev, `tools/render`) | 1.64.1 | rendering the fictional batch records, UI screenshots |
