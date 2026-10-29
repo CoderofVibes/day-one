@@ -8,6 +8,7 @@
 // A conditional vendor may win but always needs the director's approval.
 
 import { canonicalJson, sha256Hex } from "@day-one/server/canonical";
+import type { LoggedOutcome } from "@day-one/server/chain/client";
 import type { Ledger } from "@day-one/server/ledger/db";
 import {
   materials,
@@ -18,7 +19,13 @@ import {
   vendorMaterials,
   vendors,
 } from "@day-one/server/ledger/schema";
-import { formatUsd, parseUsd } from "@day-one/server/money";
+import { formatUsd } from "@day-one/server/money";
+import {
+  type QuoteTerms,
+  quoteFingerprint,
+  quoteTermsOf,
+  type RfqRequest,
+} from "@day-one/server/quotes";
 import type { QuoteSpec } from "@day-one/server/seed/quotes";
 import { eq } from "drizzle-orm";
 import type { Forecast } from "./forecast.ts";
@@ -32,7 +39,6 @@ export function extendedUsdc(qtyBase: number, unitPriceUsdc: number, baseUnitsPe
   return Number((scaled * 2n + divisor) / (divisor * 2n));
 }
 
-const dollars = (n: number) => Number(parseUsd(n.toFixed(2)));
 const usd = (units: number) => formatUsd(BigInt(units));
 
 function baseUnitsPerUnit(dimension: string) {
@@ -49,13 +55,30 @@ export interface IgnoredQuote {
   reason: string;
 }
 
-export interface Rfq {
-  id: number;
-  rfqNo: string;
+/**
+ * A quote as it reaches Kevin: the terms, and, from a supplier agent, the salt and fingerprint
+ * it anchored with the anchor's outcome (agents/suppliers). Plain answers carry none of that.
+ */
+export interface QuoteAnswer extends QuoteSpec {
+  salt?: string;
+  hash?: string;
+  anchor?: LoggedOutcome | null;
+}
+
+/** A quote Kevin recorded, with what a judge needs to verify its anchor. */
+export interface RecordedQuote {
+  quoteId: number;
+  vendorCode: string;
+  terms: QuoteTerms;
+  salt: string;
+  hash: string;
+  anchor: LoggedOutcome | null;
+}
+
+export interface Rfq extends RfqRequest {
   materialId: number;
   facilityId: number;
-  qtyBase: number;
-  needBy: string;
+  quotes: RecordedQuote[];
   ignored: IgnoredQuote[];
 }
 
@@ -105,21 +128,17 @@ export function lookalikeOf(
   return match ? { code: match.code, name: match.name, account: match.nearAccountId } : null;
 }
 
-/**
- * Opens an RFQ for the forecast's recommended quantity and records one quote per answering
- * vendor. Only vendors listed for the material are asked; `answers` are their replies. An
- * answer from anyone else is not recorded: it lands in `ignored` with the reason, and a
- * sender whose name or account imitates a vendor on the list is called out as a lookalike.
- */
-export function requestQuotes(
-  db: Ledger,
-  forecast: Forecast,
-  rfqNo: string,
-  answers: readonly QuoteSpec[],
-): Rfq {
+/** Opens an RFQ for the forecast's recommended quantity; the bus answers it. */
+export function openRfq(db: Ledger, forecast: Forecast, rfqNo: string): Rfq {
   if (!forecast.recommendQtyBase || !forecast.needBy) {
     throw new Error(`${rfqNo}: the forecast recommends no order`);
   }
+  const material = db
+    .select({ code: materials.code })
+    .from(materials)
+    .where(eq(materials.id, forecast.materialId))
+    .get();
+  if (!material) throw new Error(`${rfqNo}: unknown material`);
   const rfq = db
     .insert(rfqs)
     .values({
@@ -132,17 +151,38 @@ export function requestQuotes(
     })
     .returning()
     .get();
+  return {
+    id: rfq.id,
+    rfqNo,
+    material: material.code,
+    materialId: rfq.materialId,
+    facilityId: rfq.facilityId,
+    qtyBase: rfq.qtyBase,
+    needBy: rfq.needBy,
+    quotes: [],
+    ignored: [],
+  };
+}
+
+/**
+ * Records one quote per answering vendor. Only vendors listed for the material are asked;
+ * `answers` are their replies. An answer from anyone else is not recorded: it lands in
+ * `ignored` with the reason, and a sender whose name or account imitates a vendor on the list
+ * is called out as a lookalike. A quote that no longer matches the fingerprint its sender
+ * anchored is ignored too: the price changed after the supplier committed to it.
+ */
+export function recordQuotes(db: Ledger, rfq: Rfq, answers: readonly QuoteAnswer[]): Rfq {
   const listed = new Set(
     db
       .select({ code: vendors.code })
       .from(vendorMaterials)
       .innerJoin(vendors, eq(vendors.id, vendorMaterials.vendorId))
-      .where(eq(vendorMaterials.materialId, forecast.materialId))
+      .where(eq(vendorMaterials.materialId, rfq.materialId))
       .all()
       .map((v) => v.code),
   );
   const allVendors = db.select().from(vendors).all();
-  const ignored: IgnoredQuote[] = [];
+  const { ignored } = rfq;
   for (const answer of answers) {
     const vendor = allVendors.find((v) => v.code === answer.vendor);
     // A known code is not enough: the answer must also come from that vendor's account.
@@ -173,14 +213,22 @@ export function requestQuotes(
       });
       continue;
     }
-    const terms = {
-      rfq: rfqNo,
-      vendor: vendor.code,
-      unitPriceUsdc: dollars(answer.unitPrice),
-      freightUsdc: dollars(answer.freight),
-      leadTimeDays: answer.leadTimeDays,
-    };
-    db.insert(quotes)
+    const terms = quoteTermsOf(rfq, vendor.nearAccountId ?? vendor.code, answer);
+    const salt = answer.salt ?? "";
+    const hash = quoteFingerprint(terms, salt);
+    if (answer.hash && answer.hash !== hash) {
+      ignored.push({
+        vendor: answer.vendor,
+        name: answer.name ?? null,
+        account: answer.account ?? null,
+        imitates: null,
+        reason: `${vendor.name}'s quote does not match the fingerprint it sent`,
+      });
+      continue;
+    }
+    const anchor = answer.anchor ?? null;
+    const quote = db
+      .insert(quotes)
       .values({
         rfqId: rfq.id,
         vendorId: vendor.id,
@@ -188,19 +236,24 @@ export function requestQuotes(
         freightUsdc: terms.freightUsdc,
         leadTimeDays: terms.leadTimeDays,
         status: "received",
-        quoteHash: sha256Hex(canonicalJson(terms)),
+        quoteHash: hash,
+        chainTxId: anchor?.status === "success" ? anchor.id : null,
       })
-      .run();
+      .returning({ id: quotes.id })
+      .get();
+    rfq.quotes.push({ quoteId: quote.id, vendorCode: vendor.code, terms, salt, hash, anchor });
   }
-  return {
-    id: rfq.id,
-    rfqNo,
-    materialId: rfq.materialId,
-    facilityId: rfq.facilityId,
-    qtyBase: rfq.qtyBase,
-    needBy: rfq.needBy,
-    ignored,
-  };
+  return rfq;
+}
+
+/** Opens the RFQ and records the answers in one step, for callers with the answers in hand. */
+export function requestQuotes(
+  db: Ledger,
+  forecast: Forecast,
+  rfqNo: string,
+  answers: readonly QuoteAnswer[],
+): Rfq {
+  return recordQuotes(db, openRfq(db, forecast, rfqNo), answers);
 }
 
 export interface RankedQuote {

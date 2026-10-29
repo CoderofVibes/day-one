@@ -9,8 +9,10 @@
 // demo (`runDemo`, npm run demo) plays the phases in the recorded order; the HTTP API (api/)
 // plays them one click at a time. Both print the same lines.
 //
-// Steps not built yet are left out rather than faked: the tier-1 quote anchors on step 5, the USDC proof on step 13 (bonus) and the departments count
-// on step 14 (the plant map). They join the run when their features exist.
+// Steps not built yet are left out rather than faked: the USDC proof on step 13 (bonus) and the
+// departments count on step 14 (the plant map). They join the run when their features exist.
+// Step 5's quotes come over the bus from whoever `deps.quotes` asks: the supplier agents, which
+// anchor their quote fingerprints from their own accounts, or a plain answer set.
 
 import { type ChainClient, explorerUrl, type LoggedOutcome } from "@day-one/server/chain/client";
 import type { Ledger } from "@day-one/server/ledger/db";
@@ -24,8 +26,8 @@ import {
 } from "@day-one/server/ledger/schema";
 import type { LlmClient, LlmImage } from "@day-one/server/llm/types";
 import { formatUsd } from "@day-one/server/money";
+import { quoteProof } from "@day-one/server/quotes";
 import { anchorBatch } from "@day-one/server/records/anchors";
-import { DEMO_QUOTES } from "@day-one/server/seed/quotes";
 import { count, eq, min, ne } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import { handleApprovalReply } from "./approval.ts";
@@ -39,7 +41,15 @@ import {
 } from "./extraction.ts";
 import { forecastMaterial } from "./forecast.ts";
 import { matchInvoice, readInvoice } from "./invoices.ts";
-import { draftPo, draftPoFromRanking, rankQuotes, requestQuotes } from "./purchasing.ts";
+import {
+  draftPo,
+  draftPoFromRanking,
+  openRfq,
+  type QuoteAnswer,
+  type Rfq,
+  rankQuotes,
+  recordQuotes,
+} from "./purchasing.ts";
 import {
   decideQc,
   type PackingSlip,
@@ -66,7 +76,12 @@ export interface DemoSalts {
   po1042: string;
   batch: string;
   receipt: string;
+  /** One per supplier account, for the quote fingerprints the agents anchor. */
+  quotes: Record<string, string>;
 }
+
+/** Who answers Kevin's RFQ: the supplier agents on the bus, or a plain answer set. */
+export type QuotesFn = (rfq: Rfq) => Promise<QuoteAnswer[]>;
 
 /** The supplier's side, signed from its own account (agents/suppliers). */
 export type ShipFn = (shipment: {
@@ -100,6 +115,7 @@ export interface DemoDeps {
   batchRecordCount: number;
   slip: PackingSlip;
   invoiceText: string;
+  quotes: QuotesFn;
   ship: ShipFn;
   salts: DemoSalts;
 }
@@ -115,6 +131,8 @@ export interface DemoResult {
   steps: DemoStep[];
   /** The file `npm run verify` checks for BR-B-1045 (DEMO_SCRIPT §3 step 3). */
   batchProof: ReturnType<typeof batchRecordProof> & { anchored_tx: string | null };
+  /** One verifiable file per quote a supplier agent anchored. */
+  quoteProofs: ReturnType<typeof quoteProof>[];
   summary: { transactions: number; refusedByDesign: number; refusedOther: number; failed: number };
   ok: boolean;
 }
@@ -173,6 +191,9 @@ export interface DemoMachine {
 }
 
 const NEEDS_APPROVAL = "director approval required.";
+/** The contract's answer to an unapproved supplier anchoring its quote (QuickChem on step 5). */
+const NOT_A_SUPPLIER =
+  "Only a registered purchasing agent or an approved supplier can anchor records.";
 const DAY_MS = 86_400_000;
 const PURCHASER = "Ray Delgado";
 const RECEIVER = "Tommy Reyes";
@@ -217,6 +238,7 @@ class Demo implements DemoMachine {
   private batchId = 0;
   private anchoredTx: string | null = null;
   private po1042: ReturnType<typeof draftPoFromRanking> | null = null;
+  private rfq: Rfq | null = null;
   private received: ReceiveResult | null = null;
   private result: DemoResult | null = null;
 
@@ -378,10 +400,22 @@ class Demo implements DemoMachine {
       });
       this.add(4, "Forecast", [forecast.sentence]);
 
-      // 5. Quotes.
-      const rfq = requestQuotes(db, forecast, "RFQ-2611-01", DEMO_QUOTES.ASC ?? []);
+      // 5. Quotes over the bus; each supplier agent anchors its quote from its own account.
+      const rfq = openRfq(db, forecast, "RFQ-2611-01");
+      const answers = await deps.quotes(rfq);
+      recordQuotes(db, rfq, answers);
+      this.rfq = rfq;
       const ranking = rankQuotes(db, rfq, DEMO_CLOCK.start);
-      this.add(5, "Quotes", [ranking.sentence]);
+      this.add(
+        5,
+        "Quotes",
+        [ranking.sentence],
+        answers.flatMap((a) =>
+          a.anchor
+            ? [chainLine(`anchor quote ${rfq.rfqNo}`, a.anchor, `signed by ${a.account}`)]
+            : [],
+        ),
+      );
 
       // 6. The small PO funds in one call.
       const plantB = db.select().from(facilities).where(eq(facilities.code, "B")).get();
@@ -614,10 +648,13 @@ class Demo implements DemoMachine {
     // 14. What happened on chain.
     const rows = db.select().from(chainTx).all();
     const refused = rows.filter((r) => r.status === "refused");
+    const byDesign = (r: (typeof rows)[number]) =>
+      r.errorMessage?.endsWith(NEEDS_APPROVAL) ||
+      (r.method === "anchor" && r.errorMessage === NOT_A_SUPPLIER);
     const summary = {
       transactions: rows.length,
-      refusedByDesign: refused.filter((r) => r.errorMessage?.endsWith(NEEDS_APPROVAL)).length,
-      refusedOther: refused.filter((r) => !r.errorMessage?.endsWith(NEEDS_APPROVAL)).length,
+      refusedByDesign: refused.filter(byDesign).length,
+      refusedOther: refused.filter((r) => !byDesign(r)).length,
       failed: rows.filter((r) => r.status === "failed").length,
     };
     this.add(
@@ -640,6 +677,9 @@ class Demo implements DemoMachine {
         confirmed?.status === "confirmed"
           ? { ...batchRecordProof(db, this.batchId), anchored_tx: this.anchoredTx }
           : (null as unknown as DemoResult["batchProof"]),
+      quoteProofs: (this.rfq?.quotes ?? [])
+        .filter((q) => q.anchor?.status === "success")
+        .map((q) => quoteProof(q.terms, q.salt, q.anchor?.txHash ?? null)),
       summary,
       ok,
     };

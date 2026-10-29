@@ -5,6 +5,7 @@
   "exports": {
     "./money": "./src/money.ts",
     "./canonical": "./src/canonical.ts",
+    "./quotes": "./src/quotes.ts",
     "./ledger/db": "./src/ledger/db.ts",
     "./ledger/events": "./src/ledger/events.ts",
     "./ledger/schema": "./src/ledger/schema.ts",

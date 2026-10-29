@@ -1,8 +1,10 @@
 // npm run rehearse — the relayed half of the demo, live on testnet, on a throwaway PO, before a
-// recording (LESSONS, Oct 28: a PO id is used once per contract). Kevin submits the big order as
-// PO-90xx, the contract refuses it, Linda's "YES 90xx" is relayed and Kevin's retry funds escrow,
-// Northgate accepts and ships from its own account, Tommy's receipt is relayed, then Priya's QC
-// reject is relayed and refunds the escrow, so the budget and spend counters end where they began.
+// recording (LESSONS, Oct 28: a PO id is used once per contract). The supplier agents quote
+// RFQ-90xx over the bus and anchor their quotes from their own accounts (QuickChem's is refused:
+// not an approved supplier), Kevin submits the big order as PO-90xx, the contract refuses it,
+// Linda's "YES 90xx" is relayed and Kevin's retry funds escrow, Northgate accepts and ships from
+// its own account, Tommy's receipt is relayed, then Priya's QC reject is relayed and refunds the
+// escrow, so the budget and spend counters end where they began.
 //   npm run rehearse            first unused id from PO-9042 up
 //   npm run rehearse -- 9050    that id
 //   --json                      print one JSON line after the readable text
@@ -14,14 +16,21 @@ import { eq } from "drizzle-orm";
 import { handleApprovalReply } from "../agents/kevin/src/approval.ts";
 import { DEMO_CLOCK } from "../agents/kevin/src/demo.ts";
 import { forecastMaterial } from "../agents/kevin/src/forecast.ts";
-import { draftPoFromRanking, rankQuotes, requestQuotes } from "../agents/kevin/src/purchasing.ts";
+import {
+  draftPoFromRanking,
+  openRfq,
+  rankQuotes,
+  recordQuotes,
+} from "../agents/kevin/src/purchasing.ts";
 import { decideQc, type PackingSlip, receiveDelivery } from "../agents/kevin/src/receiving.ts";
 import { submitPo } from "../agents/kevin/src/submit.ts";
+import { demoBus } from "../agents/suppliers/src/bus.ts";
 import { acceptAndShip } from "../agents/suppliers/src/shipping.ts";
 import { ChainClient, explorerUrl, type LoggedOutcome } from "../server/src/chain/client.ts";
 import { LiveTransport } from "../server/src/chain/live.ts";
 import { openLedger } from "../server/src/ledger/db.ts";
 import { chainTx, materials, poLines, staff } from "../server/src/ledger/schema.ts";
+import { quoteProof } from "../server/src/quotes.ts";
 import { plantBStaff } from "../server/src/relayer/relayer.ts";
 import { seedLedger } from "../server/src/seed/index.ts";
 import { DEMO_QUOTES } from "../server/src/seed/quotes.ts";
@@ -90,9 +99,25 @@ const log = (step: string, status: string, o?: LoggedOutcome | null) => {
 };
 
 let ok = false;
+/** One verifiable file per quote a supplier anchored, in the --json output. */
+let quoteProofs: ReturnType<typeof quoteProof>[] = [];
 try {
   const forecast = forecastMaterial(db, { facility: "B", material: "ASC", now });
-  const rfq = requestQuotes(db, forecast, `RFQ-${number}`, DEMO_QUOTES.ASC ?? []);
+  const rfq = openRfq(db, forecast, `RFQ-${number}`);
+  // A resumed PO's quotes were anchored by the stopped run; the plain answers re-draft it.
+  if (resumeFrom) recordQuotes(db, rfq, DEMO_QUOTES.ASC ?? []);
+  else {
+    const bus = demoBus(chain, {
+      policyContract: ACCOUNTS.spendPolicy,
+      salt: () => randomBytes(16).toString("hex"),
+    });
+    const answers = await bus.requestQuotes(rfq);
+    for (const a of answers) log(`anchor quote (${a.account})`, a.anchor.status, a.anchor);
+    recordQuotes(db, rfq, answers);
+    quoteProofs = rfq.quotes
+      .filter((q) => q.anchor?.status === "success")
+      .map((q) => quoteProof(q.terms, q.salt, q.anchor?.txHash ?? null));
+  }
   const ranking = rankQuotes(db, rfq, now);
   const po = draftPoFromRanking(db, ranking, poNo, randomBytes(16).toString("hex"));
   const lot = resumeFrom?.supplier_lot ?? `REH-${number}-01`;
@@ -162,7 +187,9 @@ lines.push(ok && restored ? "PASS" : "FAIL");
 console.log(lines.join("\n"));
 if (json) {
   const txs = db.select().from(chainTx).all().length;
-  console.log(JSON.stringify({ po: poNo, ok: ok && restored, before, after, txs, steps }));
+  console.log(
+    JSON.stringify({ po: poNo, ok: ok && restored, before, after, txs, steps, quoteProofs }),
+  );
 }
 process.exitCode = ok && restored ? 0 : 1;
 

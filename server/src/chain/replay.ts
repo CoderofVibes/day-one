@@ -54,6 +54,15 @@ function requestOf(call: ChainCall): RecordedRequest {
   };
 }
 
+export function readFixture(file: string): Fixture {
+  return JSON.parse(readFileSync(file, "utf8")) as Fixture;
+}
+
+/** Whether the recording holds a call of this kind, e.g. the supplier agents' quote anchors. */
+export function fixtureHasCall(fixture: Fixture, kind: ChainCall["kind"]) {
+  return fixture.entries.some((e) => e.type === "call" && e.request.kind === kind);
+}
+
 const viewKey = (view: ChainView) =>
   canonicalJson({ contractId: view.contractId, method: view.method, args: view.args ?? {} });
 
@@ -119,7 +128,7 @@ export class ReplayTransport implements ChainTransport {
   }
 
   static fromFile(file: string) {
-    return new ReplayTransport(JSON.parse(readFileSync(file, "utf8")) as Fixture);
+    return new ReplayTransport(readFixture(file));
   }
 
   async send(call: ChainCall): Promise<ChainOutcome> {

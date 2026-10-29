@@ -706,9 +706,12 @@ impl SpendPolicy {
 
     // ------------------------------------------------------------------ record anchoring
 
-    /// Stores a record fingerprint once; anchoring the same `ref_id` again panics.
+    /// Stores a record fingerprint once; anchoring the same `ref_id` again panics. A registered
+    /// agent anchors any record. A supplier HQ has approved anchors only its own quotes: kind
+    /// `quote` and a `ref_id` ending in `/<its account>`, so it can commit to a price without
+    /// being able to squat another record's id (CONTRACTS.md §6).
     pub fn anchor(&mut self, kind: String, ref_id: String, hash: String, prev: Option<String>) {
-        self.require_agent();
+        self.require_agent_or_own_quote(&kind, &ref_id);
         self.store_anchor(AnchorInput {
             kind,
             ref_id,
@@ -836,6 +839,21 @@ impl SpendPolicy {
         require!(
             self.agents.contains_key(&env::predecessor_account_id()),
             "Only a registered purchasing agent can anchor records."
+        );
+    }
+
+    fn require_agent_or_own_quote(&self, kind: &str, ref_id: &str) {
+        let caller = env::predecessor_account_id();
+        if self.agents.contains_key(&caller) {
+            return;
+        }
+        require!(
+            self.suppliers.contains_key(&caller),
+            "Only a registered purchasing agent or an approved supplier can anchor records."
+        );
+        require!(
+            kind == "quote" && ref_id.ends_with(&format!("/{caller}")),
+            "A supplier anchors only its own quotes: kind \"quote\" and a ref_id ending in /<its account>."
         );
     }
 

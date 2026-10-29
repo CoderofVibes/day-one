@@ -15,12 +15,19 @@ import {
 import type { PackingSlip } from "@day-one/kevin/receiving";
 import { ChainClient } from "@day-one/server/chain/client";
 import { LiveTransport } from "@day-one/server/chain/live";
-import { RecordingTransport, ReplayTransport } from "@day-one/server/chain/replay";
+import {
+  fixtureHasCall,
+  RecordingTransport,
+  ReplayTransport,
+  readFixture,
+} from "@day-one/server/chain/replay";
 import { type Ledger, openLedger } from "@day-one/server/ledger/db";
 import { createLlm, RecordingLlm, ReplayLlm } from "@day-one/server/llm/client";
 import type { LlmClient } from "@day-one/server/llm/types";
 import { plantBStaff } from "@day-one/server/relayer";
 import { seedLedger } from "@day-one/server/seed";
+import { DEMO_QUOTES, SUPPLIERS } from "@day-one/server/seed/quotes";
+import { demoBus } from "@day-one/suppliers/bus";
 import { acceptAndShip } from "@day-one/suppliers/shipping";
 
 /** The repository root, where data/, config/ and .env live. */
@@ -103,6 +110,10 @@ export async function openDemoEnv(options: DemoEnvOptions = {}): Promise<DemoEnv
   let transport: DemoEnv["transport"];
   let llm: LlmClient;
   let salts: DemoSalts;
+  // The supplier agents answer the RFQ and anchor their quotes from their own accounts. A
+  // replay of the Oct 28 recording, made before the agents anchored, answers from the same
+  // plain quote set it recorded with; the agents join the replay at the next re-record.
+  let agentsQuote = true;
   if (live) {
     if (existsSync(join(root, ".env"))) process.loadEnvFile(join(root, ".env"));
     if (!existsSync(join(root, `.near-credentials/testnet/${RELAYER}.json`))) {
@@ -125,14 +136,36 @@ export async function openDemoEnv(options: DemoEnvOptions = {}): Promise<DemoEnv
     });
     llm = options.record ? new RecordingLlm(routed) : routed;
     const salt = () => randomBytes(16).toString("hex");
-    salts = { po1041: salt(), po1042: salt(), batch: salt(), receipt: salt() };
+    salts = {
+      po1041: salt(),
+      po1042: salt(),
+      batch: salt(),
+      receipt: salt(),
+      quotes: Object.fromEntries(SUPPLIERS.map((s) => [s.account, salt()])),
+    };
   } else {
-    transport = ReplayTransport.fromFile(fixtures.chain);
+    const recorded = readFixture(fixtures.chain);
+    agentsQuote = fixtureHasCall(recorded, "quote");
+    transport = new ReplayTransport(recorded);
     llm = ReplayLlm.fromFile(fixtures.llm);
-    salts = JSON.parse(readFileSync(fixtures.salts, "utf8")) as DemoSalts;
+    // The Oct 28 salts predate the quote salts.
+    const recordedSalts = JSON.parse(readFileSync(fixtures.salts, "utf8")) as Omit<
+      DemoSalts,
+      "quotes"
+    > &
+      Partial<Pick<DemoSalts, "quotes">>;
+    salts = { ...recordedSalts, quotes: recordedSalts.quotes ?? {} };
   }
 
   const chain = new ChainClient(db, transport, () => clock);
+  const bus = demoBus(chain, {
+    policyContract: accounts.spendPolicy,
+    salt: (account) => {
+      const salt = salts.quotes[account];
+      if (!salt) throw new DemoEnvError(`no quote salt for ${account} in the recorded salts`);
+      return salt;
+    },
+  });
   const deps: DemoDeps = {
     db,
     chain,
@@ -154,6 +187,9 @@ export async function openDemoEnv(options: DemoEnvOptions = {}): Promise<DemoEnv
         invoices: { genuine: string };
       }
     ).invoices.genuine,
+    quotes: agentsQuote
+      ? (rfq) => bus.requestQuotes(rfq)
+      : async (rfq) => [...(DEMO_QUOTES[rfq.material] ?? [])],
     ship: (shipment) => acceptAndShip(chain, shipment, { policyContract: accounts.spendPolicy }),
     salts,
   };

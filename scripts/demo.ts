@@ -48,7 +48,16 @@ if (record && run.ok && transport instanceof RecordingTransport && llm instanceo
   writeFileSync(FIX.transcript, transcript);
   mkdirSync(resolve(root, "data/batch-records"), { recursive: true });
   writeFileSync(FIX.proof, `${JSON.stringify(run.batchProof, null, 2)}\n`);
-  console.log(`\nRecorded the run to data/replay/ and ${FIX.proof.slice(root.length + 1)}.`);
+  // One verifiable file per anchored quote: data/quotes/RFQ-2611-01.northgate-ingredients.testnet.json
+  mkdirSync(resolve(root, "data/quotes"), { recursive: true });
+  for (const proof of run.quoteProofs) {
+    const file = resolve(root, "data/quotes", `${proof.ref_id.replace("/", ".")}.json`);
+    writeFileSync(file, `${JSON.stringify(proof, null, 2)}\n`);
+  }
+  console.log(
+    `\nRecorded the run to data/replay/, ${FIX.proof.slice(root.length + 1)} and ` +
+      `${run.quoteProofs.length} quote proofs in data/quotes/.`,
+  );
 } else if (transport instanceof ReplayTransport) {
   transport.assertDone();
   matches = transcript === readFileSync(FIX.transcript, "utf8");
