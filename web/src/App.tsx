@@ -386,6 +386,7 @@ function ActionBar({
                   : next.action}
         </p>
       </div>
+      {state.stopped && state.help && !busy && <p className="muted small bar-help">{state.help}</p>}
 
       {next.phase === "reply" && request && !busy ? (
         <div className="phone">

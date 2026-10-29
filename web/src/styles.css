@@ -513,6 +513,10 @@ button {
   flex: 1 1 240px;
 }
 
+.bar-help {
+  margin: 0;
+}
+
 .actions {
   display: flex;
   align-items: center;

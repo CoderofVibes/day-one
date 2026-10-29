@@ -14,6 +14,7 @@
     "./chain/client": "./src/chain/client.ts",
     "./chain/outcome": "./src/chain/outcome.ts",
     "./chain/live": "./src/chain/live.ts",
+    "./chain/explain": "./src/chain/explain.ts",
     "./chain/policy": "./src/chain/policy.ts",
     "./chain/replay": "./src/chain/replay.ts",
     "./chain/summary": "./src/chain/summary.ts",

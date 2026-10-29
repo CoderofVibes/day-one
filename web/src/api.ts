@@ -17,6 +17,8 @@ export interface LiveState extends RunData {
   mode: "replay" | "live";
   next: NextAction;
   stopped: string | null;
+  /** What a stop means and what to do, when the API can explain it. */
+  help?: string | null;
   ok: boolean | null;
   people: { name: string; role: string }[];
 }

@@ -20,6 +20,7 @@ import { readAttestationFixture, recordedReceipts } from "@day-one/server/attest
 import type { AttestationResult } from "@day-one/server/attestation/types";
 import { verifyAttestation } from "@day-one/server/attestation/verify";
 import { explorerUrl } from "@day-one/server/chain/client";
+import { explainFailure } from "@day-one/server/chain/explain";
 import { LiveTransport } from "@day-one/server/chain/live";
 import { type PolicyView, readPolicy, type ViewFn } from "@day-one/server/chain/policy";
 import { summarizeChainTx } from "@day-one/server/chain/summary";
@@ -73,6 +74,8 @@ export interface RunState {
   network: string;
   next: NextAction;
   stopped: string | null;
+  /** When the run stopped on a failure we can explain: what happened and what to do, plainly. */
+  help: string | null;
   /** Set once the run has finished. */
   ok: boolean | null;
   summary: {
@@ -383,6 +386,7 @@ export class DemoSession {
       network: this.env.accounts.network,
       next: this.nextAction(),
       stopped: m.stopped,
+      help: m.stopped ? helpFor(m.stopped, rows) : null,
       ok:
         finished && summary
           ? !m.stopped && summary.failed === 0 && summary.refusedOther === 0
@@ -524,6 +528,19 @@ export function stepView(s: DemoStep): StepView {
     staff: s.staff,
     chain: s.chain.map((line) => ({ line, tx: TX.exec(line)?.[1] ?? null })),
   };
+}
+
+/**
+ * Why a stopped run stopped, in plain words: the last call that failed (the network, a key, the
+ * relayer's balance) explains it better than the step's own line ("PO-1041 was not funded").
+ */
+export function helpFor(
+  stopped: string,
+  rows: { status: string; errorMessage: string | null }[],
+): string | null {
+  const failed = rows.filter((r) => r.status === "failed" || r.status === "refused").at(-1);
+  const help = explainFailure(failed?.errorMessage) ?? explainFailure(stopped);
+  return help ? `${help.what} ${help.fix}` : null;
 }
 
 function eventsOf(json: string | null): string[] {
