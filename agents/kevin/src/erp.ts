@@ -30,6 +30,44 @@ function qtyText(base: number, dimension: string) {
   return `${(base / 1_000_000).toLocaleString("en-US", { maximumFractionDigits: 3 })} kg`;
 }
 
+const words = (text: string) => new Set(text.toLowerCase().match(/[a-z0-9]{3,}/g) ?? []);
+
+/**
+ * The PO line (index into `poLines`) each invoice line bills, or null. A line goes to the PO
+ * line whose material it names (its code, or the most words of its name); a line that names
+ * no PO material takes the PO line in its own position if that one is still free. A supplier that lists
+ * its lines in another order is still matched to the right materials, and the ERP's 3-way
+ * match sees a line that bills nothing on the PO as an exception instead of a guess.
+ */
+export function pairInvoiceLines(
+  descriptions: readonly string[],
+  poLines: readonly { code: string; name: string }[],
+): (number | null)[] {
+  const taken = new Set<number>();
+  const score = (description: string, line: { code: string; name: string }) => {
+    const said = words(description);
+    if (said.has(line.code.toLowerCase())) return 100;
+    return [...words(line.name)].filter((w) => said.has(w)).length;
+  };
+  // A line naming a material that is already billed is not moved to another line.
+  const named = descriptions.map((d) => poLines.some((line) => score(d, line) > 0));
+  const paired: (number | null)[] = descriptions.map((d) => {
+    let best: number | null = null;
+    let bestScore = 0;
+    for (const [at, line] of poLines.entries()) {
+      const s = taken.has(at) ? 0 : score(d, line);
+      if (s > bestScore) [best, bestScore] = [at, s];
+    }
+    if (best !== null) taken.add(best);
+    return best;
+  });
+  return paired.map((at, i) => {
+    if (at !== null || named[i] || i >= poLines.length || taken.has(i)) return at;
+    taken.add(i);
+    return i;
+  });
+}
+
 export class KevinErp {
   constructor(readonly connector: ErpConnector) {}
 
@@ -176,8 +214,12 @@ export class KevinErp {
       date: receivedOn ?? po.po.needBy?.slice(0, 10) ?? "2026-11-16",
       freightUsdc: money(reading.freight || "0"),
       totalUsdc: money(reading.total),
-      lines: reading.lines.map((l, i) => {
-        const target = lines[i];
+      lines: pairInvoiceLines(
+        reading.lines.map((l) => l.description),
+        lines.map((l) => ({ code: l.material.code, name: l.material.name })),
+      ).map((at, i) => {
+        const l = reading.lines[i] as InvoiceReading["lines"][number];
+        const target = at === null ? undefined : lines[at];
         const perUnit = target?.material.dimension === "mass" ? 1_000_000 : 1;
         return {
           materialCode: target?.material.code ?? "",
