@@ -31,7 +31,7 @@ header { display: flex; gap: 20px; align-items: baseline; padding: 12px 20px; bo
 header h1 { font-size: 16px; margin: 0; }
 header nav a { margin-right: 14px; color: var(--link); text-decoration: none; }
 header nav a.current { font-weight: 600; text-decoration: underline; }
-main { padding: 16px 20px 40px; max-width: 1400px; }
+main { padding: 16px 20px 40px; max-width: 1400px; overflow-x: auto; }
 h2 { font-size: 15px; margin: 22px 0 8px; }
 table { border-collapse: collapse; width: 100%; margin-bottom: 8px; }
 th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }

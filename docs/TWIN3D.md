@@ -51,6 +51,10 @@ The map pane's bar has a second switch, **This run | Group buy**. "Group buy" pl
 - **Labels that collide hide by rank.** Every DOM label reports its screen box each frame and one pass (`LabelPass`) keeps labels in rank order, coins over lots over plant names over pads, depots and department pills, nearer first among equals; a label that would overprint one already kept fades out until the camera moves them apart. This replaced the pill-only check and fixed the pooled run's collisions (two share coins at the wall also stack by whole pixels, like coins in the vault). A fiber gotcha found on the way: a `useFrame` with a positive priority switches off the renderer's own frame loop, so the pass runs at the default priority and a label mounted after it reports a frame late.
 - **Checked** with `RUN=group npm run web:shot:3d` (12 moments, wide light and phone dark, curtain on for the money steps: 41–68 draw calls, no console errors, 0 label problems) and `RUN=group RECORD=1` (the group run reaches 12 of 12 on its own at 33.0 s); the demo run's `npm run web:shot:3d` still reports 0 label problems.
 
+## The design pass (Oct 29, branch `ui-design`)
+
+The twin's geometry and motion are unchanged. Its colours and DOM labels now read the page's tokens (`web/src/tokens.css`: `--brand`, `--refused`, `--quarantine`, `--money`, `--paid`, `--held`), so a quarantined lot, a refused coin and a paid coin wear the same pill colours as the cards on the Floor. The bullet list under the stage is gone from both the flat map and the twin: the map panel (`PlantView`) shows one caption line (the plants' state plus the newest money or material line) and a legend, and the full description stays as the canvas's accessible label. `npm run web:shot:3d` still reports 0 label problems at every moment, wide and phone, in both runs.
+
 ## Left for a later session
 
 - Transfers as trucks between plants in the demo run, once it records a transfer step (the group run's earmarked share already drives one).

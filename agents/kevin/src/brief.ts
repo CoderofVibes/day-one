@@ -421,7 +421,7 @@ export function briefHtml(brief: Brief) {
   const sections = brief.sections
     .map(
       (s) =>
-        `<section><h2>${escapeHtml(s.title)}</h2>` +
+        `<section class="${s.key}"><h2>${escapeHtml(s.title)}</h2>` +
         (s.lines.length
           ? `<ul>${s.lines.map((l) => `<li>${escapeHtml(l.text)}</li>`).join("")}</ul>`
           : `<p class="empty">${escapeHtml(s.empty)}</p>`) +
@@ -435,20 +435,26 @@ export function briefHtml(brief: Brief) {
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Morning brief · ${escapeHtml(brief.facilityName)}</title>
 <style>
-  body { font: 15px/1.45 system-ui, sans-serif; color: #111; background: #fff; max-width: 46rem; margin: 2rem auto; padding: 0 16px; }
-  header { border-bottom: 2px solid #111; padding-bottom: .5rem; margin-bottom: 1rem; }
-  .meta { font-size: 13px; color: #444; }
-  h1 { font-size: 20px; margin: .2rem 0; }
-  h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; margin: 1.2rem 0 .3rem; }
+  /* The web UI's tokens (web/src/tokens.css), light only: this page is printed. */
+  :root { --bg: #ffffff; --ink: #1b1d20; --ink-2: #5c6370; --line: #dcdad2; --brand: #1f6f5c; --brand-ink: #ffffff; --waiting: #8a5a00; --waiting-bg: #fff3d6; }
+  body { font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); max-width: 46rem; margin: 2rem auto; padding: 0 16px; }
+  header { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: .75rem; margin-bottom: 1rem; }
+  .mark { grid-row: 1 / 3; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: var(--brand); color: var(--brand-ink); font-weight: 700; font-size: 17px; }
+  .meta { font-size: 12px; color: var(--ink-2); }
+  h1 { font-size: 20px; margin: 0; line-height: 1.3; }
+  h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); margin: 1.4rem 0 .4rem; }
+  section.waiting h2 { color: var(--waiting); }
+  section.waiting ul { background: var(--waiting-bg); border-radius: 10px; padding: 8px 12px 8px 28px; }
   ul { margin: 0; padding-left: 1.2rem; }
-  li { margin: .25rem 0; }
-  .empty { color: #555; margin: 0; }
-  footer { margin-top: 1.5rem; font-size: 12px; color: #555; border-top: 1px solid #ccc; padding-top: .5rem; }
-  @media print { body { margin: 0 auto; } a { color: inherit; } }
+  li { margin: .3rem 0; }
+  .empty { color: var(--ink-2); margin: 0; }
+  footer { margin-top: 1.5rem; font-size: 12px; color: var(--ink-2); border-top: 1px solid var(--line); padding-top: .5rem; }
+  @media print { body { margin: 0 auto; } a { color: inherit; } section.waiting ul { background: none; padding-left: 1.2rem; } }
 </style>
 </head>
 <body>
 <header>
+  <span class="mark" aria-hidden="true">K</span>
   <div class="meta">Kevin's morning brief · ${escapeHtml(brief.facilityName)} · ${escapeHtml(longDate(brief.at))}</div>
   <h1>${escapeHtml(brief.headline)}</h1>
 </header>
