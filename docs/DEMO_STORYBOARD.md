@@ -1,6 +1,6 @@
 # Demo storyboard — "Kevin's Survival Guide to the Agentic Economy"
 
-Target: **1:55**, 1080p60, recorded in OBS from a live testnet run with a fixed-step demo clock (research 16). Voice-over by the human. Kevin is the character; the tone is warm and plain, never jokey about the money.
+Target: **1:55**, 1080p60, recorded in OBS from the video page (`?video=1`), which plays the recorded testnet run on a fixed-step clock with these beats and captions (research 16). How to record: docs/RECORDING.md; the timeline is `web/src/video.ts` (1:57). Voice-over by the human. Kevin is the character; the tone is warm and plain, never jokey about the money.
 
 Each beat carries a **judge tag**: the judge whose likely question it answers (research 21). The README and the video make the same claims.
 
@@ -17,10 +17,10 @@ Each beat carries a **judge tag**: the judge whose likely question it answers (r
 | 0:36–0:46 | **Quotes** | Three supplier agents reply; QuickChem struck through "not qualified"; Northgate selected | "He asks the supplier agents for quotes. The cheapest one isn't qualified, so Kevin won't buy from them." | Gershuni: agent-to-agent |
 | 0:46–0:56 | **The refusal** | PO-1042 $5,150.00 → "Over Kevin's $2,500 limit. Sent to Linda." Small inset: red Failed tx on testnet explorer | "Kevin isn't allowed to spend that much. Not by a setting in our app. The rule lives on NEAR, and the chain itself said no." | Qureshi, Illia: why a chain |
 | 0:56–1:06 | **Approve by text** | Phone mock: Linda's thread, "Reply YES 1042", she taps YES. "Approved." | "Linda approves from her phone. That YES becomes a transaction signed by her own account. Kevin can't fake it, and Linda never touches a wallet." | Warwick: where are the keys |
-| 1:06–1:16 | **Delivery** | Tommy's phone photo of a packing slip → "Matches PO-1042". Lot appears in quarantine (striped) on the map | "The truck shows up. Tommy takes a picture. Kevin matches it to the PO. The lot goes to quarantine." | Mumtaz: would a plant use it |
+| 1:06–1:16 | **Delivery** | The packing slip → "Matches PO-1042". Lot appears in quarantine (amber cage) on the map | "The truck shows up. Tommy checks in the packing slip, Kevin matches it to the PO, and the lot goes to quarantine." (Kevin matches the slip's details; reading the photo is not built) | Mumtaz: would a plant use it |
 | 1:16–1:26 | **QC release → paid** | Priya taps Release. Money flow animates escrow → Northgate. Marcy's screen: "PO-1042 — paid $5,150.00" | "Priya releases the lot. The supplier is paid that second, not in net-30. Accounting sees it matched and paid." | Mumtaz, Lazzarin: stablecoin rails |
-| 1:26–1:34 | **The numbers reconcile** (replaces "Plant comes online", Tony Oct 27) | HQ view: Hollow Pine P-CMD balances to the gram; Riverside shows "172.8 kg unaccounted, 6.84%: waste looks under-recorded"; departments lit in the background | "Material in, batches out, waste claimed: it all has to add up. When a plant's waste doesn't, Kevin tells HQ, and pounds versus kilograms is no excuse." | Garg, Lazzarin: outcome, what's verifiable |
-| 1:34–1:50 | **Behind the curtain** | Toggle flips. Account tree acme-holdings → plant-b → kevin, director; Kevin's key "can call: submit_po, anchor"; tx log with the red refusal, the relayed approval, the payout; one anchor verified MATCH | "Here's what's underneath. Every person and agent is a NEAR account. Kevin's key can only ask; the contract decides. Staff hold zero tokens; Day One pays their gas. Records are fingerprinted on-chain, so nobody can quietly edit history." | Illia, Lazzarin, Warwick |
+| 1:26–1:34 | **The numbers reconcile** (replaces "Plant comes online", Tony Oct 27) | HQ view: Hollow Pine P-CMD balances to the gram; Riverside shows "115.2 kg unaccounted over two batches, 6.84%: waste looks under-recorded" (the ledger holds two of §15's three batches); departments lit in the background | "Material in, batches out, waste claimed: it all has to add up. When a plant's waste doesn't, Kevin tells HQ, and pounds versus kilograms is no excuse." | Garg, Lazzarin: outcome, what's verifiable |
+| 1:34–1:50 | **Behind the curtain** | Toggle flips. Every account in the run with what it signed and who paid its gas (Kevin: submit_po, anchor_batch; Linda, Tommy, Priya: gas paid by the relayer); tx log with the red refusal, the relayed approval, the payout. Optional cut-in: `npm run verify` on BR-B-1045 → MATCH (a terminal clip; not on the page) | "Here's what's underneath. Every person and agent is a NEAR account. Kevin's key can only ask; the contract decides. Staff hold zero tokens; Day One pays their gas. Records are fingerprinted on-chain, so nobody can quietly edit history." | Illia, Lazzarin, Warwick |
 | 1:50–1:55 | Close | "Built at NEAR HACKATHON" · repo URL | "Kevin doesn't need crypto. The plant, the new owners and the supplier do: one rule none of them can quietly change." | Qureshi |
 
 If Tier 2 ships, the plant map in 0:28–0:36 and 1:26–1:34 is the 3D twin. Nothing else changes.
@@ -31,10 +31,10 @@ If the privacy track is tagged, add a 3-second inset at 1:40: "Kevin's reasoning
 
 ## Recording checklist
 
-- Live testnet run, fresh `npm run reset`, fixtures recorded in the same session.
-- Explorer insets are real screenshots of the hashes in `data/replay/transcript.txt`.
+- The recorded testnet run (Oct 29), played by the video page: every transaction on screen is real and linked, and testnet latency never shows. No reset is needed for the video.
+- Explorer insets are real screenshots of the hashes in `data/replay/transcript.txt` (the three to use are in docs/RECORDING.md).
 - No real names, no real company, no personal data on screen. Browser profile clean; no bookmarks or notifications.
-- Captions burned in (many judges watch muted).
+- Captions burned in (many judges watch muted): the video page draws them.
 - Export ≤ 2:20 so X accepts it without trimming.
 
 ---

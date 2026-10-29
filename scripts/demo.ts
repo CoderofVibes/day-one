@@ -16,6 +16,7 @@ import { resolve } from "node:path";
 import { formatTranscript, runDemo } from "../agents/kevin/src/demo.ts";
 import { DemoEnvError, fixtureFiles, openDemoEnv } from "../api/src/env.ts";
 import { explorerUrl } from "../server/src/chain/client.ts";
+import { explainFailure } from "../server/src/chain/explain.ts";
 import { RecordingTransport, ReplayTransport } from "../server/src/chain/replay.ts";
 import { approvals, chainTx } from "../server/src/ledger/schema.ts";
 import { RecordingLlm } from "../server/src/llm/client.ts";
@@ -103,5 +104,8 @@ process.exitCode = run.ok && matches ? 0 : 1;
 
 function fail(message: string): never {
   console.error(message);
+  const help = explainFailure(message);
+  if (help) console.error(`${help.what} ${help.fix}`);
+  if (live) console.error("npm run preflight checks everything a live run needs.");
   process.exit(1);
 }

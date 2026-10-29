@@ -3,16 +3,31 @@
 // for the behind-the-curtain view, each transaction with its signer, who paid for it, its
 // refusal message and its events (from data/replay/demo-chain.json); and the text Linda's phone
 // receives and her reply.
-//   --check   exit 1 if the committed file differs from a fresh export
+// It also writes the three-plant view as it stands at the end of that run, for the static
+// replay (a hosted demo has no API): web/src/data/plants.json (stock, discrepancies, mass
+// balance, books, Kevin's proposed moves) and, beside the built page, web/public/brief.html
+// (Kevin's 5am brief) and web/public/books.csv (the bookkeeper export). HQ's live read of the
+// contract is not in the snapshot: it changes with the chain (npm run escrow reads it).
+//   --check   exit 1 if a committed file differs from a fresh export
 
 import { spawnSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { briefHtml, morningBrief } from "../agents/kevin/src/brief.ts";
+import { runDemo } from "../agents/kevin/src/demo.ts";
+import { massBalance } from "../agents/kevin/src/massBalance.ts";
+import { suggestTransfers, transfersInTransit } from "../agents/kevin/src/transferSuggestions.ts";
+import { openDemoEnv } from "../api/src/env.ts";
 import { readAttestationFixture, recordedReceipts } from "../server/src/attestation/fixture.ts";
 import { verifyAttestation } from "../server/src/attestation/verify.ts";
+import { books, booksCsv } from "../server/src/ledger/books.ts";
+import { plantInventory } from "../server/src/ledger/inventory.ts";
 
 const root = resolve(import.meta.dirname, "..");
 const OUT = join(root, "web/src/data/demo-run.json");
+const PLANTS = join(root, "web/src/data/plants.json");
+const BRIEF = join(root, "web/public/brief.html");
+const CSV = join(root, "web/public/books.csv");
 const RELAYER = "dayone-relayer.testnet";
 const TX = /\(tx ([1-9A-HJ-NP-Za-km-z]{43,44})\)/;
 
@@ -94,15 +109,48 @@ const data = {
 };
 const text = `${JSON.stringify(data, null, 2)}\n`;
 
+// The same replay in this process, kept at its end, for the three-plant snapshot.
+const env = await openDemoEnv({ root });
+const end = await runDemo(env.deps);
+if (!end.ok) {
+  console.error("The replay did not finish; the three-plant snapshot was not written.");
+  process.exit(1);
+}
+const now = env.clock();
+const plants = {
+  at: now,
+  inventory: plantInventory(env.db),
+  massBalance: massBalance(env.db),
+  books: books(env.db),
+  transfers: {
+    suggestions: suggestTransfers(env.db, { now }),
+    inTransit: transfersInTransit(env.db),
+  },
+};
+const files: [string, string][] = [
+  [OUT, text],
+  [PLANTS, `${JSON.stringify(plants, null, 2)}\n`],
+  [BRIEF, briefHtml(morningBrief(env.db, { now }))],
+  [CSV, booksCsv(env.db)],
+];
+const rel = (file: string) => file.slice(root.length + 1).replace(/\\/g, "/");
+
 if (process.argv.includes("--check")) {
-  const committed = readFileSync(OUT, "utf8");
-  if (committed !== text) {
-    console.error("web/src/data/demo-run.json is out of date: run npm run web:data.");
+  const stale = files.filter(([file, body]) => {
+    try {
+      return readFileSync(file, "utf8") !== body;
+    } catch {
+      return true;
+    }
+  });
+  if (stale.length) {
+    console.error(`${stale.map(([f]) => rel(f)).join(", ")} out of date: run npm run web:data.`);
     process.exit(1);
   }
-  console.log("web/src/data/demo-run.json matches the recorded run.");
+  console.log("web/src/data/demo-run.json and the three-plant snapshot match the recorded run.");
 } else {
-  writeFileSync(OUT, text);
+  mkdirSync(join(root, "web/public"), { recursive: true });
+  for (const [file, body] of files) writeFileSync(file, body);
   console.log(
     `Wrote web/src/data/demo-run.json: ${data.steps.length} steps, ${data.transactions.length} transactions, ` +
       (attestation

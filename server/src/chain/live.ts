@@ -5,7 +5,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { Account, actions, JsonRpcProvider, type KeyPairString, teraToGas } from "near-api-js";
+import { Account, actions, type JsonRpcProvider, type KeyPairString, teraToGas } from "near-api-js";
 import { Relayer, type RelayerConfig } from "../relayer/relayer.ts";
 import {
   type ChainCall,
@@ -14,6 +14,7 @@ import {
   type ChainView,
 } from "./client.ts";
 import { type ChainOutcome, parseOutcome, type RawOutcome } from "./outcome.ts";
+import { resilientProvider, rpcUrls } from "./rpc.ts";
 
 const REPO = fileURLToPath(new URL("../../../", import.meta.url));
 const DEFAULT_GAS_TERA = 100;
@@ -43,11 +44,12 @@ export class LiveTransport implements ChainTransport {
   constructor(
     readonly network = "testnet",
     private readonly keys: KeyLookup = credentialsKeys(network),
-    rpcUrl = process.env.NEAR_RPC_URL ?? "https://test.rpc.fastnear.com",
+    /** NEAR_RPC_URL by default; on testnet the public RPC takes over when it fails (rpc.ts). */
+    rpcUrl?: string,
     /** Staff calls (`viaRelayer`) go through this relayer; without one they are refused. */
     relayerConfig?: RelayerConfig,
   ) {
-    this.provider = new JsonRpcProvider({ url: rpcUrl });
+    this.provider = resilientProvider(rpcUrls(network, rpcUrl));
     this.relayer = relayerConfig ? new Relayer(this.provider, keys, relayerConfig) : null;
   }
 

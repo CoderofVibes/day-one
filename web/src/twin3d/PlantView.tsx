@@ -39,7 +39,8 @@ export function PlantView({
   /** Record mode (?record=1) lets the 3D view advance the run on its own clock. */
   onStep?: (at: number) => void;
 }) {
-  const record = useMemo(() => params().get("record") === "1", []);
+  // The video page (?video=1) drives the steps itself; the twin keeps its fixed-step clock.
+  const record = useMemo(() => params().get("record") === "1" || params().get("video") === "1", []);
   const [three, setThree] = useState(() => params().get("view") === "3d");
   const [group, setGroup] = useState(() => params().get("run") === "group");
   const [groupAt, setGroupAt] = useState(0);

@@ -41,6 +41,7 @@ import {
 import { extname, join, normalize, resolve, sep } from "node:path";
 import { DemoOrderError } from "@day-one/kevin/demo";
 import { ExtractionError } from "@day-one/kevin/extraction";
+import { explainFailure } from "@day-one/server/chain/explain";
 import { DemoEnvError } from "./env.ts";
 import { ImportDesk } from "./imports.ts";
 import { type DemoSession, SessionError, type StepView, stepView } from "./session.ts";
@@ -290,9 +291,18 @@ function statusOf(error: unknown, session: DemoSession): [number, unknown] {
   const message = error instanceof Error ? error.message : String(error);
   if (error instanceof SessionError) return [error.status, { error: message }];
   if (error instanceof DemoOrderError) {
-    return [409, { error: message, expected: error.expected, next: session.state().next }];
+    // A second tab, a double tap or a retried request: say whose turn it is, in their words.
+    const next = session.state().next;
+    return [
+      409,
+      {
+        error: `Not now: the run is waiting for ${next.who ?? "Kevin"} (${next.action.replace(/\.$/, "")}).`,
+        expected: error.expected,
+        next,
+      },
+    ];
   }
-  if (error instanceof DemoEnvError) return [400, { error: message }];
+  if (error instanceof DemoEnvError) return [400, withHelp(message)];
   if (error instanceof ExtractionError) return [422, { error: message }];
   if (!session.live) {
     return [
@@ -305,7 +315,13 @@ function statusOf(error: unknown, session: DemoSession): [number, unknown] {
       },
     ];
   }
-  return [500, { error: message }];
+  return [500, withHelp(message)];
+}
+
+/** The error, with what it means and what to do when it is a failure we can explain. */
+function withHelp(message: string): { error: string; hint?: string } {
+  const help = explainFailure(message);
+  return help ? { error: message, hint: `${help.what} ${help.fix}` } : { error: message };
 }
 
 function text(value: unknown): string | undefined {

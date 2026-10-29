@@ -1,0 +1,171 @@
+/* The video page (?video=1): one 16:9 frame, map on the left, the plant floor or the curtain on
+   the right, captions under both. Sized in vw so a 1920 x 1080 window gives ~20 px text. */
+.video {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 1vw;
+  padding: 1.4vw 2vw 1.2vw;
+  overflow: hidden;
+  background: var(--bg);
+  font-size: 1.05vw;
+  cursor: none;
+}
+
+.video-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.video-beat {
+  font-size: 0.9em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.video-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  color: var(--muted);
+}
+
+.video-brand .logo {
+  width: 1.8em;
+  height: 1.8em;
+  border-radius: 0.45em;
+}
+
+.video-main {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 1.4vw;
+  min-height: 0;
+}
+
+.video-map {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.video-map .view-switch {
+  display: none;
+}
+
+.video-panel {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.video-panel .card {
+  margin-bottom: 0.7vw;
+  padding: 0.8vw 1vw;
+}
+
+.video-panel .pane.plants {
+  font-size: 0.95em;
+}
+
+.video-photo {
+  display: block;
+  max-width: 100%;
+  max-height: 14vw;
+  margin: 0 0 0.8vw;
+  border: 1px solid var(--line);
+  border-radius: 0.5vw;
+}
+
+.video-accounts {
+  margin-bottom: 0.8vw;
+}
+
+.video-accounts ul {
+  margin: 0;
+  padding-left: 1.1em;
+}
+
+.video-accounts code {
+  font-size: 0.95em;
+}
+
+.video-caption {
+  min-height: 2.9em;
+  margin: 0 auto;
+  max-width: 70vw;
+  padding: 0.5em 1em;
+  border-radius: 0.5em;
+  background: rgb(0 0 0 / 0.78);
+  color: #fff;
+  font-size: 1.35em;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.video-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 6vw;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.4em 0.9em;
+  border-radius: 0.4em;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* Before, the title and the close fill the frame over the map. */
+.video-card {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8vw;
+  background: var(--bg);
+  text-align: center;
+}
+
+.video-card h1 {
+  margin: 0;
+  font-size: 5.5vw;
+  letter-spacing: -0.02em;
+}
+
+.video-card .tagline {
+  margin: 0;
+  font-size: 2vw;
+}
+
+.video-card.before img {
+  max-height: 88%;
+  max-width: 70%;
+  border: 1px solid var(--line);
+  border-radius: 0.5vw;
+  box-shadow: 0 0.5vw 2vw rgb(0 0 0 / 0.18);
+}
+
+.video-card .who-kevin {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: 1.4vw;
+  color: var(--muted);
+}
+
+.video-card .who-kevin .logo {
+  width: 2em;
+  height: 2em;
+}
+
+.video-card .credit {
+  max-width: 48vw;
+  margin: 1vw 0 0;
+  font-size: 1.2vw;
+}

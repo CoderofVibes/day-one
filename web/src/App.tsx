@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import {
   ApiError,
   BOOKS_EXPORT_URL,
@@ -26,11 +26,13 @@ import {
 import { groupBuy } from "./groupBuy.ts";
 import { ImportPane } from "./ImportPane.tsx";
 import { type Action, actionsFor, actorOf, quantity } from "./live.ts";
+import { plantsSnapshot, STATIC_BOOKS_URL, STATIC_BRIEF_URL } from "./plants.ts";
 import {
   type Attestation,
   type Audience,
   audienceOf,
   type Check,
+  type DemoRun,
   type RunData,
   run as recorded,
   type Step,
@@ -42,12 +44,28 @@ import { PlantView } from "./twin3d/PlantView.tsx";
 
 const PLAY_MS = 2600;
 
+/** The video page (?video=1): the recorded run on the storyboard's clock (docs/RECORDING.md). */
+const VideoApp = lazy(() => import("./VideoApp.tsx"));
+const VIDEO =
+  typeof location !== "undefined" && new URLSearchParams(location.search).get("video") === "1";
+
+export function App() {
+  if (VIDEO) {
+    return (
+      <Suspense fallback={<div className="app muted">Loading…</div>}>
+        <VideoApp />
+      </Suspense>
+    );
+  }
+  return <Screens />;
+}
+
 /**
  * One UI, two sources. When the API (npm run api) answers, the screens run live: whoever is
  * up next gets their buttons and each click advances the run. Otherwise the recorded run
  * replays with Play, Back and Next, as on a static host.
  */
-export function App() {
+function Screens() {
   const [live, setLive] = useState<LiveState | null | undefined>(undefined);
   useEffect(() => {
     probeApi().then(setLive);
@@ -64,6 +82,7 @@ function ReplayApp() {
   const [at, setAt] = useState(0);
   const [curtain, setCurtain] = useState(false);
   const [map, setMap] = useState(true);
+  const [plants, setPlants] = useState(false);
   const [playing, setPlaying] = useState(false);
 
   const go = useCallback((to: number) => setAt(Math.max(0, Math.min(last, to))), [last]);
@@ -90,7 +109,20 @@ function ReplayApp() {
   const current = data.steps[at] as Step;
 
   return (
-    <Frame curtain={curtain} setCurtain={setCurtain} extra={<MapSwitch on={map} setOn={setMap} />}>
+    <Frame
+      curtain={curtain}
+      setCurtain={setCurtain}
+      extra={
+        <>
+          <MapSwitch on={map} setOn={setMap} />
+          <label className="switch">
+            <input type="checkbox" checked={plants} onChange={(e) => setPlants(e.target.checked)} />
+            <span>Three plants</span>
+          </label>
+        </>
+      }
+    >
+      <Guide data={data} />
       <nav className="controls" aria-label="Demo steps">
         <button type="button" onClick={() => go(at - 1)} disabled={at === 0}>
           ← Back
@@ -123,9 +155,24 @@ function ReplayApp() {
 
       <main className="panes">
         {map && <PlantView run={data} at={at} curtain={curtain} onStep={go} />}
+        {plants && (
+          <PlantsPane
+            error={null}
+            inventory={plantsSnapshot.inventory}
+            mass={plantsSnapshot.massBalance}
+            books={plantsSnapshot.books}
+            policy={null}
+            moves={plantsSnapshot.transfers}
+            moveNote={[]}
+            busy={false}
+            links={{ brief: STATIC_BRIEF_URL, books: STATIC_BOOKS_URL }}
+            snapshotAt={plantsSnapshot.at}
+          />
+        )}
         <StaffFeed data={data} upTo={at} onPick={go} curtain={curtain} />
         {curtain && <Curtain data={data} upTo={at} />}
       </main>
+      {at === last && <Closing data={data} curtain={curtain} plants={plants} />}
 
       <footer className="muted foot">
         Replay of a run recorded on {new Date(data.recordedAt).toISOString().slice(0, 10)}. All
@@ -279,10 +326,13 @@ function LiveApp({ initial }: { initial: LiveState }) {
             moves={moves}
             moveNote={moveNote}
             busy={busy !== null}
-            onReview={review}
-            onProposeWaste={proposeWaste}
-            onDecideMove={decideMove}
-            onReceiveMove={receiveMove}
+            links={{ brief: BRIEF_URL, books: BOOKS_EXPORT_URL }}
+            act={{
+              onReview: review,
+              onProposeWaste: proposeWaste,
+              onDecideMove: decideMove,
+              onReceiveMove: receiveMove,
+            }}
           />
         )}
         <StaffFeed data={state} upTo={last} curtain={curtain} />
@@ -336,6 +386,7 @@ function ActionBar({
                   : next.action}
         </p>
       </div>
+      {state.stopped && state.help && !busy && <p className="muted small bar-help">{state.help}</p>}
 
       {next.phase === "reply" && request && !busy ? (
         <div className="phone">
@@ -407,6 +458,14 @@ function ActionButton({
   );
 }
 
+/** What a person can do in the three-plant view; absent in the static replay, which only shows. */
+interface PlantActions {
+  onReview: (id: number, decision: "apply" | "dismiss") => void;
+  onProposeWaste: () => void;
+  onDecideMove: (key: string, decision: "approve" | "dismiss") => void;
+  onReceiveMove: (transferNo: string) => void;
+}
+
 /** Three facilities, one truth: stock by plant, and the transfer discrepancies with their review. */
 function PlantsPane({
   error,
@@ -417,10 +476,9 @@ function PlantsPane({
   moves,
   moveNote,
   busy,
-  onReview,
-  onProposeWaste,
-  onDecideMove,
-  onReceiveMove,
+  links,
+  act,
+  snapshotAt,
 }: {
   error: string | null;
   inventory: PlantInventory | null;
@@ -430,10 +488,11 @@ function PlantsPane({
   moves: TransferSuggestions | null;
   moveNote: string[];
   busy: boolean;
-  onReview: (id: number, decision: "apply" | "dismiss") => void;
-  onProposeWaste: () => void;
-  onDecideMove: (key: string, decision: "approve" | "dismiss") => void;
-  onReceiveMove: (transferNo: string) => void;
+  links: { brief: string; books: string };
+  /** Without actions the pane is read-only (the static replay's snapshot). */
+  act?: PlantActions;
+  /** The run's clock when a read-only snapshot was taken. */
+  snapshotAt?: string;
 }) {
   if (!inventory) {
     return (
@@ -449,13 +508,29 @@ function PlantsPane({
   return (
     <section className="pane plants" aria-label="Three plants">
       <h2>Three plants · stock on hand</h2>
+      {!act && (
+        <p className="muted small">
+          As the ledger stands at the end of the recorded run
+          {snapshotAt ? ` (${demoTime(snapshotAt)})` : ""}. Read-only here: with the API running
+          (npm run api) each proposal has its Apply, Dismiss or Approve button.
+        </p>
+      )}
       <p className="small">
-        <a href={BRIEF_URL} target="_blank" rel="noreferrer">
+        <a href={links.brief} target="_blank" rel="noreferrer">
           Kevin's morning brief for Hollow Pine (printable)
         </a>
       </p>
       {policy ? (
         <PolicyBlock state={policy} />
+      ) : !act ? (
+        <div className="policy">
+          <h3>HQ · Kevin's limits on the contract</h3>
+          <p className="muted">
+            The contract refused PO-1042 over Kevin's per-PO limit in this run until Linda approved
+            it (the "Big PO" step, behind the curtain). npm run escrow reads the limits and this
+            month's spend from testnet as they are now.
+          </p>
+        </div>
       ) : (
         <div className="policy">
           <h3>HQ · Kevin's limits on the contract</h3>
@@ -467,13 +542,13 @@ function PlantsPane({
           {inventory.discrepancies.map((d) => (
             <li key={d.id} className={`disc ${d.status}`}>
               <p>{d.explanation}</p>
-              {d.status === "proposed_adjustment" && d.proposed ? (
+              {d.status === "proposed_adjustment" && d.proposed && act ? (
                 <div className="actions">
                   <button
                     type="button"
                     className="primary"
                     disabled={busy}
-                    onClick={() => onReview(d.id, "apply")}
+                    onClick={() => act.onReview(d.id, "apply")}
                   >
                     Apply at Plant {d.proposed.facility}
                   </button>
@@ -481,7 +556,7 @@ function PlantsPane({
                     type="button"
                     className="secondary"
                     disabled={busy}
-                    onClick={() => onReview(d.id, "dismiss")}
+                    onClick={() => act.onReview(d.id, "dismiss")}
                   >
                     Dismiss
                   </button>
@@ -498,8 +573,7 @@ function PlantsPane({
           moves={moves}
           note={moveNote}
           busy={busy}
-          onDecide={onDecideMove}
-          onReceive={onReceiveMove}
+          {...(act ? { onDecide: act.onDecideMove, onReceive: act.onReceiveMove } : {})}
         />
       )}
       <div className="table-wrap">
@@ -540,9 +614,14 @@ function PlantsPane({
         </table>
       </div>
       {mass && (
-        <MassBalanceBlock mass={mass} plants={plants} busy={busy} onPropose={onProposeWaste} />
+        <MassBalanceBlock
+          mass={mass}
+          plants={plants}
+          busy={busy}
+          {...(act ? { onPropose: act.onProposeWaste } : {})}
+        />
       )}
-      {books && <BooksBlock books={books} />}
+      {books && <BooksBlock books={books} exportUrl={links.books} />}
       <GroupBuyBlock plants={plants} />
     </section>
   );
@@ -562,8 +641,8 @@ function TransfersBlock({
   moves: TransferSuggestions;
   note: string[];
   busy: boolean;
-  onDecide: (key: string, decision: "approve" | "dismiss") => void;
-  onReceive: (transferNo: string) => void;
+  onDecide?: (key: string, decision: "approve" | "dismiss") => void;
+  onReceive?: (transferNo: string) => void;
 }) {
   const { suggestions, inTransit } = moves;
   if (!suggestions.length && !inTransit.length && !note.length) return null;
@@ -579,24 +658,26 @@ function TransfersBlock({
         {suggestions.map((s) => (
           <li key={s.key} className="disc move">
             <p>{s.sentence}</p>
-            <div className="actions">
-              <button
-                type="button"
-                className="primary"
-                disabled={busy}
-                onClick={() => onDecide(s.key, "approve")}
-              >
-                Approve the move
-              </button>
-              <button
-                type="button"
-                className="secondary"
-                disabled={busy}
-                onClick={() => onDecide(s.key, "dismiss")}
-              >
-                Dismiss
-              </button>
-            </div>
+            {onDecide && (
+              <div className="actions">
+                <button
+                  type="button"
+                  className="primary"
+                  disabled={busy}
+                  onClick={() => onDecide(s.key, "approve")}
+                >
+                  Approve the move
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  disabled={busy}
+                  onClick={() => onDecide(s.key, "dismiss")}
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
           </li>
         ))}
         {inTransit.map((t) => (
@@ -605,16 +686,18 @@ function TransfersBlock({
               {t.transferNo}: {quantity(t.qtyBase, t.dimension)} of {t.materialName} (lot{" "}
               {t.lotCode}) on the way from Plant {t.from} to Plant {t.to}.
             </p>
-            <div className="actions">
-              <button
-                type="button"
-                className="primary"
-                disabled={busy}
-                onClick={() => onReceive(t.transferNo)}
-              >
-                Received at Plant {t.to}
-              </button>
-            </div>
+            {onReceive && (
+              <div className="actions">
+                <button
+                  type="button"
+                  className="primary"
+                  disabled={busy}
+                  onClick={() => onReceive(t.transferNo)}
+                >
+                  Received at Plant {t.to}
+                </button>
+              </div>
+            )}
           </li>
         ))}
       </ul>
@@ -687,7 +770,7 @@ function GroupBuyBlock({ plants }: { plants: PlantInventory["facilities"] }) {
 }
 
 /** Settled purchase orders for the books, the price-drift alerts, and the CSV export. */
-function BooksBlock({ books }: { books: Books }) {
+function BooksBlock({ books, exportUrl }: { books: Books; exportUrl: string }) {
   const usd = (units: number) =>
     `$${(units / 1_000_000).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
   const flagged = new Set(books.alerts.map((a) => a.poNo));
@@ -700,7 +783,7 @@ function BooksBlock({ books }: { books: Books }) {
         </p>
       ))}
       <p>
-        <a className="export" href={BOOKS_EXPORT_URL} download>
+        <a className="export" href={exportUrl} download>
           Export for QuickBooks (CSV)
         </a>{" "}
         <span className="muted small">
@@ -818,7 +901,7 @@ function PolicyBlock({ state }: { state: PolicyState }) {
 }
 
 /** Issued against tablets, QC samples and recorded waste, per plant and product (§15). */
-function MassBalanceBlock({
+export function MassBalanceBlock({
   mass,
   plants,
   busy,
@@ -827,7 +910,7 @@ function MassBalanceBlock({
   mass: MassBalance;
   plants: PlantInventory["facilities"];
   busy: boolean;
-  onPropose: () => void;
+  onPropose?: () => void;
 }) {
   const name = (code: string) => plants.find((p) => p.code === code)?.name ?? `Plant ${code}`;
   const pct = (bp: number) => `${(bp / 100).toFixed(2)}%`;
@@ -848,7 +931,7 @@ function MassBalanceBlock({
           </p>
         ))
       )}
-      {toPlants.length > 0 && (
+      {toPlants.length > 0 && onPropose && (
         <div className="actions">
           <button type="button" className="primary" disabled={busy} onClick={onPropose}>
             Send Plant {toPlants.join(" and ")} a waste correction to review
@@ -887,6 +970,80 @@ function MassBalanceBlock({
         </table>
       </div>
     </div>
+  );
+}
+
+/** The demo clock as plant staff read it: "Mon Nov 16, 4:05 PM" (UTC, the clock's own zone). */
+function demoTime(iso: string) {
+  return new Date(iso).toLocaleString("en-US", {
+    timeZone: "UTC",
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+const GUIDE_KEY = "day-one-guide-closed";
+
+/**
+ * What a first-time visitor is looking at and how to step through it. Shown on the static
+ * replay (a hosted demo); closed for good with ×. Not part of the run, so not in video mode.
+ */
+function Guide({ data }: { data: DemoRun }) {
+  const [open, setOpen] = useState(() => {
+    try {
+      return localStorage.getItem(GUIDE_KEY) !== "1";
+    } catch {
+      return true;
+    }
+  });
+  if (!open) return null;
+  const close = () => {
+    setOpen(false);
+    try {
+      localStorage.setItem(GUIDE_KEY, "1");
+    } catch {
+      // Private windows may refuse storage; the guide just comes back next time.
+    }
+  };
+  const s = data.summary;
+  return (
+    <aside className="guide" aria-label="How to read this demo">
+      <button type="button" className="guide-close quiet" onClick={close} aria-label="Close">
+        ×
+      </button>
+      <p>
+        <strong>Day One.</strong> Kevin is an AI purchasing assistant at Hollow Pine, a small tablet
+        plant that has just been bought. He reads batch records, gets quotes and drafts purchase
+        orders; his spending limits, the approvals and the payment on delivery are rules in a
+        contract on NEAR testnet.
+      </p>
+      <p>
+        This page replays a run recorded on {data.recordedAt.slice(0, 10)}
+        {s ? ` (${s.transactions} transactions, ${s.refusedByDesign} refused by design)` : ""}.
+        Press <strong>Play</strong> or the → key. Staff see dollars and POs only; switch on{" "}
+        <strong>Behind the curtain</strong> for every transaction with its explorer link,{" "}
+        <strong>3D</strong> on the map for the twin, and <strong>Three plants</strong> for stock,
+        the mass balance and the books.
+      </p>
+    </aside>
+  );
+}
+
+/** The last step: what just happened, in one line, and where to look next. */
+function Closing({ data, curtain, plants }: { data: RunData; curtain: boolean; plants: boolean }) {
+  const s = data.summary;
+  return (
+    <p className="closing">
+      That is the whole loop: a batch record read, stock reordered, a refusal over the limit, an
+      approval by text, and the supplier paid the moment QC released the lot.
+      {s && !curtain
+        ? ` Switch on "Behind the curtain" for the ${s.transactions} testnet transactions behind it.`
+        : ""}
+      {!plants ? ' "Three plants" shows what it did to stock and the books.' : ""}
+    </p>
   );
 }
 
@@ -960,8 +1117,12 @@ function StaffFeed({
   curtain: boolean;
 }) {
   const end = useRef<HTMLDivElement>(null);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll whenever the step changes
+  const seen = useRef(upTo);
+  // Scroll whenever the step changes.
   useEffect(() => {
+    // Not on first paint: a visitor starts at the top of the page, with the header in view.
+    if (seen.current === upTo) return;
+    seen.current = upTo;
     end.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [upTo]);
 
@@ -1006,7 +1167,7 @@ function StaffFeed({
   );
 }
 
-function Who({ who, title }: { who: Audience; title?: string }) {
+export function Who({ who, title }: { who: Audience; title?: string }) {
   return (
     <div className="who">
       <span className="avatar" aria-hidden="true">
@@ -1025,7 +1186,7 @@ function Who({ who, title }: { who: Audience; title?: string }) {
   );
 }
 
-function Lines({ lines }: { lines: string[] }) {
+export function Lines({ lines }: { lines: string[] }) {
   return (
     <div className="lines">
       {lines.map((line) => (
@@ -1035,7 +1196,7 @@ function Lines({ lines }: { lines: string[] }) {
   );
 }
 
-function Phone({ step, approvals }: { step: Step; approvals: RunData["approvals"] }) {
+export function Phone({ step, approvals }: { step: Step; approvals: RunData["approvals"] }) {
   const approval = approvals.find((a) => a.response !== null) ?? approvals[0];
   return (
     <div className="phone">
@@ -1094,7 +1255,7 @@ function Attested({ result }: { result: Attestation }) {
   );
 }
 
-function Curtain({ data, upTo }: { data: RunData; upTo: number }) {
+export function Curtain({ data, upTo }: { data: RunData; upTo: number }) {
   const pane = useRef<HTMLElement>(null);
   const txs = transactionsThrough(data, upTo);
   // Lines without a transaction: the opening budget (step 0) and the closing summary.

@@ -127,6 +127,7 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(status).toBe(409);
     expect(body.expected).toBe("upload");
     expect(body.next.who).toBe("Ray Delgado");
+    expect(body.error).toBe("Not now: the run is waiting for Ray Delgado (Upload a batch record).");
   });
 
   it("refuses bad input with 400", async () => {
@@ -194,10 +195,16 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
   });
 
   it("Linda texts YES 1042: relayed approval, Kevin's retry, the supplier ships", async () => {
-    const { status, body } = (await api("POST", "/api/messages", {
-      from: "Linda Park",
-      text: "YES 1042",
-    })) as { status: number; body: Added };
+    // Her phone sends the YES twice (a double tap, a retry on a slow network): the first
+    // approves, the second finds it is Tommy's turn, and only one approval goes to the chain.
+    const yes = { from: "Linda Park", text: "YES 1042" };
+    const [first, again] = (await Promise.all([
+      api("POST", "/api/messages", yes),
+      api("POST", "/api/messages", yes),
+    ])) as { status: number; body: Added & { error?: string } }[];
+    expect(again?.status).toBe(409);
+    expect(again?.body.error).toMatch(/waiting for Tommy Reyes/);
+    const { status, body } = first as { status: number; body: Added };
     expect(status).toBe(200);
     expect(body.steps.map((s) => s.title)).toEqual([
       "Linda texts",
@@ -211,7 +218,11 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
       choices: ["NG-PS-60417", "NG-PS-60417-X"],
     });
     const state = (await api("GET", "/api/run")).body;
-    const approve = state.transactions.find((t: { method: string }) => t.method === "approve_po");
+    const approves = state.transactions.filter(
+      (t: { method: string }) => t.method === "approve_po",
+    );
+    expect(approves).toHaveLength(1);
+    const approve = approves[0];
     expect(approve.paidBy).toBe("dayone-relayer.testnet");
     expect(approve.signer).toMatch(/^director\.plant-b\./);
     expect(state.approvals[0].response).toBe("YES 1042");

@@ -3,3 +3,5 @@
 *.jpg binary
 *.pdf binary
 *.wasm binary
+# The bookkeeper CSV keeps the CRLF line ends CSV readers expect (npm run web:data writes it).
+web/public/books.csv -text
