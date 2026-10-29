@@ -52,7 +52,8 @@
     "erp": "tsx erp/src/server.ts",
     "erp:seed": "tsx scripts/erp-seed.ts",
     "erp:demo": "tsx scripts/erp-demo.ts",
-    "erp:reconcile": "tsx scripts/erp-reconcile.ts"
+    "erp:reconcile": "tsx scripts/erp-reconcile.ts",
+    "usdc": "tsx scripts/usdc.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.3",

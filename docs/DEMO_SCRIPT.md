@@ -41,7 +41,7 @@ The demo clock starts at `2026-11-09T13:00:00Z`. Each step prints a plain-langua
 | 10 | Delivery | `Tommy photographed the packing slip. Matches PO-1042: 700 kg ascorbic acid, supplier lot NG-24-8812. Lot ASC-261116-01 is in quarantine.` | `chain: confirm_receipt PO-1042 ✓ signed by receiving.plant-b…, relayed (tx …)` |
 | 11 | QC release | `Priya released lot ASC-261116-01.` | `chain: qc_release PO-1042 ✓ (tx …) · 5,150.00 DTUSD → northgate-ingredients.testnet` |
 | 12 | Paid | `PO-1042 — paid $5,150.00. Invoice matched to PO and receipt.` | `chain: anchored receipt PO-1042 0x… (tx …)` |
-| 13 | Real USDC proof | `PO-1047 (pH buffer ×2, $19.00) settled in Circle USDC.` | `chain: full cycle on the USDC deployment, 19.00 USDC → bayfront-labsupply.testnet (txs …)` |
+| 13 | Real USDC proof (separate run: `npm run usdc`, recorded Oct 29) | `PO-1047 (pH buffer ×2, $19.00) settled in Circle USDC.` | `chain: full cycle on the USDC deployment, 19.00 USDC → bayfront-labsupply.testnet (txs …)` |
 | 14 | Summary | `Plant B: 6 of 9 departments online.` | `chain: 10 transactions, 1 refused by design, 0 failed.` (11 with step 13), then the explorer links |
 
 Exact numbers come from `FICTIONAL_DATA.md` and must be recomputed by code, not hard-coded in the script. The replay test asserts that the printed transcript equals the committed one.

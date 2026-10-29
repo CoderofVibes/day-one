@@ -1,0 +1,307 @@
+{
+  "version": 1,
+  "network": "testnet",
+  "recordedAt": "2026-10-29T15:37:24.579Z",
+  "entries": [
+    {
+      "type": "view",
+      "request": {
+        "contractId": "3e2210e1184b45b64c8a434c0a7e7b23cc04ea7eb7a6c3c32520d03d4afcb8af",
+        "method": "ft_balance_of",
+        "args": {
+          "account_id": "bayfront-labsupply.testnet"
+        }
+      },
+      "result": "0"
+    },
+    {
+      "type": "view",
+      "request": {
+        "contractId": "spend-policy-usdc.acme-holdings.testnet",
+        "method": "get_budget",
+        "args": {}
+      },
+      "result": {
+        "budget": "19000000",
+        "escrowed": "0"
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "submit_po",
+        "signerId": "kevin.plant-b.acme-holdings.testnet",
+        "receiverId": "spend-policy-usdc.acme-holdings.testnet",
+        "method": "submit_po",
+        "args": {
+          "po_id": "PO-1047",
+          "supplier": "bayfront-labsupply.testnet",
+          "amount": "19000000",
+          "category": "lab_chemical",
+          "po_hash": "7efa2e0a0d4cce8eed3a4d0b6ef43ab226e5a27f0462824ac064af8101d1b199"
+        },
+        "depositYocto": "0",
+        "viaRelayer": false
+      },
+      "outcome": {
+        "status": "success",
+        "errorMessage": null,
+        "returnValue": {
+          "po_id": "PO-1047",
+          "agent": "kevin.plant-b.acme-holdings.testnet",
+          "plant": "plant-b.acme-holdings.testnet",
+          "supplier": "bayfront-labsupply.testnet",
+          "amount": "19000000",
+          "category": "lab_chemical",
+          "po_hash": "7efa2e0a0d4cce8eed3a4d0b6ef43ab226e5a27f0462824ac064af8101d1b199",
+          "period": 202610,
+          "status": "Funded",
+          "approved_by": null,
+          "supplier_lot": null,
+          "funded_at": "1793288230993169983",
+          "accepted_at": null,
+          "shipped_at": null,
+          "received_at": null,
+          "released_at": null
+        },
+        "txHash": "5x72zCmhZhtEoUGjqhxsxxfgS2grMzDjJroYztyUx6Er",
+        "events": [
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_authorized",
+            "data": {
+              "po_id": "PO-1047",
+              "agent": "kevin.plant-b.acme-holdings.testnet",
+              "supplier": "bayfront-labsupply.testnet",
+              "amount": "19000000",
+              "category": "lab_chemical",
+              "po_hash": "7efa2e0a0d4cce8eed3a4d0b6ef43ab226e5a27f0462824ac064af8101d1b199",
+              "approved_by": null
+            }
+          },
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_funded",
+            "data": {
+              "po_id": "PO-1047",
+              "amount": "19000000",
+              "budget": "0",
+              "escrowed": "19000000"
+            }
+          }
+        ],
+        "blockHeight": 275319213
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "accept_po",
+        "signerId": "bayfront-labsupply.testnet",
+        "receiverId": "spend-policy-usdc.acme-holdings.testnet",
+        "method": "accept_po",
+        "args": {
+          "po_id": "PO-1047"
+        },
+        "depositYocto": "0",
+        "viaRelayer": false
+      },
+      "outcome": {
+        "status": "success",
+        "errorMessage": null,
+        "returnValue": null,
+        "txHash": "75YxNEFkJGGGH3CSPejQfA8iuM649VqSqeuFFUxQh5qH",
+        "events": [
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_accepted",
+            "data": {
+              "po_id": "PO-1047",
+              "supplier": "bayfront-labsupply.testnet"
+            }
+          }
+        ],
+        "blockHeight": 275319217
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "mark_shipped",
+        "signerId": "bayfront-labsupply.testnet",
+        "receiverId": "spend-policy-usdc.acme-holdings.testnet",
+        "method": "mark_shipped",
+        "args": {
+          "po_id": "PO-1047",
+          "supplier_lot": "BLS-BUF-2611-07"
+        },
+        "depositYocto": "0",
+        "viaRelayer": false
+      },
+      "outcome": {
+        "status": "success",
+        "errorMessage": null,
+        "returnValue": null,
+        "txHash": "AvBA1We5nHg5JVbU4R2i135W1SMhoSig5BDSY7rEMd7y",
+        "events": [
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_shipped",
+            "data": {
+              "po_id": "PO-1047",
+              "supplier_lot": "BLS-BUF-2611-07"
+            }
+          }
+        ],
+        "blockHeight": 275319221
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "confirm_receipt",
+        "signerId": "receiving.plant-b.acme-holdings.testnet",
+        "receiverId": "spend-policy-usdc.acme-holdings.testnet",
+        "method": "confirm_receipt",
+        "args": {
+          "po_id": "PO-1047"
+        },
+        "depositYocto": "0",
+        "viaRelayer": true
+      },
+      "outcome": {
+        "status": "success",
+        "errorMessage": null,
+        "returnValue": null,
+        "txHash": "7at1y7jYpF6ACMAe4QiTNEQLw1PnFG5XsLLzAH9qytJY",
+        "events": [
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_received",
+            "data": {
+              "po_id": "PO-1047",
+              "by": "receiving.plant-b.acme-holdings.testnet"
+            }
+          }
+        ],
+        "blockHeight": 275319225
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "qc_release",
+        "signerId": "qc.plant-b.acme-holdings.testnet",
+        "receiverId": "spend-policy-usdc.acme-holdings.testnet",
+        "method": "qc_release",
+        "args": {
+          "po_id": "PO-1047"
+        },
+        "depositYocto": "0",
+        "viaRelayer": true
+      },
+      "outcome": {
+        "status": "success",
+        "errorMessage": null,
+        "returnValue": null,
+        "txHash": "5utQmP8fo5tmf3A1wQjTDZsfdXjWy861EXfp8KvXY9Xf",
+        "events": [
+          {
+            "standard": "nep141",
+            "version": "1.0.0",
+            "event": "ft_transfer",
+            "data": [
+              {
+                "old_owner_id": "spend-policy-usdc.acme-holdings.testnet",
+                "new_owner_id": "bayfront-labsupply.testnet",
+                "amount": "19000000",
+                "memo": "Day One PO-1047"
+              }
+            ]
+          },
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_released",
+            "data": {
+              "po_id": "PO-1047",
+              "by": "qc.plant-b.acme-holdings.testnet",
+              "supplier": "bayfront-labsupply.testnet",
+              "amount": "19000000"
+            }
+          },
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "delivery_recorded",
+            "data": {
+              "supplier": "bayfront-labsupply.testnet",
+              "po_id": "PO-1047",
+              "outcome": "Released",
+              "released": 1,
+              "rejected": 0,
+              "consecutive_rejects": 0
+            }
+          }
+        ],
+        "blockHeight": 275319232
+      }
+    },
+    {
+      "type": "view",
+      "request": {
+        "contractId": "spend-policy-usdc.acme-holdings.testnet",
+        "method": "get_po",
+        "args": {
+          "po_id": "PO-1047"
+        }
+      },
+      "result": {
+        "po_id": "PO-1047",
+        "agent": "kevin.plant-b.acme-holdings.testnet",
+        "plant": "plant-b.acme-holdings.testnet",
+        "supplier": "bayfront-labsupply.testnet",
+        "amount": "19000000",
+        "category": "lab_chemical",
+        "po_hash": "7efa2e0a0d4cce8eed3a4d0b6ef43ab226e5a27f0462824ac064af8101d1b199",
+        "period": 202610,
+        "status": "Released",
+        "approved_by": null,
+        "supplier_lot": "BLS-BUF-2611-07",
+        "funded_at": "1793288230993169983",
+        "accepted_at": "1793288232861411926",
+        "shipped_at": "1793288234744670455",
+        "received_at": "1793288237737830691",
+        "released_at": "1793288242641228134"
+      }
+    },
+    {
+      "type": "view",
+      "request": {
+        "contractId": "3e2210e1184b45b64c8a434c0a7e7b23cc04ea7eb7a6c3c32520d03d4afcb8af",
+        "method": "ft_balance_of",
+        "args": {
+          "account_id": "bayfront-labsupply.testnet"
+        }
+      },
+      "result": "19000000"
+    },
+    {
+      "type": "view",
+      "request": {
+        "contractId": "spend-policy-usdc.acme-holdings.testnet",
+        "method": "get_budget",
+        "args": {}
+      },
+      "result": {
+        "budget": "0",
+        "escrowed": "0"
+      }
+    }
+  ]
+}

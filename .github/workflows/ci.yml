@@ -27,6 +27,8 @@ jobs:
         run: npm run demo
       - name: Replay the attack suite
         run: npm run test:attacks
+      - name: USDC order replay
+        run: npm run usdc
       - name: The web UI's data export is current
         run: npm run web:data -- --check
 

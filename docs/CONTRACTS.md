@@ -55,7 +55,7 @@ The contracts are **token-agnostic**: the token account id is set at `new()` and
 
 **Decided Oct 25** (OPEN_QUESTIONS #22):
 - The main demo deployment settles in **DTUSD**, so PO-1042 can be a real $5,150.00.
-- **Bonus, never a gate:** a second deployment of the same wasm, initialized with **Circle USDC**, runs one complete small PO end to end (pH buffer ×2 at $9.50, total $19.00), recorded in replay mode, once Tony has collected testnet USDC.
+- **Bonus, never a gate (done Oct 29, `npm run usdc`):** a second deployment of the same wasm, initialized with **Circle USDC**, runs one complete small PO end to end (pH buffer ×2 at $9.50, total $19.00), recorded in replay mode, once Tony has collected testnet USDC.
 - If Circle grants a larger testnet allowance, the main deployment may switch to USDC and DTUSD is dropped.
 - The README and the behind-the-curtain view name the token on every transfer. Amounts are never scaled.
 

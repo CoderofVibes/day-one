@@ -40,6 +40,7 @@ Also without keys:
 | `npm run verify:attestation` | the recorded NEAR AI Cloud report for Kevin's model and every recorded answer's signature; ends `Every check verified.` (`-- --offline` skips Intel and NVIDIA) |
 | `npm run erp:reconcile` | Day One's ledger, the acquirer's mock ERP and the contract agree, PO by PO and lot by lot; ends `7 of 7 checks match.` |
 | `npm run demo:group` | three plants pool one ascorbic acid order; one pooled PO, each plant's share against its own limits and director, recorded on testnet |
+| `npm run usdc` | PO-1047 ($19.00) settled in real Circle testnet USDC on a second deployment of the same contract, recorded on testnet; ends `Transcript matches data/usdc/transcript.txt.` |
 | `npm run sealed` | a sealed-bid quote round: fingerprints before the deadline, prices after, three attacks refused (recorded on testnet with a three-minute deadline) |
 | `npm run books` | the bookkeeper's CSV of settled POs and Kevin's price-drift alert |
 | `npm run brief` | Kevin's 5am brief for Hollow Pine: what moved since Friday, what waits on a person, what to buy or move first (`-- --html` for the printable page) |
@@ -113,6 +114,7 @@ Kevin does not need crypto. The acquirer, the plant and the supplier need one sp
 | Day One, the ERP and the contract agree | `server/src/erp-connector/reconcile.ts` | `server/src/erp-connector/reconcile.test.ts`; `npm run erp:reconcile` | views recorded from testnet |
 | A pooled PO charges each plant's share to that plant's own limits and needs that plant's director | `submit_pooled_po`, `explain_pooled_po` (`contracts/spend-policy/src/lib.rs`) | `each_plants_director_approves_its_own_share_and_the_retry_funds_the_pool`, `a_plants_monthly_limit_counts_its_pooled_shares`; `group_purchasing_on_sandbox` | [pooled PO refused](https://testnet.nearblocks.io/txns/7Vf5C8G4Y9nv4bgVfii6xx3cN98Bz6ymFHxJHMnqFgkN), two directors' approvals, then [funded](https://testnet.nearblocks.io/txns/9soPwo62c2qoZ5vPF5SKqxTKGSNvLadDMxCP1QY89b7V) and [paid](https://testnet.nearblocks.io/txns/9XDEo3DpvFe2Tu8t94Hpe45su4AH9cB8JWCLiEnHV3ka) |
 | Nobody, Kevin included, reads a sealed quote before the deadline, and a supplier cannot change one after | `contracts/spend-policy/src/sealed.rs` | `before_the_deadline_the_chain_holds_fingerprints_only`, `a_commit_after_the_deadline_is_refused`, `a_reveal_before_the_deadline_is_refused`; `npm run sealed`, `npm run verify:round` | [early award refused](https://testnet.nearblocks.io/txns/BKN5hwUP8YB3pkD2iJgAPr2bQUCNRDqf9s8ZHVP7r5r4), [changed price refused](https://testnet.nearblocks.io/txns/2Q9JfmLorrwR7DnazJvwV7otNAWkbhanu6AVPXAWFi2J), [late seal refused](https://testnet.nearblocks.io/txns/9EWsVWgxenRParrUFJqsZTxnc5V23P211LM2fyuo3eBz), [award](https://testnet.nearblocks.io/txns/8wSk1QnG7Ysgaq1VSNXG5Rt1iVNttc8LFNCzNYsDeeDZ) (a three-minute round on testnet) |
+| The contract is token-agnostic: the same wasm settles a PO in Circle's testnet USDC | `new(owner, treasury, token)`, `agents/kevin/src/usdcOrder.ts`, `scripts/usdc.ts` (deploys the code hash `spend-policy` runs) | `agents/kevin/src/usdcOrder.test.ts`; `npm run usdc` | PO-1047 on `spend-policy-usdc.acme-holdings.testnet`: [funded](https://testnet.nearblocks.io/txns/5x72zCmhZhtEoUGjqhxsxxfgS2grMzDjJroYztyUx6Er), [relayed receipt](https://testnet.nearblocks.io/txns/7at1y7jYpF6ACMAe4QiTNEQLw1PnFG5XsLLzAH9qytJY), [released, 19.00 USDC to Bayfront](https://testnet.nearblocks.io/txns/5utQmP8fo5tmf3A1wQjTDZsfdXjWy861EXfp8KvXY9Xf) |
 | Kevin's answers come from an attested NEAR AI Cloud model | `server/src/attestation/verify.ts` | `server/src/attestation/attestation.test.ts`; `npm run verify:attestation` | — (report and signatures in `data/replay/attestation.json`) |
 
 ## What is on chain and what is not
@@ -138,7 +140,7 @@ Kevin is the purchasing agent. The contract limits are one enforced layer around
 ## Limitations
 
 - Testnet only. Suppliers are rule-based agents. The director's text message is simulated.
-- The demo settles in DTUSD, a test token we deployed, because the Circle testnet faucet gives 20 USDC per two hours.
+- The demo settles in DTUSD, a test token we deployed, because the Circle testnet faucet gives 20 USDC per two hours. One small order, PO-1047 ($19.00), settles in real Circle testnet USDC on a second deployment of the same code (`npm run usdc`).
 - Staff keys are held by the server because the phone is simulated. Production would have each person hold their own key through a login provider.
 - PO totals and supplier accounts are visible on chain; line items and prices are not.
 - The web UI replays the recorded run on a static host; `npm run api` serves the same screens live, one staff action at a time. The three-plant view, the import wizard and the transfer cards need `npm run api` (the static replay has no ledger). The plant map is plain 2D SVG and draws the recorded run, not later ledger changes; there is no 3D twin.

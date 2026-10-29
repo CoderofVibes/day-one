@@ -1,0 +1,9 @@
+PO-1047 (pH buffer ×2, $19.00) settled in Circle USDC.
+chain: kevin submit_po PO-1047: success https://testnet.nearblocks.io/txns/5x72zCmhZhtEoUGjqhxsxxfgS2grMzDjJroYztyUx6Er
+chain: supplier accept_po: success https://testnet.nearblocks.io/txns/75YxNEFkJGGGH3CSPejQfA8iuM649VqSqeuFFUxQh5qH
+chain: supplier mark_shipped: success https://testnet.nearblocks.io/txns/AvBA1We5nHg5JVbU4R2i135W1SMhoSig5BDSY7rEMd7y
+chain: confirm_receipt (relayed): success https://testnet.nearblocks.io/txns/7at1y7jYpF6ACMAe4QiTNEQLw1PnFG5XsLLzAH9qytJY
+chain: qc_release (relayed): success https://testnet.nearblocks.io/txns/5utQmP8fo5tmf3A1wQjTDZsfdXjWy861EXfp8KvXY9Xf
+chain: full cycle on the USDC deployment spend-policy-usdc.acme-holdings.testnet, 19.00 USDC → bayfront-labsupply.testnet (5 txs)
+chain: bayfront-labsupply.testnet held 0.00 USDC, now 19.00 USDC (+19.00 USDC)
+chain: budget 19.00 USDC → 0.00 USDC, escrowed 0.00 USDC, PO-1047 Released
