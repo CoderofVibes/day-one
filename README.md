@@ -4,7 +4,7 @@ An AI purchasing and inventory assistant, Kevin, for small manufacturing plants 
 
 Built at NEAR HACKATHON (Oct 19 – Nov 14, 2026). Tracks: `realworld`, `business`, `security`, `agents`. All company data is fictional. Runs on NEAR testnet.
 
-> First full draft, Oct 28, 2026 (the minimum-submittable draft was earlier the same day). Every command below was run on that date; the clean-clone test is repeated before submission. Features not yet built are left out rather than described.
+> Draft of Oct 29, 2026, after the contract was redeployed on testnet with group purchasing, supplier credentials and sealed quotes and every run was re-recorded. Every command below was run on that date; the clean-clone test is repeated before submission. Features not yet built are left out rather than described.
 
 ## The problem
 
@@ -15,19 +15,19 @@ Most private-equity buyouts are add-ons: 72.9% of US PE buyouts by deal count in
 Requires Node 24 (`.nvmrc`). Step 5 requires Rust in Linux, macOS or WSL2.
 
 1. `npm ci` → installs with no secrets.
-2. `npm run demo` → replays the whole purchasing loop from seed data, using the transactions recorded on testnet and the recorded model responses. It ends with the ten explorer links and:
+2. `npm run demo` → replays the whole purchasing loop from seed data, using the transactions recorded on testnet and the recorded model responses. It ends with the thirteen explorer links and:
    ```
    Transcript matches data/replay/transcript.txt.
    ```
 3. `npm run verify -- data/batch-records/BR-B-1045.json` → reads the fingerprint stored on chain, with no keys:
    ```
    MATCH  BR-B-1045
-     computed  d7de24f4802cb1bc7d79f6d931d59b2d72e8fa23f2affd30547fbb91e87d7be8
-     on chain  d7de24f4802cb1bc7d79f6d931d59b2d72e8fa23f2affd30547fbb91e87d7be8 by kevin.plant-b.acme-holdings.testnet
-     anchored  https://testnet.nearblocks.io/txns/Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN
+     computed  25c6caff2b79b01a2471cfd9fe5284d9f328c4f86fa7b4a3dcf89c98aff69029
+     on chain  25c6caff2b79b01a2471cfd9fe5284d9f328c4f86fa7b4a3dcf89c98aff69029 by kevin.plant-b.acme-holdings.testnet
+     anchored  https://testnet.nearblocks.io/txns/GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS
    ```
 4. Add 1 g (`1000` mg) to any `actual_mg` in that file and repeat step 3 → `MISMATCH`, exit code 1.
-5. `cd contracts && cargo test` → 43 unit tests and one sandbox test that runs the whole loop on a local NEAR node with our own test token (`purchasing_loop_on_sandbox`).
+5. `cd contracts && cargo test` → 93 unit tests and four sandbox tests on a local NEAR node with our own test token: the purchasing loop and a group purchase (`purchasing_loop_on_sandbox`, `group_purchasing_on_sandbox`), the four supplier-credential attacks, and a sealed quote round.
 
 To see the same run in a browser: `npm run web:build`, then open `web/dist/` from any static file server; the plant map shows Plant B's departments coming online, the quarantined lot and the material and money flows as the run advances, and the "Behind the curtain" switch shows each transaction with its signer, who paid the gas and an explorer link.
 
@@ -35,10 +35,12 @@ Also without keys:
 
 | Command | Shows |
 |---|---|
-| `npm run test:attacks` | seven attacks, each failing: four on Kevin, three on the ERP path; ends `7 of 7 attacks failed against Kevin.` |
+| `npm run test:attacks` | fourteen attacks, each failing: four on Kevin, three on the ERP path, four on supplier credentials, three on sealed quotes; ends `14 of 14 attacks failed against Kevin.` |
 | `npm run escrow` | the contract's budget, escrow, every PO and the policy HQ set, read live from testnet |
 | `npm run verify:attestation` | the recorded NEAR AI Cloud report for Kevin's model and every recorded answer's signature; ends `Every check verified.` (`-- --offline` skips Intel and NVIDIA) |
-| `npm run erp:reconcile` | Day One's ledger, the acquirer's mock ERP and the contract agree; ends `6 of 6 checks match.` |
+| `npm run erp:reconcile` | Day One's ledger, the acquirer's mock ERP and the contract agree, PO by PO and lot by lot; ends `7 of 7 checks match.` |
+| `npm run demo:group` | three plants pool one ascorbic acid order; one pooled PO, each plant's share against its own limits and director, recorded on testnet |
+| `npm run sealed` | a sealed-bid quote round: fingerprints before the deadline, prices after, three attacks refused (recorded on a local NEAR node) |
 | `npm run books` | the bookkeeper's CSV of settled POs and Kevin's price-drift alert |
 | `npm run brief` | Kevin's 5am brief for Hollow Pine: what moved since Friday, what waits on a person, what to buy or move first (`-- --html` for the printable page) |
 | `npm run import -- "data/imports/INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx"` | Kevin reading the plant's messy inventory spreadsheet and flagging what he will not guess |
@@ -51,12 +53,12 @@ Each takes `-- --json` and then prints one final JSON line, for example from `np
 
 ## What happens in the demo
 
-From `data/replay/transcript.txt` (recorded live on testnet, Oct 28, 2026):
+From `data/replay/transcript.txt` (recorded live on testnet, Oct 29, 2026):
 
 1. Kevin reads the photo of batch record BR-B-1045: 8 materials, all within tolerance, yield 90.8%. Ray, the purchaser, confirms; inventory updates and the record's fingerprint is anchored on chain.
 2. Consuming the lot Plant A transferred exposes a discrepancy: Plant A still books 12.55 kg that Plant B never weighed in. Kevin proposes the write-off to Plant A for review.
 3. Kevin forecasts the next two batches, finds ascorbic acid about 514 kg short and recommends 700 kg.
-4. Three quotes come in. QuickChem is excluded as unqualified; Northgate is selected at $7.10/kg.
+4. Three suppliers quote, each anchoring its quote's fingerprint from its own account; the contract refuses QuickChem's, which holds no supplier credential. Northgate is selected at $7.10/kg.
 5. PO-1041 ($612.00, lab supplies) is within Kevin's limit: the contract funds escrow from the plant budget.
 6. PO-1042 ($5,150.00) is over Kevin's $2,500.00 limit: the contract refuses it, and Kevin texts Linda, the director.
 7. Linda replies "YES 1042". Her approval is signed with her own key and paid for by Day One's relayer; Kevin's identical retry funds escrow.
@@ -65,7 +67,7 @@ From `data/replay/transcript.txt` (recorded live on testnet, Oct 28, 2026):
 10. Priya releases the lot in QC; the contract pays Northgate $5,150.00 from escrow.
 11. Kevin matches the invoice to the PO and receipt and anchors the receipt record.
 
-Ten transactions, one refused by design, none failed.
+Thirteen transactions, two refused by design (the over-limit PO and QuickChem's anchor), none failed.
 
 ## Around the purchasing loop
 
@@ -88,27 +90,29 @@ Another agent can hire Kevin: `npm run --silent mcp` is an MCP server on stdio w
 
 Kevin does not need crypto. The acquirer, the plant and the supplier need one spending rule that none of them can quietly change, and settlement that none of them controls alone.
 
-1. **Accounts and keys are the org chart.** `acme-holdings.testnet` holds `plant-a`, `plant-b`, `plant-c`, `spend-policy` and `dtusd`; Plant B has `kevin`, `director`, `receiving` and `qc` accounts (`config/testnet-accounts.json`). Each holds a function-call key that reaches only its own methods (`scripts/setup-testnet.ts`): Kevin's reaches `submit_po`, `anchor` and `anchor_batch`, and Kevin holds no tokens. A parent account has no control over a sub-account after creation; authority comes from keys and contract checks.
-2. **Enforced, not logged.** The limit lives in `contracts/spend-policy`. The over-limit PO fails on chain: [refused `submit_po`](https://testnet.nearblocks.io/txns/DZx3MwK8DxAghCAC7uRHor4jFVRsqPfjSCErGukrwwPW).
-3. **Neutral settlement.** Suppliers are their own accounts outside Acme's tree. Escrow pays the supplier on QC release, not net-30: [`qc_release`](https://testnet.nearblocks.io/txns/14QHzV9PisQz7TqhnT6WRZ9QmmPfeaTSnbuZLiWVMC4d).
-4. **Staff hold no tokens.** The director's approval is a NEP-366 meta-transaction signed with the director's key and paid for by `dayone-relayer.testnet`: [relayed `approve_po`](https://testnet.nearblocks.io/txns/3pC54Z3zQJtxpYRBa3jAtzeWHmnstXft84YzWoPpYP8e).
+1. **Accounts and keys are the org chart.** `acme-holdings.testnet` holds `plant-a`, `plant-b`, `plant-c`, `spend-policy` and `dtusd`; Plant B has `kevin`, `director`, `receiving` and `qc` accounts (`config/testnet-accounts.json`). Each holds a function-call key that reaches only its own methods (`scripts/setup-testnet.ts`): Kevin's reaches the PO, pool, anchor and sealed-round methods and nothing else, and Kevin holds no tokens. Plants A and C have their own Kevin and director for group purchasing. A parent account has no control over a sub-account after creation; authority comes from keys and contract checks.
+2. **Enforced, not logged.** The limit lives in `contracts/spend-policy`. The over-limit PO fails on chain: [refused `submit_po`](https://testnet.nearblocks.io/txns/FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af).
+3. **Neutral settlement.** Suppliers are their own accounts outside Acme's tree. Escrow pays the supplier on QC release, not net-30: [`qc_release`](https://testnet.nearblocks.io/txns/2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn).
+4. **Staff hold no tokens.** The director's approval is a NEP-366 meta-transaction signed with the director's key and paid for by `dayone-relayer.testnet`: [relayed `approve_po`](https://testnet.nearblocks.io/txns/EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8).
 5. **Tamper-evident records.** Record fingerprints (salted sha256) are stored in contract state; anyone can recompute one and compare with `npm run verify`.
 
 ## Claims and evidence
 
 | Claim | Code | Test | On testnet |
 |---|---|---|---|
-| Kevin cannot exceed his per-PO limit | `contracts/spend-policy/src/lib.rs` `submit_po` | `over_limit_po_is_refused_with_the_exact_message`, `a_refusal_leaves_state_unchanged` | [refused tx](https://testnet.nearblocks.io/txns/DZx3MwK8DxAghCAC7uRHor4jFVRsqPfjSCErGukrwwPW) |
-| Only the director approves, and only the exact terms | `approve_po` | `approval_from_a_non_approver_is_refused`, `retry_that_differs_from_the_approval_is_refused`, `an_agent_cannot_approve_its_own_pos` | [approve tx](https://testnet.nearblocks.io/txns/3pC54Z3zQJtxpYRBa3jAtzeWHmnstXft84YzWoPpYP8e) |
-| Staff actions are relayer-paid, and judged by the signer | `server/src/relayer/relayer.ts` | `relayed_approval_is_judged_by_the_director_not_the_relayer`; `server/src/relayer/relayer.test.ts` | [relayed receipt](https://testnet.nearblocks.io/txns/3vK7eacZDkDdW6YtC1bkt4vbToiFB1Tn9WEUM5gbNPEr) |
-| Only listed suppliers can be paid | `set_supplier`, `submit_po` | `unapproved_supplier_is_refused_even_with_an_approval` | [lookalike refused](https://testnet.nearblocks.io/txns/CHCktaMzsEpppfsCeH3uDY3T9KvsKYZegwetsDsJH7Wt) |
-| Funds release only after receipt and QC | `qc_release` | `release_before_receipt_or_by_the_wrong_role_is_refused`, `failed_payout_rolls_back_to_received` | [release tx](https://testnet.nearblocks.io/txns/14QHzV9PisQz7TqhnT6WRZ9QmmPfeaTSnbuZLiWVMC4d) |
-| A QC rejection refunds the budget | `qc_reject` | `qc_reject_returns_the_amount_to_the_budget` | [relayed `qc_reject`](https://testnet.nearblocks.io/txns/FfFVEkAzPXxrGnDycHoAm81K1fpUUjd6yHqUhvo2AENn) (rehearsal PO-9043) |
-| Records are anchored and verifiable | `anchor_batch`, `server/src/records/anchors.ts`, `scripts/verify.ts` | `anchors_store_once_and_emit`; `server/src/records/anchors.test.ts` | [anchor tx](https://testnet.nearblocks.io/txns/Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN) |
-| Suppliers commit to their quotes from their own accounts; an unapproved supplier cannot | `agents/suppliers/src/agent.ts`, `anchor` (supplier gate in `contracts/spend-policy`) | `suppliers_anchor_only_their_own_quotes`; `agents/suppliers/src/agent.test.ts` | [Northgate's quote anchor](https://testnet.nearblocks.io/txns/FW14aVE2Wn3hWehaGrHqDRapLR16Uyyw6nE8oHZrT4FS): `npm run verify -- data/quotes/RFQ-9045.northgate-ingredients.testnet.json` → `MATCH … by northgate-ingredients.testnet`; [QuickChem refused](https://testnet.nearblocks.io/txns/E8g3yRDVpmy15teRskFf763WEAUtHGGtc36s3A2jtitg) |
-| Kevin is not fooled by four attacks on him: lookalike vendor, inflated invoice, fake "payment failed", hidden instructions | `agents/kevin/src/invoices.ts`, `payments.ts`, `purchasing.ts` | `agents/kevin/src/attacks.test.ts`; `npm run test:attacks` | [re-sent PO refused](https://testnet.nearblocks.io/txns/FWcSEZCP8iUkdJvbr6ypuRVePrt7JPmA3np4fiMtcmt4) |
-| A duplicate invoice, a purchase split under the per-PO limit and a ghost vendor fail on the ERP path | `erp/src/match.ts`, category caps in `submit_po`, `server/src/erp-connector/` | `erp/src/posting/payables.test.ts`; `npm run test:attacks` | [split refused by the category cap](https://testnet.nearblocks.io/txns/AfDDTbxfpr9nEvdsAcEGHZzGEZZMhJCmLGhigySgo8kA), [ghost vendor refused](https://testnet.nearblocks.io/txns/AzxvCyHdTKcDDuHjmHmJNheAyM7VB6HEAtJZE8aGp5cJ) |
+| Kevin cannot exceed his per-PO limit | `contracts/spend-policy/src/lib.rs` `submit_po` | `over_limit_po_is_refused_with_the_exact_message`, `a_refusal_leaves_state_unchanged` | [refused tx](https://testnet.nearblocks.io/txns/FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af) |
+| Only the director approves, and only the exact terms | `approve_po` | `approval_from_a_non_approver_is_refused`, `retry_that_differs_from_the_approval_is_refused`, `an_agent_cannot_approve_its_own_pos` | [approve tx](https://testnet.nearblocks.io/txns/EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8) |
+| Staff actions are relayer-paid, and judged by the signer | `server/src/relayer/relayer.ts` | `relayed_approval_is_judged_by_the_director_not_the_relayer`; `server/src/relayer/relayer.test.ts` | [relayed receipt](https://testnet.nearblocks.io/txns/7pCauyEYJSMeCLW1gNCgZ6bze6dqQasNvq7Twf8yJozm) |
+| Only a supplier holding a live credential from HQ can be paid, plain PO or pooled; a revoked, expired or suspended one cannot, and no approval overrides it | `issue_credential`, `supplier_gate` (`contracts/spend-policy/src/credentials.rs`) | `unapproved_supplier_is_refused_even_with_an_approval`, `a_revoked_credential_stops_new_pos_and_no_approval_overrides_it`, `an_expired_credential_is_refused_until_hq_renews_it`, `two_rejects_in_a_row_suspend_the_supplier_until_hq_reinstates_it`, `a_supplier_suspended_for_qc_rejects_cannot_be_paid_through_a_pool` | [lookalike refused](https://testnet.nearblocks.io/txns/BKjdSJD49LVSpDYgo9LrMnbbCiNrs2wgz7GDt2suBRB7); the four credential attacks replay a local-node recording (`npm run test:attacks`) |
+| Funds release only after receipt and QC | `qc_release` | `release_before_receipt_or_by_the_wrong_role_is_refused`, `failed_payout_rolls_back_to_received` | [release tx](https://testnet.nearblocks.io/txns/2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn) |
+| A QC rejection refunds the budget | `qc_reject` | `qc_reject_returns_the_amount_to_the_budget` | [relayed `qc_reject`](https://testnet.nearblocks.io/txns/3GtqpgAWh89qtSwSCms5guJTfthFZg4weaMHecUmr4Jr) (rehearsal PO-9042) |
+| Records are anchored and verifiable | `anchor_batch`, `server/src/records/anchors.ts`, `scripts/verify.ts` | `anchors_store_once_and_emit`; `server/src/records/anchors.test.ts` | [anchor tx](https://testnet.nearblocks.io/txns/GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS) |
+| Suppliers commit to their quotes from their own accounts; an unapproved supplier cannot | `agents/suppliers/src/agent.ts`, `anchor` (supplier gate in `contracts/spend-policy`) | `suppliers_anchor_only_their_own_quotes`; `agents/suppliers/src/agent.test.ts` | [Northgate's quote anchor](https://testnet.nearblocks.io/txns/FMLQyTJ7yZvFW5qyqoNUHnKuc3JTvkv3dPfjcW9nkyC5): `npm run verify -- data/quotes/RFQ-2611-01.northgate-ingredients.testnet.json` → `MATCH … by northgate-ingredients.testnet`; [QuickChem refused](https://testnet.nearblocks.io/txns/6qNuBF16LW63gRCJ1QmLRY3RQ6k4RcX1NUN2V5scH3jJ) |
+| Kevin is not fooled by four attacks on him: lookalike vendor, inflated invoice, fake "payment failed", hidden instructions | `agents/kevin/src/invoices.ts`, `payments.ts`, `purchasing.ts` | `agents/kevin/src/attacks.test.ts`; `npm run test:attacks` | [re-sent PO refused](https://testnet.nearblocks.io/txns/8CdDArQXLL3kiLpXpZBFUESamAttE1gafFXcYRifg2ic) |
+| A duplicate invoice, a purchase split under the per-PO limit and a ghost vendor fail on the ERP path | `erp/src/match.ts`, category caps in `submit_po`, `server/src/erp-connector/` | `erp/src/posting/payables.test.ts`; `npm run test:attacks` | [split refused by the category cap](https://testnet.nearblocks.io/txns/2w9YEuciywGFCRkTk6vMDoBb94ECzYB4BLayhYU5JVM3), [ghost vendor refused](https://testnet.nearblocks.io/txns/9FAzfv5KqbsqcbaYk2cjP3WfS5AY1UcK5iumcaXpLcKf) |
 | Day One, the ERP and the contract agree | `server/src/erp-connector/reconcile.ts` | `server/src/erp-connector/reconcile.test.ts`; `npm run erp:reconcile` | views recorded from testnet |
+| A pooled PO charges each plant's share to that plant's own limits and needs that plant's director | `submit_pooled_po`, `explain_pooled_po` (`contracts/spend-policy/src/lib.rs`) | `each_plants_director_approves_its_own_share_and_the_retry_funds_the_pool`, `a_plants_monthly_limit_counts_its_pooled_shares`; `group_purchasing_on_sandbox` | [pooled PO refused](https://testnet.nearblocks.io/txns/7Vf5C8G4Y9nv4bgVfii6xx3cN98Bz6ymFHxJHMnqFgkN), two directors' approvals, then [funded](https://testnet.nearblocks.io/txns/9soPwo62c2qoZ5vPF5SKqxTKGSNvLadDMxCP1QY89b7V) and [paid](https://testnet.nearblocks.io/txns/9XDEo3DpvFe2Tu8t94Hpe45su4AH9cB8JWCLiEnHV3ka) |
+| Nobody, Kevin included, reads a sealed quote before the deadline, and a supplier cannot change one after | `contracts/spend-policy/src/sealed.rs` | `before_the_deadline_the_chain_holds_fingerprints_only`, `a_commit_after_the_deadline_is_refused`, `a_reveal_before_the_deadline_is_refused`; `npm run sealed`, `npm run verify:round` | recorded on a local NEAR node (`data/sealed/`), not yet on testnet |
 | Kevin's answers come from an attested NEAR AI Cloud model | `server/src/attestation/verify.ts` | `server/src/attestation/attestation.test.ts`; `npm run verify:attestation` | — (report and signatures in `data/replay/attestation.json`) |
 
 ## What is on chain and what is not

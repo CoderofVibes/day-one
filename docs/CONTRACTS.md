@@ -99,7 +99,7 @@ pub struct AgentPolicy {
 pub struct Approval { supplier, amount, category, po_hash, approved_by, approved_at, expires_at }
 pub struct PoRecord { agent, supplier, amount, category, po_hash, period, status: PoStatus, approved_by: Option<AccountId>,
                       supplier_lot: Option<String>, funded_at, accepted_at, shipped_at, received_at, released_at }
-pub enum PoStatus { Funded, Accepted, Shipped, Received, Paying, Released, Refunding, Refunded, Cancelled }
+pub enum PoStatus { Funded, Accepted, Shipped, Received, Paying, Released, Refunded, Cancelled }
 pub struct PlantRoles { receiver: AccountId, qc: AccountId }
 pub struct Anchor { kind, hash: String /* 64 lowercase hex */, prev: Option<String>, by: AccountId, at: u64 }
 ```
