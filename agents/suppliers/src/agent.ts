@@ -1,9 +1,10 @@
 // A rule-based supplier agent (ARCHITECTURE §5.4, decision #23): it answers an RFQ for a
 // material it sells from its price list, fingerprints the quote with a fresh salt, anchors the
 // fingerprint on the spend-policy contract from its own account, and sends Kevin the terms, the
-// salt and the anchor. The contract takes the anchor only from a supplier HQ has approved and
-// only for the supplier's own quote, so an unqualified vendor's anchor comes back refused; the
-// agent still quotes, and Kevin's ranking is what excludes it.
+// salt and the anchor. The contract takes the anchor only from a supplier HQ has approved (it
+// holds a supplier credential that is neither revoked nor expired, CONTRACTS.md §3.1) and only
+// for the supplier's own quote, so an unqualified vendor's anchor comes back refused; the agent
+// still quotes, and Kevin's ranking is what excludes it.
 
 import type { ChainClient, LoggedOutcome } from "@day-one/server/chain/client";
 import {
