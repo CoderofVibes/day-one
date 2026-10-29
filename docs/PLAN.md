@@ -89,7 +89,7 @@ From the first scheduled review (range `pre-hackathon`..`ceb21bf`, 90 commits). 
 - Code counts from Oct 19 (Q-001). **Feature code starts Oct 28** (Tony, OPEN_QUESTIONS #30): the Nov 1–4 tasks run early under the pull-forward rule; the dated hard gates do not move.
 - [x] Tag the last docs-only commit `pre-hackathon` before the first feature commit (done Oct 28, `2345975`); tag `hackathon-submission` on Nov 14 (Q-003). Local tags; push them with the repo.
 - [x] Add an MIT `LICENSE` file (done Oct 28) and the libraries table in the README (Q-005, Q-014). Nov 13 at the latest. **Done:** the README's "Built with" table checked Oct 29 against every `package.json` and `Cargo.toml`; re-check it with the README final on Nov 13.
-- [ ] Keep any hosted demo up to Nov 18, ideally Nov 25 (Q-012). Video stays the primary X demo; screenshots alone are not enough.
+- [ ] Keep any hosted demo up to Nov 18, ideally Nov 25 (Q-012). Video stays the primary X demo; screenshots alone are not enough. **Held Oct 29:** Tony said hold off on publishing (relayed by Muse, OPEN_QUESTIONS #39); the page is built and checked by `npm run host:build`, nothing is online, and a later yes comes in Claude's chat.
 
 ### Sun Nov 1 — monorepo and ledger
 - [x] [I] Monorepo bootstrap: npm workspaces (`server`, `agents/kevin`, `web`), TypeScript, test runner, lint, `.nvmrc`, `engines`. One `npm test` that passes. Done Oct 28: TypeScript 7.0.2, Vitest 5.0.5, Biome 2.6.3, tsx 4.23.15; first module `server/src/money.ts` (base units ↔ dollars). `kevin` and `web` join `tsconfig.json` references when they get code.
