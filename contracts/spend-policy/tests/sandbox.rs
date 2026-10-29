@@ -257,15 +257,27 @@ async fn purchasing_loop_on_sandbox() {
         json!({ "category": "lab_chemical", "monthly_cap": usd(2_000) }),
     )
     .await;
-    for supplier in ["northgate", "bayfront", "unregistered"] {
+    // Supplier credentials (CONTRACTS.md §3.1): HQ issues each its categories and an expiry.
+    for (supplier, category) in [
+        ("northgate", "raw_material"),
+        ("bayfront", "lab_chemical"),
+        ("unregistered", "raw_material"),
+    ] {
         w.ok(
             "acme",
             "policy",
-            "set_supplier",
-            json!({ "supplier": supplier, "status": "Qualified" }),
+            "issue_credential",
+            json!({
+                "supplier": supplier, "status": "Qualified", "categories": [category],
+                "expires_at": "2000000000000000000",
+            }),
         )
         .await;
     }
+    let token = w
+        .view("policy", "sbt", json!({ "issuer": "policy", "token": 1 }))
+        .await;
+    assert_eq!(token["owner"], "northgate", "{token}");
 
     // Fund the budget from the treasury. Tokens from anyone else come back.
     let transfer_call =
@@ -399,6 +411,32 @@ async fn purchasing_loop_on_sandbox() {
     .await;
     assert_eq!(w.status("PO-1041").await, "Refunded");
     assert_eq!(w.books().await, (19_850, 0));
+
+    // Each settled delivery is on the supplier's credential.
+    let record = |v: Value| {
+        let r = &v["credential"]["reputation"];
+        (
+            r["released"].clone(),
+            r["rejected"].clone(),
+            v["standing"].clone(),
+        )
+    };
+    let northgate = w
+        .view(
+            "policy",
+            "get_supplier_standing",
+            json!({ "supplier": "northgate" }),
+        )
+        .await;
+    assert_eq!(record(northgate), (json!(1), json!(0), json!("Approved")));
+    let bayfront = w
+        .view(
+            "policy",
+            "get_supplier_standing",
+            json!({ "supplier": "bayfront" }),
+        )
+        .await;
+    assert_eq!(record(bayfront), (json!(0), json!(1), json!("Approved")));
 
     // A payout to a supplier with no token storage fails and rolls back to Received.
     w.submit("PO-1050", "unregistered", 100, "raw_material")

@@ -100,9 +100,17 @@ fn setup() -> SpendPolicy {
         director(),
     );
     c.set_category_cap("lab_chemical".into(), U128(2_000 * DOLLAR));
-    c.set_supplier(northgate(), Some(SupplierStatus::Qualified));
-    c.set_supplier(bayfront(), Some(SupplierStatus::Qualified));
-    c.set_supplier(delta_d(), Some(SupplierStatus::Conditional));
+    // Supplier credentials (CONTRACTS.md §3.1), as the deploy script issues them.
+    let expiry = U64(DEMO_NS + 365 * 24 * HOUR_NS);
+    let raw = || vec!["raw_material".to_string()];
+    c.issue_credential(northgate(), SupplierStatus::Qualified, raw(), expiry);
+    c.issue_credential(
+        bayfront(),
+        SupplierStatus::Qualified,
+        vec!["lab_chemical".into()],
+        expiry,
+    );
+    c.issue_credential(delta_d(), SupplierStatus::Conditional, raw(), expiry);
     as_(&token());
     let _ = c.ft_on_transfer(owner(), U128(25_000 * DOLLAR), String::new());
     c
@@ -476,7 +484,7 @@ fn retry_that_differs_from_the_approval_is_refused() {
     approve(&mut c, "PO-1042", 5_150);
     let msg = panic_message(|| submit(&mut c, "PO-1042", northgate(), 5_151, "raw_material"));
     assert_eq!(msg, "PO-1042 does not match what the director approved.");
-    let msg = panic_message(|| submit(&mut c, "PO-1042", bayfront(), 5_150, "raw_material"));
+    let msg = panic_message(|| submit(&mut c, "PO-1042", delta_d(), 5_150, "raw_material"));
     assert_eq!(msg, "PO-1042 does not match what the director approved.");
     as_(&kevin());
     let msg = panic_message(|| {
@@ -853,3 +861,5 @@ fn anchor_batch_takes_up_to_fifty() {
     c.anchor_batch(items(50));
     assert!(c.get_anchor("events-49".into()).is_some());
 }
+
+mod credentials;
