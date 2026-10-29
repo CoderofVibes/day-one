@@ -13,10 +13,12 @@ import {
 } from "./posting/inventory.ts";
 import { trialBalance } from "./posting/journal.ts";
 import {
+  alertDismissalsOf,
   approvedBillFor,
   createVendorBill,
   createVendorPayment,
   decideVendorBill,
+  dismissBillAlert,
   receiptsFor,
 } from "./posting/payables.ts";
 import {
@@ -485,6 +487,7 @@ export function serializeVendorBill(db: ErpDb, b: Row<typeof vendorBills>) {
     approvalNote: b.approvalNote,
     custbody_duplicate_of: duplicateOf ? ref(duplicateOf.id, duplicateOf.tranId) : null,
     custbody_price_drift: b.priceDriftJson ? JSON.parse(b.priceDriftJson) : null,
+    custbody_alert_dismissals: alertDismissalsOf(db, b.id),
     journalEntry: journalRef(db, b.journalId),
     createdBy: userRef(db, b.createdByUserId),
     createdAt: b.createdAt,
@@ -1062,6 +1065,30 @@ export function patchVendorBill(
       billId: id,
       decision: decision === "approved" ? "approve" : "reject",
       note: str(body.approvalNote) ?? "",
+      userId: principal.id,
+      at: clock.now(),
+    }),
+  );
+}
+
+/** POST vendorBill/{id}/!dismissAlert: the AP manager dismisses one alert with a reason. */
+export function dismissVendorBillAlert(
+  db: ErpDb,
+  id: number,
+  body: Body,
+  principal: Principal,
+  clock: Clock,
+) {
+  require(principal, "decide:vendorBill");
+  const alert = refCode(body.alert);
+  if (alert !== "priceDrift" && alert !== "duplicateInvoice")
+    throw new ApiError(400, "INVALID_BODY", "alert must be priceDrift or duplicateInvoice.");
+  return refusalToApi(() =>
+    dismissBillAlert(db, {
+      billId: id,
+      alert,
+      itemCode: refCode(body.item),
+      note: str(body.note) ?? "",
       userId: principal.id,
       at: clock.now(),
     }),

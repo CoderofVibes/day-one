@@ -564,6 +564,35 @@ export const vendorBillLines = sqliteTable(
   (t) => [unique().on(t.billId, t.line)],
 );
 
+export const BILL_ALERTS = ["priceDrift", "duplicateInvoice"] as const;
+export type BillAlert = (typeof BILL_ALERTS)[number];
+
+/**
+ * An alert on a bill that the AP manager looked at and dismissed, with the reason (FEATURES_V2
+ * §2). Kept, never deleted; dismissing changes no approval, match or payment.
+ */
+export const billAlertDismissals = sqliteTable(
+  "bill_alert_dismissals",
+  {
+    id: id(),
+    billId: integer()
+      .notNull()
+      .references(() => vendorBills.id),
+    alert: text({ enum: BILL_ALERTS }).notNull(),
+    /** The item a price-drift alert is about; the alert's name for a duplicate. */
+    alertKey: text().notNull(),
+    note: text().notNull(),
+    userId: integer()
+      .notNull()
+      .references(() => users.id),
+    at: text().notNull(),
+  },
+  (t) => [
+    unique().on(t.billId, t.alertKey),
+    oneOf("bill_alert_dismissals_alert", t.alert, BILL_ALERTS),
+  ],
+);
+
 export const PAYMENT_METHODS = ["escrowRelease", "check"] as const;
 
 export const vendorPayments = sqliteTable(

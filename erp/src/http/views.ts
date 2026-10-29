@@ -82,6 +82,13 @@ function billsTable(db: Erp) {
       const exceptions = (b.custbody_match_exceptions as { code: string; message: string }[])
         .map((e) => `<li><code>${esc(e.code)}</code> ${esc(e.message)}</li>`)
         .join("");
+      const dismissals = b.custbody_alert_dismissals;
+      const dismissed = (alert: string, itemCode: string | null) => {
+        const d = dismissals.find((x) => x.alert === alert && x.itemCode === itemCode);
+        return d
+          ? ` ${tag("dismissed", "muted")} <span class="muted">${esc(d.by)}, ${esc(d.at.slice(0, 10))}: ${esc(d.note)}</span>`
+          : "";
+      };
       const drift =
         (
           b.custbody_price_drift as
@@ -96,11 +103,11 @@ function billsTable(db: Erp) {
         )
           ?.map(
             (d) =>
-              `<li>Price drift: ${esc(d.itemCode)} at ${money(d.rateUsdc / 1e6)} vs ${money(d.lastRateUsdc / 1e6)} on ${esc(d.lastInvoice)} (+${(d.driftBp / 100).toFixed(1)}%)</li>`,
+              `<li>Price drift: ${esc(d.itemCode)} at ${money(d.rateUsdc / 1e6)} vs ${money(d.lastRateUsdc / 1e6)} on ${esc(d.lastInvoice)} (+${(d.driftBp / 100).toFixed(1)}%)${dismissed("priceDrift", d.itemCode)}</li>`,
           )
           .join("") ?? "";
       const dup = b.custbody_duplicate_of
-        ? `<li>Duplicate of <b>${refName(b.custbody_duplicate_of)}</b></li>`
+        ? `<li>Duplicate of <b>${refName(b.custbody_duplicate_of)}</b>${dismissed("duplicateInvoice", null)}</li>`
         : "";
       const notes =
         exceptions || drift || dup ? `<ul class="plain">${dup}${exceptions}${drift}</ul>` : "";

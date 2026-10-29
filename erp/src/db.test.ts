@@ -22,6 +22,8 @@ describe("the ERP database", () => {
       .map((r) => (r as { name: string }).name)
       .sort();
     expect(triggers).toEqual([
+      "bill_alert_dismissals_no_delete",
+      "bill_alert_dismissals_no_update",
       "inventory_movements_no_delete",
       "inventory_movements_no_update",
       "journal_lines_no_delete",
