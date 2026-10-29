@@ -15,7 +15,7 @@ import { seedLedger } from "@day-one/server/seed";
 import { demoBus } from "@day-one/suppliers/bus";
 import { acceptAndShip } from "@day-one/suppliers/shipping";
 import { beforeEach, describe, expect, it } from "vitest";
-import { DEMO_CLOCK, type DemoDeps, runDemo } from "./demo.ts";
+import { DEMO_CLOCK, type DemoDeps, runDemo, startDemo } from "./demo.ts";
 import { BR_1045_EXTRACTION } from "./test/br-b-1045.ts";
 
 const ROOT = "acme-holdings.testnet";
@@ -93,6 +93,9 @@ class SimChain implements ChainTransport {
         if (call.signerId !== DIRECTOR) return refuse("only the director can approve");
         this.approved.add(a.po_id ?? "");
         return ok(["po_approved"]);
+      case "reject_po":
+        if (call.signerId !== DIRECTOR) return refuse("only the director can reject");
+        return ok(["po_rejected"]);
       case "accept_po":
         this.po(a.po_id).status = "Accepted";
         return ok();
@@ -371,6 +374,65 @@ describe("the demo loop (DEMO_SCRIPT §2)", () => {
     const { record, salt, ref_id } = run.batchProof;
     const check = await verifyAnchor((v) => sim.view(v), POLICY, ref_id, fingerprint(record, salt));
     expect(check.result).toBe("MATCH");
+  });
+
+  /** Plays the run up to Linda's text. */
+  const upToReply = async () => {
+    const demo = startDemo(deps);
+    await demo.load();
+    await demo.upload();
+    await demo.confirm();
+    await demo.purchase();
+    return demo;
+  };
+
+  it("holds for Linda when her reply names no waiting PO, then takes the right one", async () => {
+    const demo = await upToReply();
+    const asked = await demo.reply("Linda Park", "YES 1041");
+    expect(asked.map((s) => s.title)).toEqual(["Linda texts"]);
+    expect(asked[0]?.staff[0]).toBe(
+      "Linda: YES 1041 → Please reply YES 1042 or NO 1042 so I know which PO you mean.",
+    );
+    // Nothing was sent, and it is still Linda's turn.
+    expect(sim.calls.filter((c) => c.method === "approve_po")).toHaveLength(0);
+    const taken = await demo.reply("Linda Park", "YES 1042");
+    expect(taken.map((s) => s.title)).toEqual(["Linda texts", "Kevin retries", "Supplier ships"]);
+    await demo.receive();
+    await demo.qc("release");
+    expect(demo.finish().ok).toBe(true);
+  });
+
+  it("ends in Linda's own words when she declines, with nothing funded", async () => {
+    const demo = await upToReply();
+    const steps = await demo.reply("Linda Park", "NO 1042");
+    expect(steps.map((s) => s.title)).toEqual(["Linda texts", "Stopped"]);
+    expect(steps[0]?.staff[0]).toBe(
+      "Linda: NO 1042 → Declined by Linda Park. PO-1042 is on hold; Kevin told Ray.",
+    );
+    expect(steps[1]?.staff[0]).toBe(
+      "The demo stopped: Linda declined PO-1042; it stays on hold and nothing was funded",
+    );
+    expect(sim.pos.get("PO-1042")).toBeUndefined();
+    expect(demo.finish().ok).toBe(false);
+  });
+
+  it("holds the receipt on a short slip for Tommy to sort out, then takes the right slip", async () => {
+    const demo = await upToReply();
+    await demo.reply("Linda Park", "YES 1042");
+    const short = {
+      ...deps.slip,
+      slipNo: "NG-PS-60417-X",
+      lines: [{ ...deps.slip.lines[0], shippedBase: 650 * KG, backorderedBase: 50 * KG }],
+    };
+    const held = await demo.receive(short as DemoDeps["slip"]);
+    expect(held.map((s) => s.title)).toEqual(["Delivery"]);
+    expect(held[0]?.staff.at(-1)).toBe("Receipt of PO-1042 is on hold until someone decides.");
+    expect(sim.calls.filter((c) => c.method === "confirm_receipt")).toHaveLength(0);
+    expect(llm.tasks).toEqual(["vision"]);
+    const taken = await demo.receive();
+    expect(taken[0]?.staff[0]).toMatch(/^Tommy photographed the packing slip. Matches PO-1042/);
+    await demo.qc("release");
+    expect(demo.finish().ok).toBe(true);
   });
 
   it("stops with a plain reason when a step does not land, and still summarises", async () => {

@@ -372,6 +372,34 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(body.next.phase).toBe("upload");
     expect((await api("GET", "/api/run")).body.transactions).toEqual([]);
   });
+
+  it("holds a short delivery for Tommy and keeps his turn (review fix, Oct 29)", async () => {
+    const jpg = readFileSync(join(REPO_ROOT, "data/batch-records/BR-B-1045.jpg"));
+    await api("POST", "/api/batch-records", jpg, "image/jpeg");
+    await api("POST", "/api/batch-records/BR-B-1045/confirm", {});
+    await api("POST", "/api/messages", { from: "Linda Park", text: "YES 1042" });
+    const { status, body } = (await api("POST", "/api/deliveries", {
+      slipNo: "NG-PS-60417-X",
+    })) as { status: number; body: Added };
+    expect(status).toBe(200);
+    expect(body.steps.map((s) => s.title)).toEqual(["Delivery"]);
+    expect(body.steps[0]?.staff.at(-1)).toBe(
+      "Receipt of PO-1042 is on hold until someone decides.",
+    );
+    expect(body.next).toMatchObject({ phase: "receive", who: "Tommy Reyes" });
+    expect((await api("GET", "/api/run")).body.stopped).toBeNull();
+    // The right slip then goes through, and the books see only the matched receipt.
+    const right = (await api("POST", "/api/deliveries", { slipNo: "NG-PS-60417" })).body as Added;
+    expect(right.next.phase).toBe("qc");
+    await api("POST", "/api/qc-decisions", { lotCode: "ASC-261116-01", decision: "release" });
+    const books = (await api("GET", "/api/books")).body as {
+      settled: { poNo: string; recordRef: string | null }[];
+    };
+    expect(books.settled.at(-1)).toMatchObject({
+      poNo: "PO-1042",
+      recordRef: "2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV",
+    });
+  });
 });
 
 describe("the import wizard over HTTP", () => {

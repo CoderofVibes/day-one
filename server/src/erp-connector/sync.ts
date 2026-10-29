@@ -201,7 +201,11 @@ export async function syncLedgerToErp(
           if (receiptsDone.has(poId)) break;
           receiptsDone.add(poId);
           const po = db.select().from(purchaseOrders).where(eq(purchaseOrders.id, poId)).get();
-          const receipt = db.select().from(receipts).where(eq(receipts.poId, poId)).get();
+          const receipt = db
+            .select()
+            .from(receipts)
+            .where(and(eq(receipts.poId, poId), eq(receipts.matchStatus, "matched")))
+            .get();
           if (!po) break;
           const orderLines = db.select().from(poLines).where(eq(poLines.poId, po.id)).all();
           // Every lot received against this PO, with the quantity its `received` event booked;

@@ -74,7 +74,8 @@ export function settledPurchaseOrders(db: Ledger): SettledPo[] {
     const receipt = db
       .select()
       .from(receipts)
-      .where(eq(receipts.poId, po.id))
+      // A held (mismatched) slip leaves its own row; the settled receipt is the matched one.
+      .where(and(eq(receipts.poId, po.id), eq(receipts.matchStatus, "matched")))
       .orderBy(asc(receipts.id))
       .get();
     const releases = db

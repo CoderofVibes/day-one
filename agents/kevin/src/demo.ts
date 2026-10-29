@@ -207,6 +207,11 @@ class DemoStopped extends Error {
   override name = "DemoStopped";
 }
 
+/** A step is on hold for the same person: the phase stays open and nobody's turn moves. */
+class DemoHold extends Error {
+  override name = "DemoHold";
+}
+
 export function startDemo(deps: DemoDeps): DemoMachine {
   return new Demo(deps);
 }
@@ -286,8 +291,16 @@ class Demo implements DemoMachine {
   private expect(ok: boolean, why: string) {
     if (!ok) throw new DemoStopped(why);
   }
+  /** Keeps the phase open: the staff lines already added say what is waiting. */
+  private hold(): never {
+    throw new DemoHold("on hold");
+  }
 
-  /** Runs one phase in turn; a step that does not land stops the run with its own words. */
+  /**
+   * Runs one phase in turn. A step that does not land stops the run with its own words; a
+   * step on hold (a reply Kevin could not read, a packing slip that does not match) leaves the
+   * phase open for the same person to try again.
+   */
   private async phase(name: DemoPhase, after: DemoPhase, body: () => Promise<void>) {
     if (this.next !== name) throw new DemoOrderError(this.next, name);
     const from = this.steps.length;
@@ -295,6 +308,7 @@ class Demo implements DemoMachine {
       await body();
       this.next = after;
     } catch (error) {
+      if (error instanceof DemoHold) return this.steps.slice(from);
       if (!(error instanceof DemoStopped)) throw error;
       this.stopped = error.message;
       this.add(-1, "Stopped", [`The demo stopped: ${error.message}`]);
@@ -520,7 +534,13 @@ class Demo implements DemoMachine {
             ]
           : [],
       );
-      this.expect(reply.approval?.status === "success", "the approval did not go through");
+      // A reply Kevin could not read, or one that did not reach the contract, waits for
+      // ${first} to try again; a NO ends the run in its own words.
+      if (!reply.handled || reply.approval?.status !== "success") this.hold();
+      this.expect(
+        reply.retry !== undefined,
+        `${first} declined ${po1042.poNo}; it stays on hold and nothing was funded`,
+      );
       const erpRetry = deps.erp && reply.retry ? [await deps.erp.poSubmitted(db, po1042.id)] : [];
       this.add(
         9,
@@ -582,14 +602,16 @@ class Demo implements DemoMachine {
       );
       this.received = received;
       this.quarantined = received.lotCodes[0] ?? null;
-      // The supplier's invoice arrives with the delivery. Kevin reads it now so the ERP can
-      // match it to the PO and the receipt before QC's release pays the escrow (docs/ERP.md §3.7).
-      const reading = await readInvoice(this.deps.llm, this.deps.invoiceText);
-      this.invoice = matchInvoice(this.db, reading, this.deps.invoiceText);
       const erpDelivery: string[] = [];
-      if (this.deps.erp && received.receiptId) {
-        erpDelivery.push(await this.deps.erp.received(this.db, received.receiptId));
-        erpDelivery.push((await this.deps.erp.invoiceRead(this.db, reading)).line);
+      if (received.status === "received") {
+        // The supplier's invoice arrives with the delivery. Kevin reads it now so the ERP can
+        // match it to the PO and the receipt before QC's release pays the escrow (ERP.md §3.7).
+        const reading = await readInvoice(this.deps.llm, this.deps.invoiceText);
+        this.invoice = matchInvoice(this.db, reading, this.deps.invoiceText);
+        if (this.deps.erp && received.receiptId) {
+          erpDelivery.push(await this.deps.erp.received(this.db, received.receiptId));
+          erpDelivery.push((await this.deps.erp.invoiceRead(this.db, reading)).line);
+        }
       }
       this.add(
         10,
@@ -606,6 +628,9 @@ class Demo implements DemoMachine {
           : [],
         erpDelivery,
       );
+      // A slip that does not match the PO holds the receipt for ${receiverName} to sort out;
+      // a refused or failed chain call stops the run.
+      if (received.status === "mismatch") this.hold();
       this.expect(
         received.status === "received",
         `the delivery was not received (${received.status})`,
