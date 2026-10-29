@@ -14,6 +14,8 @@ const dist = join(import.meta.dirname, "../../../web/dist");
 const out = process.argv[2] ?? ".";
 const url = process.env.URL;
 const steps = Number(process.env.STEPS ?? 8);
+// VIEW=3d opens the 3D twin (web/src/twin3d) and waits for its transitions to settle.
+const query = process.env.VIEW === "3d" ? "?view=3d" : "";
 const types: Record<string, string> = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -29,7 +31,7 @@ for (const [name, width, scheme] of [
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   if (url) {
-    await page.goto(url);
+    await page.goto(url + query);
   } else {
     await page.route("http://day-one.local/**", (route) => {
       const path = new URL(route.request().url()).pathname;
@@ -41,7 +43,7 @@ for (const [name, width, scheme] of [
         contentType: types[extname(file)] ?? "application/octet-stream",
       });
     });
-    await page.goto("http://day-one.local/");
+    await page.goto(`http://day-one.local/${query}`);
   }
   await page.getByText("Behind the curtain").first().click();
   if (url) {
@@ -75,7 +77,8 @@ for (const [name, width, scheme] of [
   } else {
     for (let i = 0; i < steps; i++) await page.keyboard.press("ArrowRight");
   }
-  await page.waitForTimeout(600);
+  if (query) await page.locator(".t3-stage canvas").waitFor();
+  await page.waitForTimeout(query ? 2400 : 600);
   await page.screenshot({ path: join(out, `${name}.png`), fullPage: Boolean(process.env.FULL) });
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,

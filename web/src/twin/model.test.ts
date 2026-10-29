@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { run, type Step } from "../run.ts";
 import { anchor, arc, FACILITY_LAYOUTS, iso, slab, VIEW } from "./layout.ts";
-import { DEPARTMENTS, deriveTwinState, formatTwinState, type TwinState } from "./model.ts";
+import {
+  DEPARTMENTS,
+  deriveTwinState,
+  formatQuotes,
+  formatTwinState,
+  type TwinState,
+} from "./model.ts";
 
 const index = (title: string) => {
   const i = run.steps.findIndex((s) => s.title === title);
@@ -128,6 +134,36 @@ describe("deriveTwinState over the recorded run", () => {
       label: "PO-1042 · $5,150.00 paid to Northgate Ingredients",
     });
     expect(s.escrowHeldCents).toBe(61_200);
+  });
+
+  it("keeps the supplier quotes and their standing from the Quotes step on", () => {
+    expect(at("Forecast").quotes).toEqual([]);
+    const s = at("Quotes");
+    expect(s.quotes.map((q) => `${q.supplier} ${q.price} ${q.standing}`)).toEqual([
+      "QuickChem Direct $5.90/kg excluded",
+      "Northgate $7.10/kg selected",
+      "Ridgeway $7.35/kg runner-up",
+    ]);
+    expect(s.quotes[0]).toMatchObject({ reason: "vendor not qualified" });
+    expect(s.quotes[0]?.leadTime).toBeUndefined();
+    expect(s.quotes[1]).toMatchObject({ leadTime: "7 days" });
+    expect(s.quotes[0]?.chainTx).toMatchObject({
+      status: "refused",
+      signer: "quickchem-direct.testnet",
+    });
+    expect(s.quotes[1]?.chainTx).toMatchObject({
+      status: "success",
+      signer: "northgate-ingredients.testnet",
+    });
+    expect(s.quotes[2]?.chainTx?.signer).toBe("ridgeway-ascorbics.testnet");
+    expect(at("Paid").quotes).toEqual(s.quotes);
+    expect(formatQuotes(s)).toEqual([
+      "Quote: QuickChem Direct $5.90/kg, excluded: vendor not qualified.",
+      "Quote: Northgate $7.10/kg, 7 days, selected.",
+      "Quote: Ridgeway $7.35/kg, 5 days, runner-up.",
+    ]);
+    expect(formatQuotes(s, true)[0]).toMatch(/anchor refused by the contract, tx 6qNuBF16…/);
+    expect(formatQuotes(s, true)[1]).toMatch(/anchored by northgate-ingredients.testnet, tx /);
   });
 
   it("ends at 6 of 9, the number DEMO_SCRIPT step 14 expects", () => {
