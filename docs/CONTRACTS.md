@@ -226,3 +226,41 @@ Commands are added to `AGENTS.md` when they first pass.
 - `scripts/deploy`: builds in WSL2, deploys `spend-policy`, calls `new`, `set_roles`, `set_agent_policy` (Kevin: per-PO $2,500; monthly $60,000 across `raw_material`, `packaging`, `lab_chemical`; approver `director.plant-b…`), `set_category_cap` (`lab_chemical` $2,000), `set_supplier` (Northgate, Ridgeway, Bayfront qualified; QuickChem left off), registers token storage for the contract and the four suppliers, funds the budget from treasury.
 - `scripts/reset`: `withdraw_budget`, suppliers return tokens to treasury so the float recycles, new PO id prefix per run so `po_id` uniqueness holds.
 - Contract accounts keep their full-access keys during the hackathon for redeploys. Deleting them to prove immutability is a post-hackathon step and is noted in the README.
+
+---
+
+## 9. Group purchasing (Oct 28, branch `group-buy`; docs/GROUP_BUY.md)
+
+Several plants pool their need for one material into one RFQ and one pooled PO whose allocation lines charge each plant's share to that plant's own agent limits. Additive: new methods, new events and new storage only; no existing method or message changes.
+
+### State
+
+New state lives in two `LookupMap`s built on demand under **byte-string prefixes** (`b"gb:pool"`, `b"gb:lines"`), not in new fields on the contract struct, so a redeploy over the deployed testnet state needs no migration, and the single-byte `StorageKey` prefixes of the other maps can never collide with them.
+
+```rust
+pool_id -> Pool { pool_id, category, material, opened_by, opened_at, members: Vec<PoolMember>, po_id: Option<String> }
+pub struct PoolMember { agent, plant, qty: U64 /* base units, for the record */, max_amount: U128 }
+po_id   -> Vec<ShareLine { agent, plant, amount, approved_by: Option<AccountId> }>   // the funded allocation
+```
+
+### Methods
+
+| Method | Caller | Effect |
+|---|---|---|
+| `open_pool(pool_id, category, material, qty, max_amount)` | a registered, active agent allowed `category` | opens the pool and records the caller's pledge: its quantity and the most it will pay for its share; `pool_opened`, `pool_joined` |
+| `join_pool(pool_id, qty, max_amount)` | another such agent | adds or replaces that plant's pledge while the pool is open; `pool_joined` |
+| `submit_pooled_po(po_id, pool_id, supplier, amount, category, po_hash, lines: [{agent, amount}])` | a pool member | checks below; on pass records one `PoRecord` (agent and plant = the caller's, `approved_by` none), stores the lines, closes the pool with `po_id`, charges each line's agent its share in `spent_agent`, the category the total, `budget -= amount`, `escrowed += amount`; emits `pooled_po_authorized` (with the lines) and `po_funded`. On fail, `po_refused` then **panic** with the reason. |
+| `approve_po("<po_id>/<plant agent>", supplier, share amount, category, po_hash, refused_tx)` | that agent's approver | the existing method: a share approval is an approval keyed by the share. `reject_po` with the same key deletes it. |
+| Views: `explain_pooled_po(agent, …same args…)` → `{ refusal, shares: [{ agent, plant, name, amount, approved_by, needs_approval }] }` (the same checks, read-only, so Kevin learns which directors to ask); `get_pool(pool_id)`; `get_pool_lines(po_id)` | anyone | — |
+
+Receiving, QC, payout, `qc_reject` and `cancel` are unchanged: the pooled PO is an ordinary escrow record under the placing plant's roles. `refund` reverses each plant's share from the stored lines (a plain PO reverses its agent in full, as before).
+
+### `submit_pooled_po` checks
+
+Refused outright (no approval path): caller not registered or paused; pool unknown, already placed, or in another category; caller not a member; `po_id` already used; supplier without a status; no lines, more than 10, a duplicate agent, a non-member, a zero share, a share over that plant's pledge; shares not adding up to `amount`; `amount` over the budget; a line agent paused or not allowed the category; a share approval that is expired or does not match (supplier, amount, category, `po_hash`, that agent's approver).
+
+Then per share, unless it carries a matching approval: conditional supplier; share over that agent's per-PO limit; agent's monthly spend plus share over its monthly limit. Then the category cap on the pooled total, for every share without an approval. If any share waits, the PO is refused with one message naming every waiting share, ending in "director approval required." so Kevin's existing refusal handling applies.
+
+### Tests
+
+`src/tests/group.rs`: 16 unit tests, one per refusal above plus the happy path, per-plant approvals, consumed and expired approvals, the monthly limit and category cap on shares, refunds by share, and the view. `tests/sandbox.rs` `group_purchasing_on_sandbox`: two plants, two directors, one escrow, one payout, a cancelled pool, on a local node with the DTUSD token.

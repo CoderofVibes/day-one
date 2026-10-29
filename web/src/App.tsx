@@ -15,6 +15,7 @@ import {
   postReview,
   probeApi,
 } from "./api.ts";
+import { groupBuy } from "./groupBuy.ts";
 import { type Action, actionsFor, actorOf, quantity } from "./live.ts";
 import {
   type Audience,
@@ -437,7 +438,74 @@ function PlantsPane({
       </div>
       {mass && <MassBalanceBlock mass={mass} plants={plants} />}
       {books && <BooksBlock books={books} />}
+      <GroupBuyBlock plants={plants} />
     </section>
+  );
+}
+
+/** One pooled purchase order across the plants (docs/GROUP_BUY.md), from the recorded group run. */
+function GroupBuyBlock({ plants }: { plants: PlantInventory["facilities"] }) {
+  const { pool, po, spent } = groupBuy;
+  const declined = pool.declined;
+  if (!po) return null;
+  const usd = (units: number) =>
+    `$${(units / 1_000_000).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+  const kg = (base: number) => `${(base / 1_000_000).toLocaleString("en-US")} kg`;
+  const name = (code: string) => plants.find((p) => p.code === code)?.name ?? `Plant ${code}`;
+  const codes = [...new Set([...pool.shares.map((s) => s.plant), ...declined])].sort();
+  return (
+    <div className="mass group-buy">
+      <h3>Group purchasing · {pool.poolId}</h3>
+      <p className="kevin-line">
+        {kg(pool.qtyBase)} of ascorbic acid pooled by {pool.shares.length} plants into one order:{" "}
+        {po.poNo} to {po.vendor}, {usd(po.totalUsdc)} at {usd(po.unitPriceUsdc)}/kg,{" "}
+        {usd(po.savingsUsdc)} less than buying alone. Each plant's share was checked against its own
+        limits before the order was funded.
+      </p>
+      <div className="table-wrap">
+        <table className="stock">
+          <thead>
+            <tr>
+              <th>Plant</th>
+              <th>Pooled</th>
+              <th>Share</th>
+              <th>Approved by</th>
+              <th>On the books this month</th>
+            </tr>
+          </thead>
+          <tbody>
+            {codes.map((code) => {
+              const share = pool.shares.find((s) => s.plant === code);
+              return (
+                <tr key={code}>
+                  <th scope="row">
+                    Plant {code} <span className="muted">{name(code)}</span>
+                  </th>
+                  <td>
+                    {share ? (
+                      kg(share.qtyBase)
+                    ) : (
+                      <span className="muted">no need · not in the pool</span>
+                    )}
+                  </td>
+                  <td>{share ? usd(share.amount) : "—"}</td>
+                  <td>{share?.approvedBy ?? (share ? "within limits" : "—")}</td>
+                  <td>{usd(spent[code] ?? 0)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="muted small">
+        {po.status === "paid"
+          ? "Delivered to Plant B and paid on QC release"
+          : `Status: ${po.status}`}
+        {groupBuy.network === "sandbox"
+          ? "; recorded on a local NEAR sandbox."
+          : `; recorded on NEAR ${groupBuy.network}.`}
+      </p>
+    </div>
   );
 }
 

@@ -128,7 +128,7 @@
 ### Wed Nov 11 — T2
 - [ ] [I] 3D twin continued, record-mode fixed-step clock.
 - [ ] [I] **Transfer suggestions UI card** (Plan v2): one line per proposal (what, from where, what it saves) with approve/dismiss. Only if the Nov 10 forecast-side proposals exist.
-- [ ] [I] Group purchasing across three plants: pooled RFQ, supplier bids, one PO allocated per plant (`swarms`).
+- [x] [I] Group purchasing across three plants: pooled RFQ, supplier bids, one PO allocated per plant (`swarms`). Built Oct 28 on branch `group-buy` (docs/GROUP_BUY.md): contract pools and pooled POs with per-plant shares and approvals, `npm run demo:group` replayed from a local-sandbox recording, the "Group purchasing" block in the three-plant view. Left for the merge: testnet accounts for Plants A and C, one redeploy, a testnet re-record (GROUP_BUY.md §5).
 
 ### Thu Nov 12 — T2 and buffer
 - [ ] [I] In order, as time allows: Kevin's 5am brief (printable), natural-language policy changes routed to `set_agent_policy` via an owner approval, NEAR Auth spike.

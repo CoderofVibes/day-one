@@ -52,6 +52,8 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Serve the mock ERP and its web view (Windows, repo root) | `npm run erp` → http://localhost:8087/ (docs/ERP.md §3.2) |
 | Replay the demo with the ERP attached (Windows, repo root; no keys, no network) | `npm run erp:demo` → each step's `erp:` lines, the bill, payment, inventory and a balanced trial balance (verified Oct 28) |
 | Reconcile Day One, the ERP and the contract (Windows, repo root; no keys) | `npm run erp:reconcile` → 6 of 6 checks MATCH (verified Oct 28) |
+| Replay the group purchasing run (Windows, repo root; no keys, no network) | `npm run demo:group` (`-- --json`, `-- --web` rewrites `web/src/data/group-buy.json`) → three plants pool ascorbic acid, one pooled PO with per-plant shares and approvals, and "Transcript matches data/replay/group-transcript.txt." (verified Oct 28; docs/GROUP_BUY.md) |
+| Run the group purchasing flow on a local NEAR sandbox (Windows, repo root; WSL, no keys; needs one contract `cargo test` first so the sandbox binary and wasm exist) | `npm run demo:group -- --sandbox` (`--record --web` rewrites the fixtures) → the same run live against a fresh node (verified Oct 28) |
 | _(more commands are added as they first work)_ | |
 
 ## Team and working protocol
