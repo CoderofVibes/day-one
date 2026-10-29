@@ -325,3 +325,115 @@ describe("the REST shape", () => {
     expect(handle({ method: "GET", path: "/ui/nope" }).status).toBe(404);
   });
 });
+
+describe("each write is all or nothing (review fixes, Oct 29)", () => {
+  const funded1042 = () => {
+    call("POST", "/purchaseOrder", {
+      ...PO_1042,
+      custbody_contract_verdict: { id: "funded" },
+      custbody_near_funding_tx: "x",
+      custbody_near_approval_tx: "y",
+    });
+  };
+  const receive = (externalId: string, lots: { lot: string; qty: number; status?: unknown }[]) =>
+    call("POST", "/purchaseOrder/PO-1042/!transform/itemReceipt", {
+      externalId,
+      tranDate: "2026-11-16",
+      item: {
+        items: [
+          {
+            orderLine: 1,
+            quantity: lots.reduce((sum, l) => sum + l.qty, 0),
+            inventoryDetail: {
+              inventoryAssignment: {
+                items: lots.map((l) => ({
+                  receiptInventoryNumber: l.lot,
+                  quantity: l.qty,
+                  ...(l.status === undefined ? {} : { inventoryStatus: l.status }),
+                })),
+              },
+            },
+          },
+        ],
+      },
+    });
+  const balanceAt = (location: string) =>
+    bodyOf<{ items: { quantityOnHand: number }[] }>(
+      call("GET", `/inventoryBalance?location=${location}`),
+    ).items.reduce((sum, i) => sum + i.quantityOnHand, 0);
+
+  it("counts two lots received on one PO line as both received", () => {
+    funded1042();
+    expect(
+      receive("RCV-2LOT", [
+        { lot: "ASC-A", qty: 300 },
+        { lot: "ASC-B", qty: 400 },
+      ]).status,
+    ).toBe(201);
+    const po = bodyOf<{ item: { items: { quantityReceived: number }[] }; status: { id: string } }>(
+      call("GET", "/purchaseOrder/PO-1042"),
+    );
+    expect(po.item.items[0]?.quantityReceived).toBe(700);
+    expect(po.status.id).not.toBe("partiallyReceived");
+  });
+
+  it("rolls a transfer back when a later line overdraws its lot, so a retry posts it", () => {
+    funded1042();
+    receive("RCV-1", [{ lot: "ASC-T", qty: 700 }]);
+    const transfer = (externalId: string, quantities: number[]) =>
+      call("POST", "/inventoryTransfer", {
+        externalId,
+        location: { refName: "B" },
+        transferLocation: { refName: "A" },
+        tranDate: "2026-11-17",
+        inventory: {
+          items: quantities.map((q) => ({
+            item: { refName: "ASC" },
+            receiptInventoryNumber: "ASC-T",
+            adjustQtyBy: q,
+            inventoryStatus: { id: "quarantine" },
+          })),
+        },
+      });
+    expect(transfer("TRF-X", [300, 500]).status).toBe(409);
+    expect(balanceAt("B")).toBe(700);
+    expect(balanceAt("A")).toBe(0);
+    const retry = transfer("TRF-X", [300, 400]);
+    expect(retry.status).toBe(201);
+    expect(balanceAt("B")).toBe(0);
+    expect(balanceAt("A")).toBe(700);
+  });
+
+  it("leaves an unbalanced bill unapproved when its journal cannot post", () => {
+    funded1042();
+    receive("RCV-1", [{ lot: "ASC-U", qty: 700 }]);
+    const bill = bodyOf<{ id: string; approvalStatus: { id: string } }>(
+      call("POST", "/vendorBill", {
+        tranId: "NG-1",
+        entity: { id: "NGI" },
+        createdFrom: { refName: "PO-1042" },
+        tranDate: "2026-11-16",
+        total: 5000,
+        item: { items: [{ item: { refName: "ASC" }, quantity: 700, rate: 7.1 }] },
+      }),
+    );
+    expect(bill.approvalStatus.id).toBe("pendingApproval");
+    const decided = call(
+      "PATCH",
+      `/vendorBill/${bill.id}`,
+      { approvalStatus: { id: "approved" }, approvalNote: "looks fine" },
+      MARCY,
+    );
+    expect(decided.status).toBe(409);
+    const after = bodyOf<{ approvalStatus: { id: string } }>(call("GET", `/vendorBill/${bill.id}`));
+    expect(after.approvalStatus.id).toBe("pendingApproval");
+  });
+
+  it("answers an unknown receipt status with 400 and posts nothing", () => {
+    funded1042();
+    const bad = receive("RCV-BOGUS", [{ lot: "ASC-Z", qty: 700, status: { id: "bogus" } }]);
+    expect(bad.status).toBe(400);
+    expect(balanceAt("B")).toBe(0);
+    expect(receive("RCV-BOGUS", [{ lot: "ASC-Z", qty: 700 }]).status).toBe(201);
+  });
+});

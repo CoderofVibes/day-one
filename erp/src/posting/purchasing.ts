@@ -327,6 +327,19 @@ export function postItemReceipt(db: ErpDb, input: ReceiptInput) {
     );
   }
   const poLines = poLinesOf(db, po.id);
+  // Every line is checked before anything is written (the router also runs each request in one
+  // transaction, so a later failure cannot leave half a receipt).
+  if (input.lines.length === 0)
+    throw new ErpRefusal(
+      "RECEIPT_EMPTY",
+      `A receipt against ${po.tranId} needs at least one line.`,
+    );
+  for (const l of input.lines) {
+    if (!poLines.some((p) => p.line.line === l.poLine))
+      throw new ErpRefusal("PO_LINE_UNKNOWN", `${po.tranId} has no line ${l.poLine}.`);
+  }
+  // Received so far per PO line, so two lots on one line both count (review fix, Oct 29).
+  const received = new Map(poLines.map((p) => [p.line.id, p.line.quantityReceivedBase]));
   const tranId = nextTranId(db, itemReceipts, "IR");
   const header = db
     .insert(itemReceipts)
@@ -374,8 +387,10 @@ export function postItemReceipt(db: ErpDb, input: ReceiptInput) {
       valueDeltaUsdc: amountUsdc,
       postedAt: input.at,
     });
+    const receivedBase = (received.get(target.line.id) ?? 0) + l.quantityBase;
+    received.set(target.line.id, receivedBase);
     db.update(purchaseOrderLines)
-      .set({ quantityReceivedBase: target.line.quantityReceivedBase + l.quantityBase })
+      .set({ quantityReceivedBase: receivedBase })
       .where(eq(purchaseOrderLines.id, target.line.id))
       .run();
     const asset = db

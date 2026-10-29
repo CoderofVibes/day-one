@@ -51,7 +51,28 @@ const server = createServer((req, res) => {
     }
     const headers: Record<string, string | undefined> = {};
     for (const [k, v] of Object.entries(req.headers)) headers[k] = Array.isArray(v) ? v[0] : v;
-    const out = handle({ method: req.method ?? "GET", path: req.url ?? "/", headers, body });
+    let out: ReturnType<typeof handle>;
+    try {
+      out = handle({ method: req.method ?? "GET", path: req.url ?? "/", headers, body });
+    } catch (error) {
+      // An error the router does not map (a database constraint, a bug) answers 500 and keeps
+      // the server up; the write it came from was rolled back.
+      console.error(error);
+      out = {
+        status: 500,
+        headers: { "content-type": "application/json" },
+        body: {
+          title: "Internal Server Error",
+          status: 500,
+          "o:errorDetails": [
+            {
+              detail: (error as Error).message ?? String(error),
+              "o:errorCode": "UNEXPECTED_ERROR",
+            },
+          ],
+        },
+      };
+    }
     const isHtml = out.headers["content-type"]?.startsWith("text/html");
     res.writeHead(out.status, out.headers);
     res.end(isHtml ? String(out.body) : JSON.stringify(out.body, null, 2));

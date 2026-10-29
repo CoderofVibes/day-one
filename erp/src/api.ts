@@ -60,6 +60,17 @@ import {
   vendors,
 } from "./schema.ts";
 
+/** A received lot is in quarantine unless the body says it arrived already released. */
+function receiptStatus(code: string | null | undefined): "quarantine" | "good" {
+  if (code === undefined || code === null || code === "quarantine" || code === "good")
+    return code ?? "quarantine";
+  throw new ApiError(
+    400,
+    "INVALID_BODY",
+    `"inventoryStatus" must be quarantine or good, not ${JSON.stringify(code)}.`,
+  );
+}
+
 export class ApiError extends Error {
   override name = "ApiError";
   constructor(
@@ -830,7 +841,7 @@ export function createItemReceipt(
         target.item.baseUnitsPerUnit,
       ),
       lotNumber: need(str(a.receiptInventoryNumber), "receiptInventoryNumber"),
-      inventoryStatus: (refCode(a.inventoryStatus) ?? "quarantine") as "quarantine" | "good",
+      inventoryStatus: receiptStatus(refCode(a.inventoryStatus)),
     }));
   });
   return refusalToApi(() =>

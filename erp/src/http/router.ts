@@ -197,64 +197,74 @@ export function createRouter(db: Erp, clock: Clock = { now: () => new Date().toI
         return record ? json(200, record) : fail(404, "NOT_FOUND", `No ${type} ${key}.`);
       }
 
-      if (method === "POST") {
-        if (type === "purchaseOrder" && !key)
-          return created(createPurchaseOrder(db, body, principal, clock).tranId, "purchaseOrder");
-        if (type === "purchaseOrder" && key && verb === "!transform" && target === "itemReceipt")
-          return created(createItemReceipt(db, key, body, principal, clock).tranId, "itemReceipt");
-        if (type === "purchaseOrder" && key && verb === "!transform" && target === "vendorBill")
-          return created(
-            String(createVendorBillFromBody(db, body, principal, clock, key).id),
-            "vendorBill",
-          );
-        if (type === "vendorBill" && !key)
-          return created(
-            String(createVendorBillFromBody(db, body, principal, clock).id),
-            "vendorBill",
-          );
-        if (type === "vendorPayment" && !key)
-          return created(
-            createVendorPaymentFromBody(db, body, principal, clock).tranId,
-            "vendorPayment",
-          );
-        if (type === "inventoryAdjustment" && !key)
-          return created(
-            createInventoryAdjustment(db, body, principal, clock).tranId,
-            "inventoryAdjustment",
-          );
-        if (type === "inventoryTransfer" && !key)
-          return created(
-            createInventoryTransfer(db, body, principal, clock).tranId,
-            "inventoryTransfer",
-          );
-        if (type === "inventoryStatusChange" && !key)
-          return created(
-            createInventoryStatusChange(db, body, principal, clock).tranId,
-            "inventoryStatusChange",
-          );
-        return fail(
-          405,
-          "METHOD_NOT_ALLOWED",
-          `${type} does not accept POST${key ? ` at ${key}` : ""}.`,
-        );
-      }
-
-      if (method === "PATCH" && key) {
-        if (type === "purchaseOrder") {
-          patchPurchaseOrder(db, key, body, principal, clock);
-          return json(200, reader.get(db, key));
-        }
-        if (type === "vendorBill") {
-          const id = /^\d+$/.test(key)
-            ? Number(key)
-            : (reader.get(db, key) as { id: string } | null)?.id;
-          if (id === undefined) return fail(404, "NOT_FOUND", `No vendorBill ${key}.`);
-          patchVendorBill(db, Number(id), body, principal, clock);
-          return json(200, reader.get(db, String(id)));
-        }
-        return fail(405, "METHOD_NOT_ALLOWED", `${type} does not accept PATCH.`);
-      }
+      // Every write is one transaction: a refusal or a failure part way through rolls back the
+      // whole record, so a retry with the same external id finds nothing half posted.
+      if (method === "POST" || method === "PATCH") return db.$client.transaction(() => write())();
       return fail(405, "METHOD_NOT_ALLOWED", `${method} is not supported on ${type}.`);
+
+      function write(): ErpResponse {
+        if (method === "POST") {
+          if (type === "purchaseOrder" && !key)
+            return created(createPurchaseOrder(db, body, principal, clock).tranId, "purchaseOrder");
+          if (type === "purchaseOrder" && key && verb === "!transform" && target === "itemReceipt")
+            return created(
+              createItemReceipt(db, key, body, principal, clock).tranId,
+              "itemReceipt",
+            );
+          if (type === "purchaseOrder" && key && verb === "!transform" && target === "vendorBill")
+            return created(
+              String(createVendorBillFromBody(db, body, principal, clock, key).id),
+              "vendorBill",
+            );
+          if (type === "vendorBill" && !key)
+            return created(
+              String(createVendorBillFromBody(db, body, principal, clock).id),
+              "vendorBill",
+            );
+          if (type === "vendorPayment" && !key)
+            return created(
+              createVendorPaymentFromBody(db, body, principal, clock).tranId,
+              "vendorPayment",
+            );
+          if (type === "inventoryAdjustment" && !key)
+            return created(
+              createInventoryAdjustment(db, body, principal, clock).tranId,
+              "inventoryAdjustment",
+            );
+          if (type === "inventoryTransfer" && !key)
+            return created(
+              createInventoryTransfer(db, body, principal, clock).tranId,
+              "inventoryTransfer",
+            );
+          if (type === "inventoryStatusChange" && !key)
+            return created(
+              createInventoryStatusChange(db, body, principal, clock).tranId,
+              "inventoryStatusChange",
+            );
+          return fail(
+            405,
+            "METHOD_NOT_ALLOWED",
+            `${type} does not accept POST${key ? ` at ${key}` : ""}.`,
+          );
+        }
+
+        if (method === "PATCH" && key) {
+          if (type === "purchaseOrder") {
+            patchPurchaseOrder(db, key, body, principal, clock);
+            return json(200, reader.get(db, key));
+          }
+          if (type === "vendorBill") {
+            const id = /^\d+$/.test(key)
+              ? Number(key)
+              : (reader.get(db, key) as { id: string } | null)?.id;
+            if (id === undefined) return fail(404, "NOT_FOUND", `No vendorBill ${key}.`);
+            patchVendorBill(db, Number(id), body, principal, clock);
+            return json(200, reader.get(db, String(id)));
+          }
+          return fail(405, "METHOD_NOT_ALLOWED", `${type} does not accept PATCH.`);
+        }
+        return fail(405, "METHOD_NOT_ALLOWED", `${method} is not supported on ${type}.`);
+      }
     } catch (error) {
       if (error instanceof ApiError) return fail(error.status, error.code, error.message);
       if (error instanceof Error && error.name === "ErpRefusal")
