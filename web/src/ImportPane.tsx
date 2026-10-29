@@ -2,7 +2,7 @@
 // says what he found, Ray answers each flag, and the opening stock posts. Plant words only:
 // rows, lots, kilograms; nothing posts until every flag has an answer.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ApiError,
   IMPORT_FIXTURE,
@@ -109,13 +109,15 @@ export function ImportPane() {
           </p>
           {!view.posted && <p className="kevin-line">{view.analysis.message}</p>}
 
-          {flags.length > 0 && !result && (
+          {!result && !view.posted && (
             <>
-              <ol className="flags">
-                {flags.map((f) => (
-                  <FlagCard key={f.id} flag={f} chosen={answers[f.id]} onAnswer={answer} />
-                ))}
-              </ol>
+              {flags.length > 0 && (
+                <ol className="flags">
+                  {flags.map((f) => (
+                    <FlagCard key={f.id} flag={f} chosen={answers[f.id]} onAnswer={answer} />
+                  ))}
+                </ol>
+              )}
               <div className="actions">
                 <button
                   type="button"
@@ -129,9 +131,11 @@ export function ImportPane() {
                 >
                   Post opening stock
                 </button>
-                <span className="muted small">
-                  {answered} of {flags.length} answered
-                </span>
+                {flags.length > 0 && (
+                  <span className="muted small">
+                    {answered} of {flags.length} answered
+                  </span>
+                )}
                 {view.suggestedAnswers && answered < flags.length && (
                   <button
                     type="button"
@@ -187,8 +191,18 @@ function FlagCard({
   chosen: ImportAnswer | undefined;
   onAnswer: (id: string, a: ImportAnswer) => void;
 }) {
-  const [qty, setQty] = useState("");
-  const [unit, setUnit] = useState("kg");
+  // The field always shows what will be sent; an answer filled in from outside (Ray's
+  // answers) is copied into it, so the number on screen is the number "Use this" posts.
+  const [qty, setQty] = useState(chosen?.answer === "quantity" ? String(chosen.qty) : "");
+  const [unit, setUnit] = useState(chosen?.answer === "quantity" ? chosen.unit : "kg");
+  useEffect(() => {
+    if (chosen?.answer === "quantity") {
+      setQty(String(chosen.qty));
+      setUnit(chosen.unit);
+    }
+  }, [chosen]);
+  const usesShownQuantity =
+    chosen?.answer === "quantity" && String(chosen.qty) === qty && chosen.unit === unit;
   const accept = flag.kind === "totals_row" ? "Skip it" : "Yes, do that";
   return (
     <li className={`disc flag ${chosen ? "answered" : ""}`} data-flag={flag.id}>
@@ -215,22 +229,18 @@ function FlagCard({
               min="0"
               step="any"
               aria-label={`Weighed quantity for row ${flag.row}`}
-              value={chosen?.answer === "quantity" ? String(chosen.qty) : qty}
+              value={qty}
               onChange={(e) => setQty(e.target.value)}
             />
-            <select
-              aria-label="Unit"
-              value={chosen?.answer === "quantity" ? chosen.unit : unit}
-              onChange={(e) => setUnit(e.target.value)}
-            >
+            <select aria-label="Unit" value={unit} onChange={(e) => setUnit(e.target.value)}>
               <option value="kg">kg</option>
               <option value="g">g</option>
               <option value="lb">lb</option>
             </select>
             <button
               type="button"
-              className={chosen?.answer === "quantity" ? "primary" : ""}
-              disabled={!(Number(qty) > 0) && chosen?.answer !== "quantity"}
+              className={usesShownQuantity ? "primary" : ""}
+              disabled={!(Number(qty) > 0)}
               onClick={() => onAnswer(flag.id, { answer: "quantity", qty: Number(qty), unit })}
             >
               Use this

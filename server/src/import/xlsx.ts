@@ -130,10 +130,13 @@ function columnName(index: number) {
   return name;
 }
 
-function parseSheet(xml: string, shared: string[]): Cell[][] {
+/** The rows of one worksheet's XML, by row number (exported for tests). */
+export function parseSheet(xml: string, shared: string[]): Cell[][] {
   const rows: Cell[][] = [];
-  for (const row of xml.matchAll(/<row\b([^>]*)>([\s\S]*?)<\/row>|<row\b([^>]*)\/>/g)) {
-    const r = Number(attr(row[1] ?? row[3] ?? "", "r") ?? rows.length + 1) - 1;
+  // A self-closing <row .../> (Excel writes one for a formatted empty row) must not swallow the
+  // next row: the lazy attributes stop at the first "/>" or ">" (review fix, Oct 29).
+  for (const row of xml.matchAll(/<row\b([^>]*?)(?:\/>|>([\s\S]*?)<\/row>)/g)) {
+    const r = Number(attr(row[1] ?? "", "r") ?? rows.length + 1) - 1;
     const cells: Cell[] = [];
     let next = 0;
     for (const c of (row[2] ?? "").matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {

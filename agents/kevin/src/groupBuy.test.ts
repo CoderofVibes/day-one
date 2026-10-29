@@ -39,13 +39,22 @@ describe("allocation", () => {
     expect(allocateShares(9_490_000_000, plants).map((s) => s.amount)).toEqual([
       4_745_000_000, 4_745_000_000,
     ]);
-    // An odd split: the remainder lands on the first (hub) line, never lost or doubled.
-    const uneven = allocateShares(10_000_000_001, [
-      { ...plants[0], qtyBase: 300 * KG } as (typeof plants)[number],
-      { ...plants[1], qtyBase: 700 * KG } as (typeof plants)[number],
+    // An odd split: every share is whole cents and the remainder lands on the first (hub)
+    // line, never lost or doubled (review fix, Oct 29: 700/500/200 kg used to give sub-cent
+    // shares that formatUsd refused).
+    const third = (plant: string, kg: number) =>
+      ({ ...plants[0], plant, qtyBase: kg * KG }) as (typeof plants)[number];
+    const uneven = allocateShares(9_490_000_000, [
+      third("B", 700),
+      third("A", 500),
+      third("C", 200),
     ]);
-    expect(uneven.reduce((sum, s) => sum + s.amount, 0)).toBe(10_000_000_001);
-    expect(uneven[1]?.amount).toBe(Math.floor((10_000_000_001 * 7) / 10));
+    expect(uneven.reduce((sum, s) => sum + s.amount, 0)).toBe(9_490_000_000);
+    for (const s of uneven) expect(s.amount % 10_000).toBe(0);
+    expect(uneven.map((s) => s.amount)).toEqual([4_745_010_000, 3_389_280_000, 1_355_710_000]);
+    const equal = allocateShares(10_000_000, [third("B", 1), third("A", 1), third("C", 1)]);
+    expect(equal.map((s) => s.amount)).toEqual([3_340_000, 3_330_000, 3_330_000]);
+    expect(() => allocateShares(10_000_000_001, plants)).toThrow(/fractions of a cent/);
   });
 
   it("caps a pledge at what the plant would pay alone at the price on file", () => {

@@ -188,18 +188,27 @@ export function seedGroupBuy(db: Ledger, root: string) {
     .run();
 }
 
+/** Base units per cent: shares are whole cents, as every amount staff read is. */
+const UNITS_PER_CENT = 10_000n;
+
 /**
- * Splits the pooled total across the plants in proportion to quantity, in whole base units,
- * with the rounding remainder on the first (hub) line so the shares add up exactly.
+ * Splits the pooled total across the plants in proportion to quantity, in whole cents, with
+ * the rounding remainder on the first (hub) line so the shares add up exactly. BigInt keeps the
+ * products exact (a total in base units times a quantity in mg passes 2^53).
  */
 export function allocateShares(
   totalUsdc: number,
   plants: readonly Omit<Share, "amount">[],
 ): Share[] {
-  const qty = plants.reduce((sum, p) => sum + p.qtyBase, 0);
+  const total = BigInt(totalUsdc);
+  if (total % UNITS_PER_CENT !== 0n) {
+    throw new RangeError(`a pooled total of ${totalUsdc} base units has fractions of a cent`);
+  }
+  const cents = total / UNITS_PER_CENT;
+  const qty = plants.reduce((sum, p) => sum + BigInt(p.qtyBase), 0n);
   const shares = plants.map((p) => ({
     ...p,
-    amount: Math.floor((totalUsdc * p.qtyBase) / qty),
+    amount: Number(((cents * BigInt(p.qtyBase)) / qty) * UNITS_PER_CENT),
   }));
   const first = shares[0];
   if (first) first.amount += totalUsdc - shares.reduce((sum, s) => sum + s.amount, 0);
