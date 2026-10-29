@@ -44,6 +44,10 @@ Requires Node 24 (`.nvmrc`). Step 5 requires Rust in Linux, macOS or WSL2.
 
 To see the same run in a browser: `npm run web:build`, then open `web/dist/` from any static file server; the plant map shows Plant B's departments coming online, the quarantined lot and the material and money flows as the run advances, and the "Behind the curtain" switch shows each transaction with its signer, who paid the gas and an explorer link. The map's "3D" switch draws the same state as a site (`docs/TWIN3D.md`): the refused coin at the escrow vault's wall, the truck to the dock, the cage over the held lot, the payout on release. Its "Group buy" switch plays the recorded group purchase (`docs/GROUP_BUY.md`) on the same map: one coin per plant share, two directors' approvals, one escrow, and the earmarked share leaving the hub for Plant A.
 
+![The 3D twin at step 7: PO-1042's coin stops in red at the escrow vault's wall, "PO-1042 refused", while PO-1041's $612.00 already sits inside the vault; Acme HQ's budget tower stands behind](docs/ui-design/after/3d/wide-07-refused.png)
+
+*The twin at the refusal: the over-limit PO stops at the vault's wall; the funded PO-1041 is already inside (`docs/ui-design/after/`, captured by `npm run web:shot:3d`).*
+
 Also without keys:
 
 | Command | Shows |
@@ -84,20 +88,35 @@ From `data/replay/transcript.txt` (recorded live on testnet, Oct 29, 2026):
 
 Thirteen transactions, two refused by design (the over-limit PO and QuickChem's anchor), none failed.
 
+What staff see at step 6, on a desk and on a phone (dark): Linda's screen with Kevin's text ("Kevin needs approval: PO-1042, $5,150.00 to Northgate Ingredients for 700 kg ascorbic acid. Over Kevin's $2,500 limit. Reply YES 1042 or NO 1042."), the two reply buttons, the run so far with PO-1042 `refused` and PO-1041 `funded`, and the plant map with the refused flow stopped at the escrow. No wallet, token or gas anywhere on the page.
+
+<p>
+  <img src="docs/ui-design/after/pages/wide-linda-viewport.png" alt="The Floor screen at Linda's turn, 1280 px, light: Up next shows Linda Park, ops director, on her phone, Kevin's text message asking for approval of PO-1042, and the NO 1042 and YES 1042 buttons; Waiting for you holds 2 scans for Ray; the run so far lists PO-1042 refused and PO-1041 funded; the plant map shows Plant B with 4 of 9 departments online and PO-1042 refused at the escrow" width="760">
+  <img src="docs/ui-design/after/pages/phone-linda-viewport.png" alt="The same Floor screen on a 390 px phone in dark mode: Linda's text message and the two reply buttons fill the width above the run so far" width="232">
+</p>
+
+The same run at the end with "Behind the curtain" on: every account in the run and who paid its gas (Linda's, Tommy's and Priya's calls paid by `dayone-relayer.testnet`), the contract's budget line, Kevin's model attestation as two chips, and one card per transaction with its signer, events and explorer link, QuickChem's refused anchor in red with the contract's words.
+
+![The Floor screen at the end of the run with the curtain on, 1280 px: Up next says "Done: 13 actions recorded, 2 refused on purpose, 0 failed"; the run so far shows Marcy Allen paid, Priya Natarajan released, Tommy Reyes quarantine; the plant map shows 6 of 9 departments online and PO-1042 paid; the dark curtain rail lists each account with its methods and gas payer, "spend-policy budget 25,000.00 DTUSD, escrowed 0.00 DTUSD", "Kevin's model ran in a hardware enclave" with 15 enclave checks and 2 signed answers, and transaction cards: anchor_batch signed by kevin.plant-b, anchor by quickchem-direct.testnet refused with "Only a registered purchasing agent or an approved supplier can anchor records.", anchor by northgate-ingredients.testnet](docs/ui-design/after/pages/wide-end-curtain-viewport.png)
+
 ## Around the purchasing loop
 
-`npm run api`, then open `http://localhost:8787/`, runs the same screens live over the ledger, one staff action at a time. The "Three plants" switch adds what HQ sees across Acme's plants:
+`npm run api`, then open `http://localhost:8787/`, runs the same screens live over the ledger, one staff action at a time: Floor (whose turn it is, the run so far, the map), Plants, Books and HQ, with "Behind the curtain" as the one switch (`docs/UI_DESIGN.md`). The Plants screen is what HQ sees across Acme's plants:
 
 - **Inventory and discrepancies** (`server/src/ledger/inventory.ts`, `agents/kevin/src/discrepancies.ts`): stock per plant and material from the lot balances; a received transfer that is short raises a discrepancy with the adjustment Kevin proposes, which a reviewer applies or dismisses.
 - **Mass balance** (`agents/kevin/src/massBalance.ts`): material issued to each batch against tablets, QC samples and recorded waste. On the seed Riverside's two P-CMD batches are 6.84% short; Kevin says unit rounding explains 0.005 kg of it and that Riverside's waste looks under-recorded.
 - **Before you buy** (`agents/kevin/src/transferSuggestions.ts`): when one plant is short and another has surplus that outlasts the forecast, Kevin proposes a transfer instead of a PO (on the seed: 16,000 bottles from Lakeview to Hollow Pine, about $336.00, instead of ordering 100,000). Staff approve, dismiss or receive it.
 - **Kevin's limits** (`server/src/chain/policy.ts`): the per-PO and monthly limits, category caps, supplier statuses and roles HQ set, read live from the contract with view calls. HQ changes them in plain words (`agents/kevin/src/policyChange.ts`): `npm run policy -- "raise Kevin's per-PO limit to $3,000"` prints Kevin's reading and the complete `set_agent_policy` call (or `pause_agent`, `resume_agent`), or says what he cannot draft; it sends only when the owner adds `--yes`, signed with the owner's key, never Kevin's (tried Oct 29: $2,500 to $2,600 and [back to $2,500](https://testnet.nearblocks.io/txns/3SCxPDUJx5FZWmfQfF7Mp1RuV7s9b2TN4SYsnKVkdY7k)).
 - **Morning brief** (`agents/kevin/src/brief.ts`): one printable page for the plant's purchaser at 5am, from the ledger alone: lot movements since the last working day, what waits on QC, an approver or a reviewer, what the plan needs ordered with any sister-plant stock that could cover it first, and price drift, mass balance and expiring lots. It reads; it drafts and sends nothing.
-- **Books** (`server/src/ledger/books.ts`): a QuickBooks-friendly CSV of settled POs, each row carrying its escrow payment and receipt anchor transactions, and a price-drift alert (on the seed: PO-1040's magnesium stearate, up 14.0%).
+- **Books** (`server/src/ledger/books.ts`): a QuickBooks-friendly CSV of settled POs, each row carrying its escrow payment and receipt anchor transactions, and a price-drift alert (on the seed: PO-1040's magnesium stearate, up 14.0%). Since Oct 29 it also lists held invoices: the attack suite's hidden-text invoice NG-INV-24190 sits there for Marcy with the reason in plain words (`api/src/heldInvoice.ts`).
+
+![The Plants screen, 1280 px: four tiles (Needs a person 5, Low stock 6 materials below the reorder point, Mass balance 115.199 kg unaccounted at Acme Riverside, Open purchase orders $612.00 held in escrow); Waiting on a person with four "before you buy" transfer proposals, each with Approve the move and Dismiss, and the mass-balance card "P-CMD at Riverside: 115.2 kg of material issued over two batches is in neither the tablets nor the recorded waste (6.84%)" with "Send Plant A a waste correction to review"; Stock on hand filtered to low stock and reviews, 6 of 33 materials, per plant with status pills; the mass balance table with "balances" and "waste under-recorded?" pills](docs/ui-design/after/pages/wide-plants.png)
+
+*Plants, live from the plant ledger: the tiles, what waits on a person, stock on hand filtered to the six materials that need a look, and the mass balance.*
 
 Kevin also watches a folder (`data/inbox/batch-records/`, `agents/kevin/src/inbox.ts`): a scan dropped there is read, checked against the formula and the ledger, and queued under "Waiting for you" on Ray's screen with any question Kevin has. Nothing posts until Ray confirms; the same scan dropped twice is read once, and a page that is not a batch record is set aside.
 
-The "Spreadsheet" switch is the import wizard (`server/src/import/`): Ray's inventory workbook, with its duplicate lot, pound units, expired lot, typed total and retyped summary, becomes opening stock only after he answers each flag. Kevin proposes an answer and never guesses.
+Under Books, "Bring in a spreadsheet" is the import wizard (`server/src/import/`): Ray's inventory workbook, with its duplicate lot, pound units, expired lot, typed total and retyped summary, becomes opening stock only after he answers each flag. Kevin proposes an answer and never guesses.
 
 The acquirer's books live in a mock ERP shaped like NetSuite (`erp/`, `docs/ERP.md`), not in Day One. The ERP owns the vendor master, bills, the 3-way match and the general ledger; Day One owns lots, batch records and escrow; the connector (`server/src/erp-connector/`) moves records by PO number and transaction hash, and Kevin pays only bills the ERP has matched. `npm run erp:demo` replays the run with the ERP attached; `npm run erp` serves its web view at `http://localhost:8087/`. It is a mock, not NetSuite, and claims no compatibility.
 
