@@ -191,8 +191,8 @@ async function ensurePlantFunds(plant: string) {
   if (missing.length === 0) return;
   // Each new account costs its transfer plus about 0.002 NEAR of storage for the keys.
   const need = missing.reduce((sum, c) => sum + c.near + 0.01, 0) + 0.1;
-  const { amount } = await new Account(plant, provider).getState();
-  const have = Number(amount / 10n ** 21n) / 1000;
+  const { balance } = await new Account(plant, provider).getState();
+  const have = Number(balance.available / 10n ** 21n) / 1000;
   if (have < need) topUpFromRoot(plant, Math.ceil((need - have) * 10) / 10);
 }
 

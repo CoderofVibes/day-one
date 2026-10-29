@@ -72,6 +72,30 @@
         "ed25519:HUsLL4qPoqCxdGvPDy7Goz7Ti6qJEwB9QwvNeWjNRsSU"
       ]
     },
+    "kevin.plant-a.acme-holdings.testnet": {
+      "publicKeys": [
+        "ed25519:2xCtCaGyUFueugZJ6YEe6K1NwJCCgDc6kst5vbxNHdpA",
+        "ed25519:ABzvhepwYbotpfjPej3K57kQEzMXo1VB2drc9gdTd79q"
+      ]
+    },
+    "director.plant-a.acme-holdings.testnet": {
+      "publicKeys": [
+        "ed25519:4ipMEeKAZqutonhPbv2mavCvvt5qUnHogCvXsjwRJDpN",
+        "ed25519:9SLchGVZbW8ke7enQwAxETATSSc8UCbnG9SsfGXfZcjf"
+      ]
+    },
+    "kevin.plant-c.acme-holdings.testnet": {
+      "publicKeys": [
+        "ed25519:79e4D5w5gtwYmuyLNwGjSXLFqDopdggv5rXXAEz76pze",
+        "ed25519:36REwwwuKy63o8YRnWUfdTW4V2LMveMhi8UkeVE8sC38"
+      ]
+    },
+    "director.plant-c.acme-holdings.testnet": {
+      "publicKeys": [
+        "ed25519:69VCzMSheQyp3iPJ3K85hHQDWG1wa246BwQkmAvnQgKi",
+        "ed25519:9TsiNjsyTrvdu2NVR6SgaoY65L4eaUmnaLqycETiEfpy"
+      ]
+    },
     "dayone-relayer.testnet": {
       "publicKeys": [
         "ed25519:5UYLqw36WhoU8LYcgCsQJMWatpcC8uaKcAMrRe9AdBsg"
