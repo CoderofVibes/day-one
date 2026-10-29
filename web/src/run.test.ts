@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { audienceOf, run, transactionsThrough } from "./run.ts";
+import { audienceOf, run, statusOf, transactionsThrough } from "./run.ts";
 
 const transcript = readFileSync(
   join(import.meta.dirname, "../../data/replay/transcript.txt"),
@@ -21,6 +21,25 @@ describe("the web UI's recorded run", () => {
     expect(audienceOf(step("QC reject")).name).toBe("Priya Natarajan");
     expect(audienceOf(step("Stopped")).channel).toBe("screen");
     expect(() => audienceOf(step("Something new"))).toThrow(/No audience/);
+  });
+
+  it("names what happened at each step in a word, with its status colour", () => {
+    const by = Object.fromEntries(run.steps.map((s) => [s.title, statusOf(s)]));
+    expect(by["Big PO"]).toEqual({ label: "refused", tone: "refused" });
+    expect(by["Small PO"]).toEqual({ label: "funded", tone: "held" });
+    expect(by["Linda texts"]).toEqual({ label: "approved", tone: "ok" });
+    expect(by["Kevin retries"]).toEqual({ label: "funded", tone: "held" });
+    expect(by.Delivery).toEqual({ label: "quarantine", tone: "waiting" });
+    expect(by["QC release"]).toEqual({ label: "released", tone: "ok" });
+    expect(by.Paid).toEqual({ label: "paid", tone: "paid" });
+    expect(by.Discrepancy).toEqual({ label: "for Plant A to review", tone: "waiting" });
+    const step = (title: string, ...staff: string[]) => ({ step: 0, title, staff, chain: [] });
+    expect(statusOf(step("Linda texts", "Linda: NO 1042 → Declined by Linda Park.")).tone).toBe(
+      "refused",
+    );
+    expect(statusOf(step("Delivery", "Short 25 kg against PO-1042.")).label).toBe("on hold");
+    expect(statusOf(step("QC reject", "Priya rejected lot X.")).tone).toBe("refused");
+    expect(statusOf(step("Something new")).label).toBe("something new");
   });
 
   it("keeps chain words off staff screens", () => {

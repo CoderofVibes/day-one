@@ -122,6 +122,55 @@ export function audienceOf(step: Step): Audience {
   throw new Error(`No audience for demo step "${step.title}"`);
 }
 
+/** The status colours (docs/UI_DESIGN.md §4): colour never alone, every pill carries a word. */
+export type Tone = "refused" | "waiting" | "held" | "paid" | "ok" | "neutral";
+export interface Status {
+  label: string;
+  tone: Tone;
+}
+
+/**
+ * What happened at a step, in a word, for the pill on its card: the demo runner's titles
+ * ("Big PO", "Kevin retries") are for the transcript; staff read "refused" and "funded". Read
+ * from the title and, where the live run can go two ways, from Kevin's own line.
+ */
+export function statusOf(step: Step): Status {
+  const t = step.title;
+  const text = step.staff.join(" ");
+  if (t === "Load seed") return { label: "set up", tone: "neutral" };
+  if (t.startsWith("Upload ")) return { label: "batch record", tone: "neutral" };
+  if (t.endsWith(" confirms")) return { label: "confirmed", tone: "ok" };
+  if (t === "Discrepancy") {
+    const plant = /sent to Plant ([A-Z])/.exec(text)?.[1];
+    return { label: plant ? `for Plant ${plant} to review` : "to review", tone: "waiting" };
+  }
+  if (t === "Forecast") return { label: "forecast", tone: "neutral" };
+  if (t === "Quotes") return { label: "quotes", tone: "neutral" };
+  if (t === "Small PO" || t === "Big PO")
+    return /is over|refused/i.test(text)
+      ? { label: "refused", tone: "refused" }
+      : { label: "funded", tone: "held" };
+  if (t.endsWith(" texts")) {
+    if (/Approved by/.test(text)) return { label: "approved", tone: "ok" };
+    if (/Declined by/.test(text)) return { label: "declined", tone: "refused" };
+    return { label: "asked again", tone: "waiting" };
+  }
+  if (t === "Kevin retries")
+    return /Funds held/.test(text)
+      ? { label: "funded", tone: "held" }
+      : { label: "not funded", tone: "refused" };
+  if (t === "Supplier ships") return { label: "on its way", tone: "held" };
+  if (t === "Delivery")
+    return /on hold|Short/.test(text)
+      ? { label: "on hold", tone: "waiting" }
+      : { label: "quarantine", tone: "waiting" };
+  if (t === "QC release") return { label: "released", tone: "ok" };
+  if (t === "QC reject") return { label: "rejected", tone: "refused" };
+  if (t === "Paid") return { label: "paid", tone: "paid" };
+  if (t === "Stopped") return { label: "stopped", tone: "refused" };
+  return { label: t.toLowerCase(), tone: "neutral" };
+}
+
 /** The transactions sent up to and including step index `upTo`, in order. */
 export function transactionsThrough(
   data: RunData,

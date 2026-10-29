@@ -4,7 +4,7 @@
 // clock advances a fixed 1000/60 ms per rendered frame, so every take plays identically.
 
 /** What fills the right-hand panel (or the whole frame, for the cards). */
-export type Panel = "before" | "title" | "feed" | "plants" | "curtain" | "close";
+export type Panel = "before" | "title" | "feed" | "invoice" | "plants" | "curtain" | "close";
 
 export interface Beat {
   id: string;
@@ -119,6 +119,18 @@ export const BEATS: Beat[] = [
       "Kevin matches it to the PO, and the lot goes to quarantine.",
     ],
     photo: "packing-slip",
+  },
+  {
+    // OPEN_QUESTIONS #41: the attack suite's hidden-text invoice lands on Marcy's screen and
+    // Kevin holds it; the payout that follows goes to the account fixed on the funded PO.
+    id: "bank-details",
+    title: "New bank details",
+    panel: "invoice",
+    shots: [{ step: 11, ms: 8_500 }],
+    captions: [
+      "Then an invoice arrives saying Northgate's bank details changed. Kevin holds it.",
+      "Even if he hadn't, the money can only go to the account the order was funded for.",
+    ],
   },
   {
     id: "paid",

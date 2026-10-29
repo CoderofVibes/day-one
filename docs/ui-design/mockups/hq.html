@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup · HQ</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="mock.css">
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="#"><span class="mark" aria-hidden="true">K</span><span><b>Day One</b><small>Kevin · Hollow Pine Tablet Co. (Plant B)</small></span></a>
+  <nav class="tabs" aria-label="Screens">
+    <a href="#">Floor</a>
+    <a href="#">Plants</a>
+    <a href="#">Books</a>
+    <a href="#" aria-current="page">HQ</a>
+  </nav>
+  <label class="switch"><input type="checkbox"><span>Behind the curtain</span></label>
+</header>
+
+<main class="page">
+  <section class="panel" aria-label="HQ">
+    <div class="panel-head"><h2>Acme HQ · Kevin's limits on the contract</h2><span class="right small muted">read from the chain just now · Jordan Pike</span></div>
+    <div class="tiles">
+      <div class="tile"><small>Per PO</small><b>$2,500.00</b><span class="pill">over that, Linda approves</span></div>
+      <div class="tile"><small>This month</small><b>$10,507.00 <span class="muted small">of $60,000</span></b><span class="pill ok">within limits</span></div>
+      <div class="tile"><small>Plant budget</small><b>$9,748.00</b><span class="pill held">$612.00 held for open POs</span></div>
+      <div class="tile"><small>Kevin</small><b>active</b><span class="pill ok">8 methods, one contract</span></div>
+    </div>
+    <div class="note"><span class="avatar kevin">K</span><p>I may spend up to $2,500.00 per PO and $60,000.00 a month on raw materials, packaging and lab chemicals. Over that, Linda Park approves. No limit has changed during this run.</p></div>
+
+    <h3>Category caps</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Category</th><th class="n">Monthly cap</th><th class="n">Spent this month</th><th>Suppliers Kevin may pay</th></tr></thead>
+        <tbody>
+          <tr><th>Raw materials</th><td class="n muted">Kevin's monthly limit</td><td class="n">$14,640.00</td><td>Northgate Ingredients <span class="pill ok">qualified</span> · Ridgeway Ascorbics <span class="pill ok">qualified</span> · QuickChem Direct <span class="pill refused">not listed, refused</span></td></tr>
+          <tr><th>Packaging</th><td class="n muted">Kevin's monthly limit</td><td class="n">$0.00</td><td class="muted">—</td></tr>
+          <tr><th>Lab chemicals</th><td class="n">$2,000.00</td><td class="n">$612.00</td><td>Bayfront Lab Supply <span class="pill ok">qualified</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Group purchasing · RFQ-G-2611 <span class="pill paid">paid</span></h3>
+    <div class="note"><span class="avatar kevin">K</span><p>1,400 kg of ascorbic acid pooled by 2 plants into one order: PO-G-2001 to Northgate Ingredients, $9,490.00 at $6.65/kg, $810.00 less than buying alone. Each plant's share was checked against its own limits before the order was funded.</p></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Plant</th><th class="n">Pooled</th><th class="n">Share</th><th>Approved by</th><th class="n">On the books this month</th></tr></thead>
+        <tbody>
+          <tr><th>Acme Riverside <small>Plant A</small></th><td class="n">700 kg</td><td class="n">$4,745.00</td><td>Dana Whitfield</td><td class="n">$4,745.00</td></tr>
+          <tr><th>Hollow Pine Tablet Co. <small>Plant B</small></th><td class="n">700 kg</td><td class="n">$4,745.00</td><td>Linda Park</td><td class="n">$10,507.00</td></tr>
+          <tr><th>Acme Lakeview <small>Plant C</small></th><td class="n muted">no need · not in the pool</td><td class="n muted">—</td><td class="muted">—</td><td class="n">$0.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted">From the recorded group purchase, not this run. The map's "Group buy" switch plays it.</p>
+
+    <h3>Acme's books</h3>
+    <p style="margin:0">Purchase orders, receipts and payments flow to the acquirer's ERP through the connector; vendor bills are 3-way matched there. <a href="http://localhost:8087/">Open the ERP view</a> (NetSuite-shaped mock) · <a href="#">Reconciliation: 7 of 7 checks match</a>.</p>
+  </section>
+  <p class="foot">HQ reads the contract live; the plant screens never show it. All companies, people and numbers are fictional.</p>
+</main>
+</body>
+</html>

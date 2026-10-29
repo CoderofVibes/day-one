@@ -169,11 +169,25 @@ export interface PriceDrift {
   driftBp: number;
   sentence: string;
 }
+/**
+ * An invoice Kevin holds for Marcy (api/src/heldInvoice.ts): the staff lines carry no account
+ * names; the accounts and the quoted line stay behind the curtain.
+ */
+export interface HeldInvoice {
+  invoiceNo: string;
+  poNo: string;
+  vendor: string;
+  total: string;
+  status: "held";
+  staff: string[];
+  curtain: { payee: string; askedFor: string[]; hiddenLines: string[]; problems: string[] };
+}
 export interface Books {
   settled: SettledPo[];
   totalUsdc: number;
   alerts: PriceDrift[];
   sentences: string[];
+  held: HeldInvoice[];
 }
 
 export function getBooks(): Promise<Books> {

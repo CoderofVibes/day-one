@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup · Floor · Linda's phone</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="mock.css">
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="#"><span class="mark" aria-hidden="true">K</span><span><b>Day One</b><small>Kevin · Hollow Pine Tablet Co. (Plant B)</small></span></a>
+  <nav class="tabs" aria-label="Screens">
+    <a href="#" aria-current="page">Floor</a>
+    <a href="#">Plants</a>
+    <a href="#">Books</a>
+    <a href="#">HQ</a>
+  </nav>
+  <label class="switch"><input type="checkbox"><span>Behind the curtain</span></label>
+</header>
+
+<main class="page floor">
+  <div class="col">
+    <section class="panel next" aria-label="Next action">
+      <div class="panel-head">
+        <h2>Up next</h2>
+        <span class="right pill refused">refused · needs Linda</span>
+      </div>
+      <div class="who"><span class="avatar">LP</span><span><b>Linda Park</b> <span class="muted">· Ops director · on her phone</span></span></div>
+      <div class="phone" style="margin-top:12px">
+        <div class="from">Text message · Kevin · 10:42 AM</div>
+        <p class="bubble">Kevin needs approval: PO-1042, $5,150.00 to Northgate Ingredients for 700 kg ascorbic acid. Over Kevin's $2,500 limit. Reply YES 1042 or NO 1042.</p>
+        <div class="actions">
+          <button class="btn danger">NO 1042</button>
+          <button class="btn primary">YES 1042</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="The run so far">
+      <div class="panel-head"><h2>The run so far</h2><span class="right small muted">Mon Nov 16 · 8 steps</span></div>
+      <div class="feed">
+        <article class="card current">
+          <div class="head"><span class="avatar">RD</span><b>Ray Delgado</b><span class="muted">· Purchaser</span><span class="pill refused">refused</span></div>
+          <p><b>PO-1042</b> to Northgate Ingredients, $5,150.00 is over Kevin's $2,500.00 limit. Sent to Linda for approval.</p>
+        </article>
+        <article class="card">
+          <div class="head"><span class="avatar">RD</span><b>Ray Delgado</b><span class="muted">· Purchaser</span><span class="pill held">funded</span></div>
+          <p><b>PO-1041</b> to Bayfront Lab Supply, $612.00 — approved automatically and funded.</p>
+        </article>
+        <article class="card">
+          <div class="head"><span class="avatar">RD</span><b>Ray Delgado</b><span class="muted">· Purchaser</span><span class="pill">quotes</span></div>
+          <p>3 quotes. QuickChem Direct $5.90/kg excluded: vendor not qualified. Northgate $7.10/kg, 7 days — selected. Ridgeway $7.35/kg, 5 days — runner-up.</p>
+        </article>
+        <article class="card">
+          <div class="head"><span class="avatar">RD</span><b>Ray Delgado</b><span class="muted">· Purchaser</span><span class="pill">forecast</span></div>
+          <p>Two more VC500 batches in the next 10 days need about 824 kg. Short about 514 kg. Recommend ordering 700 kg.</p>
+        </article>
+        <article class="card">
+          <div class="head"><span class="avatar">RD</span><b>Ray Delgado</b><span class="muted">· Purchaser</span><span class="pill waiting">for Plant A to review</span></div>
+          <p>Plant A still shows 12.55 kg of lot ASC-261009-01, but Plant B weighed in 187.45 kg of the 200 kg sent. Proposed adjustment sent to Plant A for review.</p>
+        </article>
+        <article class="card">
+          <div class="head"><span class="avatar">RD</span><b>Ray Delgado</b><span class="muted">· Purchaser</span><span class="pill ok">confirmed</span></div>
+          <p>Inventory updated. Ascorbic acid at Plant B: 722.4 kg → 310.0 kg (reorder point 500 kg).</p>
+        </article>
+        <article class="card">
+          <div class="head"><span class="avatar">RD</span><b>Ray Delgado</b><span class="muted">· Purchaser</span><span class="pill">batch record</span></div>
+          <p>Kevin read BR-B-1045 (VC500, 800,000 tablets). 8 materials, all within tolerance. Yield 90.8%.</p>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="panel map-frame sticky" aria-label="Plant map">
+      <div class="panel-head">
+        <h2>Plant map</h2>
+        <div class="right">
+          <div class="seg"><button aria-pressed="true">This run</button><button>Group buy</button></div>
+          <div class="seg"><button>Flat</button><button aria-pressed="true">3D</button></div>
+        </div>
+      </div>
+      <div class="stage"><img src="../before/3d/wide-07-refused.png" alt="The 3D twin: the coin for PO-1042 bounces off the wall at the escrow vault"></div>
+      <p class="caption">PO-1042, $5,150.00, refused by the contract: over Kevin's $2,500 limit. PO-1041, $612.00, held in escrow.</p>
+      <div class="legend"><span><i style="background:var(--brand)"></i>online</span><span><i style="background:var(--map-off)"></i>not yet</span><span><i style="background:var(--money)"></i>money</span><span><i style="background:var(--quarantine)"></i>quarantine</span><span><i style="background:var(--refused)"></i>refused / disputed</span></div>
+    </section>
+  </div>
+  <p class="foot">Step by step through the recorded run. All companies, people and numbers are fictional.</p>
+</main>
+</body>
+</html>

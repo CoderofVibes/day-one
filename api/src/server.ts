@@ -107,7 +107,7 @@ async function route(
   if (method === "GET" && path === "/api/inventory") return reply(res, 200, session.inventory());
   if (method === "GET" && path === "/api/mass-balance")
     return reply(res, 200, session.massBalance());
-  if (method === "GET" && path === "/api/books") return reply(res, 200, session.books());
+  if (method === "GET" && path === "/api/books") return reply(res, 200, await session.books());
   if (method === "GET" && path === "/api/transfer-suggestions")
     return reply(res, 200, session.transferSuggestions());
   if (method === "GET" && path === "/api/imports") return reply(res, 200, desk.state());

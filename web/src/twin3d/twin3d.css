@@ -1,13 +1,14 @@
-/* The 3D twin's stage and its DOM labels (web/src/twin3d). Colours come from the page's
-   variables, so the view follows light and dark like the flat map. */
+/* The 3D twin's stage and its DOM labels (web/src/twin3d). Colours come from the page's tokens
+   (src/tokens.css), so the view follows light and dark like the flat map, and the labels use the
+   same pill shapes and status colours as the screens. */
 
 .t3-stage {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 10px;
+  border-radius: var(--r-md);
   overflow: hidden;
-  background: var(--bg);
+  background: var(--map-floor);
   touch-action: none;
 }
 
@@ -32,12 +33,12 @@
   flex-direction: column;
   align-items: center;
   gap: 1px;
-  font-size: 12px;
+  font-size: var(--t-xs);
   line-height: 1.25;
   color: var(--ink);
   text-shadow:
-    0 0 3px var(--panel),
-    0 0 6px var(--panel);
+    0 0 3px var(--map-floor),
+    0 0 6px var(--map-floor);
 }
 
 .t3-label strong {
@@ -45,7 +46,7 @@
 }
 
 .t3-label span {
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 11px;
 }
 
@@ -55,33 +56,35 @@
 
 .t3-label.dept {
   font-size: 11px;
-  padding: 1px 6px;
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--panel) 82%, transparent);
-  color: var(--muted);
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  color: var(--ink-2);
   text-shadow: none;
 }
 
 .t3-label.dept.online {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--brand);
+  color: var(--brand-ink);
 }
 
 .t3-label.dept.onboarding {
   color: var(--ink);
-  background: color-mix(in srgb, var(--map-warm) 70%, var(--panel));
+  background: color-mix(in srgb, var(--map-warm) 70%, var(--surface));
 }
 
 .t3-label.flow,
 .t3-label.lot,
 .t3-label.depot {
   padding: 2px 8px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  border-radius: 999px;
+  background: var(--surface);
   border: 1px solid var(--line);
   text-shadow: none;
   font-weight: 600;
   font-size: 11px;
+  box-shadow: var(--shadow);
 }
 
 .t3-label.flow.money {
@@ -91,107 +94,59 @@
 .t3-label.flow.refused,
 .t3-label.flow.disputed,
 .t3-label.lot.rejected {
-  color: var(--warn);
-  border-color: var(--warn);
+  color: var(--refused);
+  border-color: var(--refused);
+  background: var(--refused-bg);
 }
 
 .t3-label.lot.quarantine {
   color: var(--quarantine);
   border-color: var(--quarantine);
+  background: var(--waiting-bg);
 }
 
 .t3-label.lot.released {
-  color: var(--ok);
-  border-color: var(--ok);
+  color: var(--paid);
+  border-color: var(--paid);
+  background: var(--paid-bg);
+}
+
+.t3-label.flow.money.held {
+  color: var(--held);
+  border-color: var(--held);
+  background: var(--held-bg);
+}
+
+.t3-label.flow.money.arrived {
+  color: var(--paid);
+  border-color: var(--paid);
+  background: var(--paid-bg);
 }
 
 .t3-label.depot {
   font-weight: 500;
+  border-radius: var(--r-md);
 }
 
 .t3-label.depot.selected {
-  border-color: var(--accent);
+  border-color: var(--paid);
 }
 
 .t3-label.depot.excluded {
-  border-color: var(--warn);
+  border-color: var(--refused);
 }
 
 .t3-label.depot.excluded span:nth-of-type(2) {
-  color: var(--warn);
+  color: var(--refused);
 }
 
 .t3-label.depot.selected span:nth-of-type(2) {
-  color: var(--ok);
+  color: var(--paid);
 }
 
 .t3-label .hash {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--mono);
   font-size: 10px;
-}
-
-/* The bar above the map pane: this run | group buy (with the group run's own steps), flat | 3D. */
-.map-view {
-  grid-column: 1 / -1;
-  position: relative;
-}
-
-.map-view .map-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-  margin: 0 0 8px;
-}
-
-.map-view .map-bar .view-switch:last-child {
-  margin-left: auto;
-}
-
-.map-view .view-switch {
-  display: inline-flex;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.map-view .group-steps {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-}
-
-.map-view .group-steps button {
-  padding: 2px 9px;
-  font-size: 0.8rem;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: var(--panel);
-  color: var(--ink);
-}
-
-.map-view .group-steps button:disabled {
-  color: var(--muted);
-}
-
-.map-view .view-switch button {
-  border: 0;
-  border-radius: 0;
-  padding: 3px 10px;
-  font-size: 0.75rem;
-  background: var(--panel);
-  color: var(--muted);
-}
-
-.map-view .view-switch button[aria-pressed="true"] {
-  background: var(--accent);
-  color: var(--accent-ink);
-}
-
-.map-view .view-note {
-  margin: 0 0 8px;
-  font-size: 0.8rem;
 }
 
 /* Phones: smaller labels, names only; the camera fits the buildings and labels fade at the edge. */

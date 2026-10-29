@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup · Floor · paid, curtain on</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="mock.css">
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="#"><span class="mark" aria-hidden="true">K</span><span><b>Day One</b><small>Kevin · Hollow Pine Tablet Co. (Plant B)</small></span></a>
+  <nav class="tabs" aria-label="Screens">
+    <a href="#" aria-current="page">Floor</a>
+    <a href="#">Plants</a>
+    <a href="#">Books</a>
+    <a href="#">HQ</a>
+  </nav>
+  <label class="switch"><input type="checkbox" checked><span>Behind the curtain</span></label>
+</header>
+
+<main class="page floor with-curtain">
+  <div class="col">
+    <section class="panel map-frame" aria-label="Plant map">
+      <div class="panel-head">
+        <h2>Plant map</h2>
+        <div class="right">
+          <div class="seg"><button aria-pressed="true">This run</button><button>Group buy</button></div>
+          <div class="seg"><button>Flat</button><button aria-pressed="true">3D</button></div>
+        </div>
+      </div>
+      <div class="stage"><img src="../before/3d/wide-13-paid-curtain.png" alt="The 3D twin with the curtain on: every arc carries its transaction hash"></div>
+      <p class="caption">PO-1042: $5,150.00 paid to Northgate Ingredients the moment QC released lot ASC-261116-01. Escrow holds $612.00 for PO-1041.</p>
+    </section>
+    <section class="panel next" aria-label="Next action">
+      <div class="panel-head"><h2>Up next</h2><span class="right pill paid">run complete</span></div>
+      <p class="lead" style="margin-top:0">That is the whole loop: a batch record read, stock reordered, a refusal over the limit, an approval by text, and the supplier paid the moment QC released the lot.</p>
+      <div class="actions"><button class="btn primary">Start over</button><a class="btn quiet" href="#">Open Plants</a></div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="panel" aria-label="The run so far">
+      <div class="panel-head"><h2>The run</h2><span class="right small muted">15 steps · 13 transactions · 2 refused by design</span></div>
+      <div class="feed">
+        <article class="card current">
+          <div class="head"><span class="avatar">MA</span><b>Marcy Allen</b><span class="muted">· Accounting</span><span class="pill paid">paid</span></div>
+          <p><b>PO-1042</b> — paid $5,150.00. Invoice matched to PO and receipt.</p>
+        </article>
+        <article class="card">
+          <div class="head"><span class="avatar">PN</span><b>Priya Natarajan</b><span class="muted">· QC</span><span class="pill ok">released</span></div>
+          <p>Priya released lot ASC-261116-01.</p>
+        </article>
+        <article class="card">
+          <div class="head"><span class="avatar">TR</span><b>Tommy Reyes</b><span class="muted">· Receiving</span><span class="pill waiting">quarantine</span></div>
+          <p>Tommy photographed the packing slip. Matches PO-1042: 700 kg ascorbic acid, supplier lot NG-24-8812. Lot ASC-261116-01 is in quarantine.</p>
+        </article>
+        <article class="card">
+          <div class="head"><span class="avatar">RD</span><b>Ray Delgado</b><span class="muted">· Purchaser</span><span class="pill held">funded</span></div>
+          <p><b>PO-1042</b> sent to Northgate Ingredients. Funds held until delivery passes QC.</p>
+        </article>
+        <article class="card">
+          <div class="head"><span class="avatar">LP</span><b>Linda Park</b><span class="muted">· Ops director</span><span class="pill ok">approved</span></div>
+          <div class="phone">
+            <div class="from">Text message · Kevin</div>
+            <p class="bubble">Kevin needs approval: PO-1042, $5,150.00 to Northgate Ingredients for 700 kg ascorbic acid. Over Kevin's $2,500 limit. Reply YES 1042 or NO 1042.</p>
+            <p class="bubble out">YES 1042</p>
+          </div>
+          <p class="small muted">Approved by Linda Park.</p>
+        </article>
+        <article class="card">
+          <div class="head"><span class="avatar">RD</span><b>Ray Delgado</b><span class="muted">· Purchaser</span><span class="pill refused">refused</span></div>
+          <p><b>PO-1042</b> to Northgate Ingredients, $5,150.00 is over Kevin's $2,500.00 limit. Sent to Linda for approval.</p>
+        </article>
+        <article class="card">
+          <div class="head"><span class="avatar">RD</span><b>Ray Delgado</b><span class="muted">· Purchaser</span><span class="pill held">funded</span></div>
+          <p><b>PO-1041</b> to Bayfront Lab Supply, $612.00 — approved automatically and funded.</p>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <aside class="col">
+    <section class="curtain sticky" aria-label="Behind the curtain">
+      <div class="panel-head"><h2>Behind the curtain · NEAR testnet</h2><span class="right small" style="color:var(--curtain-ink-2)">13 transactions</span></div>
+      <div class="acct">
+        <span style="color:var(--curtain-ink-2)">Kevin</span><code>kevin.plant-b.acme…</code>
+        <span style="color:var(--curtain-ink-2)">Linda</span><code>director.plant-b.acme… <span style="color:var(--curtain-ink-2)">gas: dayone-relayer</span></code>
+        <span style="color:var(--curtain-ink-2)">Tommy, Priya</span><code>receiving / qc.plant-b.acme… <span style="color:var(--curtain-ink-2)">gas: dayone-relayer</span></code>
+        <span style="color:var(--curtain-ink-2)">Northgate</span><code>northgate-ingredients.testnet</code>
+      </div>
+      <p class="ledger">spend-policy · budget 19,238.00 DTUSD · escrowed 612.00 DTUSD</p>
+      <div class="tx fresh">
+        <div class="head"><code>release</code><span class="st">✓ paid</span></div>
+        <dl><dt>signed by</dt><dd>qc.plant-b.acme…</dd><dt>gas paid by</dt><dd>dayone-relayer.testnet</dd><dt>events</dt><dd>lot_released, po_paid</dd></dl>
+        <a href="#">2zwgaHgW… on the explorer ↗</a>
+      </div>
+      <div class="tx">
+        <div class="head"><code>confirm_receipt</code><span class="st">✓</span></div>
+        <dl><dt>signed by</dt><dd>receiving.plant-b.acme…</dd><dt>gas paid by</dt><dd>dayone-relayer.testnet</dd></dl>
+        <a href="#">7pCauyEY… on the explorer ↗</a>
+      </div>
+      <div class="tx">
+        <div class="head"><code>approve_po</code><span class="st">✓</span></div>
+        <dl><dt>signed by</dt><dd>director.plant-b.acme…</dd><dt>gas paid by</dt><dd>dayone-relayer.testnet</dd><dt>events</dt><dd>po_approved</dd></dl>
+        <a href="#">EW5A8qi3… on the explorer ↗</a>
+      </div>
+      <div class="tx refused">
+        <div class="head"><code>submit_po</code><span class="st">✗ refused</span></div>
+        <dl><dt>signed by</dt><dd>kevin.plant-b.acme…</dd><dt>events</dt><dd>po_refused</dd></dl>
+        <p class="why">“PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required.”</p>
+        <a href="#">FQepeewB… on the explorer ↗</a>
+      </div>
+      <div class="tx">
+        <div class="head"><code>submit_po</code><span class="st">✓</span></div>
+        <dl><dt>signed by</dt><dd>kevin.plant-b.acme…</dd><dt>events</dt><dd>po_authorized, po_funded</dd></dl>
+        <a href="#">D28BgcP3… on the explorer ↗</a>
+      </div>
+      <div class="tx refused">
+        <div class="head"><code>anchor</code><span class="st">✗ refused</span></div>
+        <dl><dt>signed by</dt><dd>quickchem-direct.testnet</dd></dl>
+        <p class="why">“Only a registered purchasing agent or an approved supplier can anchor records.”</p>
+        <a href="#">6qNuBF16… on the explorer ↗</a>
+      </div>
+      <h3 style="color:var(--curtain-ink);font-size:var(--t-sm)">Kevin's model ran in a hardware enclave</h3>
+      <p class="ledger" style="margin:0">z-ai/glm-5.3-flash · NEAR AI Cloud Private TEE · report 2026-10-29 18:54Z</p>
+      <div class="chips"><span>✓ 15 enclave checks</span><span>✓ 7 signed answers</span></div>
+    </section>
+  </aside>
+  <p class="foot">Step by step through the recorded run. All companies, people and numbers are fictional.</p>
+</main>
+</body>
+</html>

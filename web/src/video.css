@@ -53,7 +53,8 @@
   overflow: hidden;
 }
 
-.video-map .view-switch {
+.video-map .view-switch,
+.video-map .legend {
   display: none;
 }
 
@@ -62,12 +63,16 @@
   overflow: hidden;
 }
 
+.video-panel .feed {
+  gap: 0.7vw;
+}
+
 .video-panel .card {
-  margin-bottom: 0.7vw;
   padding: 0.8vw 1vw;
 }
 
-.video-panel .pane.plants {
+.video-panel .panel.plants,
+.video-panel .curtain {
   font-size: 0.95em;
 }
 
@@ -78,19 +83,6 @@
   margin: 0 0 0.8vw;
   border: 1px solid var(--line);
   border-radius: 0.5vw;
-}
-
-.video-accounts {
-  margin-bottom: 0.8vw;
-}
-
-.video-accounts ul {
-  margin: 0;
-  padding-left: 1.1em;
-}
-
-.video-accounts code {
-  font-size: 0.95em;
 }
 
 .video-caption {
