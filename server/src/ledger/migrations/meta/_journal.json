@@ -57,6 +57,13 @@
       "when": 1793240308285,
       "tag": "0007_transfer_dismissals",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1793243332143,
+      "tag": "0008_group_buy_tx_kinds",
+      "breakpoints": true
     }
   ]
 }

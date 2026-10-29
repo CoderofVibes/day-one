@@ -571,6 +571,10 @@ export const CHAIN_TX_KINDS = [
   "quote",
   "storage_deposit",
   "ft_transfer",
+  // Group purchasing (docs/GROUP_BUY.md): the demand pool and the pooled PO.
+  "open_pool",
+  "join_pool",
+  "submit_pooled_po",
 ] as const;
 export const CHAIN_TX_STATUS = ["pending", "success", "refused", "failed"] as const;
 

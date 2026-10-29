@@ -156,6 +156,87 @@ pub struct Budget {
     pub escrowed: U128,
 }
 
+// ---------------------------------------------------------------- group purchasing (GROUP_BUY.md)
+//
+// Several plants pool demand for one material into one RFQ; the winning supplier gets one
+// pooled PO whose allocation lines charge each plant's share to that plant's own agent limits.
+// The state lives in its own collections under byte-string prefixes rather than new fields on
+// the contract struct, so a redeploy over the testnet state needs no migration (the single-byte
+// `StorageKey` prefixes can never collide with these).
+
+const POOLS_PREFIX: &[u8] = b"gb:pool";
+const POOL_LINES_PREFIX: &[u8] = b"gb:lines";
+/// A pooled PO carries at most this many plant shares.
+const MAX_POOL_LINES: usize = 10;
+
+/// One plant's pledge to a demand pool: how much it needs and the most it will pay.
+#[near(serializers = [borsh, json])]
+#[derive(Clone, Debug, PartialEq)]
+pub struct PoolMember {
+    pub agent: AccountId,
+    pub plant: AccountId,
+    /// Quantity in the material's base unit, for the record; the contract enforces money only.
+    pub qty: U64,
+    pub max_amount: U128,
+}
+
+#[near(serializers = [borsh, json])]
+#[derive(Clone, Debug, PartialEq)]
+pub struct Pool {
+    pub pool_id: String,
+    pub category: String,
+    /// The material code, for the record ("ASC").
+    pub material: String,
+    pub opened_by: AccountId,
+    pub opened_at: U64,
+    pub members: Vec<PoolMember>,
+    /// The pooled PO once one is placed; the pool takes no further pledges or POs after that.
+    pub po_id: Option<String>,
+}
+
+/// One plant's share of a pooled PO as the agent proposes it.
+#[near(serializers = [json])]
+#[derive(Clone, Debug, PartialEq)]
+pub struct ShareInput {
+    pub agent: AccountId,
+    pub amount: U128,
+}
+
+/// One plant's share of a funded pooled PO: charged to that plant's agent, approved by its
+/// own director when its limits required it.
+#[near(serializers = [borsh, json])]
+#[derive(Clone, Debug, PartialEq)]
+pub struct ShareLine {
+    pub agent: AccountId,
+    pub plant: AccountId,
+    pub amount: U128,
+    pub approved_by: Option<AccountId>,
+}
+
+/// What the contract would do with one share of a pooled PO.
+#[near(serializers = [json])]
+#[derive(Clone, Debug, PartialEq)]
+pub struct ShareVerdict {
+    pub agent: AccountId,
+    pub plant: AccountId,
+    /// The agent's name, as refusals say it.
+    pub name: String,
+    pub amount: U128,
+    /// The director whose approval covers this share, when one is on file.
+    pub approved_by: Option<AccountId>,
+    /// Why this share needs its director's approval, when it does.
+    pub needs_approval: Option<String>,
+}
+
+/// The contract's reading of a proposed pooled PO, from the same checks `submit_pooled_po`
+/// runs: a refusal nobody can approve away, or the per-share verdicts.
+#[near(serializers = [json])]
+#[derive(Clone, Debug, PartialEq)]
+pub struct PooledVerdict {
+    pub refusal: Option<String>,
+    pub shares: Vec<ShareVerdict>,
+}
+
 #[near(contract_state)]
 #[derive(PanicOnDefault)]
 pub struct SpendPolicy {
@@ -182,6 +263,11 @@ pub struct SpendPolicy {
 
 fn spend_key(who: &str, period: u32) -> String {
     format!("{who}:{period}")
+}
+
+/// The `po_id` a director passes to `approve_po` to approve one plant's share of a pooled PO.
+fn share_key(po_id: &str, agent: &AccountId) -> String {
+    format!("{po_id}/{agent}")
 }
 
 #[near]
@@ -731,7 +817,270 @@ impl SpendPolicy {
         }
     }
 
+    // ------------------------------------------------------------------ group purchasing
+
+    /// A plant's agent opens a demand pool for one material and pledges its own need: the
+    /// quantity it wants and the most it will pay for its share. Other plants' agents join with
+    /// `join_pool`; any member then places the one pooled PO with `submit_pooled_po`.
+    pub fn open_pool(
+        &mut self,
+        pool_id: String,
+        category: String,
+        material: String,
+        qty: U64,
+        max_amount: U128,
+    ) {
+        let agent = env::predecessor_account_id();
+        let policy = self.pool_member_policy(&agent, &category);
+        let mut pools = Self::pools();
+        if pools.contains_key(&pool_id) {
+            env::panic_str(&format!("{pool_id} is already open."));
+        }
+        let now = env::block_timestamp();
+        let member = PoolMember {
+            agent: agent.clone(),
+            plant: policy.plant.clone(),
+            qty,
+            max_amount,
+        };
+        pools.insert(
+            pool_id.clone(),
+            Pool {
+                pool_id: pool_id.clone(),
+                category: category.clone(),
+                material: material.clone(),
+                opened_by: agent.clone(),
+                opened_at: U64(now),
+                members: vec![member],
+                po_id: None,
+            },
+        );
+        Event::PoolOpened {
+            pool_id: pool_id.clone(),
+            category,
+            material,
+            by: agent.clone(),
+            plant: policy.plant.clone(),
+        }
+        .emit();
+        Event::PoolJoined {
+            pool_id,
+            agent,
+            plant: policy.plant,
+            qty,
+            max_amount,
+        }
+        .emit();
+    }
+
+    /// Another plant's agent pledges its need to an open pool. Pledging again replaces the
+    /// plant's earlier pledge; a pool whose PO is placed takes no more.
+    pub fn join_pool(&mut self, pool_id: String, qty: U64, max_amount: U128) {
+        let agent = env::predecessor_account_id();
+        let mut pools = Self::pools();
+        let pool = match pools.get_mut(&pool_id) {
+            Some(p) => p,
+            None => env::panic_str(&format!("{pool_id} is not an open pool.")),
+        };
+        if let Some(po_id) = &pool.po_id {
+            env::panic_str(&format!(
+                "{pool_id} was already placed as {po_id}; it takes no more pledges."
+            ));
+        }
+        let policy = self.pool_member_policy(&agent, &pool.category);
+        let member = PoolMember {
+            agent: agent.clone(),
+            plant: policy.plant.clone(),
+            qty,
+            max_amount,
+        };
+        match pool.members.iter_mut().find(|m| m.agent == agent) {
+            Some(existing) => *existing = member,
+            None => pool.members.push(member),
+        }
+        Event::PoolJoined {
+            pool_id,
+            agent,
+            plant: policy.plant,
+            qty,
+            max_amount,
+        }
+        .emit();
+    }
+
+    /// One PO for a whole pool, placed by a member. `lines` allocate the total across the
+    /// plants: each share is checked against that plant's own agent limits (per PO, monthly,
+    /// category) exactly as `submit_po` checks a plain PO, and is charged to that agent's
+    /// monthly spend. A share over its plant's limits needs that plant's director: an
+    /// `approve_po` whose `po_id` is `"<po_id>/<plant agent>"` for the share's amount. If any
+    /// share still waits, the whole PO is refused and the reason names every share that does.
+    /// The shares must add up to `amount` exactly. On pass the PO is funded as one escrow
+    /// record whose receiving, QC, payout and refund follow the lead plant's roles.
+    #[allow(clippy::too_many_arguments)]
+    pub fn submit_pooled_po(
+        &mut self,
+        po_id: String,
+        pool_id: String,
+        supplier: AccountId,
+        amount: U128,
+        category: String,
+        po_hash: String,
+        lines: Vec<ShareInput>,
+    ) -> PoRecord {
+        let agent = env::predecessor_account_id();
+        let policy = match self.agents.get(&agent) {
+            Some(p) => p.clone(),
+            None => env::panic_str("Only a registered purchasing agent can submit POs."),
+        };
+        let refuse = |reason: String| -> ! {
+            Event::PoRefused {
+                po_id: po_id.clone(),
+                agent: agent.clone(),
+                supplier: supplier.clone(),
+                amount,
+                category: category.clone(),
+                reason: reason.clone(),
+            }
+            .emit();
+            env::panic_str(&reason)
+        };
+        let now = env::block_timestamp();
+        let verdict = self.judge_pooled(
+            &agent, &policy, &po_id, &pool_id, &supplier, amount, &category, &po_hash, &lines, now,
+        );
+        if let Some(reason) = verdict.refusal {
+            refuse(reason);
+        }
+        let waiting: Vec<String> = verdict
+            .shares
+            .iter()
+            .filter_map(|s| s.needs_approval.clone())
+            .collect();
+        if !waiting.is_empty() {
+            refuse(format!(
+                "{po_id}: {}; director approval required.",
+                waiting.join("; ")
+            ));
+        }
+
+        // Every share passed: consume the approvals, charge each plant, fund one escrow.
+        let month = period(now);
+        let mut share_lines = Vec::with_capacity(verdict.shares.len());
+        for share in &verdict.shares {
+            if share.approved_by.is_some() {
+                self.approvals.remove(&share_key(&po_id, &share.agent));
+            }
+            let key = spend_key(share.agent.as_str(), month);
+            let spent = self.spent(&key, true);
+            self.spent_agent.insert(key, spent + share.amount.0);
+            share_lines.push(ShareLine {
+                agent: share.agent.clone(),
+                plant: share.plant.clone(),
+                amount: share.amount,
+                approved_by: share.approved_by.clone(),
+            });
+        }
+        let category_key = spend_key(&category, month);
+        let spent_category = self.spent(&category_key, false);
+        self.spent_category
+            .insert(category_key, spent_category + amount.0);
+        self.budget -= amount.0;
+        self.escrowed += amount.0;
+
+        let record = PoRecord {
+            po_id: po_id.clone(),
+            agent: agent.clone(),
+            plant: policy.plant,
+            supplier: supplier.clone(),
+            amount,
+            category: category.clone(),
+            po_hash: po_hash.clone(),
+            period: month,
+            status: PoStatus::Funded,
+            approved_by: None,
+            supplier_lot: None,
+            funded_at: U64(now),
+            accepted_at: None,
+            shipped_at: None,
+            received_at: None,
+            released_at: None,
+        };
+        self.pos.insert(po_id.clone(), record.clone());
+        self.po_ids.push(po_id.clone());
+        {
+            let mut pools = Self::pools();
+            if let Some(pool) = pools.get_mut(&pool_id) {
+                pool.po_id = Some(po_id.clone());
+            }
+        }
+        Self::pool_lines().insert(po_id.clone(), share_lines.clone());
+
+        Event::PooledPoAuthorized {
+            po_id: po_id.clone(),
+            pool_id,
+            agent,
+            supplier,
+            amount,
+            category,
+            po_hash,
+            lines: share_lines,
+        }
+        .emit();
+        Event::PoFunded {
+            po_id,
+            amount,
+            budget: U128(self.budget),
+            escrowed: U128(self.escrowed),
+        }
+        .emit();
+        record
+    }
+
     // ------------------------------------------------------------------ views
+
+    /// What `submit_pooled_po` would do with this PO if `agent` sent it now: the same checks,
+    /// read-only, so the agent learns which plants' directors to ask without guessing at the
+    /// rules itself.
+    #[allow(clippy::too_many_arguments)]
+    pub fn explain_pooled_po(
+        &self,
+        agent: AccountId,
+        po_id: String,
+        pool_id: String,
+        supplier: AccountId,
+        amount: U128,
+        category: String,
+        po_hash: String,
+        lines: Vec<ShareInput>,
+    ) -> PooledVerdict {
+        match self.agents.get(&agent) {
+            Some(policy) => self.judge_pooled(
+                &agent,
+                policy,
+                &po_id,
+                &pool_id,
+                &supplier,
+                amount,
+                &category,
+                &po_hash,
+                &lines,
+                env::block_timestamp(),
+            ),
+            None => PooledVerdict {
+                refusal: Some("Only a registered purchasing agent can submit POs.".into()),
+                shares: vec![],
+            },
+        }
+    }
+
+    pub fn get_pool(&self, pool_id: String) -> Option<Pool> {
+        Self::pools().get(&pool_id).cloned()
+    }
+
+    /// The plant shares of a funded pooled PO; `None` for a plain PO.
+    pub fn get_pool_lines(&self, po_id: String) -> Option<Vec<ShareLine>> {
+        Self::pool_lines().get(&po_id).cloned()
+    }
 
     pub fn get_config(&self) -> Config {
         Config {
@@ -910,16 +1259,261 @@ impl SpendPolicy {
         map.get(key).copied().unwrap_or(0)
     }
 
-    /// Escrow back to budget, and the PO no longer counts against its month's limits.
+    /// Escrow back to budget, and the PO no longer counts against its month's limits. A pooled
+    /// PO was charged to each plant's agent by share; a plain PO to its agent in full.
     fn refund(&mut self, po: &PoRecord) {
         self.escrowed -= po.amount.0;
         self.budget += po.amount.0;
-        let agent_key = spend_key(po.agent.as_str(), po.period);
+        let charges: Vec<(AccountId, u128)> = match Self::pool_lines().get(&po.po_id) {
+            Some(lines) => lines
+                .iter()
+                .map(|l| (l.agent.clone(), l.amount.0))
+                .collect(),
+            None => vec![(po.agent.clone(), po.amount.0)],
+        };
+        for (agent, amount) in charges {
+            let agent_key = spend_key(agent.as_str(), po.period);
+            let agent_spent = self.spent(&agent_key, true).saturating_sub(amount);
+            self.spent_agent.insert(agent_key, agent_spent);
+        }
         let category_key = spend_key(&po.category, po.period);
-        let agent_spent = self.spent(&agent_key, true).saturating_sub(po.amount.0);
         let category_spent = self.spent(&category_key, false).saturating_sub(po.amount.0);
-        self.spent_agent.insert(agent_key, agent_spent);
         self.spent_category.insert(category_key, category_spent);
+    }
+
+    // ------------------------------------------------------------------ group purchasing
+
+    /// The demand pools, by pool id. Built on demand under its own prefix (see the group
+    /// purchasing types above); `near_sdk::store` writes changes back when the map drops.
+    fn pools() -> LookupMap<String, Pool> {
+        LookupMap::new(POOLS_PREFIX.to_vec())
+    }
+
+    /// The plant shares of each funded pooled PO, by PO id.
+    fn pool_lines() -> LookupMap<String, Vec<ShareLine>> {
+        LookupMap::new(POOL_LINES_PREFIX.to_vec())
+    }
+
+    /// The agent's policy if it may pledge to a pool in this category; panics otherwise.
+    fn pool_member_policy(&self, agent: &AccountId, category: &str) -> AgentPolicy {
+        let policy = match self.agents.get(agent) {
+            Some(p) => p.clone(),
+            None => env::panic_str("Only a registered purchasing agent can join a pool."),
+        };
+        let name = &policy.name;
+        if !policy.active {
+            env::panic_str(&format!("{name} is paused by HQ."));
+        }
+        if !policy.categories.iter().any(|c| c == category) {
+            env::panic_str(&format!(
+                "{name} isn't authorized to buy {}.",
+                label(category)
+            ));
+        }
+        policy
+    }
+
+    /// How the agent is named to staff, or its account when it has no policy.
+    fn agent_name(&self, agent: &AccountId) -> String {
+        self.agents
+            .get(agent)
+            .map(|p| p.name.clone())
+            .unwrap_or_else(|| agent.to_string())
+    }
+
+    /// The checks behind `submit_pooled_po` and `explain_pooled_po`. A refusal is final for
+    /// this PO as proposed; a share's `needs_approval` names what its director must approve.
+    #[allow(clippy::too_many_arguments)]
+    fn judge_pooled(
+        &self,
+        agent: &AccountId,
+        policy: &AgentPolicy,
+        po_id: &str,
+        pool_id: &str,
+        supplier: &AccountId,
+        amount: U128,
+        category: &str,
+        po_hash: &str,
+        lines: &[ShareInput],
+        now: u64,
+    ) -> PooledVerdict {
+        let refused = |reason: String| PooledVerdict {
+            refusal: Some(reason),
+            shares: vec![],
+        };
+        let name = &policy.name;
+        if !policy.active {
+            return refused(format!("{name} is paused by HQ."));
+        }
+        let pool = match Self::pools().get(pool_id).cloned() {
+            Some(p) => p,
+            None => return refused(format!("{pool_id} is not an open pool.")),
+        };
+        if let Some(placed) = &pool.po_id {
+            return refused(format!("{pool_id} was already placed as {placed}."));
+        }
+        if pool.category != category {
+            return refused(format!(
+                "{po_id}: {pool_id} pooled {}, not {}.",
+                label(&pool.category),
+                label(category)
+            ));
+        }
+        if !pool.members.iter().any(|m| &m.agent == agent) {
+            return refused(format!(
+                "{name} has not joined {pool_id}; only a member can place its PO."
+            ));
+        }
+        if self.pos.contains_key(po_id) {
+            return refused(format!("{po_id} was already submitted."));
+        }
+        let supplier_status = match self.suppliers.get(supplier) {
+            Some(status) => *status,
+            None => {
+                return refused(format!(
+                    "{supplier} is not an approved supplier; no approval can override this."
+                ))
+            }
+        };
+        if lines.is_empty() || lines.len() > MAX_POOL_LINES {
+            return refused(format!(
+                "{po_id}: a pooled PO carries between 1 and {MAX_POOL_LINES} plant shares."
+            ));
+        }
+        let mut sum: u128 = 0;
+        for (i, line) in lines.iter().enumerate() {
+            let who = self.agent_name(&line.agent);
+            if lines[..i].iter().any(|l| l.agent == line.agent) {
+                return refused(format!("{po_id}: {who} appears twice in the allocation."));
+            }
+            let member = match pool.members.iter().find(|m| m.agent == line.agent) {
+                Some(m) => m,
+                None => return refused(format!("{po_id}: {who} has not joined {pool_id}.")),
+            };
+            if line.amount.0 == 0 {
+                return refused(format!("{po_id}: {who}'s share is zero; leave it out."));
+            }
+            if line.amount.0 > member.max_amount.0 {
+                return refused(format!(
+                    "{po_id}: {who}'s share of {} is over the {} it pledged.",
+                    usd(line.amount.0),
+                    usd(member.max_amount.0)
+                ));
+            }
+            sum = sum.saturating_add(line.amount.0);
+        }
+        if sum != amount.0 {
+            return refused(format!(
+                "{po_id}: the plant shares add up to {}, not the PO total of {}.",
+                usd(sum),
+                usd(amount.0)
+            ));
+        }
+        if amount.0 > self.budget {
+            return refused(format!(
+                "Plant budget is short by {}.",
+                usd(amount.0 - self.budget)
+            ));
+        }
+
+        let month = period(now);
+        let mut shares = Vec::with_capacity(lines.len());
+        for line in lines {
+            let p = match self.agents.get(&line.agent) {
+                Some(p) => p,
+                None => {
+                    return refused(format!(
+                        "{po_id}: {} is not a registered purchasing agent.",
+                        line.agent
+                    ))
+                }
+            };
+            let who = &p.name;
+            if !p.active {
+                return refused(format!("{who} is paused by HQ."));
+            }
+            if !p.categories.iter().any(|c| c == category) {
+                return refused(format!(
+                    "{who} isn't authorized to buy {}.",
+                    label(category)
+                ));
+            }
+            let share = usd(line.amount.0);
+            let mut approved_by = None;
+            let mut needs_approval = None;
+            match self.approvals.get(&share_key(po_id, &line.agent)) {
+                Some(a) => {
+                    if now > a.expires_at.0 {
+                        return refused(format!(
+                            "{po_id}: the approval of {who}'s share has expired; ask again."
+                        ));
+                    }
+                    let matches = &a.supplier == supplier
+                        && a.amount == line.amount
+                        && a.category == category
+                        && a.po_hash == po_hash
+                        && a.approved_by == p.approver;
+                    if !matches {
+                        return refused(format!(
+                            "{po_id}: {who}'s share does not match what its director approved."
+                        ));
+                    }
+                    approved_by = Some(a.approved_by.clone());
+                }
+                None => {
+                    let spent = self.spent(&spend_key(line.agent.as_str(), month), true);
+                    if supplier_status == SupplierStatus::Conditional {
+                        needs_approval = Some(format!(
+                            "{supplier} is a conditional supplier, so {who}'s {share} share needs approval"
+                        ));
+                    } else if line.amount.0 > p.per_po_limit.0 {
+                        needs_approval = Some(format!(
+                            "{who}'s {share} share exceeds its per-PO limit of {}",
+                            usd(p.per_po_limit.0)
+                        ));
+                    } else if spent + line.amount.0 > p.monthly_limit.0 {
+                        needs_approval = Some(format!(
+                            "{who}'s {share} share would take its spending this month to {}, over the monthly limit of {}",
+                            usd(spent + line.amount.0),
+                            usd(p.monthly_limit.0)
+                        ));
+                    }
+                }
+            }
+            shares.push(ShareVerdict {
+                agent: line.agent.clone(),
+                plant: p.plant.clone(),
+                name: who.clone(),
+                amount: line.amount,
+                approved_by,
+                needs_approval,
+            });
+        }
+
+        // The category cap applies to the pooled total; a share's approval covers it for that
+        // share, as an approval does for a plain PO.
+        if let Some(cap) = self.category_caps.get(category).copied() {
+            let spent_category = self.spent(&spend_key(category, month), false);
+            if spent_category + amount.0 > cap {
+                let reason = format!(
+                    "the pooled {} would take {} spending this month to {}, over the cap of {}",
+                    usd(amount.0),
+                    label(category),
+                    usd(spent_category + amount.0),
+                    usd(cap)
+                );
+                for s in shares
+                    .iter_mut()
+                    .filter(|s| s.approved_by.is_none() && s.needs_approval.is_none())
+                {
+                    s.needs_approval = Some(reason.clone());
+                }
+            }
+        }
+        PooledVerdict {
+            refusal: None,
+            shares,
+        }
     }
 
     fn store_anchor(&mut self, item: AnchorInput) {

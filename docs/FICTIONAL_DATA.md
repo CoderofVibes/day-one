@@ -471,3 +471,26 @@ Plant B's written waste is about 10% of the blend, as expected (§3). Plant A cl
 **Units are not the cause.** Rounding 842.5 kg to 1,857.4 lb moves 0.0025 kg per batch (0.0074 kg over three). Kevin says so.
 
 **What Kevin shows on the HQ view:** "P-CMD at Riverside: 172.8 kg of material issued over three batches is in neither the tablets nor the recorded waste (6.84%). Hollow Pine balances to the gram. Pounds versus kilograms explains 0.0074 kg of it. Riverside's waste looks under-recorded, which also makes its cost per bottle look lower." The adjustment is proposed for Plant A to review, never applied silently, and the batch records stay anchored, so last month's waste cannot be quietly edited.
+
+---
+
+## 16. Group purchasing: three plants, one ascorbic acid order
+
+The group-buy run (`npm run demo:group`, docs/GROUP_BUY.md) is a separate day, Nov 10, 2026, from the same seed. It adds, in `agents/kevin/src/groupBuy.ts` (`seedGroupBuy`), not in the main seed:
+
+| Addition | Value |
+|---|---|
+| **Dana Whitfield** | Ops director, Plant A (Acme Riverside); account `director.plant-a.acme-holdings.testnet`. Approves Plant A's share by text. |
+| **Omar Haddad** | Ops director, Plant C (Acme Lakeview); account `director.plant-c.acme-holdings.testnet`. Named in Plant C's policy; nothing to approve in this run. |
+| Planned batch **BR-A-2210** | P-VC500, Plant A, planned for 2026-11-19, 800,000 tablets: Acme moves one Vitamin C batch to Riverside to balance load. It gives Plant A a 412 kg ascorbic acid need against 12.55 kg on hand, so Plant A recommends its 700 kg reorder quantity. |
+| Purchasing agents | One Kevin per plant on the contract: `kevin.plant-a…` ("Kevin at Plant A"), `kevin.plant-b…` ("Kevin", the main demo's), `kevin.plant-c…` ("Kevin at Plant C", packaging only). All at $2,500 per PO; approvers are the plants' directors. |
+
+Supplier volume breaks (`agents/suppliers/src/pricing.ts`), reached at 1,000 kg; below them every quote is the §5 price:
+
+| Supplier agent | List $/kg | From 1,000 kg | Freight | Lead time | Kevin's ranking at 1,400 kg |
+|---|---|---|---|---|---|
+| QuickChem Direct | 5.90 | 5.40 | $0 | 4 days | Excluded: vendor not qualified |
+| Northgate Ingredients | 7.10 | **6.65** | $180 | 7 days | **Selected**: landed $9,490.00 |
+| Ridgeway Ascorbics | 7.35 | 6.80 | $165 | 5 days | Runner-up: landed $9,685.00 |
+
+The pool: `RFQ-G-2611`, 1,400 kg (Plant B 700 kg, Plant A 700 kg; Plant C has no planned use). Each plant pledges at most its cost alone at the $7.10/kg on file ($5,150.00). The pooled PO `PO-G-2001` is $9,490.00, split by quantity: $4,745.00 each, both over the $2,500 per-PO limits, so the contract waits for Linda Park (Plant B) and Dana Whitfield (Plant A). Savings against buying alone: $810.00. Delivery is 1,400 kg to Plant B as supplier lot NG-24-9120 on packing slip NG-PS-60502; 700 kg is earmarked for Riverside.

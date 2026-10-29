@@ -59,6 +59,8 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Reconcile Day One, the ERP and the contract (Windows, repo root; no keys) | `npm run erp:reconcile` → 6 of 6 checks MATCH (verified Oct 28) |
 | Write the import wizard's fixture workbook (Windows, repo root) | `npm run render:import` → `data/imports/INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx`, byte-identical on re-run (verified Oct 28) |
 | Import an inventory spreadsheet (Windows, repo root; no keys, no network) | `npm run import -- <file.xlsx or .csv>` → Kevin's line and the flags; `-- <file> --answers <answers.json>` posts into an empty in-memory Plant B ledger (`--db <file>` for a real one) and prints the opening inventory; `--json` too (verified Oct 28 on the fixture with `data/imports/*.answers.json`) |
+| Replay the group purchasing run (Windows, repo root; no keys, no network) | `npm run demo:group` (`-- --json`, `-- --web` rewrites `web/src/data/group-buy.json`) → three plants pool ascorbic acid, one pooled PO with per-plant shares and approvals, and "Transcript matches data/replay/group-transcript.txt." (verified Oct 28; docs/GROUP_BUY.md) |
+| Run the group purchasing flow on a local NEAR sandbox (Windows, repo root; WSL, no keys; needs one contract `cargo test` first so the sandbox binary and wasm exist) | `npm run demo:group -- --sandbox` (`--record --web` rewrites the fixtures) → the same run live against a fresh node (verified Oct 28) |
 | _(more commands are added as they first work)_ | |
 
 ## Team and working protocol

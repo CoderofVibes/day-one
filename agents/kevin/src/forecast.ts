@@ -226,7 +226,7 @@ export function projectMaterial(db: Ledger, input: ForecastInput): Omit<Forecast
   const fmt = (base: number) => amount(base, material.dimension);
   const sentence = [
     plannedBatches.length
-      ? `${count} more ${products_.join(" and ")} batch${plannedBatches.length === 1 ? "" : "es"} in the next ${horizonDays} days need about ${fmt(needBase)}.`
+      ? `${count} more ${products_.join(" and ")} batch${plannedBatches.length === 1 ? "" : "es"} in the next ${horizonDays} days need${plannedBatches.length === 1 ? "s" : ""} about ${fmt(needBase)}.`
       : `No planned batches use ${material.name.toLowerCase()} in the next ${horizonDays} days.`,
     shortfallBase > 0 ? `Short about ${fmt(shortfallBase)}.` : "",
     recommendQtyBase ? `Recommend ordering ${fmt(recommendQtyBase)}.` : "",

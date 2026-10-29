@@ -49,6 +49,11 @@ impl World {
             "bayfront",
             "unregistered",
             "stranger",
+            // Group purchasing: Plant A's and Plant C's purchasing agents and directors.
+            "kevin-a",
+            "director-a",
+            "kevin-c",
+            "director-c",
         ];
         let accounts: Vec<GenesisAccount> = names
             .iter()
@@ -431,4 +436,270 @@ async fn purchasing_loop_on_sandbox() {
     .await;
     assert_eq!(w.books().await, (0, 0));
     assert_eq!(w.balance("acme").await, (1_000_000 - 100 - 5_150) * DOLLAR);
+}
+
+/// Group purchasing (GROUP_BUY.md): Plants A and B pool ascorbic acid, both shares are over
+/// their plants' per-PO limits, each director approves its own share, one escrow funds, the
+/// supplier is paid once, and a second pool cancelled by HQ gives each plant its share back.
+#[tokio::test]
+async fn group_purchasing_on_sandbox() {
+    let (policy_wasm, token_wasm) = (build("spend-policy/Cargo.toml"), build("dtusd/Cargo.toml"));
+    let w = World::start().await;
+    Contract::deploy(id("dtusd"))
+        .use_code(token_wasm)
+        .with_init_call(
+            "new",
+            json!({ "owner_id": "acme", "total_supply": usd(1_000_000) }),
+        )
+        .unwrap()
+        .with_signer(w.signers["dtusd"].clone())
+        .send_to(&w.net)
+        .await
+        .unwrap()
+        .assert_success();
+    Contract::deploy(id("policy"))
+        .use_code(policy_wasm)
+        .with_init_call(
+            "new",
+            json!({ "owner": "acme", "treasury": "acme", "token": "dtusd" }),
+        )
+        .unwrap()
+        .with_signer(w.signers["policy"].clone())
+        .send_to(&w.net)
+        .await
+        .unwrap()
+        .assert_success();
+    for holder in ["policy", "northgate"] {
+        w.call(
+            "acme",
+            "dtusd",
+            "storage_deposit",
+            json!({ "account_id": holder }),
+            1_250_000_000_000_000_000_000,
+        )
+        .await
+        .unwrap();
+    }
+    w.ok(
+        "acme",
+        "policy",
+        "set_roles",
+        json!({ "plant": "plant-b", "receiver": "receiving", "qc": "qc" }),
+    )
+    .await;
+    // One purchasing agent per plant, each with its own director and the same limits.
+    for (agent, name, plant, director, categories) in [
+        (
+            "kevin",
+            "Kevin",
+            "plant-b",
+            "director",
+            vec!["raw_material", "lab_chemical"],
+        ),
+        (
+            "kevin-a",
+            "Kevin at Plant A",
+            "plant-a",
+            "director-a",
+            vec!["raw_material"],
+        ),
+        (
+            "kevin-c",
+            "Kevin at Plant C",
+            "plant-c",
+            "director-c",
+            vec!["packaging"],
+        ),
+    ] {
+        w.ok(
+            "acme",
+            "policy",
+            "set_agent_policy",
+            json!({
+                "agent": agent, "name": name, "plant": plant,
+                "per_po_limit": usd(2_500), "monthly_limit": usd(60_000),
+                "categories": categories, "approver": director,
+            }),
+        )
+        .await;
+    }
+    w.ok(
+        "acme",
+        "policy",
+        "set_supplier",
+        json!({ "supplier": "northgate", "status": "Qualified" }),
+    )
+    .await;
+    w.call(
+        "acme",
+        "dtusd",
+        "ft_transfer_call",
+        json!({ "receiver_id": "policy", "amount": usd(25_000), "msg": "" }),
+        1,
+    )
+    .await
+    .unwrap();
+    assert_eq!(w.books().await, (25_000, 0));
+
+    // Plant B opens the pool and Plant A joins; Plant C buys no raw material and cannot.
+    w.ok(
+        "kevin",
+        "policy",
+        "open_pool",
+        json!({ "pool_id": "RFQ-G-2611", "category": "raw_material", "material": "ASC",
+                "qty": "700000000", "max_amount": usd(6_000) }),
+    )
+    .await;
+    w.ok(
+        "kevin-a",
+        "policy",
+        "join_pool",
+        json!({ "pool_id": "RFQ-G-2611", "qty": "700000000", "max_amount": usd(6_000) }),
+    )
+    .await;
+    let err = w
+        .call(
+            "kevin-c",
+            "policy",
+            "join_pool",
+            json!({ "pool_id": "RFQ-G-2611", "qty": "1", "max_amount": usd(1) }),
+            0,
+        )
+        .await
+        .unwrap_err();
+    assert!(
+        err.contains("Kevin at Plant C isn't authorized to buy raw material."),
+        "{err}"
+    );
+    let pool = w
+        .view("policy", "get_pool", json!({ "pool_id": "RFQ-G-2611" }))
+        .await;
+    assert_eq!(pool["members"].as_array().unwrap().len(), 2);
+
+    // One pooled PO: $4,745 for each plant, both over the $2,500 per-PO limit.
+    let pooled = json!({
+        "po_id": "PO-G-2001", "pool_id": "RFQ-G-2611", "supplier": "northgate",
+        "amount": usd(9_490), "category": "raw_material", "po_hash": "22".repeat(32),
+        "lines": [
+            { "agent": "kevin", "amount": usd(4_745) },
+            { "agent": "kevin-a", "amount": usd(4_745) },
+        ],
+    });
+    let refused = w
+        .call("kevin", "policy", "submit_pooled_po", pooled.clone(), 0)
+        .await
+        .unwrap_err();
+    assert!(
+        refused.contains(
+            "PO-G-2001: Kevin's $4,745.00 share exceeds its per-PO limit of $2,500.00; \
+             Kevin at Plant A's $4,745.00 share exceeds its per-PO limit of $2,500.00; \
+             director approval required."
+        ),
+        "{refused}"
+    );
+    assert_eq!(w.books().await, (25_000, 0));
+
+    // The read-only verdict says the same without moving anything.
+    let mut explain = pooled.clone();
+    explain["agent"] = json!("kevin");
+    let verdict = w.view("policy", "explain_pooled_po", explain).await;
+    assert!(verdict["refusal"].is_null(), "{verdict}");
+    assert_eq!(
+        verdict["shares"][1]["needs_approval"],
+        json!("Kevin at Plant A's $4,745.00 share exceeds its per-PO limit of $2,500.00")
+    );
+
+    // Each director approves its own plant's share: approve_po on "<po>/<plant agent>".
+    let approve = |agent: &str| {
+        json!({
+            "po_id": format!("PO-G-2001/{agent}"), "supplier": "northgate",
+            "amount": usd(4_745), "category": "raw_material", "po_hash": "22".repeat(32),
+            "refused_tx": "sandbox",
+        })
+    };
+    w.ok("director", "policy", "approve_po", approve("kevin"))
+        .await;
+    let still = w
+        .call("kevin", "policy", "submit_pooled_po", pooled.clone(), 0)
+        .await
+        .unwrap_err();
+    assert!(
+        still.contains("PO-G-2001: Kevin at Plant A's $4,745.00 share exceeds"),
+        "{still}"
+    );
+    w.ok("director-a", "policy", "approve_po", approve("kevin-a"))
+        .await;
+    let logs = w.ok("kevin", "policy", "submit_pooled_po", pooled).await;
+    assert!(
+        logs.iter().any(|l| l.contains("pooled_po_authorized")),
+        "{logs:?}"
+    );
+    assert_eq!(w.books().await, (15_510, 9_490));
+    let world = &w;
+    let spent = |agent: &'static str| async move {
+        let v = world
+            .view("policy", "get_spent", json!({ "agent": agent }))
+            .await;
+        v.as_str().unwrap().parse::<u128>().unwrap() / DOLLAR
+    };
+    assert_eq!(spent("kevin").await, 4_745);
+    assert_eq!(spent("kevin-a").await, 4_745);
+    let lines = w
+        .view("policy", "get_pool_lines", json!({ "po_id": "PO-G-2001" }))
+        .await;
+    assert_eq!(lines[0]["approved_by"], json!("director"));
+    assert_eq!(lines[1]["approved_by"], json!("director-a"));
+
+    // The pooled PO is one escrow: Northgate ships, Plant B receives, QC releases, one payout.
+    w.deliver("PO-G-2001", "northgate").await;
+    let logs = w
+        .ok(
+            "qc",
+            "policy",
+            "qc_release",
+            json!({ "po_id": "PO-G-2001" }),
+        )
+        .await;
+    assert!(logs.iter().any(|l| l.contains("po_released")), "{logs:?}");
+    assert_eq!(w.balance("northgate").await, 9_490 * DOLLAR);
+    assert_eq!(w.books().await, (15_510, 0));
+
+    // A second pool within limits funds at once; HQ cancels it and each plant's share returns.
+    w.ok(
+        "kevin-a",
+        "policy",
+        "open_pool",
+        json!({ "pool_id": "RFQ-G-2612", "category": "raw_material", "material": "ASC",
+                "qty": "100000000", "max_amount": usd(1_000) }),
+    )
+    .await;
+    w.ok(
+        "kevin",
+        "policy",
+        "join_pool",
+        json!({ "pool_id": "RFQ-G-2612", "qty": "100000000", "max_amount": usd(1_000) }),
+    )
+    .await;
+    w.ok(
+        "kevin-a",
+        "policy",
+        "submit_pooled_po",
+        json!({
+            "po_id": "PO-G-2002", "pool_id": "RFQ-G-2612", "supplier": "northgate",
+            "amount": usd(1_500), "category": "raw_material", "po_hash": "33".repeat(32),
+            "lines": [
+                { "agent": "kevin-a", "amount": usd(800) },
+                { "agent": "kevin", "amount": usd(700) },
+            ],
+        }),
+    )
+    .await;
+    assert_eq!(w.books().await, (14_010, 1_500));
+    assert_eq!(spent("kevin").await, 5_445);
+    assert_eq!(spent("kevin-a").await, 5_545);
+    w.ok("acme", "policy", "cancel", json!({ "po_id": "PO-G-2002" }))
+        .await;
+    assert_eq!(w.books().await, (15_510, 0));
+    assert_eq!(spent("kevin").await, 4_745);
+    assert_eq!(spent("kevin-a").await, 4_745);
 }

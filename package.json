@@ -31,6 +31,7 @@
     "test:attacks": "tsx scripts/attacks.ts",
     "demo": "tsx scripts/demo.ts",
     "demo:live": "tsx scripts/demo.ts --live",
+    "demo:group": "tsx scripts/demo-group.ts",
     "rehearse": "tsx scripts/rehearse.ts",
     "escrow": "tsx scripts/escrow.ts",
     "mcp": "tsx scripts/kevin-mcp.ts",

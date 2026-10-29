@@ -1,0 +1,409 @@
+{
+  "network": "sandbox",
+  "recordedAt": "2026-10-29T01:43:21.711Z",
+  "pool": {
+    "poolId": "RFQ-G-2611",
+    "material": "ASC",
+    "qtyBase": 1400000000,
+    "shares": [
+      {
+        "plant": "B",
+        "plantName": "Hollow Pine Tablet Co.",
+        "agent": "kevin.plant-b.acme-holdings.testnet",
+        "qtyBase": 700000000,
+        "amount": 4745000000,
+        "approvedBy": "Linda Park"
+      },
+      {
+        "plant": "A",
+        "plantName": "Acme Riverside",
+        "agent": "kevin.plant-a.acme-holdings.testnet",
+        "qtyBase": 700000000,
+        "amount": 4745000000,
+        "approvedBy": "Dana Whitfield"
+      }
+    ],
+    "declined": [
+      "C"
+    ]
+  },
+  "po": {
+    "poNo": "PO-G-2001",
+    "vendor": "Northgate Ingredients",
+    "totalUsdc": 9490000000,
+    "unitPriceUsdc": 6650000,
+    "savingsUsdc": 810000000,
+    "status": "paid"
+  },
+  "spent": {
+    "A": 4745000000,
+    "B": 4745000000,
+    "C": 0
+  },
+  "summary": {
+    "transactions": 13,
+    "refusedByDesign": 2,
+    "refusedOther": 0,
+    "failed": 0
+  },
+  "approvals": [
+    {
+      "request": "Kevin needs approval: PO-G-2001, Plant B's $4,745.00 share of a $9,490.00 pooled order to Northgate Ingredients for 1,400 kg ascorbic acid (Plant B: 700 kg). Over Kevin's $2,500 limit. Reply YES G2001 or NO G2001.",
+      "response": "YES G2001"
+    },
+    {
+      "request": "Kevin at Plant A needs approval: PO-G-2001, Plant A's $4,745.00 share of a $9,490.00 pooled order to Northgate Ingredients for 1,400 kg ascorbic acid (Plant A: 700 kg). Over Kevin at Plant A's $2,500 limit. Reply YES G2001 or NO G2001.",
+      "response": "YES G2001"
+    }
+  ],
+  "steps": [
+    {
+      "step": 0,
+      "title": "Three plants, one material",
+      "staff": [
+        "Group purchasing for ascorbic acid across Acme's plants.",
+        "Plant A (Acme Riverside): Kevin at Plant A may spend $2,500.00 per PO; over that, Dana Whitfield approves.",
+        "Plant B (Hollow Pine Tablet Co.): Kevin may spend $2,500.00 per PO; over that, Linda Park approves.",
+        "Plant C (Acme Lakeview): Kevin at Plant C may spend $2,500.00 per PO; over that, Omar Haddad approves."
+      ],
+      "chain": [
+        {
+          "line": "chain: spend-policy budget 25,000.00 DTUSD, escrowed 0.00 DTUSD",
+          "tx": null
+        }
+      ]
+    },
+    {
+      "step": 1,
+      "title": "Forecasts",
+      "staff": [
+        "Plant A: One more VC500 batch in the next 10 days needs about 412 kg. Short about 399 kg. Recommend ordering 700 kg.",
+        "Plant B: Two more VC500 batches in the next 10 days need about 824 kg. Short about 102 kg. Recommend ordering 700 kg.",
+        "Plant C: no planned batches use ascorbic acid in the next 10 days; nothing to pool."
+      ],
+      "chain": []
+    },
+    {
+      "step": 2,
+      "title": "Pool",
+      "staff": [
+        "Pooled: 1,400 kg ascorbic acid for Plant B (700 kg) and Plant A (700 kg), each pledging at most its cost alone at the $7.10/kg on file.",
+        "Plant C has no ascorbic acid need and stays out of the pool."
+      ],
+      "chain": [
+        {
+          "line": "chain: open_pool RFQ-G-2611 ✓ signed by kevin.plant-b.acme-holdings.testnet (tx 6jW8DyGsSnJRsFDXrB1gxtLvBqi96KKsP7eaarsBzAS6)",
+          "tx": "6jW8DyGsSnJRsFDXrB1gxtLvBqi96KKsP7eaarsBzAS6"
+        },
+        {
+          "line": "chain: join_pool RFQ-G-2611 ✓ signed by kevin.plant-a.acme-holdings.testnet (tx Hj7dDrE1aWB9a4y7bAvtEK8nV1g1tiP8CLiP2CYFz3dM)",
+          "tx": "Hj7dDrE1aWB9a4y7bAvtEK8nV1g1tiP8CLiP2CYFz3dM"
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "title": "Pooled quotes",
+      "staff": [
+        "3 quotes. QuickChem Direct $5.40/kg excluded: vendor not qualified. Northgate $6.65/kg, 7 days — selected. Ridgeway $6.80/kg, 5 days — runner-up.",
+        "Northgate Ingredients is the lowest-cost qualified supplier at $9,490.00 delivered in 7 days, before the 2026-11-19 batch. QuickChem Direct was cheaper but is not qualified. Pooled price $6.65/kg against $7.10/kg on file: $810.00 saved across the plants."
+      ],
+      "chain": [
+        {
+          "line": "chain: anchor quote RFQ-G-2611 ✗ REFUSED \"Only a registered purchasing agent or an approved supplier can anchor records.\" (tx 6D2guAxZKJvZb6whHQ9BZSz2AvhQfNp5DBreWYegMraB)",
+          "tx": "6D2guAxZKJvZb6whHQ9BZSz2AvhQfNp5DBreWYegMraB"
+        },
+        {
+          "line": "chain: anchor quote RFQ-G-2611 ✓ signed by northgate-ingredients.testnet (tx 9HYoSNMgzxubUN8a3RnLfYfi8JSLGUGf8Q4coCEL7qsW)",
+          "tx": "9HYoSNMgzxubUN8a3RnLfYfi8JSLGUGf8Q4coCEL7qsW"
+        },
+        {
+          "line": "chain: anchor quote RFQ-G-2611 ✓ signed by ridgeway-ascorbics.testnet (tx 9sKNtDunaKS3WiqAhgfSGVcDp5woi3fiaBdaFUxrpyVM)",
+          "tx": "9sKNtDunaKS3WiqAhgfSGVcDp5woi3fiaBdaFUxrpyVM"
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "title": "Pooled PO",
+      "staff": [
+        "Allocation: Plant B $4,745.00 (700 kg), Plant A $4,745.00 (700 kg).",
+        "PO-G-2001 to Northgate Ingredients, $9,490.00 pooled for 2 plants: Plant B's $4,745.00 share is over its $2,500.00 limit; Plant A's $4,745.00 share is over its $2,500.00 limit. The whole order waits. Sent to Linda (Plant B) and Dana (Plant A) for approval."
+      ],
+      "chain": [
+        {
+          "line": "chain: submit_pooled_po PO-G-2001 ✗ REFUSED \"PO-G-2001: Kevin's $4,745.00 share exceeds its per-PO limit of $2,500.00; Kevin at Plant A's $4,745.00 share exceeds its per-PO limit of $2,500.00; director approval required.\" (tx F55jd9N3an7beU6AjLuVSQGFPHaysFNhf6nXknoUNzF3)",
+          "tx": "F55jd9N3an7beU6AjLuVSQGFPHaysFNhf6nXknoUNzF3"
+        }
+      ]
+    },
+    {
+      "step": 5,
+      "title": "Linda texts",
+      "staff": [
+        "Linda: YES G2001 → Approved by Linda Park: Plant B's $4,745.00 share.",
+        "Still waiting for Dana."
+      ],
+      "chain": [
+        {
+          "line": "chain: approve_po PO-G-2001/Plant B ✓ signed by director.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx BA1zFEfzmzKPzVPGpbueCFQ2sciEkS3Gdfi8XtXUA7Bt)",
+          "tx": "BA1zFEfzmzKPzVPGpbueCFQ2sciEkS3Gdfi8XtXUA7Bt"
+        }
+      ]
+    },
+    {
+      "step": 5,
+      "title": "Dana texts",
+      "staff": [
+        "Dana: YES G2001 → Approved by Dana Whitfield: Plant A's $4,745.00 share."
+      ],
+      "chain": [
+        {
+          "line": "chain: approve_po PO-G-2001/Plant A ✓ signed by director.plant-a.acme-holdings.testnet, paid by dayone-relayer.testnet (tx 6w5Y4xDTHUuJSxL9xuPaMo8ZujgZnm2ATp1GSr1pfxNG)",
+          "tx": "6w5Y4xDTHUuJSxL9xuPaMo8ZujgZnm2ATp1GSr1pfxNG"
+        }
+      ]
+    },
+    {
+      "step": 6,
+      "title": "Kevin retries",
+      "staff": [
+        "PO-G-2001 sent to Northgate Ingredients: $9,490.00 held until delivery passes QC; Plant B $4,745.00, Plant A $4,745.00, each charged to its own plant."
+      ],
+      "chain": [
+        {
+          "line": "chain: submit_pooled_po PO-G-2001 ✓ (tx ANfFdAAX4EkMmebRLhQ1KEzJqmnpMAzLEnZuKxRF2pQn) · escrow funded 9,490.00 DTUSD · Plant B 4,745.00 DTUSD · Plant A 4,745.00 DTUSD",
+          "tx": "ANfFdAAX4EkMmebRLhQ1KEzJqmnpMAzLEnZuKxRF2pQn"
+        }
+      ]
+    },
+    {
+      "step": 7,
+      "title": "Supplier ships",
+      "staff": [],
+      "chain": [
+        {
+          "line": "chain: accept_po PO-G-2001 ✓ signed by northgate-ingredients.testnet (tx 4niqqLEpZKEbrmCP74881SjDoj6w3zjdFTprbzcqj5n5)",
+          "tx": "4niqqLEpZKEbrmCP74881SjDoj6w3zjdFTprbzcqj5n5"
+        },
+        {
+          "line": "chain: mark_shipped PO-G-2001 ✓ signed by northgate-ingredients.testnet (tx 5PTawZhvr746KizQ4C4TQ4nm4RFJv5o5xJjx1cihZnCn)",
+          "tx": "5PTawZhvr746KizQ4C4TQ4nm4RFJv5o5xJjx1cihZnCn"
+        }
+      ]
+    },
+    {
+      "step": 8,
+      "title": "Delivery at the hub",
+      "staff": [
+        "Tommy photographed the packing slip. Matches PO-G-2001: 1,400 kg ascorbic acid, supplier lot NG-24-9120. Lot ASC-261117-01 is in quarantine.",
+        "700 kg is earmarked for Plant A (Acme Riverside); it moves on once QC releases the lot."
+      ],
+      "chain": [
+        {
+          "line": "chain: confirm_receipt PO-G-2001 ✓ signed by receiving.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx DNQ9Z1ghXVPH8YruLKDNMcrFE8RYhFfFL4BaNb6eX7fH)",
+          "tx": "DNQ9Z1ghXVPH8YruLKDNMcrFE8RYhFfFL4BaNb6eX7fH"
+        }
+      ]
+    },
+    {
+      "step": 9,
+      "title": "QC release",
+      "staff": [
+        "Priya released lot ASC-261117-01.",
+        "PO-G-2001 — paid $9,490.00."
+      ],
+      "chain": [
+        {
+          "line": "chain: qc_release PO-G-2001 ✓ (tx EAF5EjjC3Cnz4jq6UZwPGzTDjmUPTTNvfTKCwCkEcNKo) · 9,490.00 DTUSD → northgate-ingredients.testnet",
+          "tx": "EAF5EjjC3Cnz4jq6UZwPGzTDjmUPTTNvfTKCwCkEcNKo"
+        }
+      ]
+    },
+    {
+      "step": 10,
+      "title": "Each plant's books",
+      "staff": [
+        "On the books this month: Plant A $4,745.00, Plant B $4,745.00, Plant C $0.00 — each counted against its own limits by the contract."
+      ],
+      "chain": [
+        {
+          "line": "chain: 13 transactions, 2 refused by design, 0 failed.",
+          "tx": null
+        }
+      ]
+    }
+  ],
+  "transactions": [
+    {
+      "method": "open_pool",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "kevin.plant-b.acme-holdings.testnet",
+      "paidBy": "kevin.plant-b.acme-holdings.testnet",
+      "status": "success",
+      "error": null,
+      "tx": "6jW8DyGsSnJRsFDXrB1gxtLvBqi96KKsP7eaarsBzAS6",
+      "url": null,
+      "events": [
+        "pool_opened",
+        "pool_joined"
+      ]
+    },
+    {
+      "method": "join_pool",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "kevin.plant-a.acme-holdings.testnet",
+      "paidBy": "kevin.plant-a.acme-holdings.testnet",
+      "status": "success",
+      "error": null,
+      "tx": "Hj7dDrE1aWB9a4y7bAvtEK8nV1g1tiP8CLiP2CYFz3dM",
+      "url": null,
+      "events": [
+        "pool_joined"
+      ]
+    },
+    {
+      "method": "anchor",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "quickchem-direct.testnet",
+      "paidBy": "quickchem-direct.testnet",
+      "status": "refused",
+      "error": "Only a registered purchasing agent or an approved supplier can anchor records.",
+      "tx": "6D2guAxZKJvZb6whHQ9BZSz2AvhQfNp5DBreWYegMraB",
+      "url": null,
+      "events": []
+    },
+    {
+      "method": "anchor",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "northgate-ingredients.testnet",
+      "paidBy": "northgate-ingredients.testnet",
+      "status": "success",
+      "error": null,
+      "tx": "9HYoSNMgzxubUN8a3RnLfYfi8JSLGUGf8Q4coCEL7qsW",
+      "url": null,
+      "events": [
+        "record_anchored"
+      ]
+    },
+    {
+      "method": "anchor",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "ridgeway-ascorbics.testnet",
+      "paidBy": "ridgeway-ascorbics.testnet",
+      "status": "success",
+      "error": null,
+      "tx": "9sKNtDunaKS3WiqAhgfSGVcDp5woi3fiaBdaFUxrpyVM",
+      "url": null,
+      "events": [
+        "record_anchored"
+      ]
+    },
+    {
+      "method": "submit_pooled_po",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "kevin.plant-b.acme-holdings.testnet",
+      "paidBy": "kevin.plant-b.acme-holdings.testnet",
+      "status": "refused",
+      "error": "PO-G-2001: Kevin's $4,745.00 share exceeds its per-PO limit of $2,500.00; Kevin at Plant A's $4,745.00 share exceeds its per-PO limit of $2,500.00; director approval required.",
+      "tx": "F55jd9N3an7beU6AjLuVSQGFPHaysFNhf6nXknoUNzF3",
+      "url": null,
+      "events": [
+        "po_refused"
+      ]
+    },
+    {
+      "method": "approve_po",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "director.plant-b.acme-holdings.testnet",
+      "paidBy": "dayone-relayer.testnet",
+      "status": "success",
+      "error": null,
+      "tx": "BA1zFEfzmzKPzVPGpbueCFQ2sciEkS3Gdfi8XtXUA7Bt",
+      "url": null,
+      "events": [
+        "po_approved"
+      ]
+    },
+    {
+      "method": "approve_po",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "director.plant-a.acme-holdings.testnet",
+      "paidBy": "dayone-relayer.testnet",
+      "status": "success",
+      "error": null,
+      "tx": "6w5Y4xDTHUuJSxL9xuPaMo8ZujgZnm2ATp1GSr1pfxNG",
+      "url": null,
+      "events": [
+        "po_approved"
+      ]
+    },
+    {
+      "method": "submit_pooled_po",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "kevin.plant-b.acme-holdings.testnet",
+      "paidBy": "kevin.plant-b.acme-holdings.testnet",
+      "status": "success",
+      "error": null,
+      "tx": "ANfFdAAX4EkMmebRLhQ1KEzJqmnpMAzLEnZuKxRF2pQn",
+      "url": null,
+      "events": [
+        "pooled_po_authorized",
+        "po_funded"
+      ]
+    },
+    {
+      "method": "accept_po",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "northgate-ingredients.testnet",
+      "paidBy": "northgate-ingredients.testnet",
+      "status": "success",
+      "error": null,
+      "tx": "4niqqLEpZKEbrmCP74881SjDoj6w3zjdFTprbzcqj5n5",
+      "url": null,
+      "events": [
+        "po_accepted"
+      ]
+    },
+    {
+      "method": "mark_shipped",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "northgate-ingredients.testnet",
+      "paidBy": "northgate-ingredients.testnet",
+      "status": "success",
+      "error": null,
+      "tx": "5PTawZhvr746KizQ4C4TQ4nm4RFJv5o5xJjx1cihZnCn",
+      "url": null,
+      "events": [
+        "po_shipped"
+      ]
+    },
+    {
+      "method": "confirm_receipt",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "receiving.plant-b.acme-holdings.testnet",
+      "paidBy": "dayone-relayer.testnet",
+      "status": "success",
+      "error": null,
+      "tx": "DNQ9Z1ghXVPH8YruLKDNMcrFE8RYhFfFL4BaNb6eX7fH",
+      "url": null,
+      "events": [
+        "po_received"
+      ]
+    },
+    {
+      "method": "qc_release",
+      "contract": "spend-policy.acme-holdings.testnet",
+      "signer": "qc.plant-b.acme-holdings.testnet",
+      "paidBy": "dayone-relayer.testnet",
+      "status": "success",
+      "error": null,
+      "tx": "EAF5EjjC3Cnz4jq6UZwPGzTDjmUPTTNvfTKCwCkEcNKo",
+      "url": null,
+      "events": [
+        "ft_transfer",
+        "po_released"
+      ]
+    }
+  ]
+}

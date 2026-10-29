@@ -17,6 +17,7 @@
     "./attacks": "./src/attacks.ts",
     "./demo": "./src/demo.ts",
     "./erp": "./src/erp.ts",
+    "./groupBuy": "./src/groupBuy.ts",
     "./mcp": "./src/mcp.ts",
     "./transferSuggestions": "./src/transferSuggestions.ts"
   },
