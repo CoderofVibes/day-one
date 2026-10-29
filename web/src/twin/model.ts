@@ -490,7 +490,8 @@ export function formatTwinState(state: TwinState, curtain = false): string[] {
 export function formatQuotes(state: TwinState, curtain = false): string[] {
   return state.quotes.map((q) => {
     const terms = q.leadTime ? `${q.price}, ${q.leadTime}` : q.price;
-    const standing = q.standing === "excluded" ? `excluded: ${q.reason ?? "not qualified"}` : q.standing;
+    const standing =
+      q.standing === "excluded" ? `excluded: ${q.reason ?? "not qualified"}` : q.standing;
     let tx = "";
     if (curtain && q.chainTx) {
       tx =
