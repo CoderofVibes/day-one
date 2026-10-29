@@ -8,8 +8,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import batchRecordPhoto from "../../data/batch-records/BR-B-1045.jpg?url";
 import packingSlipPhoto from "../../data/packing-slips/NG-PS-60417.jpg?url";
 import { Curtain } from "./Curtain.tsx";
-import { StepCard } from "./feed.tsx";
-import { MassBalanceBlock } from "./panes.tsx";
+import { Pill, StepCard } from "./feed.tsx";
+import { fundingOf, HeldInvoiceCard, MassBalanceBlock } from "./panes.tsx";
 import { plantsSnapshot } from "./plants.ts";
 import { audienceOf, type RunData, run as recorded } from "./run.ts";
 import { PlantView } from "./twin3d/PlantView.tsx";
@@ -103,6 +103,7 @@ export default function VideoApp() {
         </div>
         <div className="video-panel" ref={panel}>
           {beat.panel === "feed" && <Feed data={data} upTo={step} beat={beat} />}
+          {beat.panel === "invoice" && <Invoice data={data} />}
           {beat.panel === "plants" && (
             <section className="panel plants">
               <MassBalanceBlock
@@ -152,6 +153,32 @@ function Feed({ data, upTo, beat }: { data: RunData; upTo: number; beat: Beat })
           current={i === upTo}
         />
       ))}
+    </section>
+  );
+}
+
+/**
+ * "New bank details" (OPEN_QUESTIONS #41): Marcy's screen with the invoice Kevin holds, and the
+ * small curtain inset showing the account the order was funded for.
+ */
+function Invoice({ data }: { data: RunData }) {
+  const held = plantsSnapshot.books.held[0];
+  if (!held) return null;
+  return (
+    <section className="feed">
+      <article className="card current">
+        <div className="head">
+          <span className="avatar" aria-hidden="true">
+            MA
+          </span>
+          <b>Marcy Allen</b>
+          <span className="muted">· Accounting</span>
+          <Pill tone="waiting">invoice held</Pill>
+        </div>
+        <ul className="review">
+          <HeldInvoiceCard invoice={held} curtain funding={fundingOf(data, held.poNo)} />
+        </ul>
+      </article>
     </section>
   );
 }

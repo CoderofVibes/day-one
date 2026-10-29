@@ -276,7 +276,13 @@ function ReplayApp() {
             />
           )}
           {screen === "books" && (
-            <BooksPane books={plantsSnapshot.books} error={null} links={links} />
+            <BooksPane
+              books={plantsSnapshot.books}
+              error={null}
+              links={links}
+              run={data}
+              curtain={curtain}
+            />
           )}
           {screen === "hq" && <HqPane policy={null} live={false} />}
           {curtain && <Curtain data={data} upTo={at} />}
@@ -615,6 +621,8 @@ function LiveApp({ initial }: { initial: LiveState }) {
               error={plantsError}
               links={{ brief: BRIEF_URL, books: BOOKS_EXPORT_URL }}
               wizardKey={runs}
+              run={state}
+              curtain={curtain}
             />
           )}
           {screen === "hq" && <HqPane policy={policy} live />}

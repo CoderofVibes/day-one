@@ -47,6 +47,7 @@ import {
   openDemoEnv,
   pageOf,
 } from "./env.ts";
+import { heldInvoiceDemo } from "./heldInvoice.ts";
 import { type FolderWatch, watchFolder } from "./watcher.ts";
 
 export interface StepView {
@@ -418,9 +419,13 @@ export class DemoSession {
     return row.id;
   }
 
-  /** The bookkeeper export: settled POs, price-drift alerts and Kevin's note (FEATURES_V2 §2). */
-  books() {
-    return books(this.env.db);
+  /**
+   * The bookkeeper export: settled POs, price-drift alerts and Kevin's note (FEATURES_V2 §2),
+   * and the invoice Kevin holds for Marcy once PO-1042 exists (OPEN_QUESTIONS #41).
+   */
+  async books() {
+    const held = await heldInvoiceDemo(this.env.db, this.env.root);
+    return { ...books(this.env.db), held: held ? [held] : [] };
   }
 
   booksCsv() {

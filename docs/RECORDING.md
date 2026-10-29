@@ -65,12 +65,13 @@ Check **View → Stats** during a test take: "frames missed due to rendering lag
 | 0:46–0:56 | The refusal (`refusal`) | PO-1041 funded, then PO-1042 refused over the $2,500 limit; the coin bounces off the vault | Kevin isn't allowed to spend that much… |
 | 0:56–1:06 | Approve by text (`approve`) | Linda's phone: Kevin's text, YES 1042, approved | Linda approves from her phone… |
 | 1:06–1:16 | Delivery (`delivery`) | Funded retry, the packing slip photo, the lot in quarantine (amber cage) | The truck shows up… |
-| 1:16–1:26 | QC release → paid (`paid`) | Priya releases, the payout flies to Northgate, Marcy's "paid $5,150.00" | Priya releases the lot… |
-| 1:26–1:34 | The numbers reconcile (`reconcile`) | Mass balance: Riverside's 115.2 kg (6.84%), Hollow Pine to the gram | Material in, batches out… |
-| 1:34–1:50 | Behind the curtain (`curtain`) | Who signed what and who paid the gas, then the transaction log scrolling, with the refusal in red | Here's what's underneath… |
-| 1:50–1:57 | Close (`close`) | "Day One · Built at NEAR HACKATHON", team credit | Kevin doesn't need crypto… |
+| 1:16–1:24 | New bank details (`bank-details`) | Marcy's screen: the attack suite's hidden-text invoice for PO-1042, held: "asks for payment to a different account; PO-1042 can only pay Northgate Ingredients"; a small curtain inset with the account the order was funded for and the funding transaction | Then an invoice arrives saying Northgate's bank details changed… |
+| 1:24–1:34 | QC release → paid (`paid`) | Priya releases, the payout flies to Northgate, Marcy's "paid $5,150.00" | Priya releases the lot… |
+| 1:34–1:42 | The numbers reconcile (`reconcile`) | Mass balance: Riverside's 115.2 kg (6.84%), Hollow Pine to the gram | Material in, batches out… |
+| 1:42–1:58 | Behind the curtain (`curtain`) | Who signed what and who paid the gas, then the transaction log scrolling, with the refusal in red | Here's what's underneath… |
+| 1:58–2:05 | Close (`close`) | "Day One · Built at NEAR HACKATHON", team credit | Kevin doesn't need crypto… |
 
-**Coming from the UI design session (storyboard, Oct 29; OPEN_QUESTIONS #41):** a "New bank details" beat (`from=bank-details`, 8 s) between Delivery and QC release: the attack suite's hidden-text invoice for PO-1042 lands on Marcy's screen and Kevin holds it, "asks for payment to a different account; the order can only pay Northgate". Until that lands the page plays the table above (1:57); after it, every beat from QC release on starts 8 s later and the hint reads about 2:05, still under the 2:20 export limit.
+The "New bank details" beat (OPEN_QUESTIONS #41) is 8.5 s, so both its captions stay under 20 characters a second; the take is 2:05, under the 2:20 export limit, and nothing was trimmed. The invoice is the attack suite's recorded one (`data/attacks/invoices.json`, read with the recorded model answer in `data/replay/attacks-llm.json`), video-only: it sends nothing to the contract and prints nothing in the transcript.
 
 **Explorer insets** (optional, from the storyboard): screenshots of these recorded transactions on testnet.nearblocks.io:
 the refusal, [FQepeewB…](https://testnet.nearblocks.io/txns/FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af); Linda's relayed approval, [EW5A8qi3…](https://testnet.nearblocks.io/txns/EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8); the payout, [2zwgaHgW…](https://testnet.nearblocks.io/txns/2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn).

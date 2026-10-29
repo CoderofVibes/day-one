@@ -4,9 +4,10 @@
 // buttons appear when `act` is given (the API is up). Plant words only: dollars, kilograms,
 // PO numbers and people. The chain stays behind the curtain.
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import type {
   Books,
+  HeldInvoice,
   MassBalance,
   PlantInventory,
   PolicyState,
@@ -16,6 +17,7 @@ import { KevinNote, Pill } from "./feed.tsx";
 import { groupBuy } from "./groupBuy.ts";
 import { ImportPane } from "./ImportPane.tsx";
 import { quantity } from "./live.ts";
+import type { RunData, Transaction } from "./run.ts";
 
 const usd = (units: number | string) =>
   `$${(Number(units) / 1_000_000).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -477,18 +479,93 @@ export function MassBalanceBlock({
 
 // ------------------------------------------------------------------ Books
 
+/** The transaction that funded a PO, for the curtain's "payee fixed when funded" line. */
+export function fundingOf(run: RunData, poNo: string): Transaction | undefined {
+  // The recorded run funds PO-1042 at "Kevin retries"; PO-1041 at "Small PO".
+  const title = poNo === "PO-1042" ? "Kevin retries" : poNo === "PO-1041" ? "Small PO" : null;
+  const step = title ? run.steps.find((s) => s.title === title) : undefined;
+  const hash = step?.chain.find((c) => c.tx)?.tx;
+  return run.transactions.find((t) => t.tx === hash && t.status !== "refused");
+}
+
+/**
+ * An invoice Kevin holds for Marcy (OPEN_QUESTIONS #41): why, in plain words; behind the
+ * curtain, the account it asked for against the one fixed on the funded PO, and the line Kevin
+ * ignored. Kevin's screen is the guard; the contract rule is the guarantee.
+ */
+export function HeldInvoiceCard({
+  invoice,
+  curtain,
+  funding,
+}: {
+  invoice: HeldInvoice;
+  curtain: boolean;
+  funding?: Transaction | undefined;
+}) {
+  return (
+    <li className="held-invoice">
+      <div className="cont">
+        <Pill tone="waiting">held for Marcy</Pill>
+        <p>
+          <b>{invoice.invoiceNo}</b> from {invoice.vendor} for {invoice.poNo}, {invoice.total}.
+        </p>
+      </div>
+      {invoice.staff.map((line) => (
+        <p key={line}>{line}</p>
+      ))}
+      {curtain && (
+        <div className="curtain-inset">
+          <dl>
+            <dt>asked for</dt>
+            <dd>{invoice.curtain.askedFor.join(", ") || "—"}</dd>
+            <dt>the order pays</dt>
+            <dd>
+              {invoice.curtain.payee}
+              {funding && (
+                <>
+                  {" "}
+                  · fixed when funded
+                  {funding.url ? (
+                    <>
+                      ,{" "}
+                      <a href={funding.url} target="_blank" rel="noreferrer">
+                        {funding.tx.slice(0, 10)}… ↗
+                      </a>
+                    </>
+                  ) : null}
+                </>
+              )}
+            </dd>
+            {invoice.curtain.hiddenLines.map((line) => (
+              <Fragment key={line}>
+                <dt>ignored</dt>
+                <dd>“{line}”</dd>
+              </Fragment>
+            ))}
+          </dl>
+        </div>
+      )}
+    </li>
+  );
+}
+
 /** Marcy's view: settled purchase orders, the price-drift alert, the CSV, the brief; the wizard. */
 export function BooksPane({
   books,
   error,
   links,
   wizardKey,
+  run,
+  curtain,
 }: {
   books: Books | null;
   error: string | null;
   links: { brief: string; books: string };
   /** Given when the API is up: the import wizard restarts when this changes ("Start over"). */
   wizardKey?: number;
+  /** The run, for the funding transaction behind the curtain. */
+  run: RunData;
+  curtain: boolean;
 }) {
   const flagged = new Map(books?.alerts.map((a) => [a.poNo, a]) ?? []);
   return (
@@ -522,6 +599,25 @@ export function BooksPane({
               {a.sentence}
             </KevinNote>
           ))}
+          {books.held.length > 0 && (
+            <>
+              <h3>
+                Held invoices
+                <Pill tone="waiting">{books.held.length} waiting on Marcy</Pill>
+              </h3>
+              <ul className="review">
+                {books.held.map((inv) => (
+                  <HeldInvoiceCard
+                    key={inv.invoiceNo}
+                    invoice={inv}
+                    curtain={curtain}
+                    funding={fundingOf(run, inv.poNo)}
+                  />
+                ))}
+              </ul>
+              <h3>Settled purchase orders</h3>
+            </>
+          )}
           <div className="table-wrap">
             <table>
               <thead>

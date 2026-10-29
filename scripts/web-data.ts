@@ -18,6 +18,7 @@ import { runDemo } from "../agents/kevin/src/demo.ts";
 import { massBalance } from "../agents/kevin/src/massBalance.ts";
 import { suggestTransfers, transfersInTransit } from "../agents/kevin/src/transferSuggestions.ts";
 import { openDemoEnv } from "../api/src/env.ts";
+import { heldInvoiceDemo } from "../api/src/heldInvoice.ts";
 import { readAttestationFixture, recordedReceipts } from "../server/src/attestation/fixture.ts";
 import { verifyAttestation } from "../server/src/attestation/verify.ts";
 import { books, booksCsv } from "../server/src/ledger/books.ts";
@@ -117,11 +118,13 @@ if (!end.ok) {
   process.exit(1);
 }
 const now = env.clock();
+// The hidden-text invoice Kevin holds for Marcy (OPEN_QUESTIONS #41), from the recorded answer.
+const held = await heldInvoiceDemo(env.db, root);
 const plants = {
   at: now,
   inventory: plantInventory(env.db),
   massBalance: massBalance(env.db),
-  books: books(env.db),
+  books: { ...books(env.db), held: held ? [held] : [] },
   transfers: {
     suggestions: suggestTransfers(env.db, { now }),
     inTransit: transfersInTransit(env.db),
