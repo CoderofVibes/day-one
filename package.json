@@ -33,6 +33,8 @@
     "rehearse": "tsx scripts/rehearse.ts",
     "escrow": "tsx scripts/escrow.ts",
     "books": "tsx scripts/books.ts",
+    "import": "tsx scripts/import.ts",
+    "render:import": "tsx scripts/render-import.ts",
     "api": "tsx api/src/main.ts",
     "api:live": "tsx api/src/main.ts --live",
     "web": "npm run dev -w web",

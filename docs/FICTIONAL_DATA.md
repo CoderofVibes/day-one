@@ -352,7 +352,7 @@ Sheet quirks: a title row ("HOLLOW PINE INVENTORY — DO NOT SORT") above the he
 
 The TOTAL row is Ray's own `=SUM()` and is meaningless: it adds pounds to kilograms and counts the duplicate.
 
-**Kevin's opening message:** "Found 19 rows. 9 need your eyes: 1 looks like the same Vitamin C lot entered twice, 1 uses a short name for ascorbic acid, 2 are in pounds, 1 lot expired in March, 1 quantity isn't a number, 1 has no lot number, 1 material (Xanthan Gum) isn't on your material list, and the last row is a total."
+**Kevin's opening message:** "Found 19 rows. 9 need your eyes: 1 looks like the same ascorbic acid lot entered twice, 1 uses a short name for ascorbic acid, 2 are in pounds, 1 lot expired in March, 1 quantity isn't a number, 1 has no lot number, 1 material (Xanthan Gum) isn't on your material list, and the last row is a total."
 
 | Flag | Row | Kind | Kevin proposes | Expected resolution in the fixture |
 |---|---|---|---|---|

@@ -1,0 +1,11 @@
+{
+  "F1": { "answer": "accept" },
+  "F2": { "answer": "accept" },
+  "F3": { "answer": "accept" },
+  "F4": { "answer": "accept" },
+  "F5": { "answer": "accept" },
+  "F6": { "answer": "quantity", "qty": 5.8, "unit": "kg" },
+  "F7": { "answer": "accept" },
+  "F8": { "answer": "review" },
+  "F9": { "answer": "accept" }
+}

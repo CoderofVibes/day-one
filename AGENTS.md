@@ -54,6 +54,8 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Serve the mock ERP and its web view (Windows, repo root) | `npm run erp` → http://localhost:8087/ (docs/ERP.md §3.2) |
 | Replay the demo with the ERP attached (Windows, repo root; no keys, no network) | `npm run erp:demo` → each step's `erp:` lines, the bill, payment, inventory and a balanced trial balance (verified Oct 28) |
 | Reconcile Day One, the ERP and the contract (Windows, repo root; no keys) | `npm run erp:reconcile` → 6 of 6 checks MATCH (verified Oct 28) |
+| Write the import wizard's fixture workbook (Windows, repo root) | `npm run render:import` → `data/imports/INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx`, byte-identical on re-run (verified Oct 28) |
+| Import an inventory spreadsheet (Windows, repo root; no keys, no network) | `npm run import -- <file.xlsx or .csv>` → Kevin's line and the flags; `-- <file> --answers <answers.json>` posts into an empty in-memory Plant B ledger (`--db <file>` for a real one) and prints the opening inventory; `--json` too (verified Oct 28 on the fixture with `data/imports/*.answers.json`) |
 | _(more commands are added as they first work)_ | |
 
 ## Team and working protocol

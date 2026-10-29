@@ -67,8 +67,11 @@ Kevin's purchase rules read `qualification_status`: `unqualified` and `suspended
 |---|---|
 | `transfers` | `transfer_no`, `lot_id`, `from_facility_id`, `to_facility_id`, `qty_shipped_base`, `qty_received_base`, `state` (`requested`, `in_transit`, `received`, `discrepancy`, `resolved`), `out_event_id`, `in_event_id` |
 | `discrepancies` | `kind` (`transfer_qty`, `count_vs_book`, `yield_variance`, `unrecorded_consumption`), `facility_id`, `lot_id`, `expected_base`, `observed_base`, `detected_by`, `status` (`open`, `proposed_adjustment`, `adjusted`, `dismissed`), `explanation`, `proposed_event_json` |
+| `spreadsheet_imports` | `facility_id`, `file_name`, `file_sha256` (unique per facility: re-importing the same file is a no-op), `sheet`, `as_of`, `rows_found`, `lots_posted`, `review_json` (rows held for a person), `resolutions_json` (the answer to every flag), `posted_by`, `posted_at` |
 
 The seeded `ASC-261009-01` case: shipped 200,000,000 mg, received 187,450,000 mg, phantom 12,550,000 mg at Plant A (FICTIONAL_DATA §8).
+
+An import posts each lot as opening stock through `appendLotEvent`: `received`, `quarantined`, then `released`, or held in `quarantine` when the lot is past its expiry; the reason names the file and row (`server/src/import/inventory.ts`).
 
 ## 6. Production and genealogy
 

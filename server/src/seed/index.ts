@@ -75,7 +75,8 @@ function idOf<T>(map: Map<string, T>, key: string): T {
   return value;
 }
 
-export function seedLedger(db: Ledger) {
+/** `referenceOnly` stops after the reference rows: no POs, lots or history (an empty plant). */
+export function seedLedger(db: Ledger, options: { referenceOnly?: boolean } = {}) {
   db.transaction((tx) => {
     tx.insert(units)
       .values(
@@ -227,6 +228,8 @@ export function seedLedger(db: Ledger) {
         )
         .run();
     }
+
+    if (options.referenceOnly) return;
 
     const lotId = new Map<string, number>();
     for (const lot of LOTS) {

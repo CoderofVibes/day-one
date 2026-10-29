@@ -392,6 +392,33 @@ export const discrepancies = sqliteTable(
   ],
 );
 
+/**
+ * One posted spreadsheet import (FEATURES_V2 §1). The unique file hash per plant makes
+ * re-importing the same file a no-op; rows that did not post wait in `review_json`.
+ */
+export const spreadsheetImports = sqliteTable(
+  "spreadsheet_imports",
+  {
+    id: id(),
+    facilityId: integer()
+      .notNull()
+      .references(() => facilities.id),
+    fileName: text().notNull(),
+    fileSha256: text().notNull(),
+    sheet: text().notNull(),
+    asOf: text().notNull(),
+    rowsFound: integer().notNull(),
+    lotsPosted: integer().notNull(),
+    /** Rows held out of the ledger for a person: [{ row, item, reason }]. */
+    reviewJson: text().notNull(),
+    /** The answer to every flag, as given at confirm. */
+    resolutionsJson: text().notNull(),
+    postedBy: integer().references(() => staff.id),
+    postedAt: text().notNull(),
+  },
+  (t) => [unique("spreadsheet_imports_file").on(t.facilityId, t.fileSha256)],
+);
+
 // ---------------------------------------------------------------- 6. Production and genealogy
 
 export const PLAN_STATUS = ["planned", "done", "cancelled"] as const;
