@@ -6,6 +6,7 @@
     "server",
     "agents/kevin",
     "agents/suppliers",
+    "api",
     "web",
     "erp"
   ],
@@ -29,6 +30,9 @@
     "demo:live": "tsx scripts/demo.ts --live",
     "rehearse": "tsx scripts/rehearse.ts",
     "escrow": "tsx scripts/escrow.ts",
+    "books": "tsx scripts/books.ts",
+    "api": "tsx api/src/main.ts",
+    "api:live": "tsx api/src/main.ts --live",
     "web": "npm run dev -w web",
     "web:build": "npm run build -w web",
     "web:data": "tsx scripts/web-data.ts",

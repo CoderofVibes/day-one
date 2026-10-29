@@ -49,6 +49,14 @@
       ]
     },
     {
+      "step": 3,
+      "title": "Discrepancy",
+      "staff": [
+        "Plant A still shows 12.55 kg of lot ASC-261009-01, but Plant B weighed in 187.45 kg of the 200 kg sent. Proposed adjustment sent to Plant A for review."
+      ],
+      "chain": []
+    },
+    {
       "step": 4,
       "title": "Forecast",
       "staff": [

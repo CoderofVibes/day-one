@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./agent": "./src/agent.ts",
+    "./bus": "./src/bus.ts",
     "./shipping": "./src/shipping.ts"
   },
   "dependencies": {

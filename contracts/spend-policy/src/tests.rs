@@ -765,11 +765,73 @@ fn only_agents_anchor_and_hashes_are_checked() {
     let msg = panic_message(|| c.anchor("receipt".into(), "R-1".into(), hash(1), None));
     assert_eq!(
         msg,
+        "Only a registered purchasing agent or an approved supplier can anchor records."
+    );
+    let msg = panic_message(|| {
+        c.anchor_batch(vec![AnchorInput {
+            kind: "receipt".into(),
+            ref_id: "R-1".into(),
+            hash: hash(1),
+            prev: None,
+        }])
+    });
+    assert_eq!(
+        msg,
         "Only a registered purchasing agent can anchor records."
     );
     as_(&kevin());
     let msg = panic_message(|| c.anchor("receipt".into(), "R-1".into(), "abc".into(), None));
     assert_eq!(msg, "A fingerprint is 64 lowercase hex characters.");
+}
+
+/// A supplier commits to a quote from its own account; the gate is as narrow as the use.
+#[test]
+fn suppliers_anchor_only_their_own_quotes() {
+    let mut c = setup();
+    let own = format!("RFQ-2611-01/{}", northgate());
+    as_(&northgate());
+    c.anchor("quote".into(), own.clone(), hash(5), None);
+    let a = c.get_anchor(own).unwrap();
+    assert_eq!((a.kind.as_str(), a.by), ("quote", northgate()));
+
+    let wrong_kind = format!("BR-B-1046/{}", northgate());
+    let msg = panic_message(|| c.anchor("batch_record".into(), wrong_kind, hash(6), None));
+    assert_eq!(
+        msg,
+        "A supplier anchors only its own quotes: kind \"quote\" and a ref_id ending in /<its account>."
+    );
+    let not_own = format!("RFQ-2611-01/{}", bayfront());
+    let msg = panic_message(|| c.anchor("quote".into(), not_own, hash(6), None));
+    assert!(msg.starts_with("A supplier anchors only its own quotes"));
+    let msg = panic_message(|| c.anchor("quote".into(), "RFQ-2611-01".into(), hash(6), None));
+    assert!(msg.starts_with("A supplier anchors only its own quotes"));
+    let msg = panic_message(|| {
+        c.anchor_batch(vec![AnchorInput {
+            kind: "quote".into(),
+            ref_id: format!("RFQ-2611-02/{}", northgate()),
+            hash: hash(6),
+            prev: None,
+        }])
+    });
+    assert_eq!(
+        msg,
+        "Only a registered purchasing agent can anchor records."
+    );
+
+    // A supplier HQ has not approved (QuickChem) is refused outright.
+    as_(&acc("quickchem-direct.testnet"));
+    let msg = panic_message(|| {
+        c.anchor(
+            "quote".into(),
+            "RFQ-2611-01/quickchem-direct.testnet".into(),
+            hash(7),
+            None,
+        )
+    });
+    assert_eq!(
+        msg,
+        "Only a registered purchasing agent or an approved supplier can anchor records."
+    );
 }
 
 #[test]

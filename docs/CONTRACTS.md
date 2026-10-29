@@ -125,7 +125,8 @@ pub struct Anchor { kind, hash: String /* 64 lowercase hex */, prev: Option<Stri
 | `cancel(po_id)` | owner, before `Received` | 1 yocto | same internal refund and spend reversal; `po_cancelled` |
 | `approve_po(po_id, supplier, amount, category, po_hash, refused_tx)` | an account named as `approver` in some agent's policy | none | stores a one-time approval (expires in 24 h); emits `po_approved` with `refused_tx`. Moves no money. `submit_po` accepts it only if `approved_by` is that agent's approver. |
 | `reject_po(po_id, reason)` | approver | none | deletes any approval; `po_rejected` |
-| `anchor(kind, ref_id, hash, prev)` / `anchor_batch(items)` (≤50) | a registered agent | none | append-only; re-anchoring an existing `ref_id` panics; emits `record_anchored` |
+| `anchor(kind, ref_id, hash, prev)` | a registered agent; or a registered supplier, for kind `quote` and a `ref_id` ending in `/<its account>` only (Oct 28) | none | append-only; re-anchoring an existing `ref_id` panics; emits `record_anchored` |
+| `anchor_batch(items)` (≤50) | a registered agent | none | same, in one call |
 | `withdraw_budget(amount)` | owner | 1 yocto | returns unallocated tokens to treasury (demo reset) |
 | Views: `get_agent_policy`, `get_spent`, `get_category_spent`, `get_po`, `list_pos(from, limit)`, `get_approval`, `get_budget`, `get_config`, `get_period`, `get_anchor`, `get_roles`, `get_category_cap`, `get_supplier` | anyone | — | — |
 
@@ -180,7 +181,8 @@ The behind-the-curtain view and the demo transcript print these events with expl
 
 ## 6. Record anchoring
 
-- What is anchored: confirmed batch records, ranges of the `lot_events` hash chain, receipts (packing-slip hash). Approvals and payments are already transactions, so they are referenced by tx hash, not re-anchored.
+- What is anchored: confirmed batch records, ranges of the `lot_events` hash chain, receipts (packing-slip hash), and supplier quotes. Approvals and payments are already transactions, so they are referenced by tx hash, not re-anchored.
+- Supplier quotes (Oct 28): each supplier agent anchors the fingerprint of its quote's terms from its own account as `ref_id = "<rfq>/<account>"`, kind `quote`, and sends Kevin the terms and the salt over the bus. The contract takes a quote anchor only from a supplier HQ has registered (`set_supplier`) and only under the caller's own account suffix, so a supplier can commit to a price but cannot squat another record's id, and an unqualified vendor's anchor (QuickChem) is refused. Kevin recomputes the fingerprint and ignores a quote that no longer matches what its sender anchored. `npm run verify` checks a quote file the same way as a batch record.
 - Hash = `sha256(JCS-canonical JSON of the record + 16-byte salt)`. Salts stay off-chain; fictional fixtures ship with their salts so judges can verify.
 - Genealogy: a batch record's canonical form includes the hashes of its input lots' latest events, so the anchor commits to its inputs.
 - Cost: about 0.0016 NEAR of storage per anchor (paid from the contract balance; FC keys cannot attach deposits).
@@ -204,6 +206,7 @@ spend-policy:
 - relayed `approve_po` (signer = relayer, predecessor = director) passes
 - `ft_on_transfer` from wrong token or wrong sender refunds
 - anchor stores and emits; re-anchor panics; non-agent anchor panics
+- a registered supplier anchors its own quote; another kind, another account's ref_id, `anchor_batch`, or an unregistered supplier panics
 - confirm that `po_refused` log survives the panic (informational; confirmed Oct 28)
 
 escrow (same contract):

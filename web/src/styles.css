@@ -13,6 +13,7 @@
   --curtain: #14171c;
   --curtain-ink: #d9dde3;
   --curtain-line: #2a2f37;
+  --warn: #b3261e;
   color-scheme: light;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
@@ -33,6 +34,7 @@
     --curtain: #0b0d10;
     --curtain-ink: #c9ced6;
     --curtain-line: #232830;
+    --warn: #f08a82;
     color-scheme: dark;
   }
 }
@@ -364,4 +366,479 @@ button {
 .foot {
   margin-top: 24px;
   font-size: 0.8rem;
+}
+
+/* Live mode: the action bar for whoever is up next. */
+.action-bar {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.bar-who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bar-text {
+  margin: 0;
+  flex: 1 1 240px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actions button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  cursor: pointer;
+}
+
+.actions button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.actions button.quiet {
+  margin-left: auto;
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+
+.actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.file {
+  font-size: 0.9rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.file input {
+  display: none;
+}
+
+.action-bar .phone {
+  margin: 0;
+}
+
+.phone-actions {
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.phone-actions button {
+  border-radius: 16px;
+}
+
+.error {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #f08a82;
+  background: rgba(240, 138, 130, 0.12);
+  font-size: 0.92rem;
+}
+
+.card.still {
+  cursor: default;
+}
+
+/* Header switches. */
+.switches {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* The three-plant view: stock by plant and the discrepancies to review. */
+.plants {
+  grid-column: 1 / -1;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.plants h2 {
+  color: var(--muted);
+}
+
+.discrepancies {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+
+.disc {
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: var(--current);
+}
+
+.disc p {
+  margin: 0 0 8px;
+}
+
+.disc.adjusted,
+.disc.dismissed {
+  border-color: var(--line);
+  background: transparent;
+  opacity: 0.8;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.stock {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.stock th,
+.stock td {
+  text-align: left;
+  padding: 6px 8px;
+  border-top: 1px solid var(--line);
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.stock thead th {
+  border-top: none;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.stock tbody th {
+  font-weight: 500;
+  white-space: normal;
+}
+
+.stock td.low {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.small {
+  font-size: 0.82rem;
+  font-weight: 400;
+}
+
+.mass {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.mass h3 {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.kevin-line {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--warn);
+  background: var(--bg);
+  border-radius: 0 8px 8px 0;
+}
+
+/* The plant map: isometric slabs from one TwinState (web/src/twin). */
+:root {
+  --map-floor: #e9e7e0;
+  --map-off: #cfccc3;
+  --map-warm: #9ed1c2;
+  --map-pad: #d8d5cc;
+  --map-steady: #8dbfae;
+  --money: #b8860b;
+  --quarantine: #d58a00;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --map-floor: #23272e;
+    --map-off: #3a3f48;
+    --map-warm: #2f7d69;
+    --map-pad: #2c3139;
+    --map-steady: #2c5f51;
+    --money: #e0b23a;
+    --quarantine: #f0a93b;
+  }
+}
+
+.map {
+  grid-column: 1 / -1;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.map h2 {
+  color: var(--muted);
+}
+
+.plant-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  font-family: inherit;
+}
+
+.plant-map .floor.top {
+  fill: var(--map-floor);
+}
+
+.plant-map .floor.side-l,
+.plant-map .floor.side-r,
+.plant-map .pad .side-l,
+.plant-map .pad .side-r {
+  fill: var(--map-off);
+}
+
+.plant-map .pad .top {
+  fill: var(--map-pad);
+}
+
+.plant-map .dept .top {
+  fill: var(--map-off);
+  transition: fill 600ms ease;
+}
+
+.plant-map .dept .side-l,
+.plant-map .dept .side-r {
+  fill: var(--map-off);
+  filter: brightness(0.86);
+  transition: fill 600ms ease;
+}
+
+.plant-map .dept .side-r {
+  filter: brightness(0.72);
+}
+
+.plant-map .dept.online .top {
+  fill: var(--accent);
+}
+
+.plant-map .dept.online .side-l,
+.plant-map .dept.online .side-r {
+  fill: var(--accent);
+}
+
+/* Plants A and C were on Acme's systems before day one: online, but not the story. */
+.plant-map .plant-A .dept.online .top,
+.plant-map .plant-A .dept.online .side-l,
+.plant-map .plant-A .dept.online .side-r,
+.plant-map .plant-C .dept.online .top,
+.plant-map .plant-C .dept.online .side-l,
+.plant-map .plant-C .dept.online .side-r {
+  fill: var(--map-steady);
+}
+
+.plant-map .dept.onboarding .top,
+.plant-map .dept.onboarding .side-l,
+.plant-map .dept.onboarding .side-r {
+  fill: var(--map-warm);
+}
+
+.plant-map .pulse {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 0.5;
+  animation: map-pulse 1.4s ease-in-out infinite;
+}
+
+.plant-map .cage polygon,
+.plant-map .cage line {
+  fill: rgba(213, 138, 0, 0.12);
+  stroke: var(--quarantine);
+  stroke-width: 0.45;
+  stroke-dasharray: 1.2 0.9;
+}
+
+.plant-map text {
+  fill: var(--ink);
+  font-size: 2.3px;
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 0.6px;
+  stroke-linejoin: round;
+}
+
+.plant-map .dept-label {
+  font-size: 2px;
+  fill: var(--ink);
+}
+
+.plant-map .dept.online .dept-label {
+  fill: var(--accent-ink);
+  stroke: var(--accent);
+}
+
+.plant-map .dept.offline .dept-label {
+  fill: var(--muted);
+}
+
+.plant-map .plant-name {
+  font-size: 2.8px;
+  font-weight: 600;
+}
+
+.plant-map .plant-sub,
+.plant-map .pad-sub {
+  font-size: 2.1px;
+  fill: var(--muted);
+}
+
+.plant-map .pad-name {
+  font-size: 2.4px;
+  font-weight: 600;
+}
+
+.plant-map .lot {
+  font-size: 2px;
+  font-weight: 600;
+}
+
+.plant-map .lot.quarantine {
+  fill: var(--quarantine);
+}
+
+.plant-map .lot.released {
+  fill: var(--ok);
+}
+
+.plant-map .lot.rejected {
+  fill: var(--warn);
+}
+
+.plant-map .flow path {
+  fill: none;
+  stroke-width: 0.6;
+  stroke-linecap: round;
+}
+
+.plant-map .flow.material path {
+  stroke: var(--ink);
+}
+
+.plant-map .flow.material circle {
+  fill: var(--ink);
+}
+
+.plant-map .flow.money path {
+  stroke: var(--money);
+}
+
+.plant-map .flow.money circle {
+  fill: var(--money);
+}
+
+.plant-map .flow.moving path {
+  stroke-dasharray: 2 1.4;
+  animation: map-dash 1.2s linear infinite;
+}
+
+.plant-map .flow.held path,
+.plant-map .flow.arrived path {
+  opacity: 0.55;
+}
+
+.plant-map .flow.refused path,
+.plant-map .flow.disputed path {
+  stroke: var(--warn);
+}
+
+.plant-map .flow.refused circle,
+.plant-map .flow.disputed circle {
+  fill: var(--warn);
+}
+
+.plant-map .flow.refused path,
+.plant-map .flow.disputed path {
+  stroke-dasharray: 1.2 1.2;
+}
+
+.plant-map .flow circle {
+  transition: cx 600ms ease, cy 600ms ease;
+}
+
+.plant-map .flow text {
+  font-size: 2px;
+}
+
+.plant-map .flow.money text {
+  fill: var(--money);
+}
+
+.plant-map .flow.refused text,
+.plant-map .flow.disputed text {
+  fill: var(--warn);
+}
+
+.map-notes {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.map-notes li {
+  margin: 2px 0;
+}
+
+@keyframes map-dash {
+  to {
+    stroke-dashoffset: -3.4;
+  }
+}
+
+@keyframes map-pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 560px) {
+  .plant-map .dept-label,
+  .plant-map .flow text {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plant-map .pulse,
+  .plant-map .flow.moving path {
+    animation: none;
+  }
 }

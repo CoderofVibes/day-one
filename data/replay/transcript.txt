@@ -3,6 +3,7 @@ Loaded 3 facilities, 33 materials, 12 vendors, 7 batch records, 56 days of histo
 Kevin read BR-B-1045 (VC500, 800,000 tablets). 8 materials, all within tolerance. Yield 90.8%.
 Inventory updated. Ascorbic acid at Plant B: 722.4 kg → 310.0 kg (reorder point 500 kg).
   chain: anchored BR-B-1045 0xd7de24f4… ✓ (tx Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN)
+Plant A still shows 12.55 kg of lot ASC-261009-01, but Plant B weighed in 187.45 kg of the 200 kg sent. Proposed adjustment sent to Plant A for review.
 Two more VC500 batches in the next 10 days need about 824 kg. Short about 514 kg. Recommend ordering 700 kg.
 3 quotes. QuickChem Direct $5.90/kg excluded: vendor not qualified. Northgate $7.10/kg, 7 days — selected. Ridgeway $7.35/kg, 5 days — runner-up.
 PO-1041 to Bayfront Lab Supply, $612.00 — approved automatically and funded.

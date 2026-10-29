@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../server" },
+    { "path": "../agents/kevin" },
+    { "path": "../agents/suppliers" }
+  ]
+}

@@ -8,9 +8,11 @@ import {
 import type { ChainOutcome } from "@day-one/server/chain/outcome";
 import { type Ledger, openLedger } from "@day-one/server/ledger/db";
 import { verifyChain } from "@day-one/server/ledger/events";
+import { quotes } from "@day-one/server/ledger/schema";
 import type { LlmClient, LlmRequest, LlmTask } from "@day-one/server/llm/types";
 import { fingerprint, verifyAnchor } from "@day-one/server/records/anchors";
 import { seedLedger } from "@day-one/server/seed";
+import { demoBus } from "@day-one/suppliers/bus";
 import { acceptAndShip } from "@day-one/suppliers/shipping";
 import { beforeEach, describe, expect, it } from "vitest";
 import { DEMO_CLOCK, type DemoDeps, runDemo } from "./demo.ts";
@@ -22,6 +24,12 @@ const KEVIN = `kevin.plant-b.${ROOT}`;
 const DIRECTOR = `director.plant-b.${ROOT}`;
 const USD = 1_000_000n;
 const LIMIT = 2_500n * USD;
+const NORTHGATE = "northgate-ingredients.testnet";
+const APPROVED_SUPPLIERS = new Set([
+  NORTHGATE,
+  "ridgeway-ascorbics.testnet",
+  "bayfront-labsupply.testnet",
+]);
 
 interface Po {
   supplier: string;
@@ -105,6 +113,16 @@ class SimChain implements ChainTransport {
           this.anchors.set(item.ref_id, { kind: item.kind, hash: item.hash });
         }
         return ok(["anchored"]);
+      case "anchor": {
+        // A supplier HQ has approved anchors its own quote; QuickChem is not one.
+        if (!APPROVED_SUPPLIERS.has(call.signerId)) {
+          return refuse(
+            "Only a registered purchasing agent or an approved supplier can anchor records.",
+          );
+        }
+        this.anchors.set(a.ref_id ?? "", { kind: a.kind ?? "", hash: a.hash ?? "" });
+        return ok(["record_anchored"]);
+      }
       default:
         throw new Error(`SimChain: unexpected ${call.method}`);
     }
@@ -169,6 +187,8 @@ class FakeLlm implements LlmClient {
 }
 
 const KG = 1_000_000;
+/** A fixed per-account salt, like a recording's. */
+const quoteSalt = (account: string) => account.slice(0, 4).padEnd(32, "5");
 const invoices = JSON.parse(
   readFileSync(new URL("../../../data/attacks/invoices.json", import.meta.url), "utf8"),
 ).invoices as { genuine: string };
@@ -218,12 +238,18 @@ beforeEach(() => {
       sha256: "cd".repeat(32),
     },
     invoiceText: invoices.genuine,
+    quotes: (rfq) =>
+      demoBus(chain, {
+        policyContract: POLICY,
+        salt: (account) => quoteSalt(account),
+      }).requestQuotes(rfq),
     ship: (shipment) => acceptAndShip(chain, shipment, { policyContract: POLICY }),
     salts: {
       po1041: "11".repeat(16),
       po1042: "22".repeat(16),
       batch: "33".repeat(16),
       receipt: "44".repeat(16),
+      quotes: Object.fromEntries([...APPROVED_SUPPLIERS].map((a) => [a, quoteSalt(a)])),
     },
   };
 });
@@ -240,6 +266,8 @@ describe("the demo loop (DEMO_SCRIPT §2)", () => {
         "Kevin read BR-B-1045 (VC500, 800,000 tablets). 8 materials, all within tolerance. Yield 90.8%.",
       "Ray confirms":
         "Inventory updated. Ascorbic acid at Plant B: 722.4 kg → 310.0 kg (reorder point 500 kg).",
+      Discrepancy:
+        "Plant A still shows 12.55 kg of lot ASC-261009-01, but Plant B weighed in 187.45 kg of the 200 kg sent. Proposed adjustment sent to Plant A for review.",
       Forecast:
         "Two more VC500 batches in the next 10 days need about 824 kg. Short about 514 kg. Recommend ordering 700 kg.",
       Quotes:
@@ -261,28 +289,65 @@ describe("the demo loop (DEMO_SCRIPT §2)", () => {
     const run = await runDemo(deps);
     const chain = run.steps.flatMap((s) => s.chain);
     expect(chain[0]).toBe("chain: spend-policy budget 25,000.00 DTUSD, escrowed 0.00 DTUSD");
+    // Step 5: the approved suppliers anchor their quotes; QuickChem's anchor is refused.
+    expect(run.steps.find((s) => s.step === 5)?.chain).toEqual([
+      'chain: anchor quote RFQ-2611-01 ✗ REFUSED "Only a registered purchasing agent or an approved supplier can anchor records." (tx Tx2anchor)',
+      `chain: anchor quote RFQ-2611-01 ✓ signed by ${NORTHGATE} (tx Tx3anchor)`,
+      "chain: anchor quote RFQ-2611-01 ✓ signed by ridgeway-ascorbics.testnet (tx Tx4anchor)",
+    ]);
     expect(chain).toContain(
-      'chain: submit_po PO-1042 ✗ REFUSED "PO-1042: $5,150.00 exceeds Kevin\'s per-PO limit of $2,500.00; director approval required." (tx Tx3submit_po)',
+      'chain: submit_po PO-1042 ✗ REFUSED "PO-1042: $5,150.00 exceeds Kevin\'s per-PO limit of $2,500.00; director approval required." (tx Tx6submit_po)',
     );
     expect(chain).toContain(
-      `chain: approve_po PO-1042 ✓ signed by ${DIRECTOR}, paid by dayone-relayer.testnet (tx Tx4approve_po)`,
+      `chain: approve_po PO-1042 ✓ signed by ${DIRECTOR}, paid by dayone-relayer.testnet (tx Tx7approve_po)`,
     );
     expect(chain).toContain(
-      "chain: qc_release PO-1042 ✓ (tx Tx9qc_release) · 5,150.00 DTUSD → northgate-ingredients.testnet",
+      "chain: qc_release PO-1042 ✓ (tx Tx12qc_release) · 5,150.00 DTUSD → northgate-ingredients.testnet",
     );
-    expect(chain.at(-1)).toBe("chain: 10 transactions, 1 refused by design, 0 failed.");
+    expect(chain.at(-1)).toBe("chain: 13 transactions, 2 refused by design, 0 failed.");
     expect(run.summary).toEqual({
-      transactions: 10,
-      refusedByDesign: 1,
+      transactions: 13,
+      refusedByDesign: 2,
       refusedOther: 0,
       failed: 0,
     });
+  });
+
+  it("writes a proof per anchored quote that verifies, and not with a changed price", async () => {
+    const run = await runDemo(deps);
+    expect(run.quoteProofs.map((p) => p.ref_id)).toEqual([
+      `RFQ-2611-01/${NORTHGATE}`,
+      "RFQ-2611-01/ridgeway-ascorbics.testnet",
+    ]);
+    const [northgate] = run.quoteProofs;
+    if (!northgate) throw new Error("no Northgate proof");
+    expect(northgate).toMatchObject({
+      kind: "quote",
+      anchored_tx: "Tx3anchor",
+      record: { supplier: NORTHGATE, unitPriceUsdc: 7_100_000, freightUsdc: 180_000_000 },
+    });
+    const view = (v: ChainView) => sim.view(v);
+    const { record, salt, ref_id } = northgate;
+    expect((await verifyAnchor(view, POLICY, ref_id, fingerprint(record, salt))).result).toBe(
+      "MATCH",
+    );
+    const cheaper = { ...record, unitPriceUsdc: 7_000_000 };
+    expect((await verifyAnchor(view, POLICY, ref_id, fingerprint(cheaper, salt))).result).toBe(
+      "MISMATCH",
+    );
+    // Kevin's ledger points each quote at its anchor; QuickChem's has none.
+    const rows = db.select({ hash: quotes.quoteHash, tx: quotes.chainTxId }).from(quotes).all();
+    expect(rows.map((r) => r.tx !== null)).toEqual([false, true, true]);
+    expect(rows[1]?.hash).toBe(fingerprint(record, salt));
   });
 
   it("sends each call from the right party, staff calls through the relayer", async () => {
     await runDemo(deps);
     expect(sim.calls.map((c) => [c.method, c.signerId, c.viaRelayer ?? false])).toEqual([
       ["anchor_batch", KEVIN, false],
+      ["anchor", "quickchem-direct.testnet", false],
+      ["anchor", NORTHGATE, false],
+      ["anchor", "ridgeway-ascorbics.testnet", false],
       ["submit_po", KEVIN, false],
       ["submit_po", KEVIN, false],
       ["approve_po", DIRECTOR, true],

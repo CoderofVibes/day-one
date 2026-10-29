@@ -4,6 +4,8 @@
   "type": "module",
   "exports": {
     "./forecast": "./src/forecast.ts",
+    "./discrepancies": "./src/discrepancies.ts",
+    "./massBalance": "./src/massBalance.ts",
     "./purchasing": "./src/purchasing.ts",
     "./submit": "./src/submit.ts",
     "./approval": "./src/approval.ts",

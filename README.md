@@ -27,9 +27,9 @@ Requires Node 24 (`.nvmrc`). Step 5 requires Rust in Linux, macOS or WSL2.
      anchored  https://testnet.nearblocks.io/txns/Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN
    ```
 4. Add 1 g (`1000` mg) to any `actual_mg` in that file and repeat step 3 → `MISMATCH`, exit code 1.
-5. `cd contracts && cargo test` → 42 unit tests and one sandbox test that runs the whole loop on a local NEAR node with our own test token (`purchasing_loop_on_sandbox`).
+5. `cd contracts && cargo test` → 43 unit tests and one sandbox test that runs the whole loop on a local NEAR node with our own test token (`purchasing_loop_on_sandbox`).
 
-To see the same run in a browser: `npm run web:build`, then open `web/dist/` from any static file server; the "Behind the curtain" switch shows each transaction with its signer, who paid the gas and an explorer link.
+To see the same run in a browser: `npm run web:build`, then open `web/dist/` from any static file server; the plant map shows Plant B's departments coming online, the quarantined lot and the material and money flows as the run advances, and the "Behind the curtain" switch shows each transaction with its signer, who paid the gas and an explorer link.
 
 Also without keys: `npm run test:attacks` (four attacks on Kevin, each shown failing) and `npm run escrow` (the contract's budget, escrow and every PO, read live from testnet). Each takes `-- --json` for one machine-readable line.
 
@@ -38,15 +38,16 @@ Also without keys: `npm run test:attacks` (four attacks on Kevin, each shown fai
 From `data/replay/transcript.txt` (recorded live on testnet, Oct 28, 2026):
 
 1. Kevin reads the photo of batch record BR-B-1045: 8 materials, all within tolerance, yield 90.8%. Ray, the purchaser, confirms; inventory updates and the record's fingerprint is anchored on chain.
-2. Kevin forecasts the next two batches, finds ascorbic acid about 514 kg short and recommends 700 kg.
-3. Three quotes come in. QuickChem is excluded as unqualified; Northgate is selected at $7.10/kg.
-4. PO-1041 ($612.00, lab supplies) is within Kevin's limit: the contract funds escrow from the plant budget.
-5. PO-1042 ($5,150.00) is over Kevin's $2,500.00 limit: the contract refuses it, and Kevin texts Linda, the director.
-6. Linda replies "YES 1042". Her approval is signed with her own key and paid for by Day One's relayer; Kevin's identical retry funds escrow.
-7. Northgate accepts and ships from its own account, naming its supplier lot.
-8. Tommy photographs the packing slip; it matches the PO and the lot, and the receipt is confirmed on chain. The lot goes to quarantine.
-9. Priya releases the lot in QC; the contract pays Northgate $5,150.00 from escrow.
-10. Kevin matches the invoice to the PO and receipt and anchors the receipt record.
+2. Consuming the lot Plant A transferred exposes a discrepancy: Plant A still books 12.55 kg that Plant B never weighed in. Kevin proposes the write-off to Plant A for review.
+3. Kevin forecasts the next two batches, finds ascorbic acid about 514 kg short and recommends 700 kg.
+4. Three quotes come in. QuickChem is excluded as unqualified; Northgate is selected at $7.10/kg.
+5. PO-1041 ($612.00, lab supplies) is within Kevin's limit: the contract funds escrow from the plant budget.
+6. PO-1042 ($5,150.00) is over Kevin's $2,500.00 limit: the contract refuses it, and Kevin texts Linda, the director.
+7. Linda replies "YES 1042". Her approval is signed with her own key and paid for by Day One's relayer; Kevin's identical retry funds escrow.
+8. Northgate accepts and ships from its own account, naming its supplier lot.
+9. Tommy photographs the packing slip; it matches the PO and the lot, and the receipt is confirmed on chain. The lot goes to quarantine.
+10. Priya releases the lot in QC; the contract pays Northgate $5,150.00 from escrow.
+11. Kevin matches the invoice to the PO and receipt and anchors the receipt record.
 
 Ten transactions, one refused by design, none failed.
 
@@ -71,6 +72,7 @@ Kevin does not need crypto. The acquirer, the plant and the supplier need one sp
 | Funds release only after receipt and QC | `qc_release` | `release_before_receipt_or_by_the_wrong_role_is_refused`, `failed_payout_rolls_back_to_received` | [release tx](https://testnet.nearblocks.io/txns/14QHzV9PisQz7TqhnT6WRZ9QmmPfeaTSnbuZLiWVMC4d) |
 | A QC rejection refunds the budget | `qc_reject` | `qc_reject_returns_the_amount_to_the_budget` | [relayed `qc_reject`](https://testnet.nearblocks.io/txns/FfFVEkAzPXxrGnDycHoAm81K1fpUUjd6yHqUhvo2AENn) (rehearsal PO-9043) |
 | Records are anchored and verifiable | `anchor_batch`, `server/src/records/anchors.ts`, `scripts/verify.ts` | `anchors_store_once_and_emit`; `server/src/records/anchors.test.ts` | [anchor tx](https://testnet.nearblocks.io/txns/Gp9jFqwodq69HXuVtMY38Fgoyb4YsrpVZR2UprLkbuBN) |
+| Suppliers commit to their quotes from their own accounts; an unapproved supplier cannot | `agents/suppliers/src/agent.ts`, `anchor` (supplier gate in `contracts/spend-policy`) | `suppliers_anchor_only_their_own_quotes`; `agents/suppliers/src/agent.test.ts` | [Northgate's quote anchor](https://testnet.nearblocks.io/txns/FW14aVE2Wn3hWehaGrHqDRapLR16Uyyw6nE8oHZrT4FS): `npm run verify -- data/quotes/RFQ-9045.northgate-ingredients.testnet.json` → `MATCH … by northgate-ingredients.testnet`; [QuickChem refused](https://testnet.nearblocks.io/txns/E8g3yRDVpmy15teRskFf763WEAUtHGGtc36s3A2jtitg) |
 | Kevin is not fooled by four attacks | `agents/kevin/src/invoices.ts`, `payments.ts`, `purchasing.ts` | `agents/kevin/src/attacks.test.ts`; `npm run test:attacks` | [re-sent PO refused](https://testnet.nearblocks.io/txns/FWcSEZCP8iUkdJvbr6ypuRVePrt7JPmA3np4fiMtcmt4) |
 
 ## What is on chain and what is not
@@ -81,13 +83,13 @@ Kevin does not need crypto. The acquirer, the plant and the supplier need one sp
 | PO authorization and refusals | Line-item prices and quotes |
 | Director approvals | Staff names and roles |
 | Escrow, release, refunds; PO total and supplier | Record salts |
-| Record fingerprints (sha256) | Model prompts and responses (recorded fixtures) |
+| Record fingerprints (sha256), supplier quote fingerprints from the suppliers' own accounts | Model prompts and responses (recorded fixtures) |
 
 The PO escrow is scoped to purchase orders: one plant budget, one supplier per PO, release on QC. It is not a general multisig.
 
 ## Architecture
 
-Kevin (`agents/kevin`) runs the workflow: extraction, forecast, quotes, PO drafts, approvals, receiving, QC, invoices. The ledger (`server/src/ledger`) is SQLite with a hash-chained lot event log. The chain client (`server/src/chain`) logs every call, refusals included, and records or replays fixtures. Supplier agents (`agents/suppliers`) sign from their own accounts. One contract, `contracts/spend-policy`, holds the plant budget and the escrow; `contracts/dtusd` is our labeled test token.
+Kevin (`agents/kevin`) runs the workflow: extraction, forecast, quotes, PO drafts, approvals, receiving, QC, invoices. The ledger (`server/src/ledger`) is SQLite with a hash-chained lot event log. The chain client (`server/src/chain`) logs every call, refusals included, and records or replays fixtures. Supplier agents (`agents/suppliers`) quote over an in-process bus, anchor their quote fingerprints and accept and ship, all signed from their own accounts. One contract, `contracts/spend-policy`, holds the plant budget and the escrow; `contracts/dtusd` is our labeled test token.
 
 Contracts: Rust, near-sdk 5.29.1, cargo-near 0.22.0. Off chain: TypeScript on Node 24, near-api-js 7.3.1, better-sqlite3 13.0.3 with Drizzle 0.45.4. Model: NEAR AI Cloud `z-ai/glm-5.3-flash` for batch-record vision, chosen by a bake-off on the seven fictional records (`docs/research/13-llm-access.md`); Anthropic `claude-sonnet-5-5` is the fallback route.
 
@@ -99,7 +101,7 @@ Kevin is the purchasing agent. The contract limits are one enforced layer around
 - The demo settles in DTUSD, a test token we deployed, because the Circle testnet faucet gives 20 USDC per two hours.
 - Staff keys are held by the server because the phone is simulated. Production would have each person hold their own key through a login provider.
 - PO totals and supplier accounts are visible on chain; line items and prices are not.
-- The web UI replays the recorded run; the live staff screens are not built yet.
+- The web UI replays the recorded run on a static host; `npm run api` serves the same screens live, one staff action at a time. The plant map is plain 2D SVG; there is no 3D twin.
 - Contract accounts still hold full-access keys so we can redeploy.
 - Audit-friendly records, not a compliance claim.
 - Commits before the `pre-hackathon` tag are planning documents only (`docs/`).

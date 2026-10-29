@@ -1,0 +1,16 @@
+{
+  "name": "@day-one/api",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./env": "./src/env.ts",
+    "./session": "./src/session.ts",
+    "./server": "./src/server.ts"
+  },
+  "dependencies": {
+    "@day-one/kevin": "*",
+    "@day-one/server": "*",
+    "@day-one/suppliers": "*",
+    "drizzle-orm": "0.45.4"
+  }
+}

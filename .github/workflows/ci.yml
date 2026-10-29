@@ -1,0 +1,53 @@
+# The keyless checks a clean clone passes (README steps 1–5): lint, typecheck and the TypeScript
+# tests, the recorded demo replay and the attack suite with no network and no secrets, and the
+# contract's unit and sandbox tests on Linux. Nothing here touches testnet or needs a key.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  node:
+    name: Lint, typecheck, tests, keyless replay
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - name: Replay the recorded demo (no keys, no network)
+        run: npm run demo
+      - name: Replay the attack suite
+        run: npm run test:attacks
+      - name: The web UI's data export is current
+        run: npm run web:data -- --check
+
+  contract:
+    name: Contract unit and sandbox tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: contracts
+      - name: Install cargo-near 0.22.0 (the version verified in WSL, AGENTS.md)
+        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/near/cargo-near/releases/download/cargo-near-v0.22.0/cargo-near-installer.sh | sh
+      - run: cargo fmt --all --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - name: Unit tests and the sandbox loop on a local NEAR node
+        run: cargo test
