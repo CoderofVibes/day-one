@@ -72,6 +72,7 @@ The stack is fixed in `docs/ARCHITECTURE.md`. Commands are added here on the day
 | Replay PO-1047 in Circle testnet USDC (Windows, repo root; no keys, no network) | `npm run usdc` (`-- --json`) → the five calls on `spend-policy-usdc.acme-holdings.testnet`, Bayfront paid 19.00 USDC, "Transcript matches data/usdc/transcript.txt." (verified Oct 29) |
 | Set up the USDC deployment (Windows, repo root; keychain + `.near-credentials`; idempotent) | `npm run usdc -- --setup` → creates `spend-policy-usdc.acme-holdings.testnet`, deploys the code `spend-policy` runs with Circle USDC as token, Plant B's slice of §8, USDC-only FC keys for Kevin, Tommy and Priya, funds the order total from Acme's USDC (verified Oct 29) |
 | Record PO-1047 live (Windows, repo root; keys, PO-1047 unused on the USDC deployment) | `npm run usdc -- --live --record` → rewrites `data/usdc/` (verified Oct 29) |
+| Clean-clone test on Linux (WSL Ubuntu; Node 24 in `~/.local/node`, Rust and cargo-near) | `wsl -d Ubuntu -- bash "/mnt/c/Dev/NEAR Hackathon/scripts/clean-clone.sh"` → a fresh clone of HEAD on the Linux filesystem, README steps 1–5 and every keyless README command, one PASS/FAIL line each, `failures: 0` (exit = failures); about 15 min with the contract built cold; the clone is deleted (`KEEP=1` keeps it) (verified Oct 29) |
 | _(more commands are added as they first work)_ | |
 
 ## Team and working protocol
