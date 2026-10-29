@@ -20,6 +20,7 @@ The flat map is a diagram: it shows *where things are* at a step. What it cannot
 | 8 | **Cross-plant transfers** as a truck between plants instead of a buy. | Stock moves before money does. | FEATURES_V2 §3. | 1 h, but the recorded run has no transfer step: only the disputed one from Plant A, which is drawn (dashed red arc). | **Dropped** beyond the disputed transfer; no data in the recorded run. |
 | 9 | **Sealed quotes** arriving locked and opening at the deadline. | The sealed round. | `security` track. | 2 h and a new web data export from `data/sealed/`, which this session must not touch. | **Dropped**. |
 | 10 | **Mass balance** as a bar beside each plant (in, out, waste). | Riverside's waste gap. | Storyboard 1:26–1:34. | 1 h, but the three-plant view already shows it, and the twin model has no mass-balance input. | **Dropped**. |
+| 12 | **Buildings that look like buildings** (Tony, Oct 29, mid-session). Each department is a kind: sheds with gable roofs, roller doors and a loading dock for receiving and the warehouse; sawtooth roofs with silos (weigh & dispense), a mixer tank (blending) and a stack (compression) for the line; office blocks with window grids for purchasing and accounting; a lab with a window band; packaging with roof vents. Windows light up as a department comes online. | A plant, not a bar chart. | The first thing a judge sees. | 2 h: `buildings.ts` lists the parts, one instanced mesh per part kind | **Built** |
 | 11 | Particles, bloom, HDRI lighting. | Polish. | — | Half a day and a CDN or vendored asset. | **Dropped** (offline rule, draw-call budget). |
 
 ## What was built
@@ -28,14 +29,16 @@ Files are listed in §3; everything under `web/src/twin3d/`.
 
 - **One state, two views.** `Twin3D` takes the same `TwinState` the flat map takes. Buildings are the boxes from `layout.ts` placed at `(x, 0, y)`; the pads and the arcs use the same anchors. Nothing is positioned by hand in the 3D code.
 - **Transitions on the demo clock.** The view derives the state at the previous step and the current step and interpolates between them with an eased `u` from a clock that is either wall time scaled (live) or a fixed 1000/60 ms per frame (`?record=1`). No `setTimeout`, no `Math.random()`.
-- **Draw calls.** Departments are one instanced mesh, pads and depots another, the rest are a handful of meshes and lines: about 30 draw calls. Labels are DOM (`drei/Html`), so no font file is needed and the page's own typeface is used; they hide at phone width like the flat map's department labels.
+- **Draw calls.** Every building part kind (bodies, gable and sawtooth roofs, silos, tanks, stacks, windows, doors, vents, roof units, docks) is one instanced mesh; the rest are a handful of meshes and lines: 38 to 64 draw calls over the run (`npm run web:shot:3d` prints them). Labels are DOM (`drei/Html`), so no font file is needed and the page's own typeface is used; department labels hide when the camera is far and at phone width, like the flat map's.
+- **Bundle.** The default page's JavaScript is 294.7 KB (289.9 KB before this branch: the switcher and its styles); the 3D chunk is 980.7 KB (262.8 KB gzipped) and loads only on `?view=3d` or the switch.
+- **Checked Oct 29** with `npm run web:shot:3d`: no console errors at any moment, light and dark, 1280 and 390 px; `RECORD=1` shows every clock sample a whole number of 1000/60 ms frames and the run reaching step 15 of 15 on its own at 42.07 s; a drag orbits the camera and the next step hands it back to the story framing. Headless Edge renders about 166 frames per second uncapped; the 60 fps claim at 1080p still needs a look on Tony's screen.
 - **Phone and no-WebGL fallback.** Under 560 px the labels thin out and the canvas keeps a 4:3 box; without WebGL the pane shows the flat map.
 
 ## Model changes outside `web/src/twin3d/`
 
 - `web/src/twin/model.ts`: a new optional `quotes` array on `TwinState` (supplier, price, standing: selected / runner-up / excluded, reason, chainTx) filled at the Quotes step, and `formatQuotes(state)` for the 3D caption. The 2D map does not read either; its tests and drawing are unchanged. Tests added in `model.test.ts`.
 - `web/src/App.tsx`: the map pane is `PlantView` (in `twin3d/`), which renders the flat map or lazy-loads the 3D view. Reverting is two lines if the 3D view is deleted.
-- `tools/render/src/shot.ts`: `VIEW=3d` screenshots the 3D view at the key steps.
+- `tools/render/src/shot.ts`: `VIEW=3d` screenshots the full page with the 3D view. `tools/render/src/shot3d.ts` (`npm run web:shot:3d`, in `package.json` and `AGENTS.md`) captures the stage at the storyboard moments and, with `RECORD=1`, checks record mode.
 
 ## Left for a later session
 
