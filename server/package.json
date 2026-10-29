@@ -23,7 +23,8 @@
     "./erp-connector/types": "./src/erp-connector/types.ts",
     "./erp-connector/mock-netsuite": "./src/erp-connector/mock-netsuite.ts",
     "./erp-connector/sync": "./src/erp-connector/sync.ts",
-    "./erp-connector/rebuild": "./src/erp-connector/rebuild.ts"
+    "./erp-connector/rebuild": "./src/erp-connector/rebuild.ts",
+    "./erp-connector/reconcile": "./src/erp-connector/reconcile.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate"

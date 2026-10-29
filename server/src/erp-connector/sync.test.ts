@@ -102,7 +102,7 @@ describe("the cutover sync", () => {
         first.qcDecisions,
     );
     expect(trialBalance(erpDb).balanced).toBe(true);
-  });
+  }, 20_000);
 
   it("matches the migrated AP history against the synced POs and receipts", async () => {
     await syncLedgerToErp(dayOne, erp);

@@ -275,6 +275,11 @@ export class KevinErp {
           : `erp: vendorPayment ${payment.tranId} — ${usd(row.po.totalUsdc)} applied to ${payment.appliedTo}; settlement ref ${short(input.txHash)} (explorer link on the payment)`,
       );
     }
+    // The contract's last word on the PO (paid on release, refunded on rejection) goes on the
+    // mirror too, so the ERP's copy and Day One's agree when the books are reconciled.
+    const mirror = poMirrorOf(db, row.po);
+    await this.connector.pushPurchaseOrder(mirror);
+    lines.push(`erp: purchaseOrder ${input.poNo} — contract verdict recorded: ${mirror.verdict}`);
     return lines;
   }
 }

@@ -5,103 +5,21 @@
 //   --json    print one JSON line after the readable text
 //   --memory  do not write the database file
 
-import { createHash } from "node:crypto";
-import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { DEMO_CLOCK, type DemoSalts, runDemo } from "../agents/kevin/src/demo.ts";
-import { KevinErp } from "../agents/kevin/src/erp.ts";
-import type { PackingSlip } from "../agents/kevin/src/receiving.ts";
-import { acceptAndShip } from "../agents/suppliers/src/shipping.ts";
 import { inventoryBalanceRows, readers, serializeTrialBalance } from "../erp/src/api.ts";
 import { formatUsd } from "../erp/src/money.ts";
-import { ChainClient } from "../server/src/chain/client.ts";
-import { ReplayTransport } from "../server/src/chain/replay.ts";
-import { ERP_DB_FILE, rebuildErp } from "../server/src/erp-connector/rebuild.ts";
-import { ReplayLlm } from "../server/src/llm/client.ts";
+import { ERP_DB_FILE } from "../server/src/erp-connector/rebuild.ts";
+import { replayDemoWithErp } from "./lib/erp-demo-run.ts";
 
 const root = resolve(import.meta.dirname, "..");
 const args = process.argv.slice(2);
 const json = args.includes("--json");
-const at = (p: string) => join(root, p);
-const file = args.includes("--memory") ? ":memory:" : (process.env.ERP_DB ?? at(ERP_DB_FILE));
-const ACCOUNTS = JSON.parse(readFileSync(at("config/testnet-accounts.json"), "utf8")) as {
-  root: string;
-  spendPolicy: string;
-};
-const KEVIN = `kevin.plant-b.${ACCOUNTS.root}`;
+const file = args.includes("--memory")
+  ? ":memory:"
+  : (process.env.ERP_DB ?? join(root, ERP_DB_FILE));
 
-// 1. The ERP: masters, cutover from Day One's seed, migrated AP history.
-const cutover: string[] = [];
-const {
-  erpDb,
-  dayOne: db,
-  connector,
-  sync,
-  history,
-} = await rebuildErp(file, (l) => cutover.push(l));
-
-// 2. The replayed demo loop, as scripts/demo.ts sets it up, plus the ERP hooks.
-let clock: string = DEMO_CLOCK.start;
-const transport = ReplayTransport.fromFile(at("data/replay/demo-chain.json"));
-const chain = new ChainClient(db, transport, () => clock);
-const llm = ReplayLlm.fromFile(at("data/replay/demo-llm.json"));
-const salts = JSON.parse(readFileSync(at("data/replay/demo-salts.json"), "utf8")) as DemoSalts;
-const image = readFileSync(at("data/batch-records/BR-B-1045.jpg"));
-const slipFile = "data/packing-slips/NG-PS-60417.jpg";
-const truth = JSON.parse(readFileSync(at("data/packing-slips/NG-PS-60417.truth.json"), "utf8")) as {
-  slipNo: string;
-  poNo: string;
-  shipFrom: string[];
-  description: string;
-  shipped: string;
-  backOrdered: string;
-  supplierLot: string;
-};
-const kg = (text: string) => Math.round((Number.parseFloat(text.replace(/,/g, "")) || 0) * 1e6);
-const slip: PackingSlip = {
-  slipNo: truth.slipNo,
-  poNo: truth.poNo,
-  vendorName: truth.shipFrom[0] ?? "",
-  lines: [
-    {
-      description: truth.description,
-      shippedBase: kg(truth.shipped),
-      backorderedBase: kg(truth.backOrdered),
-      supplierLot: truth.supplierLot,
-    },
-  ],
-  file: slipFile,
-  sha256: sha256(readFileSync(at(slipFile))),
-};
-
-const run = await runDemo({
-  db,
-  chain,
-  llm,
-  setClock: (iso) => {
-    clock = iso;
-  },
-  kevin: KEVIN,
-  policyContract: ACCOUNTS.spendPolicy,
-  relayer: "dayone-relayer.testnet",
-  tokenSymbol: "DTUSD",
-  batchRecord: {
-    file: "data/batch-records/BR-B-1045.jpg",
-    sha256: sha256(image),
-    image: { mediaType: "image/jpeg", base64: image.toString("base64") },
-  },
-  batchRecordCount: readdirSync(at("data/batch-records")).filter((f) => f.endsWith(".jpg")).length,
-  slip,
-  invoiceText: (
-    JSON.parse(readFileSync(at("data/attacks/invoices.json"), "utf8")) as {
-      invoices: { genuine: string };
-    }
-  ).invoices.genuine,
-  ship: (shipment) => acceptAndShip(chain, shipment, { policyContract: ACCOUNTS.spendPolicy }),
-  salts,
-  erp: new KevinErp(connector),
-});
-transport.assertDone();
+// 1–2. The ERP rebuilt from nothing, then the replayed demo loop with Kevin's ERP hooks.
+const { erpDb, sync, history, run } = await replayDemoWithErp(root, file);
 
 // 3. What the ERP's books show after the run.
 const tb = serializeTrialBalance(erpDb);
@@ -184,7 +102,3 @@ if (json) {
   );
 }
 process.exitCode = ok ? 0 : 1;
-
-function sha256(bytes: Buffer) {
-  return createHash("sha256").update(bytes).digest("hex");
-}
