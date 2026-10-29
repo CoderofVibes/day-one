@@ -2,6 +2,8 @@
 
 Each question has a recommendation. Reply with the number and "yes" to accept it, or your own answer.
 
+**Settled by what was built (Claude, Oct 29).** Questions #1–#16 and #19 below were overtaken by events and need nothing from Tony: `acme-holdings.testnet` and `dayone-relayer.testnet` exist (#1); contract tests run on `near-sandbox` (#3); the demo settles in DTUSD, and PO-1047 in real Circle testnet USDC (#4); testnet NEAR and both LLM keys are in place (#5, #6); Claude runs setup unattended (#7, #19, superseded by #25); feature code started Oct 28 (#8, #30); director approval, demo numbers and fictional names are as built (#9–#11, CONTRACTS.md, FICTIONAL_DATA.md); the enclave attestation is verified (`npm run attest`, #12); Intents stays roadmap (#14); disk stays within budget (#16). #13 (no judge quotes) holds for the README. Open for Tony: #38 and #39.
+
 ## Before Nov 1 (these block the first build days)
 
 1. **Root testnet account name.** Recommend `acme-holdings.testnet` (free on Oct 22), plus `dayone-relayer.testnet`. Create both soon so nobody takes them. Alternative root: `acme-dayone.testnet`.
