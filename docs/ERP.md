@@ -155,7 +155,7 @@ The hooks are optional (`DemoDeps.erp`); `npm run demo` and its transcript do no
 | 2 Ray confirms BR-B-1045 | `postInventoryMovement` production: 9 lots, 1,000.492 kg | `ADJ-54`, Dr Work in process / Cr Inventory |
 | 6, 7, 9 POs | `verifyPayee` before each `submit_po`; `pushPurchaseOrder` after the contract answers, then again after the director's approval and the funding | PO-1041 approved on the contract's verdict; PO-1042 pending while refused, approved once funded, with both tx hashes |
 | 10 Delivery | `postItemReceipt` (700 kg ASC, lot ASC-261116-01, quarantine); Kevin reads Northgate's invoice and `postVendorBill` | `IR-7`; NG-INV-24190 matched, approved for payment |
-| 11 QC release | `postQcDecision` release; the escrow pays; `recordPayment` with the `qc_release` tx | `ISC-50` quarantine → good; `VP-7` $5,150.00 applied to NG-INV-24190 |
+| 11 QC release | `postQcDecision` release; the escrow pays; `recordPayment` with the `qc_release` tx; `pushPurchaseOrder` again with the final verdict | `ISC-50` quarantine → good; `VP-7` $5,150.00 applied to NG-INV-24190; PO-1042's mirror marked paid |
 
 After the run: Plant B holds 1,010 kg of ascorbic acid at $7,171.00; AP is zero; the trial balance is $160,997.60 on each side.
 
@@ -167,6 +167,21 @@ After the run: Plant B holds 1,010 kg of ascorbic acid at $7,171.00; AP is zero;
 
 The chain fixture (`data/replay/attacks-chain.json`) was re-recorded live on Oct 28 with the three new attacks (5 transactions). The model answers (`attacks-llm.json`) are the earlier recording: in the live re-record the vision model misread the genuine invoice's PO field once, which would have made the unchanged attack 2 fail; that flakiness is a model issue, not an ERP one, and is worth a note in LESSONS.
 
+### 3.9 Reconciliation (`npm run erp:reconcile`, replay with no keys)
+
+Three sets of books, matched by ID and compared; nothing is changed. `server/src/erp-connector/reconcile.ts` reads Day One's ledger as the demo left it, the ERP it posted to, and the spend-policy contract (view calls only), and prints MATCH or MISMATCH per check with the numbers; exit 1 on any mismatch.
+
+| Check | What must agree |
+|---|---|
+| Inventory | Day One's lot balances per material and plant = the ERP's derived balances (45 pairs); the ERP's inventory accounts = its lot values |
+| Purchase orders | every Day One PO past draft has an ERP mirror by number with the same total, vendor, verdict and funding tx; for POs on the contract, the contract's amount, payee account (= Day One's vendor account = the ERP's verified payout account) and status agree with both |
+| Payments | every `qc_release` Day One recorded is `Released` on the contract and is one ERP payment with the same tx hash and amount, applied to a matched, approved, paid-in-full bill; every ERP escrow payment maps back to such a release |
+| Escrow | the ERP's escrow clearing account (1050) = the contract's budget + amount in escrow ($19,850.00 = $19,238.00 + $612.00 when recorded) |
+| Contract POs not in Day One | throwaway and rehearsal POs are allowed while cancelled or refunded; one that holds or has paid money fails |
+| General ledger | debits = credits; accounts payable = open approved bills |
+
+The first live run found a real gap: after QC release the ERP's PO mirror still said `funded` while Day One and the contract said paid, because Kevin's release hook posted the status change and the payment but not the final verdict. The hook now records it (`erp: purchaseOrder PO-1042 — contract verdict recorded: paid`). The contract views are recorded in `data/replay/reconcile-chain.json`; `-- --live` reads the contract now (still no keys), `-- --record` rewrites the fixture. The same function can run nightly against the live contract and post the result to Muse; that is not scheduled yet.
+
 ## 4. Running it
 
 | Task | Command |
@@ -175,7 +190,8 @@ The chain fixture (`data/replay/attacks-chain.json`) was re-recorded live on Oct
 | Start the ERP: API and web view | `npm run erp` → http://localhost:8087/ (`ERP_PORT`, `ERP_DB`, `--reseed`) |
 | The demo loop with the ERP attached (replay of the recorded testnet run, no keys) | `npm run erp:demo` (`-- --json`, `--memory`) |
 | The attack suite, seven attacks | `npm run test:attacks` |
-| Tests (ERP: 38; connector and sync: 4; attack suite and Kevin: 66; 239 in all) | `npm test` |
+| Reconcile Day One, the ERP and the contract (replay of recorded views, no keys; `-- --live` reads testnet now, `-- --record` rewrites the fixture, `-- --json`) | `npm run erp:reconcile` → MATCH per check, exit 0 |
+| Tests (ERP: 38; connector, sync and reconciliation: 6; attack suite and Kevin: 66; 241 in all) | `npm test` |
 
 A call against the running ERP:
 
@@ -185,7 +201,7 @@ curl -s -H "Authorization: Bearer demo-token-viewer" "http://localhost:8087/serv
 
 ## 5. For the README (ready to paste)
 
-> **Acquirer ERP integration.** Acme's books live in `erp/`, a mock of a NetSuite-shaped REST API (vendor, inventoryItem, location, purchaseOrder, itemReceipt, vendorBill, vendorPayment, journalEntry). It is a mock, not NetSuite; the deliverable is the connector interface in `server/src/erp-connector/`. The ERP owns the vendor master with verified payout accounts, vendor bills and the 3-way match with tolerances, an approval matrix on top of the contract's limits, item-level inventory derived only from posted transactions, and the general ledger. Day One owns lots, batch records and the on-chain escrow. Records cross by PO number, lot code and transaction hash. `npm run erp:demo` replays the demo with the ERP attached; `npm run erp` serves the books at http://localhost:8087/. Three attacks in `npm run test:attacks` use it: duplicate invoice (ERP rule), split purchase (caught by the contract's category cap, not by the ERP), ghost vendor (refused by both).
+> **Acquirer ERP integration.** Acme's books live in `erp/`, a mock of a NetSuite-shaped REST API (vendor, inventoryItem, location, purchaseOrder, itemReceipt, vendorBill, vendorPayment, journalEntry). It is a mock, not NetSuite; the deliverable is the connector interface in `server/src/erp-connector/`. The ERP owns the vendor master with verified payout accounts, vendor bills and the 3-way match with tolerances, an approval matrix on top of the contract's limits, item-level inventory derived only from posted transactions, and the general ledger. Day One owns lots, batch records and the on-chain escrow. Records cross by PO number, lot code and transaction hash. `npm run erp:demo` replays the demo with the ERP attached; `npm run erp` serves the books at http://localhost:8087/. Three attacks in `npm run test:attacks` use it: duplicate invoice (ERP rule), split purchase (caught by the contract's category cap, not by the ERP), ghost vendor (refused by both). `npm run erp:reconcile` proves the three sets of books agree, record by record: lot balances, PO mirrors, the escrow release against the ERP's payment by transaction hash, and the ERP's escrow account against the contract's budget.
 
 ## 6. Limitations (honest list)
 
@@ -201,9 +217,10 @@ curl -s -H "Authorization: Bearer demo-token-viewer" "http://localhost:8087/serv
 For the merge into main (a builder session changes main at the same time):
 
 - `agents/kevin/src/demo.ts`: optional `erp` dependency, `erp` lines on each step, the hook calls, and the invoice read moved from step 12 to the delivery step (the chain and model fixtures keep their order; the transcript is unchanged).
-- `agents/kevin/src/erp.ts` (new) and `agents/kevin/package.json` (export).
-- `package.json` (workspace `erp`; scripts `erp`, `erp:seed`, `erp:demo`), `tsconfig.json` (reference), `package-lock.json`.
+- `agents/kevin/src/erp.ts` (new; the release hook also records the final contract verdict on the mirror) and `agents/kevin/package.json` (export).
+- `package.json` (workspace `erp`; scripts `erp`, `erp:seed`, `erp:demo`, `erp:reconcile`), `tsconfig.json` (reference), `package-lock.json`.
 - `server/package.json` (dependency on `@day-one/erp`, exports), `server/tsconfig.json` (reference).
-- `scripts/erp-seed.ts`, `scripts/erp-demo.ts` (new); `scripts/attacks.ts` (ERP and PO-1042's recorded transactions passed to the suite).
-- `data/replay/attacks-chain.json`, `data/attacks/kevin-signing-key.json` (re-recorded live).
+- `scripts/erp-seed.ts`, `scripts/erp-demo.ts`, `scripts/erp-reconcile.ts`, `scripts/lib/erp-demo-run.ts` (new; the demo-with-ERP setup shared by the last two); `scripts/attacks.ts` (ERP and PO-1042's recorded transactions passed to the suite).
+- `data/replay/attacks-chain.json`, `data/attacks/kevin-signing-key.json` (re-recorded live); `data/replay/reconcile-chain.json` (new: the contract views, recorded live).
+- `server/src/erp-connector/sync.test.ts`: a 20 s timeout on the run-twice test, which the new reconciliation tests slow down when they run beside it.
 - Not touched, for the main session: the command table in `AGENTS.md` (§4 above has the rows), the README section (§5), `LESSONS.md` (the vision-model note in §3.8), and `PLAN.md`'s "In progress" line.
