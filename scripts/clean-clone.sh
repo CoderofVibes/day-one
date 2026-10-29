@@ -48,6 +48,8 @@ expect sealed "Transcript matches data/sealed/transcript.txt." npm run sealed
 run books npm run books
 run brief npm run brief
 run import npm run import -- "data/imports/INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx"
+expect inbox "4 of 4 scans landed" npm run inbox
+expect verify-round "VALID" npm run verify:round -- data/sealed/RFQ-2611-02.round.json
 run web-build npm run web:build
 run web-data-check npm run web:data -- --check
 run check npm run check

@@ -16,36 +16,65 @@ export interface HostFile {
   text: string;
 }
 
+/** One KEY=value line of a .env file. */
+export interface EnvEntry {
+  key: string;
+  value: string;
+}
+
 /**
  * Problems with a static build, in plain words; empty when it may be published. `secrets` are
- * the values from .env (and any other value that must not leak), checked verbatim.
+ * the .env entries that must not leak (see `envSecrets`), checked verbatim; a problem names the
+ * key, never the value. A bare string is a value with no key.
  */
-export function hostProblems(files: HostFile[], secrets: string[] = []): string[] {
+export function hostProblems(files: HostFile[], secrets: (string | EnvEntry)[] = []): string[] {
   const problems: string[] = [];
   const index = files.find((f) => f.path === "index.html");
   if (!index) problems.push("index.html is missing: run npm run web:build.");
   else if (index.text.includes('name="day-one-api"')) {
     problems.push("index.html carries the API's marker; build it with npm run web:build instead.");
   }
-  const values = secrets.filter((s) => s.length >= 12);
+  const values = secrets
+    .map((s) => (typeof s === "string" ? { key: "", value: s } : s))
+    .filter((s) => s.value.length >= 12);
   for (const file of files) {
     for (const [what, shape] of SECRET_SHAPES) {
       if (shape.test(file.text)) problems.push(`${file.path} contains ${what}.`);
     }
-    if (values.some((v) => file.text.includes(v))) {
-      problems.push(`${file.path} contains a value from .env.`);
+    for (const { key, value } of values) {
+      if (!file.text.includes(value)) continue;
+      problems.push(
+        key
+          ? `${file.path} contains the value of ${key} from .env.`
+          : `${file.path} contains a value from .env.`,
+      );
     }
   }
   return problems;
 }
 
-/** The values in a .env file's text (KEY=value lines), quotes removed. */
-export function envValues(text: string): string[] {
+/** The KEY=value lines of a .env file's text, quotes removed, empty values left out. */
+export function envEntries(text: string): EnvEntry[] {
   return text
     .split(/\r?\n/)
-    .map((line) => /^\s*[A-Za-z_][\w]*\s*=\s*(.*)$/.exec(line)?.[1]?.trim() ?? "")
-    .map((v) => v.replace(/^(["'])(.*)\1$/, "$2"))
-    .filter(Boolean);
+    .map((line) => /^\s*([A-Za-z_][\w]*)\s*=\s*(.*)$/.exec(line))
+    .filter((m): m is RegExpExecArray => m !== null)
+    .map((m) => ({ key: m[1], value: m[2].trim().replace(/^(["'])(.*)\1$/, "$2") }))
+    .filter((e) => e.value !== "");
+}
+
+/** Keys whose name says the value is a credential, whatever .env.example carries. */
+const SECRET_KEY = /KEY|SECRET|TOKEN|PASSWORD|PRIVATE/i;
+
+/**
+ * The .env entries that must not appear in a published file: every value under a key that
+ * names a key, secret or token, and every other value that .env.example does not carry. The
+ * example file is committed, so a value it holds (an account id, an RPC URL, a model id) is
+ * public already; the replay's own pages name the contract and the explorer.
+ */
+export function envSecrets(envText: string, exampleText = ""): EnvEntry[] {
+  const published = new Set(envEntries(exampleText).map((e) => e.value));
+  return envEntries(envText).filter((e) => SECRET_KEY.test(e.key) || !published.has(e.value));
 }
 
 /**

@@ -42,7 +42,7 @@ The API adds two things a judge could not get from the static page: the import w
    npm run host:build
    ```
 
-   It checks the web data matches the recording, builds `web/dist`, writes `_headers` and refuses if any file holds a key, a token or a value from `.env`. It ends with `web/dist is ready to publish` and the deploy command. Nothing is published.
+   It checks the web data matches the recording, builds `web/dist`, writes `_headers` and refuses if any file holds a key, a token or a value from `.env` that `.env.example` does not carry (the example is committed, so an account id, RPC URL or model id in it is public already; a refusal names the key, never the value). It ends with `web/dist is ready to publish` and the deploy command. Nothing is published.
 
 2. Publish (the only step that puts it online):
 

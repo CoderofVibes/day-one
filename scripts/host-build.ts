@@ -1,13 +1,14 @@
 // npm run host:build — prepares web/dist for a public static host (docs/HOSTING.md): checks the
 // recorded run's web data is current, builds the replay, adds the host's _headers file and
-// refuses if any file holds a key, a token or a value from .env. It publishes nothing: going
-// live is Tony's call (AGENTS.md hard rule 2); the one deploy command is printed at the end.
+// refuses if any file holds a key, a token or a .env value that .env.example does not carry
+// (the example is committed, so its values are public). It publishes nothing: going live is
+// Tony's call (AGENTS.md hard rule 2); the one deploy command is printed at the end.
 //   --json   one JSON line after the readable text
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
-import { envValues, HEADERS, type HostFile, hostProblems } from "./lib/host-check.ts";
+import { envSecrets, HEADERS, type HostFile, hostProblems } from "./lib/host-check.ts";
 
 const root = resolve(import.meta.dirname, "..");
 const dist = join(root, "web/dist");
@@ -55,7 +56,9 @@ if (built.ok) {
     text: readFileSync(path, "latin1"),
   }));
   const envFile = join(root, ".env");
-  const secrets = existsSync(envFile) ? envValues(readFileSync(envFile, "utf8")) : [];
+  const exampleFile = join(root, ".env.example");
+  const read = (file: string) => (existsSync(file) ? readFileSync(file, "utf8") : "");
+  const secrets = existsSync(envFile) ? envSecrets(read(envFile), read(exampleFile)) : [];
   problems = hostProblems(files, secrets);
   steps.push({
     step: "no keys or .env values in the folder",
