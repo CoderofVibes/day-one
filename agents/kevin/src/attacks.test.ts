@@ -6,7 +6,8 @@ import {
   type ChainTransport,
   type ChainView,
 } from "@day-one/server/chain/client";
-import { ReplayTransport } from "@day-one/server/chain/replay";
+import { type Fixture, ReplayTransport } from "@day-one/server/chain/replay";
+import { rebuildErp } from "@day-one/server/erp-connector/rebuild";
 import { type Ledger, openLedger } from "@day-one/server/ledger/db";
 import { facilities, quotes, receipts } from "@day-one/server/ledger/schema";
 import { ReplayLlm } from "@day-one/server/llm/client";
@@ -39,12 +40,32 @@ beforeEach(() => {
 });
 
 describe("the attack suite on the recorded testnet run", () => {
-  it("shows all four attacks failing", async () => {
+  it("shows all seven attacks failing", async () => {
     confirmBr1045(db);
     const transport = ReplayTransport.fromFile(
       fileURLToPath(file("data/replay/attacks-chain.json")),
     );
+    const { connector: erp } = await rebuildErp(":memory:");
+    const demo = JSON.parse(readFileSync(file("data/replay/demo-chain.json"), "utf8")) as Fixture;
+    const tx = (method: string, status: string) => {
+      const entry = demo.entries.find(
+        (e) =>
+          e.type === "call" &&
+          e.request.method === method &&
+          e.request.args.po_id === "PO-1042" &&
+          e.outcome.status === status,
+      );
+      return entry?.type === "call" ? entry : null;
+    };
     const results = await runAttackSuite({
+      erp,
+      po1042: {
+        fundingTx: tx("submit_po", "success")?.outcome.txHash ?? "",
+        approvalTx: tx("approve_po", "success")?.outcome.txHash ?? "",
+        approvedBy: tx("approve_po", "success")?.request.signerId ?? "",
+        releaseTx: tx("qc_release", "success")?.outcome.txHash ?? "",
+        explorerUrl: "https://testnet.nearblocks.io/txns/x",
+      },
       db,
       chain: new ChainClient(db, transport, () => NOW),
       llm: ReplayLlm.fromFile(fileURLToPath(file("data/replay/attacks-llm.json"))),
@@ -64,9 +85,15 @@ describe("the attack suite on the recorded testnet run", () => {
       ["Inflated invoice", true],
       ["Fake payment-failed message", true],
       ["Hidden instructions in an invoice", true],
+      ["Duplicate invoice", true],
+      ["Split purchase under the per-PO limit", true],
+      ["Ghost vendor", true],
     ]);
     expect(results[0]?.evidence[2]).toContain("no approval can override this.");
-    expect(results.flatMap((r) => r.txHashes)).toHaveLength(2);
+    expect(results[4]?.evidence[1]).toContain("rejected: Duplicate of NG-INV-24190");
+    expect(results[5]?.evidence[4]).toMatch(/over the cap of \$2,000\.00/);
+    expect(results[6]?.evidence[0]).toContain("VENDOR_NOT_IN_MASTER");
+    expect(results.flatMap((r) => r.txHashes)).toHaveLength(5);
   });
 });
 

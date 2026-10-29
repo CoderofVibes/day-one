@@ -3,7 +3,7 @@
   "publicKey": "ed25519:AXiQ36MSjmHXkdK57s9uEcX1s9SXCkhtQczWDX5VbYKW",
   "permission": {
     "FunctionCall": {
-      "allowance": "1998141133577849000000000",
+      "allowance": "1995007765232563000000000",
       "method_names": [
         "submit_po",
         "anchor",

@@ -1,4 +1,4 @@
-// npm run test:attacks — four attacks on Kevin, each shown failing (agents/kevin/src/attacks.ts).
+// npm run test:attacks — seven attacks on Kevin, each shown failing (agents/kevin/src/attacks.ts).
 // Replays the recorded testnet calls and model answers by default: no keys, no network.
 //   --record  run live on testnet and NEAR AI Cloud and rewrite the fixtures (needs .env keys)
 //   --json    print one JSON line after the readable text
@@ -15,7 +15,8 @@ import { forecastMaterial } from "../agents/kevin/src/forecast.ts";
 import { confirmBr1045 } from "../agents/kevin/src/test/br-b-1045.ts";
 import { ChainClient, explorerUrl } from "../server/src/chain/client.ts";
 import { LiveTransport } from "../server/src/chain/live.ts";
-import { RecordingTransport, ReplayTransport } from "../server/src/chain/replay.ts";
+import { type Fixture, RecordingTransport, ReplayTransport } from "../server/src/chain/replay.ts";
+import { rebuildErp } from "../server/src/erp-connector/rebuild.ts";
 import { openLedger } from "../server/src/ledger/db.ts";
 import { createLlm, RecordingLlm, ReplayLlm } from "../server/src/llm/client.ts";
 import { seedLedger } from "../server/src/seed/index.ts";
@@ -70,6 +71,28 @@ if (record) {
   signingKey = JSON.parse(readFileSync(KEY_FIXTURE, "utf8")) as SigningKeyView;
 }
 
+// The acquirer's ERP, rebuilt in memory with the cutover history (attacks 5–7), and PO-1042's
+// transactions from the recorded demo run, so the ERP's copy of it is the paid one.
+const { connector: erp } = await rebuildErp(":memory:");
+const demoChain = JSON.parse(
+  readFileSync(join(root, "data/replay/demo-chain.json"), "utf8"),
+) as Fixture;
+const demoTx = (method: string, poId: string, status: string) =>
+  demoChain.entries.find(
+    (e) =>
+      e.type === "call" &&
+      e.request.method === method &&
+      e.request.args.po_id === poId &&
+      e.outcome.status === status,
+  );
+const funding = demoTx("submit_po", "PO-1042", "success");
+const approval = demoTx("approve_po", "PO-1042", "success");
+const release = demoTx("qc_release", "PO-1042", "success");
+if (funding?.type !== "call" || approval?.type !== "call" || release?.type !== "call") {
+  console.error("data/replay/demo-chain.json has no recorded PO-1042 run; record the demo first.");
+  process.exit(1);
+}
+const releaseHash = release.outcome.txHash ?? "";
 const results: AttackResult[] = await runAttackSuite({
   db,
   chain: new ChainClient(db, transport, () => NOW),
@@ -81,6 +104,14 @@ const results: AttackResult[] = await runAttackSuite({
   invoices,
   signingKey,
   now: NOW,
+  erp,
+  po1042: {
+    fundingTx: funding.outcome.txHash ?? "",
+    approvalTx: approval.outcome.txHash ?? "",
+    approvedBy: approval.request.signerId,
+    releaseTx: releaseHash,
+    explorerUrl: explorerUrl("testnet", releaseHash) ?? "",
+  },
 });
 
 if (record && transport instanceof RecordingTransport && llm instanceof RecordingLlm) {
