@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Day One v2 mockup · Kevin checks a batch record</title>
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="mock.css" />
+<style>
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: var(--s-4); align-items: start; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <aside class="sidebar">
+    <div class="brand"><span class="mark">K</span><div><b>Day One</b><small>Kevin, AI assistant</small></div></div>
+    <div class="picker"><span class="ico">B</span><div><b>Hollow Pine Tablet Co.</b><small>Plant B · acquired Nov 2026</small></div><span class="chev">▾</span></div>
+    <nav class="nav">
+      <h6>Plant</h6>
+      <a>Overview</a><a>Plant map</a><a>5am brief</a>
+      <a aria-current="page">Batch records<span class="count">2</span></a>
+      <a>Inventory &amp; forecast<span class="count problem">3</span></a><a>Schedule</a><a>Purchasing<span class="count">1</span></a><a>Invoices<span class="count">1</span></a><a>Spreadsheets</a>
+      <h6>Across Acme</h6>
+      <a>Three plants<span class="count">5</span></a><a>ERP connection</a>
+      <h6>Acme HQ</h6>
+      <a>Spending limits</a><a>Suppliers</a><a>Group purchasing</a><a>Sealed bids</a><a>Bookkeeper export</a><a>Reconciliation</a>
+    </nav>
+    <div class="bottom">
+      <div class="trust"><span class="dot"></span><b>Protected</b> · see how</div>
+      <div class="person"><span class="avatar">RD</span><div><b>Ray Delgado</b><small>Purchaser · switch person</small></div></div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="header">
+      <div>
+        <div class="crumb">Hollow Pine Tablet Co. › Batch records</div>
+        <h1>Batch records</h1>
+        <p>Every batch as written on paper, read by Kevin and confirmed by a person before it changes stock.</p>
+      </div>
+      <div class="right">
+        <span class="pill ok">operating</span>
+        <span class="clock">Ledger time <b>Mon Nov 16, 2026 · 08:05</b></span>
+      </div>
+    </div>
+
+    <div class="cards-4">
+      <div class="card stat"><div class="label">Confirmed this month</div><div class="value num">1</div><div class="delta">5 in October · 9 since Sep 1</div></div>
+      <div class="card stat"><div class="label">Average yield</div><div class="value num">90.4%</div><div class="delta"><b class="up">↑ 0.3 pt</b> vs October</div></div>
+      <div class="card stat"><div class="label">Waste this month</div><div class="value num">84.6 kg <small>on 1 draft</small></div><div class="delta">October: 216.4 kg over 3 batches</div></div>
+      <div class="card stat"><div class="label">Scans waiting for Ray</div><div class="value num">2</div><div class="delta"><span class="pill ok">BR-B-1044 ready</span> <span class="pill attention">BR-B-1046 one question</span></div></div>
+    </div>
+
+    <div class="two">
+      <section class="card">
+        <h3>All batches <span class="right">Hollow Pine · newest first</span></h3>
+        <table>
+          <thead><tr><th>Batch</th><th>Product</th><th>Date</th><th class="n">Tablets</th><th class="n">Yield</th><th class="n">Waste</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><b>BR-B-1046</b></td><td>Cal-Mag + D3 Tablet</td><td>Nov 7</td><td class="n">449,500</td><td class="n">89.9%</td><td class="n">84.6 kg</td><td><span class="pill attention">one question</span></td></tr>
+            <tr><td><b>BR-B-1045</b></td><td>Vitamin C 500 mg Chewable</td><td>Nov 6</td><td class="n">726,400</td><td class="n">90.8%</td><td class="n">—</td><td><span class="pill ok">confirmed</span></td></tr>
+            <tr><td><b>BR-B-1044</b></td><td>Electrolyte Effervescent</td><td>Nov 4</td><td class="n">258,600</td><td class="n">86.2%</td><td class="n">high</td><td><span class="pill ok">ready to confirm</span></td></tr>
+            <tr><td><b>BR-B-1040</b></td><td>Electrolyte Effervescent</td><td>Oct 29</td><td class="n">272,400</td><td class="n">90.8%</td><td class="n">61.6 kg</td><td><span class="pill ok">confirmed</span></td></tr>
+            <tr><td><b>BR-B-1039</b></td><td>Electrolyte Effervescent</td><td>Oct 22</td><td class="n">268,200</td><td class="n">89.4%</td><td class="n">71.1 kg</td><td><span class="pill ok">confirmed</span></td></tr>
+            <tr><td><b>BR-B-1038</b></td><td>Cal-Mag + D3 Tablet</td><td>Oct 19</td><td class="n">450,000</td><td class="n">90.0%</td><td class="n">83.8 kg</td><td><span class="pill ok">confirmed</span></td></tr>
+            <tr><td><b>BR-B-1037</b></td><td>Electrolyte Effervescent</td><td>Oct 8</td><td class="n">271,500</td><td class="n">90.5%</td><td class="n">63.6 kg</td><td><span class="pill ok">confirmed</span></td></tr>
+            <tr><td><b>BR-B-1036</b></td><td>Vitamin C 500 mg Chewable</td><td>Oct 1</td><td class="n">720,800</td><td class="n">90.1%</td><td class="n">98.5 kg</td><td><span class="pill ok">confirmed</span></td></tr>
+          </tbody>
+        </table>
+      </section>
+      <div class="col">
+        <section class="card">
+          <h3>Waiting for you <span class="right">from the scan folder</span></h3>
+          <div class="queue">
+            <div class="item on"><span class="page"></span><div><b>BR-B-1046</b><small>Cal-Mag + D3 · one question</small></div><span class="pill attention">question</span><a>Open</a></div>
+            <div class="item"><span class="page"></span><div><b>BR-B-1044</b><small>Electrolyte · high waste noted</small></div><span class="pill ok">ready</span><a>Open</a></div>
+            <div class="item"><span class="page"></span><div><b>NG-PS-60417</b><small>not a batch record · set aside</small></div><span class="pill neutral">packing slip</span><a>Open</a></div>
+          </div>
+        </section>
+        <section class="card">
+          <h3>Yield by batch</h3>
+          <svg class="chart" viewBox="0 0 340 120">
+            <line class="axis" x1="30" y1="100" x2="330" y2="100"/>
+            <text x="2" y="20">92</text><text x="2" y="60">90</text><text x="2" y="100">88</text>
+            <polyline class="line" points="40,40 85,58 130,50 175,60 220,72 265,44 310,44"/>
+            <circle class="pt" cx="310" cy="44" r="3"/>
+          </svg>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="scrim"></div>
+<aside class="sheet" aria-label="Kevin's reading of BR-B-1046">
+  <div class="scan"><img src="../../../data/batch-records/BR-B-1046.jpg" alt="Scan of BR-B-1046" /></div>
+  <div class="side">
+    <h2><span class="mark" style="width:26px;height:26px;border-radius:8px;font-size:13px">K</span> What I read on BR-B-1046 <span class="close">✕</span></h2>
+    <div class="small muted">Cal-Mag + D3 Tablet · 500,000 tablets · Rm 104 Weigh &amp; Dispense · V-blender BLD-B-02, tablet press TP-B-03 · Nov 7, 2026</div>
+    <table>
+      <thead><tr><th>#</th><th>Material</th><th>Lot</th><th class="n">Target</th><th class="n">I read</th><th class="n">Diff</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Calcium carbonate</td><td class="mono">CAC-261014-01</td><td class="n">625.000</td><td class="n">624.786</td><td class="n diff">−0.03%</td></tr>
+        <tr><td>2</td><td>Microcrystalline cellulose</td><td class="mono">MCC-261001-01</td><td class="n">100.000</td><td class="n">100.150</td><td class="n diff">+0.15%</td></tr>
+        <tr class="flag"><td>3</td><td>Magnesium oxide</td><td class="mono">MGO-261014-01</td><td class="n">83.000</td><td class="n"><b>83.040?</b></td><td class="n diff">+0.05%</td></tr>
+        <tr><td>4</td><td>Croscarmellose sodium</td><td class="mono">CCS-260915-01</td><td class="n">15.000</td><td class="n">15.020</td><td class="n diff">+0.13%</td></tr>
+        <tr><td>5</td><td>Stearic acid</td><td class="mono">STA-260915-01</td><td class="n">10.000</td><td class="n">9.990</td><td class="n diff">−0.10%</td></tr>
+        <tr><td>6</td><td>Magnesium stearate</td><td class="mono">MGS-261001-01</td><td class="n">7.500</td><td class="n">7.510</td><td class="n diff">+0.13%</td></tr>
+        <tr><td>7</td><td>Vitamin D3 beadlet</td><td class="mono">VD3-260920-01</td><td class="n">2.000</td><td class="n">2.004</td><td class="n diff">+0.20%</td></tr>
+      </tbody>
+    </table>
+    <div class="small"><span class="pill ok">6 within ±0.5%</span> &nbsp;<span class="pill ok">lots match the ledger</span> &nbsp;<span class="pill ok">yield 89.9% · 449,500 tablets</span> &nbsp;<span class="pill ok">waste 84.592 kg</span></div>
+    <div class="ask">
+      <b>Row 3, magnesium oxide: the ink is smudged. I read it as 83.040 kg. Is that right?</b>
+      <div class="field"><input value="83.040" /> <span class="small muted">kg</span> <button class="btn primary">Yes, 83.040</button> <button class="btn">Type what you see</button></div>
+      <div class="xs muted">Target 83.000 kg; anything within ±0.415 kg is in tolerance. The scan is on the left, row 3.</div>
+    </div>
+    <div class="small muted">Once you answer, I post the draws against these lots and the 449,500 tablets, and anchor the record's fingerprint. Nothing has posted yet.</div>
+    <div class="foot"><span class="note">Read by Kevin on NEAR AI Cloud · recorded answer · attested ✓</span><button class="btn quiet">Later</button><button class="btn primary" disabled>Post BR-B-1046</button></div>
+  </div>
+</aside>
+</body>
+</html>
