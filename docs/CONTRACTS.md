@@ -22,7 +22,7 @@ Root: `acme-holdings.testnet` (created by Tony Oct 27). Everything below except 
 | `plant-a.acme-holdings.testnet` | Facility A | none | 0.2 |
 | `plant-b.acme-holdings.testnet` | Facility B (acquired); creates and funds the four accounts below | none | 1.5 |
 | `plant-c.acme-holdings.testnet` | Facility C | none | 0.2 |
-| `kevin.plant-b.acme-holdings.testnet` | Kevin | FC: spend-policy `submit_po`, `anchor`, `anchor_batch`; allowance 2 NEAR (cancelling is HQ's `cancel`, not Kevin's) | 1 |
+| `kevin.plant-b.acme-holdings.testnet` | Kevin | FC: spend-policy `submit_po`, `anchor`, `anchor_batch`, `open_sealed_round`, `award_sealed_round` (§9; the testnet key gets the last two at the next redeploy); allowance 2 NEAR (cancelling is HQ's `cancel`, not Kevin's) | 1 |
 | `director.plant-b.acme-holdings.testnet` | Linda, ops director | FC: spend-policy `approve_po`, `reject_po` | 0 |
 | `receiving.plant-b.acme-holdings.testnet` | Tommy, receiving | FC: spend-policy `confirm_receipt` | 0 |
 | `qc.plant-b.acme-holdings.testnet` | Priya, QC | FC: spend-policy `qc_release`, `qc_reject` | 0 |
@@ -173,7 +173,7 @@ The two-contract design (policy funds a separate escrow with `ft_transfer_call`)
 
 One standard, version `1.0.0`, via `#[near(event_json(standard = …))]`:
 
-- `dayone_spend_policy`: `budget_funded`, `agent_policy_set`, `category_cap_set`, `supplier_set`, `roles_set`, `agent_paused`, `agent_resumed`, `po_refused`, `po_authorized`, `po_approved`, `po_rejected`, `po_funded`, `po_accepted`, `po_shipped`, `po_received`, `po_released`, `payout_failed`, `po_refunded`, `po_cancelled`, `record_anchored`
+- `dayone_spend_policy`: `budget_funded`, `agent_policy_set`, `category_cap_set`, `supplier_set`, `roles_set`, `agent_paused`, `agent_resumed`, `po_refused`, `po_authorized`, `po_approved`, `po_rejected`, `po_funded`, `po_accepted`, `po_shipped`, `po_received`, `po_released`, `payout_failed`, `po_refunded`, `po_cancelled`, `record_anchored`, and for sealed rounds (§9) `sealed_round_opened`, `quote_sealed`, `quote_revealed`, `sealed_round_awarded`
 
 The behind-the-curtain view and the demo transcript print these events with explorer links.
 
@@ -226,3 +226,28 @@ Commands are added to `AGENTS.md` when they first pass.
 - `scripts/deploy`: builds in WSL2, deploys `spend-policy`, calls `new`, `set_roles`, `set_agent_policy` (Kevin: per-PO $2,500; monthly $60,000 across `raw_material`, `packaging`, `lab_chemical`; approver `director.plant-b…`), `set_category_cap` (`lab_chemical` $2,000), `set_supplier` (Northgate, Ridgeway, Bayfront qualified; QuickChem left off), registers token storage for the contract and the four suppliers, funds the budget from treasury.
 - `scripts/reset`: `withdraw_budget`, suppliers return tokens to treasury so the float recycles, new PO id prefix per run so `po_id` uniqueness holds.
 - Contract accounts keep their full-access keys during the hackathon for redeploys. Deleting them to prove immutability is a post-hackathon step and is noted in the README.
+
+---
+
+## 9. Sealed quote rounds (added Oct 28, branch `sealed-bids`)
+
+Kevin can ask for quotes as a sealed-bid round, so no one, Kevin included, can read a price before the deadline, and no supplier can change its price after seeing the others. The rules are the contract's; Kevin's ranking only refuses to look before they have done their work. Code: `contracts/spend-policy/src/sealed.rs`, its own `#[near] impl` block, event enum and storage prefix (`b"sealed:" + round_id`, raw storage, no field in the root state struct, so no migration).
+
+| Method | Caller | Effect |
+|---|---|---|
+| `open_sealed_round(round_id, commit_secs, reveal_secs)` | a registered agent | stores the round: quotes sealed for `commit_secs` from now (the deadline), then opened for `reveal_secs`; each window 1 minute to 7 days; a `round_id` (the RFQ number) only once, no `/`; emits `sealed_round_opened` |
+| `commit_quote(round_id, hash)` | a supplier with a status (`set_supplier`) | stores only `hash` = sha256 hex of the quote text, before the deadline, one per supplier; emits `quote_sealed` |
+| `reveal_quote(round_id, quote)` | a supplier that sealed | from the deadline until the reveal window ends; `sha256(quote)` must equal the seal, and the text, JSON `{"record":{"rfq":<round_id>,"supplier":<caller>,…},"salt":…}`, must name the round and the caller; stores the text; emits `quote_revealed` |
+| `award_sealed_round(round_id, supplier)` | the agent that opened the round | after the deadline, once every seal is opened or the reveal window is over, once, and only to a supplier whose quote was opened; emits `sealed_round_awarded` |
+| `get_sealed_round(round_id)` | anyone (view) | the round with every seal (and, once opened, its text) plus `phase`: `sealed`, `revealing` or `closed`, at the block it is read in |
+
+Refusals (each panics with the message): late seal "Quotes for RFQ-… closed at the deadline; this one came in late."; early reveal "RFQ-… is still sealed; quotes open after the deadline."; mismatched reveal "This quote does not match what <supplier> sealed for RFQ-…"; copied text "A quote must name this round and the supplier revealing it."; early award "RFQ-… is still sealed; no quote can be awarded before the deadline."; award to an unopened quote "<supplier> has no opened quote in RFQ-…; only an opened quote can win."; unapproved supplier "<account> is not an approved supplier and cannot quote."
+
+- **Quote text.** The text sealed and revealed is the canonical JSON of the quote's terms with a 16-byte salt (`sealedQuoteText` in `server/src/quotes.ts`), so the seal equals the fingerprint a supplier anchors for a plain quote (§6). The contract hashes the text as given; it does not re-canonicalize.
+- **What is public when.** Before the deadline the chain holds fingerprints only; the salt keeps a price from being guessed from its hash. After the deadline opened quotes are public in the reveal transactions and in state: that is the price of a round anyone can check.
+- **Kevin.** `agents/kevin/src/sealed.ts`: `openedQuotes` throws while the round is `sealed`, ranks only opened quotes, re-checks each against its seal, and leaves an unopened quote void. The award is on chain; `submit_po` is unchanged and does not read it.
+- **Time.** Windows are block time. The demo's round has two hours to seal and one to open; staff see "2 sealed quotes, opened at 3:00 PM" on the demo clock.
+- **Storage.** About 500 bytes per round plus about 350 per opened quote, paid from the contract balance (§6 price: about 0.005 NEAR per round with two quotes).
+- **Keys.** Kevin's function-call key needs `open_sealed_round` and `award_sealed_round` added (setup lists them; the key already on testnet does not have them, so it must be replaced at the redeploy). Suppliers sign with their full-access keys, as for `accept_po`.
+- **Tests.** 12 unit tests in `src/sealed/tests.rs`; `tests/sealed_round.rs` runs a round on a local node, fast-forwarded past the deadline, and its ignored `host_for_recording` test keeps that node up for `npm run sealed -- --record-sandbox`.
+- **Judge check (no keys).** `npm run verify:round -- data/sealed/RFQ-2611-02.round.json`: every opened quote hashes to its seal, names its round and supplier, was sealed before the deadline and opened in the window, and the winner is one of them; for a testnet file one `get_sealed_round` view confirms the chain holds the same round. The recorded round is from a local sandbox node until the contract is redeployed to testnet.
