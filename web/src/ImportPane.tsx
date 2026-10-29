@@ -14,6 +14,7 @@ import {
   postImportConfirm,
   postImportFile,
   postImportFixture,
+  postImportMapping,
 } from "./api.ts";
 
 /** 349_985_879 mg → "349.986 kg". */
@@ -38,6 +39,7 @@ export function ImportPane() {
   );
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [editingColumns, setEditingColumns] = useState(false);
 
   const run = async (label: string, call: () => Promise<void>) => {
     setBusy(label);
@@ -56,6 +58,7 @@ export function ImportPane() {
       const next = await load();
       setView(next);
       setAnswers({});
+      setEditingColumns(false);
       // A file already in at the plant shows what it posted instead of a flag queue.
       setResult(
         next.posted
@@ -106,7 +109,36 @@ export function ImportPane() {
           <p className="muted small">
             {view.fileName} · sheet “{view.analysis.sheet}”, headings on row{" "}
             {view.analysis.headerRow}: {mappingLine(view.analysis.mapping)}
+            {!result && !view.posted && !editingColumns && (
+              <>
+                {" "}
+                <button
+                  type="button"
+                  className="quiet"
+                  disabled={busy !== null}
+                  onClick={() => setEditingColumns(true)}
+                >
+                  Change columns
+                </button>
+              </>
+            )}
           </p>
+          {editingColumns && !result && !view.posted && (
+            <ColumnEditor
+              columns={view.columns}
+              mapping={view.analysis.mapping}
+              disabled={busy !== null}
+              onCancel={() => setEditingColumns(false)}
+              onApply={(mapping) =>
+                run("Reading the sheet again", async () => {
+                  setView(await postImportMapping(view.id, mapping));
+                  // The flags are numbered from the new reading, so earlier answers no longer fit.
+                  setAnswers({});
+                  setEditingColumns(false);
+                })
+              }
+            />
+          )}
           {!view.posted && <p className="kevin-line">{view.analysis.message}</p>}
 
           {!result && !view.posted && (
@@ -178,8 +210,84 @@ export function ImportPane() {
 function mappingLine(mapping: Record<string, number>) {
   return Object.entries(mapping)
     .sort((a, b) => a[1] - b[1])
-    .map(([field, col]) => `${String.fromCharCode(65 + col)} = ${COLUMNS[field] ?? field}`)
+    .map(([field, col]) => `${letter(col)} = ${COLUMNS[field] ?? field}`)
     .join(", ");
+}
+
+/** 0 → "A", 27 → "AB". */
+const letter = (col: number): string =>
+  (col >= 26 ? letter(Math.floor(col / 26) - 1) : "") + String.fromCharCode(65 + (col % 26));
+
+/** One picker per thing Kevin reads; material and quantity are required, the rest optional. */
+function ColumnEditor({
+  columns,
+  mapping,
+  disabled,
+  onCancel,
+  onApply,
+}: {
+  columns: string[];
+  mapping: Record<string, number>;
+  disabled: boolean;
+  onCancel: () => void;
+  onApply: (mapping: Record<string, number>) => void;
+}) {
+  const [draft, setDraft] = useState<Record<string, number>>(mapping);
+  const cols = Object.values(draft);
+  const twice = cols.find((c, i) => cols.indexOf(c) !== i);
+  const missing = ["item", "qty"].filter((f) => draft[f] === undefined);
+  const problem =
+    twice !== undefined
+      ? `Column ${letter(twice)} is picked twice.`
+      : missing.length
+        ? `Pick the ${missing.map((f) => COLUMNS[f]).join(" and ")} column.`
+        : null;
+  return (
+    <div className="disc columns">
+      <p>Which column holds what? Kevin reads the sheet again with your choice.</p>
+      <div className="column-grid">
+        {Object.entries(COLUMNS).map(([field, label]) => (
+          <label key={field}>
+            <span>{label}</span>
+            <select
+              value={draft[field] ?? ""}
+              onChange={(e) =>
+                setDraft((prev) => {
+                  const next = { ...prev };
+                  if (e.target.value === "") delete next[field];
+                  else next[field] = Number(e.target.value);
+                  return next;
+                })
+              }
+            >
+              <option value="">not in this sheet</option>
+              {columns.map((heading, c) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: columns are positions
+                <option key={c} value={c}>
+                  {letter(c)}
+                  {heading ? ` · ${heading}` : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+        ))}
+      </div>
+      {problem && <p className="muted small">{problem}</p>}
+      <div className="actions">
+        <button
+          type="button"
+          className="primary"
+          disabled={disabled || problem !== null}
+          onClick={() => onApply(draft)}
+        >
+          Read the sheet again
+        </button>
+        <button type="button" className="quiet" disabled={disabled} onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function FlagCard({

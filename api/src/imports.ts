@@ -8,6 +8,8 @@ import { basename, extname, join } from "node:path";
 import {
   type Analysis,
   analyzeInventorySheet,
+  FIELDS,
+  type Field,
   fileSha256,
   ledgerLotCodes,
   type Mapping,
@@ -38,6 +40,8 @@ export interface ImportView {
   id: string;
   fileName: string;
   sheets: string[];
+  /** The headings Kevin found, one per column ("" for an empty cell), for correcting the mapping. */
+  columns: string[];
   analysis: Analysis;
   sales: SalesAnalysis | null;
   /** The fixture's recorded answers, offered as a shortcut for the demo; null for other files. */
@@ -120,10 +124,33 @@ export class ImportDesk {
   }
 
   /** A person's correction of the column mapping; Kevin reads the sheet again with it. */
-  remap(id: string, mapping: Mapping): ImportView {
+  remap(id: string, mapping: Record<string, unknown>): ImportView {
     const u = this.#get(id);
     const first = u.sheets[0] as Sheet;
-    u.analysis = this.#analyze(first, mapping);
+    const width = headings(first, u.analysis).length;
+    const checked: Mapping = {};
+    const used = new Set<number>();
+    for (const [field, col] of Object.entries(mapping)) {
+      if (!(FIELDS as readonly string[]).includes(field)) {
+        throw new SessionError(400, `unknown column "${field}"; known: ${FIELDS.join(", ")}`);
+      }
+      if (col === null || col === undefined) continue;
+      if (!Number.isInteger(col) || (col as number) < 0 || (col as number) >= width) {
+        throw new SessionError(
+          400,
+          `${field} points at column ${String(col)}, not one of 0–${width - 1}`,
+        );
+      }
+      if (used.has(col as number)) {
+        throw new SessionError(400, `two fields point at column ${letter(col as number)}`);
+      }
+      used.add(col as number);
+      checked[field as Field] = col as number;
+    }
+    if (checked.item === undefined || checked.qty === undefined) {
+      throw new SessionError(400, "a mapping needs at least the material and quantity columns");
+    }
+    u.analysis = this.#analyze(first, checked);
     return this.#view(id);
   }
 
@@ -236,6 +263,7 @@ export class ImportDesk {
       id,
       fileName: u.fileName,
       sheets: u.sheets.map((s) => s.name),
+      columns: headings(u.sheets[0] as Sheet, u.analysis),
       analysis: u.analysis,
       sales: u.sales,
       suggestedAnswers,
@@ -244,5 +272,16 @@ export class ImportDesk {
     };
   }
 }
+
+/** The header row's cells as text, as wide as the widest row (a column may have no heading). */
+function headings(sheet: Sheet, analysis: Analysis) {
+  const width = Math.max(0, ...sheet.rows.map((r) => r.length));
+  const header = sheet.rows[analysis.headerRow - 1] ?? [];
+  return Array.from({ length: width }, (_, c) => String(header[c] ?? "").trim());
+}
+
+/** 0 → "A", 27 → "AB". */
+const letter = (col: number): string =>
+  (col >= 26 ? letter(Math.floor(col / 26) - 1) : "") + String.fromCharCode(65 + (col % 26));
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));

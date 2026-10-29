@@ -957,3 +957,21 @@ button {
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+.column-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 8px 12px;
+  margin: 8px 0;
+}
+
+.column-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.column-grid select {
+  max-width: 100%;
+}

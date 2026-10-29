@@ -298,6 +298,8 @@ export interface ImportView {
   id: string;
   fileName: string;
   sheets: string[];
+  /** The heading in each column of the header row ("" where there is none). */
+  columns: string[];
   analysis: {
     sheet: string;
     headerRow: number;
@@ -344,6 +346,19 @@ export function postImportFixture(): Promise<ImportView> {
     "POST",
     "api/imports",
     JSON.stringify({ file: IMPORT_FIXTURE }),
+    "application/json",
+  );
+}
+
+/** Ray's correction of which column holds what; Kevin reads the sheet again with it. */
+export function postImportMapping(
+  id: string,
+  mapping: Record<string, number>,
+): Promise<ImportView> {
+  return request(
+    "POST",
+    `api/imports/${id}/mapping`,
+    JSON.stringify({ mapping }),
     "application/json",
   );
 }

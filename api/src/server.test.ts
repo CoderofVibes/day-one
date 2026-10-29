@@ -442,6 +442,35 @@ describe("the import wizard over HTTP", () => {
     expect(state.imports[0].review.map((r: { item: string }) => r.item)).toEqual(["Xanthan Gum"]);
   });
 
+  it("reads the sheet again with Ray's column choice and refuses a mapping it cannot use", async () => {
+    const up = await api("POST", "/api/imports", { file: FILE });
+    const id = up.body.id as string;
+    const mapping = up.body.analysis.mapping as Record<string, number>;
+    expect(up.body.columns[mapping.item as number]).toMatch(/item|material|description/i);
+
+    // Notes dropped: Kevin reads the same rows and still asks about the same flags.
+    const { notes: _notes, ...withoutNotes } = mapping;
+    const again = await api("POST", `/api/imports/${id}/mapping`, { mapping: withoutNotes });
+    expect(again.status).toBe(200);
+    expect(again.body.analysis.mapping).toEqual(withoutNotes);
+    expect(again.body.analysis.rows).toHaveLength(up.body.analysis.rows.length);
+
+    // Quantity read from the lot column: every row's quantity becomes text Kevin asks about.
+    const wrong = { ...withoutNotes, qty: mapping.lot as number };
+    delete (wrong as Record<string, number>).lot;
+    const odd = await api("POST", `/api/imports/${id}/mapping`, { mapping: wrong });
+    expect(odd.status).toBe(200);
+    expect(odd.body.analysis.flags.length).toBeGreaterThan(up.body.analysis.flags.length);
+
+    const refuse = async (m: unknown) =>
+      (await api("POST", `/api/imports/${id}/mapping`, { mapping: m })).status;
+    expect(await refuse({ ...mapping, lot: mapping.item })).toBe(400);
+    expect(await refuse({ item: mapping.item })).toBe(400);
+    expect(await refuse({ ...mapping, colour: 0 })).toBe(400);
+    expect(await refuse({ ...mapping, qty: 99 })).toBe(400);
+    expect(await refuse({ ...mapping, qty: 1.5 })).toBe(400);
+  });
+
   it("names the file it cannot find and refuses an unknown upload id", async () => {
     expect((await api("POST", "/api/imports", { file: "nope.xlsx" })).status).toBe(404);
     const id = "0".repeat(64);
