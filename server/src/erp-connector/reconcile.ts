@@ -25,6 +25,7 @@ import {
   purchaseOrders,
   vendors,
 } from "../ledger/schema.ts";
+import { type ContractStanding, compareStanding, type StandingComparison } from "./credentials.ts";
 import { verdictOf } from "./sync.ts";
 import type { ErpConnector } from "./types.ts";
 
@@ -47,6 +48,8 @@ export interface Check {
   ok: boolean;
   /** Plain lines: what agreed, with the numbers; or what did not, record by record. */
   lines: string[];
+  /** Could not be checked against this contract (ok stays true; the lines say why). */
+  skipped?: boolean;
 }
 
 export interface Reconciliation {
@@ -96,6 +99,7 @@ export async function reconcile(input: ReconcileInput): Promise<Reconciliation> 
     await escrow(input),
     await strangers(input),
     generalLedger(input),
+    await supplierStanding(input),
   ];
   return { ok: checks.every((c) => c.ok), checks };
 }
@@ -414,5 +418,48 @@ function generalLedger({ erpDb }: ReconcileInput): Check {
           `debits = credits (${money(tb.totalDebits)}); accounts payable ${money(apBalance)} = ${openBills.length} open approved bill${openBills.length === 1 ? "" : "s"}`,
         ]
       : lines,
+  };
+}
+
+/**
+ * The ERP's status for every vendor the escrow can pay (one with a verified payout account)
+ * agrees with that account's credential on the contract (credentials.ts). Skipped, not failed,
+ * on a contract deployed before supplier credentials, which has no `get_supplier_standing`.
+ */
+async function supplierStanding({ erp, view }: ReconcileInput): Promise<Check> {
+  const name = "Supplier standing";
+  const payable = (await erp.listVendors())
+    .filter((v) => v.payoutAccount)
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const rows: StandingComparison[] = [];
+  for (const vendor of payable) {
+    let standing: ContractStanding;
+    try {
+      standing = (await view("get_supplier_standing", {
+        supplier: vendor.payoutAccount,
+      })) as ContractStanding;
+    } catch {
+      return {
+        name,
+        ok: true,
+        skipped: true,
+        lines: [
+          "not checked: this contract has no supplier credentials (deployed before them; read again after the redeploy)",
+        ],
+      };
+    }
+    rows.push(compareStanding(vendor, standing));
+  }
+  const off = rows.filter((r) => !r.agree);
+  return {
+    name,
+    ok: off.length === 0,
+    lines:
+      off.length === 0
+        ? [
+            `${rows.length} vendors the escrow can pay: ERP status and on-chain credential agree`,
+            ...rows.map((r) => r.line),
+          ]
+        : off.map((r) => r.line),
   };
 }

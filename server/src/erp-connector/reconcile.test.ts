@@ -1,12 +1,61 @@
 import { describe, expect, it } from "vitest";
+import type { ChainStanding, ContractStanding } from "./credentials.ts";
 import { rebuildErp } from "./rebuild.ts";
 import { type ContractPo, type ContractView, reconcile } from "./reconcile.ts";
 
+/** The deploy script's credentials: the three approved supplier agents; QuickChem has none. */
+const DEPLOYED: Record<string, ChainStanding> = {
+  "northgate-ingredients.testnet": "Approved",
+  "ridgeway-ascorbics.testnet": "Approved",
+  "bayfront-labsupply.testnet": "Approved",
+  "quickchem-direct.testnet": "NotListed",
+};
+
+function standingOf(supplier: string, standing: ChainStanding): ContractStanding {
+  const listed = standing !== "NotListed" && standing !== "Revoked";
+  return {
+    supplier,
+    standing,
+    may_be_paid: standing === "Approved" || standing === "Conditional",
+    status: listed ? (standing === "Conditional" ? "Conditional" : "Qualified") : null,
+    credential:
+      standing === "NotListed" || standing === "NoCredential"
+        ? null
+        : {
+            token: 1,
+            categories: ["raw_material"],
+            expires_at: "1825000000000000000",
+            revoked: standing === "Revoked" ? { at: "1794229200000000000", reason: "x" } : null,
+            reputation: {
+              released: 0,
+              rejected: standing === "Suspended" ? 2 : 0,
+              consecutive_rejects: standing === "Suspended" ? 2 : 0,
+              last_outcome: standing === "Suspended" ? "Rejected" : null,
+              suspended_at: standing === "Suspended" ? "1794229200000000000" : null,
+            },
+          },
+  };
+}
+
 /** A contract that agrees with the cutover books: the budget untouched, no POs on it yet. */
-function contract(over: { budget?: string; escrowed?: string; pos?: ContractPo[] } = {}) {
+function contract(
+  over: {
+    budget?: string;
+    escrowed?: string;
+    pos?: ContractPo[];
+    /** Credentials by account; "none" = a contract deployed before supplier credentials. */
+    standings?: Record<string, ChainStanding> | "none";
+  } = {},
+) {
   const pos = over.pos ?? [];
+  const standings = over.standings ?? DEPLOYED;
   const view: ContractView = async (method, args = {}) => {
     switch (method) {
+      case "get_supplier_standing": {
+        if (standings === "none") throw new Error("MethodNotFound");
+        const supplier = String(args.supplier);
+        return standingOf(supplier, standings[supplier] ?? "NotListed");
+      }
       case "get_budget":
         return { budget: over.budget ?? "25000000000", escrowed: over.escrowed ?? "0" };
       case "list_pos":
@@ -34,8 +83,17 @@ describe("reconciling Day One, the ERP and the contract", () => {
       ["Escrow", true],
       ["Contract POs not in Day One", true],
       ["General ledger", true],
+      ["Supplier standing", true],
     ]);
     expect(result.ok).toBe(true);
+    expect(result.checks[6]?.lines).toEqual([
+      "4 vendors the escrow can pay: ERP status and on-chain credential agree",
+      "Bayfront Lab Supply: ERP approved, contract approved supplier",
+      "Northgate Ingredients: ERP approved, contract approved supplier",
+      "QuickChem Direct: ERP blocked, contract not an approved supplier",
+      "Ridgeway Ascorbics: ERP approved, contract approved supplier",
+    ]);
+    expect(result.checks[6]?.skipped).toBeUndefined();
     expect(result.checks[0]?.lines[0]).toMatch(/^\d+ material-plant balances equal/);
     expect(result.checks[1]?.lines[0]).toMatch(/^6 Day One POs mirrored/);
     expect(result.checks[3]?.lines[0]).toBe(
@@ -98,5 +156,41 @@ describe("reconciling Day One, the ERP and the contract", () => {
     expect(by["General ledger"]?.lines).toEqual([
       "accounts payable -$5,150.00; open approved bills owe $0.00 (0 bills)",
     ]);
+  }, 20_000);
+
+  it("flags a vendor the ERP approves but the contract has put on hold, and the reverse", async () => {
+    const { dayOne, erpDb, connector } = await rebuildErp(":memory:");
+    const result = await reconcile({
+      dayOne,
+      erpDb,
+      erp: connector,
+      view: contract({
+        standings: {
+          ...DEPLOYED,
+          "ridgeway-ascorbics.testnet": "Suspended",
+          "quickchem-direct.testnet": "Approved",
+        },
+      }),
+    });
+    const check = result.checks.find((c) => c.name === "Supplier standing");
+    expect(check?.ok).toBe(false);
+    expect(result.ok).toBe(false);
+    expect(check?.lines).toEqual([
+      "QuickChem Direct: ERP says blocked but the contract would still pay it (approved supplier); Kevin treats it as on hold. HQ should revoke the credential.",
+      "Ridgeway Ascorbics: ERP says approved but the contract says on hold: 2 deliveries in a row failed QC; Kevin treats it as on hold and the contract refuses its POs. Acme AP should put it on hold in the ERP.",
+    ]);
+  }, 20_000);
+
+  it("skips the supplier check on a contract deployed before supplier credentials", async () => {
+    const { dayOne, erpDb, connector } = await rebuildErp(":memory:");
+    const result = await reconcile({
+      dayOne,
+      erpDb,
+      erp: connector,
+      view: contract({ standings: "none" }),
+    });
+    const check = result.checks.find((c) => c.name === "Supplier standing");
+    expect(check).toMatchObject({ ok: true, skipped: true });
+    expect(result.ok).toBe(true);
   }, 20_000);
 });
