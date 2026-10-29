@@ -2,7 +2,7 @@
 
 ## In progress
 
-- **Oct 29, interactive session (Tony's go, OPEN_QUESTIONS #37):** the first two review fixes landed, then the testnet redeploy and re-record (done, see below); now the remaining review fixes in order. If this session stops part way, the next one resumes from the first unchecked item below.
+- **Oct 29, interactive session (Tony's go, OPEN_QUESTIONS #37): done.** All Oct 28 review fixes, the testnet redeploy and the re-record landed (see below). Tony resumed the builder task on Oct 29 in Claude's chat; builder runs take the unchecked item below first, then the plan in order.
 
 **Redeploy done Oct 29.** `reset:testnet` (tx `BdoL1rqHggyX54gYUDw69S3rGHvpFgveb5pQEXwNgwyR`), `setup:testnet` (Plants A and C agents and directors, Kevin rekeyed with eight methods), `deploy:testnet` (415 KB wasm, three policies, three credentials, 25,000 DTUSD). Re-recorded on testnet: `rehearse` (PO-9042, PASS), `demo:live -- --record` (13 transactions, 2 refused by design, 0 failed; two quote proofs MATCH), `test:attacks -- --record` (14 of 14; the split purchase's funded PO-T9103 and the failed run's PO-T9101/T9102 cancelled by HQ), `attest` (every check verified), `demo:group -- --live --record --web` (PO-G-2001 paid $9,490.00), `erp:reconcile -- --record` (7 of 7), `web:data`. The contract now holds PO-1041 funded ($612.00) and spend for Plants A and B this month. The builder may change fixtures again; a re-record from here needs fresh PO ids or another reset.
 
