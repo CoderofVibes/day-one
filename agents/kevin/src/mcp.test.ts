@@ -77,6 +77,7 @@ describe("Kevin's MCP server", () => {
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual([
       "draft_po",
+      "draft_policy_change",
       "get_books",
       "get_brief",
       "get_forecast",
@@ -110,6 +111,17 @@ describe("Kevin's MCP server", () => {
         "Above that, Linda Park approves. Active.",
     );
     expect(data.agent.perPoLimit).toBe("2500000000");
+  });
+
+  it("drafts HQ's limit change as an owner call and sends nothing", async () => {
+    const { lines, data } = await call("draft_policy_change", {
+      request: "raise Kevin's per-PO limit to $3,000",
+    });
+    expect(lines).toContain("Kevin's per-PO limit from $2,500.00 to $3,000.00");
+    expect(lines).toContain("Linda Park still approves");
+    expect(lines).toContain("Nothing was signed or sent");
+    expect(data.call.method).toBe("set_agent_policy");
+    expect(data.call.args.per_po_limit).toBe("3000000000");
   });
 
   it("finds Riverside's unrecorded waste in the mass balance", async () => {
