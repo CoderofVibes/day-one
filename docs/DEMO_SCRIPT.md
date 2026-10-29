@@ -17,7 +17,7 @@ Related: `SPEC.md` (acceptance criteria), `FICTIONAL_DATA.md` (numbers), `DATA_M
 | `npm run verify -- <record>` | verify | network (public RPC) |
 | `npm test` | — | nothing (server and ledger tests) |
 | `npm run test:contracts` | — | Linux, macOS or WSL2 with Rust (NEAR sandbox has no Windows binary) |
-| `npm run reset` | live | `.env`; returns the token float to the treasury |
+| `npm run reset:testnet -- --yes` | live | `.near-credentials`, Acme's keychain key; cancels open POs, returns the budget to the treasury and deletes the contract account (its anchors go with it); no flag = dry run |
 
 ---
 
@@ -64,7 +64,7 @@ These are the steps the README shows. Each has its expected output inline so a j
 
 ## 4. Live recording procedure (Nov 7, re-run Nov 12)
 
-1. `npm run reset` then `npm run demo:live -- --record`.
+1. `npm run reset:testnet -- --yes`, `npm run setup:testnet`, `npm run deploy:testnet`, `npm run rehearse`, then `npm run demo:live -- --record`.
 2. The script writes `data/replay/chain/*.json`, `data/replay/llm/*.json`, `data/replay/attestation/report.json` and `data/replay/transcript.txt`.
 3. Commit the fixtures. Run `npm run demo` (replay) and confirm the transcript is identical apart from fields marked volatile (none should be).
 4. Spot-check three tx hashes on testnet.nearblocks.io: the refused `submit_po`, the relayed `approve_po`, the `qc_release` payout.

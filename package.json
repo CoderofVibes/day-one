@@ -22,6 +22,7 @@
     "check": "npm run lint && npm run typecheck && npm test",
     "setup:testnet": "tsx scripts/setup-testnet.ts",
     "deploy:testnet": "tsx scripts/deploy.ts",
+    "reset:testnet": "tsx scripts/reset-testnet.ts",
     "verify": "tsx scripts/verify.ts",
     "attest": "tsx scripts/attest.ts",
     "verify:attestation": "tsx scripts/verify-attestation.ts",
