@@ -117,10 +117,13 @@ An import posts each lot as opening stock through `appendLotEvent`: `received`, 
 
 ## 9. Replay fixtures
 
-`data/replay/` (committed) holds:
-- `chain/*.json` — recorded RPC results for each demo transaction, keyed by step, with real tx hashes
-- `llm/*.json` — recorded LLM requests and responses with NEAR AI Cloud signatures
-- `attestation/report.json` — one recorded attestation report
-- `transcript.txt` — the text form of the behind-the-curtain view for the full demo run
+`data/replay/` (committed) holds, as recorded on testnet Oct 29:
+- `demo-chain.json` — the main run's chain calls (`entries`: call type, request, result) with real tx hashes; `group-chain.json`, `attacks-chain.json` and `reconcile-chain.json` the same for the group purchase, the attack suite and the ERP reconciliation
+- `demo-llm.json`, `attacks-llm.json`, `inbox-llm.json` — recorded model requests and responses, keyed by task and prompt, each with NEAR AI Cloud's signature over the answer
+- `demo-salts.json`, `group-salts.json` — the salts behind the recorded fingerprints (each PO, the batch record, the receipt, each quote)
+- `attestation.json` — NEAR AI Cloud's attestation report for Kevin's model bound to a fresh nonce, and the verdict per recorded answer signature (`npm run attest`; `npm run verify:attestation` re-checks it)
+- `transcript.txt`, `group-transcript.txt` — the text of the behind-the-curtain view for the main run and the group purchase; `npm run demo` and `npm run demo:group` fail when a replay no longer matches
+
+The other recorded runs keep their own folders: `data/sealed/` (the sealed round and its chain calls), `data/usdc/` (PO-1047 in Circle USDC), `data/attacks/` (the credential attacks and the hidden-text invoices), `data/quotes/` (one proof per anchored quote), and the record proofs `data/batch-records/*.json` that `npm run verify` checks.
 
 Replay mode loads the seed, runs the same workflow, and substitutes fixtures for network calls. Seeded event timestamps make hashes identical to the recorded live run.

@@ -32,9 +32,9 @@ Requires Node 24. Step 5 requires Linux, macOS or WSL2.
    ```
 3. `npm run verify -- data/batch-records/BR-B-1045.json` → `MATCH` and the anchoring tx link.
 4. Change one quantity in that file by 1 g and repeat step 3 → `MISMATCH`.
-5. `npm run test:contracts` → {N} tests pass, including `over_limit_po_is_refused` and `director_approval_then_retry_succeeds`.
+5. `cd contracts && cargo test` → {N} tests pass, including `over_limit_po_is_refused_with_the_exact_message` and `purchasing_loop_on_sandbox`.
 
-Optional: `npm run demo -- --ui` opens the web UI at {url} and steps through the same run. `npm run demo:live` runs against testnet with your own accounts (see `.env.example`).
+Optional: `npm run web:build` and open `web/dist/` from a static server to step through the same run in the browser; `npm run api` serves it live at {url}. `npm run demo:live` runs against testnet with your own accounts (see `.env.example`).
 
 ## What happens in the demo
 
@@ -57,11 +57,11 @@ Kevin doesn't need crypto. The acquirer, the plant and the supplier do: one spen
 | Kevin cannot exceed his per-PO limit | `contracts/spend-policy/src/lib.rs` `submit_po` | `over_limit_po_is_refused` | {refused tx} |
 | Only the director can approve, and only exact terms | `approve_po` | `approve_from_non_director_panics`, `mismatched_terms_after_approval_panics` | {approve tx} |
 | Kevin's key cannot move tokens | key layout in `scripts/setup-testnet` | — | {view_access_key_list output} |
-| Staff actions are relayer-paid | `server/relayer/` | `relayed_approval_passes_predecessor_check` | {relayed tx} |
+| Staff actions are relayer-paid | `server/src/relayer/` | `relayed_approval_passes_predecessor_check` | {relayed tx} |
 | Funds release only after QC | `contracts/spend-policy` `qc_release` | `release_before_receipt_panics` | {release tx} |
 | Records are anchored and verifiable | `anchor_batch`, `scripts/verify` | `anchor_is_append_only` | {anchor tx} |
 | Same contracts settle in Circle USDC | USDC deployment | — | {PO-1047 txs} |
-| Inference runs in an attested TEE {if tagged} | `server/attestation/` | `verify_attestation_fixture` | {report fixture} |
+| Inference runs in an attested TEE {if tagged} | `server/src/attestation/` | `verify_attestation_fixture` | {report fixture} |
 | Supplier agents transact from their own accounts {T1} | `agents/suppliers/` | {test} | {quote anchor tx} |
 
 ## What is on-chain and what is not
