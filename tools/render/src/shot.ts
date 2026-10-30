@@ -45,7 +45,8 @@ for (const [name, width, scheme] of [
     });
     await page.goto(`http://day-one.local/${query}`);
   }
-  await page.getByText("Behind the curtain").first().click();
+  // The trust marker sits in the sidebar on a wide screen and in the top bar on a phone.
+  await page.getByText("Behind the curtain").filter({ visible: true }).first().click();
   if (url) {
     // Live: start over, then take the primary action STEPS times, waiting for each to land.
     const bar = page.getByRole("region", { name: "Next action" });
@@ -71,7 +72,10 @@ for (const [name, width, scheme] of [
       );
     }
     if (process.env.PLANTS) {
-      await page.getByRole("tab", { name: "Plants" }).click();
+      // On a phone the page list is behind the menu button.
+      const menu = page.getByRole("button", { name: "Pages" });
+      if (await menu.isVisible()) await menu.click();
+      await page.getByRole("link", { name: "Three plants" }).click();
       await page.getByRole("region", { name: "Three plants" }).getByRole("table").first().waitFor();
     }
   } else {

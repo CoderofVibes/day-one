@@ -1,16 +1,28 @@
-/* Day One design tokens (docs/UI_DESIGN.md §4). One set of colours, type sizes and spacing for
+/* Day One design tokens (docs/UI_DESIGN.md §4; the v2 surfaces, chart palette and radii from
+   docs/VISION.md §6.3). One set of colours, type sizes and spacing for
    every screen, the map, the twin and the video page. No font download: the system stack, so the
    page works offline and in record mode. Dark follows the system unless data-theme says otherwise. */
 
 :root {
   /* Surfaces and ink */
-  --bg: #f4f3ee;
+  --bg: #eef1f4;
   --surface: #ffffff;
-  --surface-2: #ecebe5;
-  --ink: #1b1d20;
-  --ink-2: #5c6370;
-  --line: #dcdad2;
-  --line-2: #c9c6bc;
+  --surface-2: #f4f6f8;
+  --ink: #16191d;
+  --ink-2: #5b6470;
+  --ink-3: #6f7884;
+  --line: #e3e7eb;
+  --line-2: #cfd5dc;
+  /* The wash under the cards: two soft radial tints, no image file. */
+  --wash-1: rgb(31 111 92 / 0.1);
+  --wash-2: rgb(78 127 209 / 0.12);
+
+  /* Charts: four series at most, in this order (validated: dataviz validate_palette.js). */
+  --chart-1: #0f8a68;
+  --chart-2: #4e7fd1;
+  --chart-3: #b07a12;
+  --chart-4: #8a6fc4;
+  --chart-grid: #e3e7eb;
 
   /* Brand: Kevin's green. One accent, used for the current thing and the primary action only. */
   --brand: #1f6f5c;
@@ -27,7 +39,7 @@
   --paid: #1b6b3a;
   --paid-bg: #e2f3e8;
   --neutral: #5c6370;
-  --neutral-bg: #eeede8;
+  --neutral-bg: #eef1f4;
 
   /* Behind the curtain: dark in both themes, so it reads as "the other side". */
   --curtain: #14171c;
@@ -64,10 +76,10 @@
   --s-4: 16px;
   --s-5: 24px;
   --s-6: 32px;
-  --r-sm: 6px;
-  --r-md: 10px;
-  --r-lg: 14px;
-  --shadow: 0 1px 2px rgb(20 23 28 / 0.06), 0 4px 16px rgb(20 23 28 / 0.05);
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --shadow: 0 1px 2px rgb(16 24 40 / 0.04), 0 8px 24px rgb(16 24 40 / 0.06);
   --focus: 0 0 0 3px color-mix(in srgb, var(--brand) 45%, transparent);
 
   color-scheme: light;
@@ -80,6 +92,14 @@
     --surface-2: #232830;
     --ink: #e8eaed;
     --ink-2: #9ba3ad;
+    --ink-3: #7b8490;
+    --wash-1: rgb(79 179 154 / 0.06);
+    --wash-2: rgb(102 144 224 / 0.07);
+    --chart-1: #28a57d;
+    --chart-2: #6690e0;
+    --chart-3: #b37f22;
+    --chart-4: #9a7cd8;
+    --chart-grid: #2d333c;
     --line: #2d333c;
     --line-2: #3a414c;
     --brand: #4fb39a;
@@ -116,6 +136,14 @@
   --surface-2: #232830;
   --ink: #e8eaed;
   --ink-2: #9ba3ad;
+  --ink-3: #7b8490;
+  --wash-1: rgb(79 179 154 / 0.06);
+  --wash-2: rgb(102 144 224 / 0.07);
+  --chart-1: #28a57d;
+  --chart-2: #6690e0;
+  --chart-3: #b37f22;
+  --chart-4: #9a7cd8;
+  --chart-grid: #2d333c;
   --line: #2d333c;
   --line-2: #3a414c;
   --brand: #4fb39a;

@@ -178,7 +178,8 @@ for (const [name, width, height, scheme] of [
   await page.goto(`http://day-one.local/${query}`);
   const stage = page.locator(".t3-stage");
   await stage.locator("canvas").waitFor();
-  const curtain = page.getByText("Behind the curtain").first();
+  // The trust marker sits in the sidebar on a wide screen and in the top bar on a phone.
+  const curtain = page.getByText("Behind the curtain").filter({ visible: true }).first();
   // The demo run steps on the arrow keys; the group run has its own › button on the map bar.
   const next = page.getByRole("button", { name: "Next group step" });
   let at = 0;

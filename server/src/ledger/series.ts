@@ -270,7 +270,75 @@ export function qcSeries(db: LedgerDb): QcMonth[] {
   return [...out.values()];
 }
 
+export interface ReorderWeek {
+  /** The Monday the week starts on (YYYY-MM-DD); counted at the end of that Sunday. */
+  week: string;
+  facility: string;
+  /** Materials the plant has held whose stock was below their reorder point. */
+  below: number;
+}
+
+/**
+ * How many materials each plant held below their reorder point at the end of each week, from
+ * the first event to the last: one pass over the event log, no per-material queries.
+ */
+export function reorderSeries(db: LedgerDb): ReorderWeek[] {
+  const rows = db
+    .select({
+      at: lotEvents.occurredAt,
+      delta: lotEvents.qtyDeltaBase,
+      facility: facilities.code,
+      material: materials.code,
+      reorder: materials.reorderPointBase,
+    })
+    .from(lotEvents)
+    .innerJoin(lots, eq(lots.id, lotEvents.lotId))
+    .innerJoin(materials, eq(materials.id, lots.materialId))
+    .innerJoin(facilities, eq(facilities.id, lotEvents.facilityId))
+    .orderBy(asc(lotEvents.seq))
+    .all();
+  if (rows.length === 0) return [];
+  const monday = (iso: string) => {
+    const d = new Date(`${iso.slice(0, 10)}T00:00:00.000Z`);
+    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+    return d.toISOString().slice(0, 10);
+  };
+  const stock = new Map<string, { onHand: number; reorder: number }>();
+  const out: ReorderWeek[] = [];
+  const plants = [...new Set(rows.map((r) => r.facility))].sort();
+  const close = (week: string) => {
+    for (const plant of plants) {
+      let below = 0;
+      for (const [key, s] of stock) {
+        if (key.startsWith(`${plant}|`) && s.onHand < s.reorder) below += 1;
+      }
+      out.push({ week, facility: plant, below });
+    }
+  };
+  let week = monday(rows[0]?.at ?? "");
+  for (const r of rows) {
+    const w = monday(r.at);
+    while (w > week) {
+      close(week);
+      const next = new Date(`${week}T00:00:00.000Z`);
+      next.setUTCDate(next.getUTCDate() + 7);
+      week = next.toISOString().slice(0, 10);
+    }
+    const key = `${r.facility}|${r.material}`;
+    const s = stock.get(key) ?? { onHand: 0, reorder: r.reorder ?? 0 };
+    s.onHand += r.delta;
+    stock.set(key, s);
+  }
+  close(week);
+  return out;
+}
+
 /** Everything the charts read that does not depend on a chosen material. */
 export function historySeries(db: LedgerDb) {
-  return { production: productionSeries(db), spend: spendSeries(db), qc: qcSeries(db) };
+  return {
+    production: productionSeries(db),
+    spend: spendSeries(db),
+    qc: qcSeries(db),
+    belowReorder: reorderSeries(db),
+  };
 }

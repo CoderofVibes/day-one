@@ -1,10 +1,11 @@
-// One shell, four screens, one switch (docs/UI_DESIGN.md §3). Floor: whoever is up next, the run
-// so far and the plant map. Plants, Books and HQ: the three-plant view, Marcy's books with the
-// import wizard, and HQ's read of the contract. "Behind the curtain" opens the auditor's rail
-// beside the run. Staff screens show dollars, POs, approvals and people; the chain stays behind
-// the curtain (src/run.test.ts).
+// The v2 program (docs/VISION.md §6): pages down the left side, the plant picker, and the trust
+// marker that opens Behind the curtain beside any page. Overview holds whoever is up next (the
+// Kevin panel), what just happened, the plant map and the plant's numbers; Three plants, Books
+// and Spending limits hold the three-plant view, Marcy's books with the import wizard, and HQ's
+// read of the contract. Staff pages show dollars, POs, approvals and people; the chain stays
+// behind the curtain (src/run.test.ts).
 //
-// One UI, two sources: when the API (npm run api) answers, the screens run live and each button
+// One UI, two sources: when the API (npm run api) answers, the pages run live and each button
 // advances the run; otherwise the recorded run replays with Play, Back and Next, as on a static
 // host (docs/HOSTING.md).
 
@@ -40,9 +41,19 @@ import { Curtain } from "./Curtain.tsx";
 import { initials, Pill, StaffFeed } from "./feed.tsx";
 import { InboxPane } from "./InboxPane.tsx";
 import { type Action, actionsFor, actorOf } from "./live.ts";
+import { Overview } from "./pages/Overview.tsx";
 import { BooksPane, HqPane, PlantsPane } from "./panes.tsx";
 import { plantsSnapshot, STATIC_BOOKS_URL, STATIC_BRIEF_URL } from "./plants.ts";
-import { type DemoRun, type RunData, run as recorded, type Step, type Tone } from "./run.ts";
+import {
+  audienceOf,
+  type DemoRun,
+  type RunData,
+  run as recorded,
+  type Step,
+  type Tone,
+} from "./run.ts";
+import type { Source } from "./series.ts";
+import { PageHeader, type PageId, type PlantCode, Shell, useRoute } from "./shell.tsx";
 import { PlantView } from "./twin3d/PlantView.tsx";
 
 const PLAY_MS = 2600;
@@ -51,14 +62,6 @@ const PLAY_MS = 2600;
 const VideoApp = lazy(() => import("./VideoApp.tsx"));
 const VIDEO =
   typeof location !== "undefined" && new URLSearchParams(location.search).get("video") === "1";
-
-type Screen = "floor" | "plants" | "books" | "hq";
-const SCREENS: { id: Screen; label: string }[] = [
-  { id: "floor", label: "Floor" },
-  { id: "plants", label: "Plants" },
-  { id: "books", label: "Books" },
-  { id: "hq", label: "HQ" },
-];
 
 export function App() {
   if (VIDEO) {
@@ -80,69 +83,161 @@ function Screens() {
   return live ? <LiveApp initial={live} /> : <ReplayApp />;
 }
 
-// ------------------------------------------------------------------ the shell
-
-function Shell({
-  screen,
-  setScreen,
-  curtain,
-  setCurtain,
-  badge,
-  children,
-}: {
-  screen: Screen;
-  setScreen: (s: Screen) => void;
-  curtain: boolean;
-  setCurtain: (on: boolean) => void;
-  /** Scans waiting for Ray: shown on the Floor tab. */
-  badge?: number;
-  children: React.ReactNode;
-}) {
-  return (
-    <>
-      <header className="bar">
-        <div className="brand">
-          <span className="logo" aria-hidden="true">
-            K
-          </span>
-          <div>
-            <h1>Day One</h1>
-            <p>Kevin, AI purchasing assistant · Hollow Pine Tablet Co. (Plant B)</p>
-          </div>
-        </div>
-        <div className="tabs" role="tablist" aria-label="Screens">
-          {SCREENS.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              role="tab"
-              aria-selected={screen === s.id}
-              onClick={() => setScreen(s.id)}
-            >
-              {s.label}
-              {s.id === "floor" && badge ? (
-                <span className="badge">
-                  {badge}
-                  <span className="sr-only"> waiting</span>
-                </span>
-              ) : null}
-            </button>
-          ))}
-        </div>
-        <label className="switch">
-          <input type="checkbox" checked={curtain} onChange={(e) => setCurtain(e.target.checked)} />
-          <span>Behind the curtain</span>
-        </label>
-      </header>
-      {children}
-    </>
-  );
-}
-
 function Foot({ children }: { children: React.ReactNode }) {
   return (
     <footer className="foot">{children} All companies, people and numbers are fictional.</footer>
   );
+}
+
+/** The page, with Behind the curtain as a dark rail beside it when the switch is on. */
+function WithRail({
+  curtain,
+  rail,
+  children,
+}: {
+  curtain: boolean;
+  rail: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={curtain ? "with-rail" : undefined}>
+      <div className="page-wrap">{children}</div>
+      {curtain && <aside className="rail-v2">{rail}</aside>}
+    </div>
+  );
+}
+
+/** Every page but the Overview: the header, then the page's content. */
+function Page({
+  label,
+  crumb,
+  title,
+  sentence,
+  children,
+}: {
+  label: string;
+  crumb: string;
+  title: string;
+  sentence: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <main className="page v2" aria-label={label}>
+      <PageHeader crumb={crumb} title={title} sentence={sentence} />
+      {children}
+    </main>
+  );
+}
+
+const PLANT_NAMES: Record<PlantCode, string> = {
+  A: "Acme Riverside",
+  B: "Hollow Pine Tablet Co.",
+  C: "Acme Lakeview",
+};
+
+/** The pages both sources share; each source hands in its own panes. */
+function Pages({
+  page,
+  plant,
+  source,
+  inventory,
+  map,
+  kevin,
+  activity,
+  plants,
+  books,
+  hq,
+  foot,
+}: {
+  page: PageId;
+  plant: PlantCode;
+  source: Source;
+  inventory: PlantInventory | null;
+  map: React.ReactNode;
+  kevin: React.ReactNode;
+  activity: React.ReactNode;
+  plants: React.ReactNode;
+  books: React.ReactNode;
+  hq: React.ReactNode;
+  foot: React.ReactNode;
+}) {
+  switch (page) {
+    case "map":
+      return (
+        <Page
+          label="Plant map"
+          crumb={`${PLANT_NAMES[plant]} › Plant map`}
+          title="Plant map"
+          sentence="The three plants, the suppliers, the escrow and HQ, as the run moves through them."
+        >
+          <div className="map-page">{map}</div>
+          {foot}
+        </Page>
+      );
+    case "plants":
+      return (
+        <Page
+          label="Three plants page"
+          crumb="Across Acme › Three plants"
+          title="Three plants"
+          sentence="One ledger for the three plants: stock, the moves Kevin proposes, and what does not add up."
+        >
+          {plants}
+          {foot}
+        </Page>
+      );
+    case "books":
+      return (
+        <Page
+          label="Books page"
+          crumb="Across Acme › Books"
+          title="Books"
+          sentence="Settled purchase orders, held invoices and the export for the bookkeeper."
+        >
+          {books}
+          {foot}
+        </Page>
+      );
+    case "hq":
+      return (
+        <Page
+          label="Spending limits page"
+          crumb="Acme HQ › Spending limits"
+          title="Spending limits"
+          sentence="Kevin's limits as the contract enforces them, the category caps and supplier standing."
+        >
+          {hq}
+          {foot}
+        </Page>
+      );
+    default:
+      return (
+        <>
+          <Overview
+            plant={plant}
+            source={source}
+            inventory={inventory}
+            map={map}
+            kevin={kevin}
+            activity={activity}
+          />
+          <div className="page v2 foot-wrap">{foot}</div>
+        </>
+      );
+  }
+}
+
+/** Open moves and reviews on Three plants, held invoices on Books: the sidebar's counts. */
+function badgesOf(
+  inventory: PlantInventory | null,
+  moves: TransferSuggestions | null,
+  books: Books | null,
+): Partial<Record<PageId, { count: number; tone: "attention" | "problem" }>> {
+  const reviews = inventory?.discrepancies.filter((d) => d.status === "open").length ?? 0;
+  return {
+    plants: { count: reviews + (moves?.suggestions.length ?? 0), tone: "attention" },
+    books: { count: books?.held.length ?? 0, tone: "problem" },
+  };
 }
 
 // ------------------------------------------------------------------ replay (static)
@@ -152,7 +247,7 @@ function ReplayApp() {
   const last = data.steps.length - 1;
   const [at, setAt] = useState(0);
   const [curtain, setCurtain] = useState(false);
-  const [screen, setScreen] = useState<Screen>("floor");
+  const route = useRoute();
   const [playing, setPlaying] = useState(false);
 
   const go = useCallback((to: number) => setAt(Math.max(0, Math.min(last, to))), [last]);
@@ -168,102 +263,94 @@ function ReplayApp() {
   }, [playing, at, last, go]);
 
   useEffect(() => {
-    if (screen !== "floor") return;
+    if (route.page !== "overview" && route.page !== "map") return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") go(at + 1);
       else if (e.key === "ArrowLeft") go(at - 1);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [at, go, screen]);
+  }, [at, go, route.page]);
 
   const current = data.steps[at] as Step;
+  const upNext = at < last ? audienceOf(data.steps[at + 1] as Step) : null;
   const links = { brief: STATIC_BRIEF_URL, books: STATIC_BOOKS_URL };
   const foot = (
     <Foot>Replay of a run recorded on {new Date(data.recordedAt).toISOString().slice(0, 10)}.</Foot>
   );
+  const kevin =
+    at === last ? (
+      <Closing
+        data={data}
+        curtain={curtain}
+        onReplay={() => go(0)}
+        onPlants={() => route.go({ page: "plants" })}
+      />
+    ) : (
+      <section className="panel next" aria-label="Demo steps">
+        <div className="panel-head">
+          <h2>
+            Step {at + 1} of {last + 1}
+          </h2>
+          <span className="right small muted">{current.title}</span>
+        </div>
+        <div className="transport">
+          <button type="button" className="btn" onClick={() => go(at - 1)} disabled={at === 0}>
+            ← Back
+          </button>
+          <button
+            type="button"
+            className="btn primary"
+            onClick={() => {
+              if (!playing && at === last) go(0);
+              setPlaying(!playing);
+            }}
+          >
+            {playing ? "Pause" : "Play"}
+          </button>
+          <button type="button" className="btn" onClick={() => go(at + 1)} disabled={at === last}>
+            Next →
+          </button>
+          <input
+            type="range"
+            min={0}
+            max={last}
+            value={at}
+            onChange={(e) => go(Number(e.target.value))}
+            aria-label="Step"
+          />
+          <span className="step-count">
+            {at + 1} / {last + 1} · {current.title}
+          </span>
+        </div>
+      </section>
+    );
 
   return (
-    <Shell screen={screen} setScreen={setScreen} curtain={curtain} setCurtain={setCurtain}>
-      {screen === "floor" ? (
-        <main className={curtain ? "page floor with-curtain" : "page floor"}>
-          <Guide data={data} />
-          <div className="col">
-            {at === last ? (
-              <Closing
-                data={data}
-                curtain={curtain}
-                onReplay={() => go(0)}
-                onPlants={() => setScreen("plants")}
-              />
-            ) : (
-              <section className="panel next" aria-label="Demo steps">
-                <div className="panel-head">
-                  <h2>
-                    Step {at + 1} of {last + 1}
-                  </h2>
-                  <span className="right small muted">{current.title}</span>
-                </div>
-                <div className="transport">
-                  <button
-                    type="button"
-                    className="btn"
-                    onClick={() => go(at - 1)}
-                    disabled={at === 0}
-                  >
-                    ← Back
-                  </button>
-                  <button
-                    type="button"
-                    className="btn primary"
-                    onClick={() => {
-                      if (!playing && at === last) go(0);
-                      setPlaying(!playing);
-                    }}
-                  >
-                    {playing ? "Pause" : "Play"}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn"
-                    onClick={() => go(at + 1)}
-                    disabled={at === last}
-                  >
-                    Next →
-                  </button>
-                  <input
-                    type="range"
-                    min={0}
-                    max={last}
-                    value={at}
-                    onChange={(e) => go(Number(e.target.value))}
-                    aria-label="Step"
-                  />
-                  <span className="step-count">
-                    {at + 1} / {last + 1} · {current.title}
-                  </span>
-                </div>
-              </section>
-            )}
-            <StaffFeed data={data} upTo={at} onPick={go} curtain={curtain} />
-          </div>
-          <div className="col">
-            <div className="sticky">
-              <PlantView run={data} at={at} curtain={curtain} onStep={go} />
-            </div>
-          </div>
-          {curtain && (
-            <aside className="col">
-              <div className="sticky rail">
-                <Curtain data={data} upTo={at} />
-              </div>
-            </aside>
-          )}
-          {foot}
-        </main>
-      ) : (
-        <main className="page">
-          {screen === "plants" && (
+    <Shell
+      page={route.page}
+      plant={route.plant}
+      go={route.go}
+      curtain={curtain}
+      setCurtain={setCurtain}
+      badges={badgesOf(plantsSnapshot.inventory, plantsSnapshot.transfers, plantsSnapshot.books)}
+      person={upNext ?? { name: "Day One", role: "Run complete" }}
+    >
+      <WithRail curtain={curtain} rail={<Curtain data={data} upTo={at} />}>
+        <Pages
+          page={route.page}
+          plant={route.plant}
+          source={{ live: false, version: 0 }}
+          inventory={plantsSnapshot.inventory}
+          map={<PlantView run={data} at={at} curtain={curtain} onStep={go} />}
+          kevin={
+            <>
+              <Guide data={data} />
+              {kevin}
+            </>
+          }
+          activity={<StaffFeed data={data} upTo={at} onPick={go} curtain={curtain} />}
+          plants={
             <PlantsPane
               error={null}
               inventory={plantsSnapshot.inventory}
@@ -274,8 +361,8 @@ function ReplayApp() {
               busy={false}
               snapshotAt={plantsSnapshot.at}
             />
-          )}
-          {screen === "books" && (
+          }
+          books={
             <BooksPane
               books={plantsSnapshot.books}
               error={null}
@@ -283,12 +370,11 @@ function ReplayApp() {
               run={data}
               curtain={curtain}
             />
-          )}
-          {screen === "hq" && <HqPane policy={null} live={false} />}
-          {curtain && <Curtain data={data} upTo={at} />}
-          {foot}
-        </main>
-      )}
+          }
+          hq={<HqPane policy={null} live={false} />}
+          foot={foot}
+        />
+      </WithRail>
     </Shell>
   );
 }
@@ -333,9 +419,8 @@ function Guide({ data }: { data: DemoRun }) {
         {s ? ` (${s.transactions} transactions, ${s.refusedByDesign} refused by design)` : ""}.
         Press <strong>Play</strong> or the → key. Staff see dollars and POs only; switch on{" "}
         <strong>Behind the curtain</strong> for every transaction with its explorer link,{" "}
-        <strong>3D</strong> on the map for the twin, and <strong>Plants</strong>,{" "}
-        <strong>Books</strong> and <strong>HQ</strong> for stock, the mass balance, the books and
-        Kevin's limits.
+        <strong>3D</strong> on the map for the twin, and the pages on the left for the three plants,
+        the books and Kevin's limits.
       </p>
     </aside>
   );
@@ -389,7 +474,7 @@ function Closing({
 function LiveApp({ initial }: { initial: LiveState }) {
   const [state, setState] = useState(initial);
   const [curtain, setCurtain] = useState(false);
-  const [screen, setScreen] = useState<Screen>("floor");
+  const route = useRoute();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<{ message: string; hint?: string } | null>(null);
   const [inventory, setInventory] = useState<PlantInventory | null>(null);
@@ -424,11 +509,11 @@ function LiveApp({ initial }: { initial: LiveState }) {
     };
   }, [state]);
 
-  // The Plants, Books and HQ screens read the ledger and the contract when opened and whenever
-  // the run moves; the figures stay on screen between reads.
+  // Every page reads the ledger and the contract when opened and whenever the run moves; the
+  // figures stay on screen between reads. The Overview's numbers and the sidebar's counts need
+  // stock, moves and books on every page.
   // biome-ignore lint/correctness/useExhaustiveDependencies: refresh whenever the run (state) moves
   useEffect(() => {
-    if (screen === "floor") return;
     let stale = false;
     setPlantsError(null);
     const load = <T,>(get: () => Promise<T>, set: (value: T) => void) =>
@@ -440,23 +525,22 @@ function LiveApp({ initial }: { initial: LiveState }) {
           if (!stale) setPlantsError(e instanceof Error ? e.message : String(e));
         },
       );
-    if (screen === "plants") {
-      load(getInventory, setInventory);
+    load(getInventory, setInventory);
+    load(getTransferSuggestions, setMoves);
+    load(getBooks, setBooks);
+    if (route.page === "plants") {
       load(getPolicy, setPolicy);
       load(getMassBalance, setMass);
-      load(getTransferSuggestions, setMoves);
-    } else if (screen === "books") {
-      load(getBooks, setBooks);
-    } else {
+    } else if (route.page === "hq") {
       load(getPolicy, setPolicy);
     }
     return () => {
       stale = true;
     };
-  }, [screen, state]);
+  }, [route.page, state]);
 
-  // When the run moves to the next person, the page comes back to "Up next" so they see their
-  // turn, however far down the history the last reader had scrolled.
+  // When the run moves to the next person, the page comes back to the Kevin panel so they see
+  // their turn, however far down the last reader had scrolled.
   const turn = state.next.phase + state.next.who + state.steps.length;
   const seenTurn = useRef(turn);
   useEffect(() => {
@@ -489,10 +573,6 @@ function LiveApp({ initial }: { initial: LiveState }) {
     send(`Upload ${file.name}`, () => postImage("api/batch-records", file, file.name));
   const confirmScan = (batchNo: string, resolutions: Record<string, string>) =>
     send(`Confirm ${batchNo}`, () => postInboxConfirm(batchNo, resolutions));
-  const waiting =
-    inbox?.items.filter(
-      (i) => i.status === "waiting" && (i.waitingFor === null || i.waitingFor === "Ray Delgado"),
-    ).length ?? 0;
 
   const review = (id: number, decision: "apply" | "dismiss") =>
     send(decision === "apply" ? "Apply the adjustment" : "Dismiss", async () => {
@@ -534,6 +614,11 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const last = state.steps.length - 1;
   const queue = inbox?.folder && inbox.items.length > 0 ? inbox : null;
   const atUpload = state.next.phase === "upload";
+  const waiting =
+    inbox?.items.filter(
+      (i) => i.status === "waiting" && (i.waitingFor === null || i.waitingFor === "Ray Delgado"),
+    ).length ?? 0;
+  const actor = actorOf(state.next);
   const foot = (
     <Foot>
       {state.mode === "live"
@@ -544,61 +629,57 @@ function LiveApp({ initial }: { initial: LiveState }) {
 
   return (
     <Shell
-      screen={screen}
-      setScreen={setScreen}
+      page={route.page}
+      plant={route.plant}
+      go={route.go}
       curtain={curtain}
       setCurtain={setCurtain}
-      badge={waiting}
+      badges={{
+        ...badgesOf(inventory, moves, books),
+        overview: { count: waiting, tone: "attention" },
+      }}
+      person={{ name: actor.name, role: actor.role ?? null }}
     >
-      {screen === "floor" ? (
-        <main className={curtain ? "page floor with-curtain" : "page floor"}>
-          <div className="col">
-            <UpNext
-              state={state}
-              busy={busy}
-              error={error}
-              onAct={act}
-              onUpload={uploadFile}
-              onReset={reset}
-              queue={
-                atUpload && queue ? (
-                  <InboxPane
-                    inbox={queue}
-                    busy={busy !== null}
-                    viewer="Ray Delgado"
-                    onConfirm={confirmScan}
-                    embedded
-                  />
-                ) : null
-              }
-            />
-            {!atUpload && queue && (
-              <InboxPane
-                inbox={queue}
-                busy={busy !== null}
-                viewer="Ray Delgado"
-                onConfirm={confirmScan}
+      <WithRail curtain={curtain} rail={<Curtain data={state} upTo={last} />}>
+        <Pages
+          page={route.page}
+          plant={route.plant}
+          source={{ live: true, version: state.steps.length }}
+          inventory={inventory}
+          map={<PlantView run={state} at={last} curtain={curtain} />}
+          kevin={
+            <>
+              <UpNext
+                state={state}
+                busy={busy}
+                error={error}
+                onAct={act}
+                onUpload={uploadFile}
+                onReset={reset}
+                queue={
+                  atUpload && queue ? (
+                    <InboxPane
+                      inbox={queue}
+                      busy={busy !== null}
+                      viewer="Ray Delgado"
+                      onConfirm={confirmScan}
+                      embedded
+                    />
+                  ) : null
+                }
               />
-            )}
-            <StaffFeed data={state} upTo={last} curtain={curtain} />
-          </div>
-          <div className="col">
-            <div className="sticky">
-              <PlantView run={state} at={last} curtain={curtain} />
-            </div>
-          </div>
-          {curtain && (
-            <aside className="col">
-              <div className="sticky rail">
-                <Curtain data={state} upTo={last} />
-              </div>
-            </aside>
-          )}
-          {foot}
-        </main>
-      ) : (
-        <main className="page">
-          {screen === "plants" && (
+              {!atUpload && queue && (
+                <InboxPane
+                  inbox={queue}
+                  busy={busy !== null}
+                  viewer="Ray Delgado"
+                  onConfirm={confirmScan}
+                />
+              )}
+            </>
+          }
+          activity={<StaffFeed data={state} upTo={last} curtain={curtain} />}
+          plants={
             <PlantsPane
               error={plantsError}
               inventory={inventory}
@@ -614,8 +695,8 @@ function LiveApp({ initial }: { initial: LiveState }) {
                 onReceiveMove: receiveMove,
               }}
             />
-          )}
-          {screen === "books" && (
+          }
+          books={
             <BooksPane
               books={books}
               error={plantsError}
@@ -624,12 +705,11 @@ function LiveApp({ initial }: { initial: LiveState }) {
               run={state}
               curtain={curtain}
             />
-          )}
-          {screen === "hq" && <HqPane policy={policy} live />}
-          {curtain && <Curtain data={state} upTo={last} />}
-          {foot}
-        </main>
-      )}
+          }
+          hq={<HqPane policy={policy} live />}
+          foot={foot}
+        />
+      </WithRail>
     </Shell>
   );
 }

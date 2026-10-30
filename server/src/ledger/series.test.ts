@@ -6,6 +6,7 @@ import {
   historySeries,
   productionSeries,
   qcSeries,
+  reorderSeries,
   spendSeries,
   stockedMaterials,
   stockSeries,
@@ -75,5 +76,17 @@ describe("the charts' series (docs/VISION.md §6.7)", () => {
     expect(oct?.rejected).toBe(1);
     expect(qc.reduce((s, m) => s + m.released + m.rejected, 0)).toBeGreaterThan(200);
     expect(historySeries(db).qc).toEqual(qc);
+  });
+
+  it("counts, week by week, the materials each plant held below their reorder point", () => {
+    const weeks = reorderSeries(db);
+    expect(weeks[0]?.week).toBe("2026-07-06");
+    expect(new Set(weeks.map((w) => w.week.length))).toEqual(new Set([10]));
+    // The week of the demo clock (Nov 9): Hollow Pine's bottles and caps, its acetonitrile and
+    // buffer… as the brief and the three-plant view say; ascorbic acid is still above 500 kg.
+    const last = weeks.filter((w) => w.facility === "B").at(-1);
+    expect(last?.week).toBe("2026-11-02");
+    expect(last?.below).toBeGreaterThan(0);
+    for (const w of weeks) expect(["A", "B", "C"]).toContain(w.facility);
   });
 });
