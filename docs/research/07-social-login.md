@@ -8,6 +8,8 @@
 
 **Decision recommended:** Ship **server-held, method-scoped FC keys per staff member + relayer**, and say so plainly in the README. Show the upgrade path as a diagram and a roadmap line: "a login provider supplies the staff member's key; Day One adds it to their named account as the same scoped FC key". NEAR Auth (MPC, passkeys) is the named target. Do not build any social login in Tier 0/1. A one-day NEAR Auth testnet spike is a Tier 2 candidate only if everything else is done.
 
+**Re-checked 2026-10-30 (unattended run, near-docs MCP).** docs.near.org/web3-apps/tutorials/near-auth still describes the same flow: `@fast-auth-near/react-sdk` or `browser-sdk` plus `@fast-auth-near/javascript-provider`, login through Auth0, a deterministic key per identity held by the MPC network (`fast-auth.near` / `v1.signer` on mainnet; testnet values at docs.auth.near.org/resources/testnet), and every signature request "performs an Auth0 context switch — a popup or a full-page redirect". Mainnet client ids need an application (typeform). Consequence for the plan: the spike needs a person at the keyboard to sign in and approve each signature, so no unattended run can build or check it; it stays unbuilt and the README's Limitations and Roadmap carry the honest wording (PLAN Nov 12, OPEN_QUESTIONS #43).
+
 ## Details
 
 ### What the demo actually needs
