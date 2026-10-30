@@ -4,7 +4,15 @@
 // clock advances a fixed 1000/60 ms per rendered frame, so every take plays identically.
 
 /** What fills the right-hand panel (or the whole frame, for the cards). */
-export type Panel = "before" | "title" | "feed" | "invoice" | "plants" | "curtain" | "close";
+export type Panel =
+  | "before"
+  | "title"
+  | "review"
+  | "feed"
+  | "invoice"
+  | "plants"
+  | "curtain"
+  | "close";
 
 export interface Beat {
   id: string;
@@ -45,6 +53,19 @@ export const BEATS: Beat[] = [
     panel: "title",
     shots: [{ step: 0, ms: 6_000 }],
     captions: ["This is Kevin. He's an AI assistant the new owners send in on day one."],
+  },
+  {
+    // Research 24 §2: Kevin's morning review of Ray's mailbox (web/src/mail.ts), read on the
+    // ledger the run begins with, so it sits on step 0 before Ray's day starts. Video-only:
+    // Ray signs in the live run; the take shows the drafts and signs nothing.
+    id: "morning-review",
+    title: "Morning review",
+    panel: "review",
+    shots: [{ step: 0, ms: 9_000 }],
+    captions: [
+      "Overnight, Kevin read Ray's weekend mail and did the work: three drafts wait for his signature.",
+      "The email asking for new bank details? Refused, and flagged for Ray to see.",
+    ],
   },
   {
     id: "batch-record",

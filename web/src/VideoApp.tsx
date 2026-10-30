@@ -9,8 +9,10 @@ import batchRecordPhoto from "../../data/batch-records/BR-B-1045.jpg?url";
 import packingSlipPhoto from "../../data/packing-slips/NG-PS-60417.jpg?url";
 import { Curtain } from "./Curtain.tsx";
 import { Pill, StepCard } from "./feed.tsx";
+import { reviewSnapshot } from "./mail.ts";
 import { fundingOf, HeldInvoiceCard, MassBalanceBlock } from "./panes.tsx";
 import { plantsSnapshot } from "./plants.ts";
+import { ReviewPane } from "./ReviewPane.tsx";
 import { audienceOf, type RunData, run as recorded } from "./run.ts";
 import { PlantView } from "./twin3d/PlantView.tsx";
 import { type Beat, clockLabel, FRAME_MS, frameAt, startOf, totalMs } from "./video.ts";
@@ -102,6 +104,7 @@ export default function VideoApp() {
           <PlantView run={data} at={step} curtain={curtain} />
         </div>
         <div className="video-panel" ref={panel}>
+          {beat.panel === "review" && <Review curtain={curtain} />}
           {beat.panel === "feed" && <Feed data={data} upTo={step} beat={beat} />}
           {beat.panel === "invoice" && <Invoice data={data} />}
           {beat.panel === "plants" && (
@@ -154,6 +157,29 @@ function Feed({ data, upTo, beat }: { data: RunData; upTo: number; beat: Beat })
         />
       ))}
     </section>
+  );
+}
+
+/** How many of the ten messages fit beside the open draft in a 1080p frame. */
+const REVIEW_ROWS = 5;
+
+/**
+ * "Morning review" (research 24 §2): Ray's screen with the drafts Kevin left overnight, the first
+ * one open with what it says, Kevin's check and what signing does. The replay's own snapshot
+ * (web/src/mail.ts); the Sign button is Ray's in the live run, and the take never clicks.
+ */
+function Review({ curtain }: { curtain: boolean }) {
+  const review = { ...reviewSnapshot, proposals: reviewSnapshot.proposals.slice(0, REVIEW_ROWS) };
+  return (
+    <ReviewPane
+      review={review}
+      busy={false}
+      curtain={curtain}
+      viewer={review.for}
+      open
+      onSign={() => undefined}
+      show={review.proposals[0]?.messageId ?? null}
+    />
   );
 }
 

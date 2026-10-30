@@ -15,8 +15,9 @@ import {
 describe("the video timeline", () => {
   it("fits X's 2:20 limit and keeps the storyboard's length", () => {
     expect(totalMs()).toBeLessThanOrEqual(140_000);
-    // 1:57 plus the 8.5 s "New bank details" beat (OPEN_QUESTIONS #41).
-    expect(clockLabel(totalMs())).toBe("2:05");
+    // 1:57 plus the 8.5 s "New bank details" beat (OPEN_QUESTIONS #41) and the 9 s "Morning
+    // review" beat (research 24 §2).
+    expect(clockLabel(totalMs())).toBe("2:14");
   });
 
   it("walks every recorded step in order, ending on the last", () => {
@@ -35,6 +36,8 @@ describe("the video timeline", () => {
       const step = beat?.shots.at(-1)?.step ?? -1;
       return run.steps[step]?.title;
     };
+    // The morning review is video-only too: Ray's mail, read on the ledger the run begins with.
+    expect(titleAt("morning-review")).toBe("Load seed");
     expect(titleAt("batch-record")).toBe("Ray confirms");
     expect(titleAt("one-truth")).toBe("Discrepancy");
     expect(titleAt("quotes")).toBe("Quotes");

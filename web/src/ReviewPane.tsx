@@ -18,6 +18,7 @@ export function ReviewPane({
   open,
   onSign,
   readOnly,
+  show = null,
 }: {
   review: ReviewState;
   busy: boolean;
@@ -29,8 +30,10 @@ export function ReviewPane({
   /** Null on a static host, where nothing can be signed; `readOnly` then says so. */
   onSign: ((messageId: string) => void) | null;
   readOnly?: string;
+  /** A message to start open, for the video page; Ray opens them himself otherwise. */
+  show?: string | null;
 }) {
-  const [shown, setShown] = useState<string | null>(null);
+  const [shown, setShown] = useState<string | null>(show);
   const mine = viewer === review.for && onSign !== null;
   const first = review.for.split(" ")[0] ?? review.for;
   return (

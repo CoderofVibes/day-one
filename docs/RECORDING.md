@@ -1,6 +1,6 @@
 # Recording the demo video — 15 minutes
 
-The video page plays the recorded testnet run to the storyboard (docs/DEMO_STORYBOARD.md) on a fixed clock: 2:05, captions burned in, no mouse. Every take is identical, so you can record the screen once and the voice-over separately. Settings from research 16.
+The video page plays the recorded testnet run to the storyboard (docs/DEMO_STORYBOARD.md) on a fixed clock: 2:14, captions burned in, no mouse. Every take is identical, so you can record the screen once and the voice-over separately. Settings from research 16.
 
 ## 1. Set up the PC (3 min)
 
@@ -26,7 +26,7 @@ Then open Edge as a bare window (no address bar, a clean profile with no extensi
 & "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --app="http://localhost:8787/?video=1&view=3d" --window-size=1920,1080 --user-data-dir="$env:TEMP\dayone-video"
 ```
 
-Press **F11** for full screen. You should see "BEFORE", the paper batch record and a green hint "Space to start · R to go back · 2:05 in all". The page always plays the recorded run, even with the API running, so nothing touches testnet.
+Press **F11** for full screen. You should see "BEFORE", the paper batch record and a green hint "Space to start · R to go back · 2:14 in all". The page always plays the recorded run, even with the API running, so nothing touches testnet.
 
 Use `?video=1` without `&view=3d` for the flat map instead.
 
@@ -46,7 +46,7 @@ Check **View → Stats** during a test take: "frames missed due to rendering lag
 ## 4. Record (2 min a take)
 
 1. Press R in the browser (back to the start), then Start Recording in OBS.
-2. Click once on the Edge window to focus it, move the mouse off-screen, press **Space**. The take runs 2:05 and stops on the closing card.
+2. Click once on the Edge window to focus it, move the mouse off-screen, press **Space**. The take runs 2:14 and stops on the closing card.
 3. Stop Recording.
 
 **Retake one beat:** add `&from=<beat>` to the address, e.g. `?video=1&view=3d&from=refusal`; the hint shows where it starts. Beat names are in the table below.
@@ -59,21 +59,24 @@ Check **View → Stats** during a test take: "frames missed due to rendering lag
 |---|---|---|---|
 | 0:00–0:10 | Before (`before`) | The paper batch record BR-B-1045 | For ten years this was my job… |
 | 0:10–0:16 | Title (`title`) | "Day One — He does the paperwork. You run the plant." | This is Kevin… |
-| 0:16–0:28 | Batch record in (`batch-record`) | Kevin's reading of BR-B-1045, then Ray's confirm; Plant B's line departments light up | Ray uploads the batch record… |
-| 0:28–0:36 | One truth (`one-truth`) | Plant A's 12.55 kg that is not there, the proposed adjustment; dashed red arc from Plant A | Kevin catches what the other plant got wrong… |
-| 0:36–0:46 | Quotes (`quotes`) | Forecast, then the three quotes, QuickChem excluded; suppliers' pad | He asks the supplier agents for quotes… |
-| 0:46–0:56 | The refusal (`refusal`) | PO-1041 funded, then PO-1042 refused over the $2,500 limit; the coin bounces off the vault | Kevin isn't allowed to spend that much… |
-| 0:56–1:06 | Approve by text (`approve`) | Linda's phone: Kevin's text, YES 1042, approved | Linda approves from her phone… |
-| 1:06–1:16 | Delivery (`delivery`) | Funded retry, the packing slip photo, the lot in quarantine (amber cage) | The truck shows up… |
-| 1:16–1:24 | New bank details (`bank-details`) | Marcy's screen: the attack suite's hidden-text invoice for PO-1042, held: "asks for payment to a different account; PO-1042 can only pay Northgate Ingredients"; a small curtain inset with the account the order was funded for and the funding transaction | Then an invoice arrives saying Northgate's bank details changed… |
-| 1:24–1:34 | QC release → paid (`paid`) | Priya releases, the payout flies to Northgate, Marcy's "paid $5,150.00" | Priya releases the lot… |
-| 1:34–1:42 | The numbers reconcile (`reconcile`) | Mass balance: Riverside's 115.2 kg (6.84%), Hollow Pine to the gram | Material in, batches out… |
-| 1:42–1:58 | Behind the curtain (`curtain`) | Who signed what and who paid the gas, then the transaction log scrolling, with the refusal in red | Here's what's underneath… |
-| 1:58–2:05 | Close (`close`) | "Day One · Built at NEAR HACKATHON", team credit | Kevin doesn't need crypto… |
+| 0:16–0:25 | Morning review (`morning-review`) | Ray's "Morning review" panel on the ledger the run begins with: Kevin's line, Linda's draft open with its stock check and "Signing does: Move BR-B-1049 to Thursday, Nov 12", two more drafts ready, the "updated remittance details" email refused; Plant B still grey on the map | Overnight, Kevin read Ray's weekend mail… |
+| 0:25–0:37 | Batch record in (`batch-record`) | Kevin's reading of BR-B-1045, then Ray's confirm; Plant B's line departments light up | Ray uploads the batch record… |
+| 0:37–0:45 | One truth (`one-truth`) | Plant A's 12.55 kg that is not there, the proposed adjustment; dashed red arc from Plant A | Kevin catches what the other plant got wrong… |
+| 0:45–0:55 | Quotes (`quotes`) | Forecast, then the three quotes, QuickChem excluded; suppliers' pad | He asks the supplier agents for quotes… |
+| 0:55–1:05 | The refusal (`refusal`) | PO-1041 funded, then PO-1042 refused over the $2,500 limit; the coin bounces off the vault | Kevin isn't allowed to spend that much… |
+| 1:05–1:15 | Approve by text (`approve`) | Linda's phone: Kevin's text, YES 1042, approved | Linda approves from her phone… |
+| 1:15–1:25 | Delivery (`delivery`) | Funded retry, the packing slip photo, the lot in quarantine (amber cage) | The truck shows up… |
+| 1:25–1:33 | New bank details (`bank-details`) | Marcy's screen: the attack suite's hidden-text invoice for PO-1042, held: "asks for payment to a different account; PO-1042 can only pay Northgate Ingredients"; a small curtain inset with the account the order was funded for and the funding transaction | Then an invoice arrives saying Northgate's bank details changed… |
+| 1:33–1:43 | QC release → paid (`paid`) | Priya releases, the payout flies to Northgate, Marcy's "paid $5,150.00" | Priya releases the lot… |
+| 1:43–1:51 | The numbers reconcile (`reconcile`) | Mass balance: Riverside's 115.2 kg (6.84%), Hollow Pine to the gram | Material in, batches out… |
+| 1:51–2:07 | Behind the curtain (`curtain`) | Who signed what and who paid the gas, then the transaction log scrolling, with the refusal in red | Here's what's underneath… |
+| 2:07–2:14 | Close (`close`) | "Day One · Built at NEAR HACKATHON", team credit | Kevin doesn't need crypto… |
 
-The "New bank details" beat (OPEN_QUESTIONS #41) is 8.5 s, so both its captions stay under 20 characters a second; the take is 2:05, under the 2:20 export limit, and nothing was trimmed. The invoice is the attack suite's recorded one (`data/attacks/invoices.json`, read with the recorded model answer in `data/replay/attacks-llm.json`), video-only: it sends nothing to the contract and prints nothing in the transcript.
+The "New bank details" beat (OPEN_QUESTIONS #41) is 8.5 s, so both its captions stay under 20 characters a second; the take was 2:05 after it, under the 2:20 export limit, and nothing was trimmed. The invoice is the attack suite's recorded one (`data/attacks/invoices.json`, read with the recorded model answer in `data/replay/attacks-llm.json`), video-only: it sends nothing to the contract and prints nothing in the transcript.
 
 **On the v2 UI (Oct 30):** the page is unchanged by the v2 merge and plays on the v2 build with the site-plan twin: checked from the static build at seven beats (`title`, `batch-record`, `refusal`, `approve`, `bank-details`, `curtain`, `close`) in 3D and flat, each landing on its beat with its caption and no console errors. The recording can be made on v2 as written above.
+
+**Morning review beat (Oct 30, research 24 §2):** 9 s between the title and "Batch record in", so the take is 2:14, still under the limit with nothing trimmed. It shows the replay's own review snapshot (`web/src/data/review.json`, the same drafts the Overview's "Morning review" panel shows at Ray's turn), five of the ten messages with Linda's draft open and its Sign button; the page never clicks, so nothing is signed and nothing reaches the contract. Checked from the static build in 3D and flat (`from=morning-review`): the panel fits the 1080p frame, no console errors.
 
 **Explorer insets** (optional, from the storyboard): screenshots of these recorded transactions on testnet.nearblocks.io:
 the refusal, [FQepeewB…](https://testnet.nearblocks.io/txns/FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af); Linda's relayed approval, [EW5A8qi3…](https://testnet.nearblocks.io/txns/EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8); the payout, [2zwgaHgW…](https://testnet.nearblocks.io/txns/2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn).
@@ -85,9 +88,10 @@ Cut to **≤ 2:20** (X's limit for a standard account) in Clipchamp: H.264 MP4, 
 ## Where the video differs from the storyboard (so it stays true)
 
 - **Before (0:00):** the storyboard asks for a clipboard, someone keying grams into an ERP grid and a whiteboard of lot numbers. The product has none of that; the page shows the paper batch record Kevin reads. Film real B-roll only with fictional paper (no real employer's documents).
-- **Batch record (0:16):** "one field highlighted": BR-B-1045 has no flagged field (all 8 materials within tolerance), so nothing is highlighted. Kevin's line says so.
-- **Delivery (1:06):** "Tommy takes a picture, Kevin matches it": Tommy's photo is kept with the receipt, but Kevin matches the slip's details from its file, not by reading the photo (not built). The caption says "checks in the packing slip"; say it that way in the voice-over too.
-- **Reconcile (1:26):** the storyboard's "172.8 kg unaccounted" is over three batches; the ledger holds two (BR-A-2207 is not extracted), so the screen shows 115.2 kg at the same 6.84%. The caption names no number.
-- **Behind the curtain (1:34):** "Kevin's key can call: submit_po, anchor" is out of date (his key reaches eight methods since the Oct 29 redeploy) and the page does not show key permissions; it shows what each account signed in the run and who paid. "One anchor verified MATCH" is a terminal command (`npm run verify -- data/batch-records/BR-B-1045.json`), not on the page: record it as a separate clip if you want it.
+- **Morning review (0:16):** video-only. In the live run Ray opens each draft and signs it himself (`POST /api/review/<id>/sign`); the video shows Linda's draft already open so the viewer can read what signing does, and the Sign button is never pressed.
+- **Batch record (0:25):** "one field highlighted": BR-B-1045 has no flagged field (all 8 materials within tolerance), so nothing is highlighted. Kevin's line says so.
+- **Delivery (1:15):** "Tommy takes a picture, Kevin matches it": Tommy's photo is kept with the receipt, but Kevin matches the slip's details from its file, not by reading the photo (not built). The caption says "checks in the packing slip"; say it that way in the voice-over too.
+- **Reconcile (1:43):** the storyboard's "172.8 kg unaccounted" is over three batches; the ledger holds two (BR-A-2207 is not extracted), so the screen shows 115.2 kg at the same 6.84%. The caption names no number.
+- **Behind the curtain (1:51):** "Kevin's key can call: submit_po, anchor" is out of date (his key reaches eight methods since the Oct 29 redeploy) and the page does not show key permissions; it shows what each account signed in the run and who paid. "One anchor verified MATCH" is a terminal command (`npm run verify -- data/batch-records/BR-B-1045.json`), not on the page: record it as a separate clip if you want it.
 - **Recording checklist:** the storyboard says to record from a live run after a fresh reset; research 16 says record the replay so testnet latency never shows. The video page plays the Oct 29 testnet recording, whose every transaction is real and linked; no reset is needed.
-- **Close (1:50):** add the repo URL in the edit once the repo is public (Nov 13).
+- **Close (2:07):** add the repo URL in the edit once the repo is public (Nov 13).
