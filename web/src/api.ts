@@ -344,6 +344,52 @@ export function postInboxConfirm(
   return postJson(`api/batch-records/${encodeURIComponent(batchNo)}/confirm`, { resolutions });
 }
 
+/** Kevin's morning review of the purchaser's mailbox (api/src/review.ts). */
+export type ReviewAction =
+  | { type: "vendor_note"; vendor: string; note: string }
+  | { type: "move_batch"; batchNo: string; plannedFor: string }
+  | { type: "resize_batch"; batchNo: string; batchTablets: number };
+export interface ReviewProposal {
+  messageId: string;
+  kind: "email" | "note";
+  from: string;
+  subject: string;
+  date: string;
+  /** What the message states, in the model's reading. */
+  says: string;
+  /** Kevin's check against the ledger. */
+  kevin: string;
+  decision: "sign" | "none" | "refused" | "ask";
+  action: ReviewAction | null;
+  /** For a refusal: the lines Kevin flagged, quoted. */
+  flagged: string[];
+  signed: { by: string; at: string; outcome: string } | null;
+}
+export interface ReviewState {
+  facility: string;
+  facilityName: string;
+  for: string;
+  at: string;
+  headline: string;
+  counts: Record<ReviewProposal["decision"], number>;
+  proposals: ReviewProposal[];
+  toSign: number;
+}
+
+export function getReview(): Promise<ReviewState> {
+  return request<ReviewState>("GET", "api/review");
+}
+
+/** The purchaser signs one draft; the review comes back with the signature on it. */
+export function postReviewSign(messageId: string): Promise<ReviewState> {
+  return request<ReviewState>(
+    "POST",
+    `api/review/${encodeURIComponent(messageId)}/sign`,
+    "{}",
+    "application/json",
+  );
+}
+
 export function postJson(path: string, body: unknown = {}): Promise<ActionResult> {
   return request<ActionResult>("POST", path, JSON.stringify(body), "application/json");
 }

@@ -49,12 +49,14 @@ import {
   purchaseOrderViews,
   rfqViews,
 } from "@day-one/server/ledger/views";
+import { ReplayLlm } from "@day-one/server/llm/client";
 import { eq } from "drizzle-orm";
 import {
   ALL_SCANS,
   DEMO_INBOX,
   type DemoEnv,
   type DemoEnvOptions,
+  fixtureFiles,
   loadBatchRecord,
   loadPackingSlip,
   openDemoEnv,
@@ -68,6 +70,7 @@ import {
   journeyState,
   recordDecision,
 } from "./journey.ts";
+import { ReviewDesk, ReviewRefused, type ReviewState } from "./review.ts";
 import { type FolderWatch, watchFolder } from "./watcher.ts";
 
 export interface StepView {
@@ -183,6 +186,8 @@ export class DemoSession {
   private queue: Promise<unknown> = Promise.resolve();
   private attestation: AttestationResult | null = null;
   private watch: FolderWatch | null = null;
+  /** The morning review for this run's ledger, read on first request; a new one per run. */
+  private reviewDesk: ReviewDesk | null = null;
 
   constructor(
     private readonly options: DemoEnvOptions = {},
@@ -195,6 +200,7 @@ export class DemoSession {
     this.watch = null;
     this.env = await openDemoEnv(this.options);
     this.machine = startDemo(this.env.deps);
+    this.reviewDesk = null;
     const fixture = this.env.live ? null : readAttestationFixture(this.env.root);
     this.attestation = fixture
       ? await verifyAttestation(
@@ -509,6 +515,35 @@ export class DemoSession {
 
   booksCsv() {
     return booksCsv(this.env.db);
+  }
+
+  /**
+   * Kevin's morning review of the purchaser's mailbox (api/src/review.ts): the recorded readings
+   * in replay, the live model in a live run; checked against the ledger as the run began.
+   */
+  morningReview(): Promise<ReviewState> {
+    this.reviewDesk ??= new ReviewDesk(
+      this.env.db,
+      this.env.live ? this.env.llm : ReplayLlm.fromFile(fixtureFiles(this.env.root).reviewLlm),
+    );
+    return this.reviewDesk.state();
+  }
+
+  /**
+   * The purchaser signs one draft: the schedule or a vendor's card changes in the ledger, no
+   * chain call, so it never disturbs a replay. The mailbox's owner signs unless a name is given.
+   */
+  signProposal(messageId: string, staffName?: string) {
+    return this.run(async () => {
+      await this.morningReview();
+      if (staffName) this.staffId(staffName);
+      try {
+        return await (this.reviewDesk as ReviewDesk).sign(messageId, staffName, this.env.clock());
+      } catch (error) {
+        if (error instanceof ReviewRefused) throw new SessionError(error.status, error.message);
+        throw error;
+      }
+    });
   }
 
   /** Kevin's 5am brief for a plant at the run's clock; the acquired plant by default. */

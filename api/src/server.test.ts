@@ -485,6 +485,47 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(got.body).toMatchObject({ receivedBase: 16_000, discrepancies: [], inTransit: [] });
   });
 
+  it("serves Kevin's morning review and lets Ray sign a draft, never the refused email", async () => {
+    type Row = {
+      messageId: string;
+      decision: string;
+      signed: { by: string; outcome: string } | null;
+    };
+    const review = await api("GET", "/api/review");
+    expect(review.status).toBe(200);
+    expect(review.body.for).toBe("Ray Delgado");
+    expect(review.body.counts).toEqual({ sign: 3, ask: 0, refused: 1, none: 6 });
+    expect(review.body.toSign).toBe(3);
+    const rows = review.body.proposals as Row[];
+    expect(rows.slice(0, 3).map((p) => p.decision)).toEqual(["sign", "sign", "sign"]);
+    expect(rows.every((p) => p.signed === null)).toBe(true);
+
+    // Linda's Thursday question: the batch moves in the plan, and the signature is remembered.
+    const signed = await api("POST", "/api/review/M-04/sign", { staff: "Ray Delgado" });
+    expect(signed.status).toBe(200);
+    const m04 = (signed.body.proposals as Row[]).find((p) => p.messageId === "M-04");
+    expect(m04?.signed).toMatchObject({ by: "Ray Delgado" });
+    expect(m04?.signed?.outcome).toBe("BR-B-1049 moved from Nov 19 to Nov 12.");
+    expect(signed.body.toSign).toBe(2);
+    // The production meeting's bigger Vitamin C batch: the plan changes where the schedule reads.
+    // (The run's clock is past Nov 12 by now, so the moved electrolyte batch is outside its window.)
+    const resized = await api("POST", "/api/review/M-09/sign", {});
+    expect(resized.status).toBe(200);
+    expect(resized.body.toSign).toBe(1);
+    const schedule = await api("GET", "/api/schedule?plant=B&days=14");
+    const big = schedule.body.batches.find((b: { batchNo: string }) => b.batchNo === "BR-B-1048");
+    expect(big?.units).toBe(1_000_000);
+
+    // Signing twice, signing the "new bank details" email, an unknown message, an unknown name.
+    expect((await api("POST", "/api/review/M-04/sign", {})).status).toBe(409);
+    const bank = await api("POST", "/api/review/M-03/sign", {});
+    expect(bank.status).toBe(400);
+    expect(bank.body.error).toBe("M-03: nothing to sign (refused)");
+    expect((await api("POST", "/api/review/M-99/sign", {})).status).toBe(404);
+    expect((await api("POST", "/api/review/M-01/sign", { staff: "Nobody" })).status).toBe(400);
+    expect((await api("GET", "/api/review")).body.toSign).toBe(1);
+  });
+
   it("resets to the seed", async () => {
     const { status, body } = (await api("POST", "/api/run/reset")) as {
       status: number;
@@ -494,6 +535,10 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(body.steps.map((s) => s.title)).toEqual(["Load seed"]);
     expect(body.next.phase).toBe("upload");
     expect((await api("GET", "/api/run")).body.transactions).toEqual([]);
+    // The review is read again for the new run; nothing is signed.
+    const review = await api("GET", "/api/review");
+    expect(review.body.toSign).toBe(3);
+    expect(review.body.proposals.every((p: { signed: unknown }) => p.signed === null)).toBe(true);
   });
 
   it("holds a short delivery for Tommy and keeps his turn (review fix, Oct 29)", async () => {

@@ -23,6 +23,8 @@
 //   GET  /api/books/export.csv                the settled POs as the CSV Ruth imports (text/csv)
 //   GET  /api/brief                            Kevin's 5am brief (?plant=A|B|C; the acquired plant by default)
 //   GET  /api/brief.html                       the same brief as one printable page
+//   GET  /api/review                           Kevin's morning review of Ray's mailbox: each message, his check, what a signature does
+//   POST /api/review/:messageId/sign           JSON {"staff"?: "Ray Delgado"}: signs one draft (the schedule or a vendor card changes; never money)
 //   GET  /api/policy                           HQ's view: the limits the contract enforces now, policy changes
 //   GET  /api/journey                          the integration program: seven stages, what each holds (VISION §6.12.3)
 //   POST /api/journey/decisions                JSON {"stage": 3, "item": "plan", "decision"?: "confirmed", "staff"?: …, "note"?: …}
@@ -158,6 +160,8 @@ async function route(
     );
   if (method === "GET" && path === "/api/brief")
     return reply(res, 200, session.brief(url.searchParams.get("plant") ?? undefined));
+  if (method === "GET" && path === "/api/review")
+    return reply(res, 200, await session.morningReview());
   if (method === "GET" && path === "/api/brief.html") {
     const page = session.briefHtml(url.searchParams.get("plant") ?? undefined);
     res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
@@ -268,6 +272,12 @@ async function route(
       ...(staff ? { staff } : {}),
     });
     return reply(res, 200, session.journey(desk.state().imports));
+  }
+
+  const sign = /^\/api\/review\/([\w-]+)\/sign$/.exec(path);
+  if (sign) {
+    const body = await readJson(req, maxBody);
+    return reply(res, 200, await session.signProposal(sign[1] ?? "", text(body.staff)));
   }
 
   const confirm = /^\/api\/batch-records\/([\w-]+)\/confirm$/.exec(path);

@@ -632,6 +632,24 @@ details.inbox[open] > summary {
   margin-bottom: var(--s-3);
 }
 
+/* The morning review: a date beside the sender, meeting notes drawn as a pad. */
+.review-pane .queue .t b .muted {
+  font-weight: 400;
+}
+
+.review-pane .queue .doc.note {
+  border-radius: 4px 4px 10px 10px;
+  border-top-width: 4px;
+}
+
+.review-pane .inbox-review p {
+  margin: 0 0 var(--s-2);
+}
+
+.review-pane > p.small {
+  margin: var(--s-3) 0 0;
+}
+
 /* ---------- The run (feed) ---------- */
 
 .feed {

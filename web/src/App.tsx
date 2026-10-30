@@ -20,6 +20,7 @@ import {
   getInventory,
   getMassBalance,
   getPolicy,
+  getReview,
   getState,
   getTransferSuggestions,
   type InboxState,
@@ -31,10 +32,12 @@ import {
   postInboxConfirm,
   postJson,
   postReview,
+  postReviewSign,
   postTransferDecision,
   postTransferReceipt,
   postWasteProposals,
   probeApi,
+  type ReviewState,
   type TransferSuggestions,
 } from "./api.ts";
 import { Curtain } from "./Curtain.tsx";
@@ -52,6 +55,7 @@ import { Overview } from "./pages/Overview.tsx";
 import { BatchRecordsPage, BriefPage, InventoryPage, SchedulePage } from "./pages/Plant.tsx";
 import { BooksPane, HqPane, PlantsPane } from "./panes.tsx";
 import { plantsSnapshot, STATIC_BOOKS_URL, STATIC_BRIEF_URL } from "./plants.ts";
+import { ReviewPane } from "./ReviewPane.tsx";
 import {
   audienceOf,
   type DemoRun,
@@ -674,8 +678,26 @@ function LiveApp({ initial }: { initial: LiveState }) {
   // Kevin's line about the last approve, dismiss or receipt; the refresh below does not clear it.
   const [moveNote, setMoveNote] = useState<string[]>([]);
   const [inbox, setInbox] = useState<InboxState | null>(null);
+  /** Kevin's morning review of Ray's mailbox; null until the API has answered. */
+  const [mail, setMail] = useState<ReviewState | null>(null);
   /** Bumped by every action, so the program's stages read again after a decision. */
   const [acted, setActed] = useState(0);
+
+  // The review is read once per run and kept by the API; read again after every action so a
+  // signature shows at once. A failed read keeps what is on screen.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refresh whenever the run moves or someone acts
+  useEffect(() => {
+    let stale = false;
+    getReview().then(
+      (next) => {
+        if (!stale) setMail(next);
+      },
+      () => undefined,
+    );
+    return () => {
+      stale = true;
+    };
+  }, [state, acted]);
 
   // Scans land in the watched folder at any time: the queue is read again every few seconds
   // and after every action. A failed read keeps what is on screen.
@@ -758,6 +780,8 @@ function LiveApp({ initial }: { initial: LiveState }) {
   }, []);
 
   const act = (a: Action) => send(a.label, () => postJson(a.path, a.body));
+  const signDraft = (messageId: string) =>
+    send(`Sign ${messageId}`, () => postReviewSign(messageId));
   const uploadFile = (file: File) =>
     send(`Upload ${file.name}`, () => postImage("api/batch-records", file, file.name));
   const confirmScan = (batchNo: string, resolutions: Record<string, string>) =>
@@ -825,7 +849,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
       setCurtain={setCurtain}
       badges={{
         ...badgesOf(inventory, moves, books, inbox),
-        overview: { count: waiting, tone: "attention" },
+        overview: { count: waiting + (mail?.toSign ?? 0), tone: "attention" },
       }}
       person={{ name: actor.name, role: actor.role ?? null }}
     >
@@ -884,6 +908,16 @@ function LiveApp({ initial }: { initial: LiveState }) {
                   busy={busy !== null}
                   viewer="Ray Delgado"
                   onConfirm={confirmScan}
+                />
+              )}
+              {mail && (
+                <ReviewPane
+                  review={mail}
+                  busy={busy !== null}
+                  curtain={curtain}
+                  viewer="Ray Delgado"
+                  open={state.next.who === "Ray Delgado"}
+                  onSign={signDraft}
                 />
               )}
             </>
