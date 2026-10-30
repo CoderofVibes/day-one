@@ -33,6 +33,9 @@ for (const [name, width, scheme] of [
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   if (url) {
+    // Start the run over before the page opens; a click on the page's "Start over" raced the
+    // next primary click, which landed on the old state.
+    await page.request.post(new URL("api/run/reset", url).href, { data: {} });
     await page.goto(url + query);
   } else {
     await page.route("http://day-one.local/**", (route) => {
@@ -48,13 +51,14 @@ for (const [name, width, scheme] of [
     await page.goto(`http://day-one.local/${query}`);
   }
   // The trust marker sits in the sidebar on a wide screen and in the top bar on a phone.
-  await page.getByText("Behind the curtain").filter({ visible: true }).first().click();
+  // CURTAIN=0 leaves it off, for the screens staff see.
+  if (process.env.CURTAIN !== "0") {
+    await page.getByText("Behind the curtain").filter({ visible: true }).first().click();
+  }
   if (url) {
-    // Live: start over, then take the primary action STEPS times, waiting for each to land.
+    // Live: take the primary action STEPS times, waiting for each to land.
     const bar = page.getByRole("region", { name: "Next action" });
     await bar.waitFor();
-    const reset = bar.getByRole("button", { name: "Start over" });
-    if (await reset.isVisible()) await reset.click();
     for (let i = 0; i < steps; i++) {
       const primary = bar.locator('button[data-action="primary"]:not([disabled])').first();
       await primary.waitFor({ timeout: 30_000 }).catch(async (e: unknown) => {

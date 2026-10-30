@@ -379,6 +379,8 @@ Taken with `npm run web:shot` (`PAGE=<id>`, wide light and phone dark, curtain o
 - `twin/wide-07-refused.png` and `twin/wide-11-quarantine.png`: the refusal at the vault, the pallet in its cage.
 - `purchasing/wide.png`, `inventory/wide.png`, `docs/v2/after/erp/wide.png`, `suppliers/wide.png`: the pages with history behind them.
 
+Done Oct 30 (unattended run, after the merge): the README carries seven v2 screens, taken with `CURTAIN=0` where staff would see the page and live (`URL=`) where the buttons matter: `map-3d/wide-staff.png` (the site plan at the refusal, in place of the twin crop), `overview/wide-linda-live.png` and `phone-linda-live.png` (Linda's turn, in place of the Floor shots), `overview/wide-end-curtain-live.png` (the end of the run behind the curtain), `integration/wide-staff.png` (the home page), `plants/wide-live.png` (Three plants with its Approve and Dismiss buttons, in place of the Plants shot) and `purchasing/wide-staff.png`. The README's screen wording names the sidebar's pages.
+
 #### 6.12.6 Still open
 
 - **The rooms image** shapes the inside of the processing building when it arrives; step 6 builds the zones either way.
