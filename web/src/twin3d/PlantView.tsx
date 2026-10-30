@@ -8,8 +8,16 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { GROUP_TWIN, groupRun } from "../groupBuy.ts";
 import type { RunData } from "../run.ts";
+import { AREAS } from "../twin/layout.ts";
+import type { DeptStatus } from "../twin/model.ts";
 import { deriveTwinState, formatQuotes, formatTwinState } from "../twin/model.ts";
-import { PlantMap } from "../twin/PlantMap.tsx";
+import { type AreaPick, PlantMap } from "../twin/PlantMap.tsx";
+
+/** A picked area with its department's status at the step shown. */
+export interface PickedArea extends AreaPick {
+  status: DeptStatus;
+}
+
 import { STEP_MS } from "./scene.ts";
 import "./twin3d.css";
 
@@ -41,12 +49,17 @@ export function PlantView({
   at,
   curtain,
   onStep,
+  onPick,
+  picked,
 }: {
   run: RunData;
   at: number;
   curtain: boolean;
   /** Record mode (?record=1) lets the 3D view advance the run on its own clock. */
   onStep?: (at: number) => void;
+  /** An area was clicked on either map; the plant map page opens its sheet. */
+  onPick?: (pick: PickedArea) => void;
+  picked?: AreaPick | null;
 }) {
   // The video page (?video=1) drives the steps itself; the twin keeps its fixed-step clock.
   const record = useMemo(() => params().get("record") === "1" || params().get("video") === "1", []);
@@ -76,6 +89,17 @@ export function PlantView({
   const options = group ? GROUP_TWIN : undefined;
   const state = useMemo(() => deriveTwinState(shown, shownAt, options), [shown, shownAt, options]);
   const show3d = three && can;
+  // The sheet gets the area's department status at this step with the pick.
+  const choose = onPick
+    ? (p: AreaPick) =>
+        onPick({
+          ...p,
+          status:
+            state.facilities
+              .find((f) => f.id === p.facility)
+              ?.departments.find((d) => d.code === AREAS[p.area].dept)?.status ?? "offline",
+        })
+    : undefined;
   const step = groupRun.steps[groupAt];
   // The caption: the plants in a line, then the newest money or material line, so the map says
   // what just moved without the long list under it.
@@ -160,10 +184,15 @@ export function PlantView({
             record={record}
             {...(options ? { options } : {})}
             {...(group ? { onStep: goGroup } : onStep ? { onStep } : {})}
+            {...(choose ? { onPick: choose, picked: picked ?? null } : {})}
           />
         </Suspense>
       ) : (
-        <PlantMap state={state} curtain={curtain} />
+        <PlantMap
+          state={state}
+          curtain={curtain}
+          {...(choose ? { onPick: choose, picked: picked ?? null } : {})}
+        />
       )}
       <p className="caption">
         {state.summary}

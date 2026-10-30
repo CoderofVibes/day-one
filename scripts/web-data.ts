@@ -26,6 +26,7 @@ import { ImportDesk } from "../api/src/imports.ts";
 import { DemoSession } from "../api/src/session.ts";
 import { readAttestationFixture, recordedReceipts } from "../server/src/attestation/fixture.ts";
 import { verifyAttestation } from "../server/src/attestation/verify.ts";
+import { areaViews } from "../server/src/ledger/areas.ts";
 import { books, booksCsv } from "../server/src/ledger/books.ts";
 import { plantInventory } from "../server/src/ledger/inventory.ts";
 import { historySeries, stockedMaterials, stockSeries } from "../server/src/ledger/series.ts";
@@ -218,6 +219,12 @@ const pages = {
   ),
   brief: Object.fromEntries(
     PLANT_CODES.map((plant) => [plant, morningBrief(env.db, { now, facility: plant })]),
+  ),
+  areas: Object.fromEntries(
+    PLANT_CODES.map((plant) => [
+      plant,
+      { facility: plant, at: now, areas: areaViews(env.db, plant, now) },
+    ]),
   ),
   recorded: {
     erp: recordedJson("scripts/erp-demo.ts", "--memory"),

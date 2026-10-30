@@ -201,10 +201,31 @@ export interface Recorded {
   credentials: { recordedAt: string; suppliers: SupplierStanding[] };
 }
 
+/** One area's sheet on the plant map (server/src/ledger/areas.ts). */
+export interface AreaView {
+  area: string;
+  sentence: string;
+  lots: LotView[];
+  events: { at: string; text: string }[];
+  batch: { batchNo: string; product: string; at: string } | null;
+  equipment: {
+    id: string;
+    name: string;
+    status: "running" | "idle" | "attention";
+    batch: string | null;
+  }[];
+}
+export interface PlantAreas {
+  facility: string;
+  at: string;
+  areas: Record<string, AreaView>;
+}
+
 interface PagesSnapshot {
   at: string;
   plant: Record<string, PlantTables>;
   brief: Record<string, Brief>;
+  areas: Record<string, PlantAreas>;
   recorded: Recorded;
 }
 
@@ -243,6 +264,11 @@ export function readBrief(source: Source, plant: string): Promise<Brief> {
         if (!brief) throw new Error(`no brief for plant ${plant}`);
         return brief;
       });
+}
+export function readAreas(source: Source, plant: string): Promise<PlantAreas> {
+  return source.live
+    ? get<PlantAreas>(`api/areas?plant=${plant}`)
+    : loadSnapshot().then((s) => s.areas[plant] ?? { facility: plant, at: s.at, areas: {} });
 }
 /** The recordings HQ's pages read: the same files in both modes. */
 export function readRecorded(): Promise<Recorded> {

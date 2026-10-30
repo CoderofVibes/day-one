@@ -47,6 +47,7 @@ import { ErpPage, ThreeSchedules } from "./pages/Acme.tsx";
 import { InvoicesPage, PurchasingPage, SpreadsheetsPage } from "./pages/Buying.tsx";
 import { GroupPage, ReconciliationPage, SealedPage, SuppliersPage } from "./pages/Hq.tsx";
 import { Integration } from "./pages/Integration.tsx";
+import { MapPage, type MapPick } from "./pages/MapPage.tsx";
 import { Overview } from "./pages/Overview.tsx";
 import { BatchRecordsPage, BriefPage, InventoryPage, SchedulePage } from "./pages/Plant.tsx";
 import { BooksPane, HqPane, PlantsPane } from "./panes.tsx";
@@ -270,7 +271,8 @@ function Pages({
   policy: PolicyState | null;
   inbox: InboxState | null;
   links: { brief: string | null; books: string };
-  map: React.ReactNode;
+  /** The plant map; on the map page it takes the area picking. */
+  map: (pick?: MapPick) => React.ReactNode;
   kevin: React.ReactNode;
   activity: React.ReactNode;
   integration: React.ReactNode;
@@ -299,7 +301,7 @@ function Pages({
           plant={plant}
           source={source}
           inventory={inventory}
-          map={map}
+          map={map()}
           kevin={kevin}
           activity={activity}
         />
@@ -313,7 +315,7 @@ function Pages({
   const body = (() => {
     switch (page) {
       case "map":
-        return <div className="map-page">{map}</div>;
+        return <MapPage source={source} curtain={curtain} map={map} />;
       case "brief":
         return (
           <BriefPage {...props} printUrl={links.brief ? briefUrl(links.brief, plant) : null} />
@@ -515,7 +517,7 @@ function ReplayApp() {
           queue={null}
           wizard={null}
           goMap={() => openGroupOnMap(route.go)}
-          map={<PlantView run={data} at={at} curtain={curtain} onStep={go} />}
+          map={(pick) => <PlantView run={data} at={at} curtain={curtain} onStep={go} {...pick} />}
           kevin={
             <>
               <Guide data={data} />
@@ -854,7 +856,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
             </section>
           }
           goMap={() => openGroupOnMap(route.go)}
-          map={<PlantView run={state} at={last} curtain={curtain} />}
+          map={(pick) => <PlantView run={state} at={last} curtain={curtain} {...pick} />}
           kevin={
             <>
               <UpNext

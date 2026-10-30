@@ -37,7 +37,8 @@ async function run(fixture: Fixture & { setup: SetupStep[] }) {
   return results;
 }
 
-describe("the supplier-credential attacks on the recorded sandbox run", () => {
+// Each case seeds a fresh ledger (120 days of history), so it gets more than the default 5 s.
+describe("the supplier-credential attacks on the recorded sandbox run", { timeout: 30_000 }, () => {
   it("shows all four failing, with the contract's reasons", async () => {
     const results = await run(recording());
     expect(results.map((r) => [r.attack, r.held])).toEqual([
@@ -67,7 +68,7 @@ describe("the supplier-credential attacks on the recorded sandbox run", () => {
   });
 });
 
-describe("the supplier-credential attacks on the recorded testnet run", () => {
+describe("the supplier-credential attacks on the recorded testnet run", { timeout: 30_000 }, () => {
   it("shows all four failing, with testnet links and the escrow untouched", async () => {
     const results = await run(recording("testnet"));
     expect(results.every((r) => r.held)).toBe(true);

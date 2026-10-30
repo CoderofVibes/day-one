@@ -1508,3 +1508,75 @@ ul.plain {
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+/* ---------- The Plant map page: the map, and the picked area's sheet beside it ---------- */
+.map-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-4);
+  align-items: start;
+}
+.map-page.with-sheet {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+}
+.map-hint {
+  margin: 8px 0 0;
+}
+.area-sheet {
+  position: sticky;
+  top: var(--s-4);
+  display: grid;
+  gap: 10px;
+  max-height: calc(100vh - 2 * var(--s-4));
+  overflow: auto;
+}
+.area-sheet h3 {
+  margin: 2px 0 0;
+}
+.area-sheet h4 {
+  margin: 6px 0 0;
+  font-size: var(--t-sm);
+}
+.area-sheet p {
+  margin: 0;
+}
+.equipment {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: var(--t-sm);
+}
+.equipment li {
+  display: grid;
+  grid-template-columns: 4.2em minmax(0, 1fr) auto;
+  gap: var(--s-2);
+  align-items: center;
+}
+.area-sheet .events li {
+  overflow-wrap: anywhere;
+}
+.plant-map .dept.pickable {
+  cursor: pointer;
+}
+.plant-map .dept.pickable:hover .top,
+.plant-map .dept.pickable:focus-visible .top {
+  filter: brightness(1.08);
+}
+.plant-map .dept.picked .top {
+  stroke: var(--brand);
+  stroke-width: 0.6;
+}
+.plant-map .dept.pickable:focus-visible {
+  outline: none;
+}
+@container (max-width: 900px) {
+  .map-page.with-sheet {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .area-sheet {
+    position: static;
+    max-height: none;
+  }
+}

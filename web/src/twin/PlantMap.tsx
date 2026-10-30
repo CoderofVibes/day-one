@@ -7,6 +7,8 @@
 // legend) is PlantView's; the map's full description is its accessible label.
 
 import {
+  AREAS,
+  type AreaCode,
   anchor,
   arc,
   type BuildingKind,
@@ -31,7 +33,24 @@ import {
   type TwinState,
 } from "./model.ts";
 
-export function PlantMap({ state, curtain }: { state: TwinState; curtain: boolean }) {
+/** An area of a plant, as the maps hand it to the area sheet. */
+export interface AreaPick {
+  facility: FacilityId;
+  area: AreaCode;
+}
+
+export function PlantMap({
+  state,
+  curtain,
+  onPick,
+  picked,
+}: {
+  state: TwinState;
+  curtain: boolean;
+  /** An area was clicked: the plant map opens its sheet. */
+  onPick?: (pick: AreaPick) => void;
+  picked?: AreaPick | null;
+}) {
   // Flows leave and land on the roof of the department's building.
   const deptZ = (facility: FacilityId, dept: DeptCode) => {
     const layout = FACILITY_LAYOUTS.find((l) => l.id === facility);
@@ -78,8 +97,28 @@ export function PlantMap({ state, curtain }: { state: TwinState; curtain: boolea
                   <path className="wall side-r" d={walls.right} />
                   {zones.map((z) => {
                     const status = statusOf(z.dept);
+                    const on = picked?.facility === layout.id && picked.area === z.area;
+                    const choose = () => onPick?.({ facility: layout.id, area: z.area });
                     return (
-                      <g key={z.area} className={`dept ${status}`} data-area={z.area}>
+                      <g
+                        key={z.area}
+                        className={`dept ${status}${on ? " picked" : ""}${onPick ? " pickable" : ""}`}
+                        data-area={z.area}
+                        {...(onPick
+                          ? {
+                              role: "button",
+                              tabIndex: 0,
+                              "aria-label": `${AREAS[z.area].label}, ${facility.name}`,
+                              onClick: choose,
+                              onKeyDown: (e: React.KeyboardEvent) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  choose();
+                                }
+                              },
+                            }
+                          : {})}
+                      >
                         <path className="top" d={slab(z.box, z1, z1).top} />
                         {status === "onboarding" && (
                           <polygon className="pulse" points={roof(z.box, z1 + 0.6)} />

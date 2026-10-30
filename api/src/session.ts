@@ -37,6 +37,7 @@ import { explainFailure } from "@day-one/server/chain/explain";
 import { LiveTransport } from "@day-one/server/chain/live";
 import { type PolicyView, readPolicy, type ViewFn } from "@day-one/server/chain/policy";
 import { summarizeChainTx } from "@day-one/server/chain/summary";
+import { areaViews } from "@day-one/server/ledger/areas";
 import { books, booksCsv } from "@day-one/server/ledger/books";
 import { catalog } from "@day-one/server/ledger/catalog";
 import { plantInventory } from "@day-one/server/ledger/inventory";
@@ -546,6 +547,16 @@ export class DemoSession {
       rfqs: rfqViews(db, facility),
       lots: lotViews(db, facility, at),
       batches: batchRecordViews(db, facility),
+    };
+  }
+
+  /** What each of a plant's twenty areas holds and did, for the plant map's area sheet. */
+  areas(facility = "B") {
+    if (!["A", "B", "C"].includes(facility)) throw new SessionError(400, `no plant ${facility}`);
+    return {
+      facility,
+      at: this.env.clock(),
+      areas: areaViews(this.env.db, facility, this.env.clock()),
     };
   }
 

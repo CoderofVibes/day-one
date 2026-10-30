@@ -358,6 +358,17 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(plant.body.lots.every((l: { facility: string }) => l.facility === "B")).toBe(true);
     expect(Array.isArray(plant.body.rfqs)).toBe(true);
     expect((await api("GET", "/api/plant?plant=Z")).status).toBe(400);
+
+    // Each area's sheet on the plant map (server/src/ledger/areas.ts).
+    const areas = await api("GET", "/api/areas?plant=B");
+    expect(Object.keys(areas.body.areas)).toHaveLength(20);
+    expect(areas.body.areas.weigh_cells.equipment.map((q: { id: string }) => q.id)).toEqual([
+      "W1",
+      "W2",
+      "W3",
+      "W4",
+    ]);
+    expect((await api("GET", "/api/areas?plant=Z")).status).toBe(400);
   });
 
   it("exports the settled POs for the books: PO-1042 paid from escrow, PO-1041 still held", async () => {
