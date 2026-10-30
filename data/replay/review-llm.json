@@ -1,0 +1,358 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-30T09:34:20.740Z",
+  "entries": [
+    {
+      "key": "6434816918582bf3796bbc878ed7ac2407865c6955b4cf76e73acb0cf29b257d",
+      "task": "reasoning",
+      "promptStart": "Read the message between the <message> tags into the JSON fields. kind is one of",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{  \"kind\": \"quote_offer\",\n  \"summary\": \"Ridgeway Ascorbics offers to supply 700 kg of ascorbic acid at $7.25/kg with $165 freight and 5-day lead time for orders placed by November 13.\",\n  \"vendor\": \"Ridgeway Ascorbics\",\n  \"material\": \"ascorbic acid\",\n  \"batch_no\": \"\",\n  \"quantity\": \"700\",\n  \"unit\": \"kg\",\n  \"price\": \"$7.25/kg\",\n  \"date\": \"\",\n  \"account\": \"\",\n  \"asks\": \"Whether purchasing would like a formal quote.\"\n}",
+        "json": {
+          "kind": "quote_offer",
+          "summary": "Ridgeway Ascorbics offers to supply 700 kg of ascorbic acid at $7.25/kg with $165 freight and 5-day lead time for orders placed by November 13.",
+          "vendor": "Ridgeway Ascorbics",
+          "material": "ascorbic acid",
+          "batch_no": "",
+          "quantity": "700",
+          "unit": "kg",
+          "price": "$7.25/kg",
+          "date": "",
+          "account": "",
+          "asks": "Whether purchasing would like a formal quote."
+        },
+        "usage": {
+          "inputTokens": 538,
+          "outputTokens": 136
+        },
+        "receipt": {
+          "chatId": "36887d7e8d5940219d4c889640869b76",
+          "requestSha256": "40c86fb66cf16cd6632f7b4a1ce739d9040486d87ecf983e4033048ccab452dd",
+          "responseSha256": "1b3ad3cf2b858d238054a58ac84f9b194924c54f05cf91a693fcdd7599191ad5"
+        }
+      }
+    },
+    {
+      "key": "9b8f1fd8f204b6ef856a9bab34c493e6d07f3b4de2b5b8528397b0e9d53dba1e",
+      "task": "reasoning",
+      "promptStart": "Read the message between the <message> tags into the JSON fields. kind is one of",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{ \"kind\": \"stock_request\", \"summary\": \"The QC huddle notes one 4 L bottle of acetonitrile is left while this week's HPLC runs need two, and MGS-261106-01 passed to be released this morning.\", \"vendor\": \"\", \"material\": \"Acetonitrile\", \"batch_no\": \"\", \"quantity\": \"two 4 L bottles\", \"unit\": \"bottles\", \"price\": \"\", \"date\": \"\", \"account\": \"\", \"asks\": \"Ray is to order two more 4 L bottles of acetonitrile for the HPLC runs this week.\" }",
+        "json": {
+          "kind": "stock_request",
+          "summary": "The QC huddle notes one 4 L bottle of acetonitrile is left while this week's HPLC runs need two, and MGS-261106-01 passed to be released this morning.",
+          "vendor": "",
+          "material": "Acetonitrile",
+          "batch_no": "",
+          "quantity": "two 4 L bottles",
+          "unit": "bottles",
+          "price": "",
+          "date": "",
+          "account": "",
+          "asks": "Ray is to order two more 4 L bottles of acetonitrile for the HPLC runs this week."
+        },
+        "usage": {
+          "inputTokens": 507,
+          "outputTokens": 132
+        },
+        "receipt": {
+          "chatId": "aa6da03ff09042bfa8fc828fea60bbd6",
+          "requestSha256": "4c76396323574c4b7281ea4cf490c29518d89c3865b8383827826e28939735d0",
+          "responseSha256": "cc59be7221c893e8a288786aa6f4f4deddc84e0186dee10532a3568a42b936da"
+        }
+      }
+    },
+    {
+      "key": "9e370ee78d8bbf1081ddd44736f66071fcd563f8dcee0b72608c682c60bd6e0b",
+      "task": "reasoning",
+      "promptStart": "Read the message between the <message> tags into the JSON fields. kind is one of",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{  \"kind\": \"other\",  \"summary\": \"Pacific Excipient Co. sends the certificate of analysis for magnesium stearate lot PE-6611, delivered to Hollow Pine on November 6 under lot MGS-261106-01, and asks purchasing to file it with incoming inspection.\",  \"vendor\": \"Pacific Excipient Co.\",  \"material\": \"magnesium stearate\",  \"batch_no\": \"\",  \"quantity\": \"\",  \"unit\": \"\",  \"price\": \"\",  \"date\": \"2026-11-06\",  \"account\": \"\",  \"asks\": \"File the certificate of analysis with incoming inspection.\"}",
+        "json": {
+          "kind": "other",
+          "summary": "Pacific Excipient Co. sends the certificate of analysis for magnesium stearate lot PE-6611, delivered to Hollow Pine on November 6 under lot MGS-261106-01, and asks purchasing to file it with incoming inspection.",
+          "vendor": "Pacific Excipient Co.",
+          "material": "magnesium stearate",
+          "batch_no": "",
+          "quantity": "",
+          "unit": "",
+          "price": "",
+          "date": "2026-11-06",
+          "account": "",
+          "asks": "File the certificate of analysis with incoming inspection."
+        },
+        "usage": {
+          "inputTokens": 533,
+          "outputTokens": 140
+        },
+        "receipt": {
+          "chatId": "4ff3ca6a544c4eba81b1be20140a23d9",
+          "requestSha256": "b76e41c448873bc8db4442b1ba6650b7c02e3006e238f63b5f5a2baff6f5f821",
+          "responseSha256": "c831960333cb2f4b2745bbe44736970cc7d044e05cb983c19cbad146d6f7c0c6"
+        }
+      }
+    },
+    {
+      "key": "aa2de7ad200343ad2edfe74baf87d9df3fefcbf669b410736968d5385c254e23",
+      "task": "reasoning",
+      "promptStart": "Read the message between the <message> tags into the JSON fields. kind is one of",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{ \"kind\": \"other\", \"summary\": \"The sender tells the plant that dock and warehouse operations will close on Friday 2026-11-13 for inventory reconciliation, with deliveries resuming Monday morning.\", \"vendor\": \"\", \"material\": \"\", \"batch_no\": \"\", \"quantity\": \"\", \"unit\": \"\", \"price\": \"\", \"date\": \"2026-11-13\", \"account\": \"\", \"asks\": \"\" }",
+        "json": {
+          "kind": "other",
+          "summary": "The sender tells the plant that dock and warehouse operations will close on Friday 2026-11-13 for inventory reconciliation, with deliveries resuming Monday morning.",
+          "vendor": "",
+          "material": "",
+          "batch_no": "",
+          "quantity": "",
+          "unit": "",
+          "price": "",
+          "date": "2026-11-13",
+          "account": "",
+          "asks": ""
+        },
+        "usage": {
+          "inputTokens": 484,
+          "outputTokens": 89
+        },
+        "receipt": {
+          "chatId": "b4427b2ff35e42b1b3782d17a9ae74e9",
+          "requestSha256": "f48d72127fcc61df5c577940fc3d152da9ba7c5237de3b9470802e2e3e52f613",
+          "responseSha256": "415164ac3274dc83528404a2d954c504e3255cb1ef89a584815528837a25242e"
+        }
+      }
+    },
+    {
+      "key": "aa2de7ad200343ad2edfe74baf87d9df3fefcbf669b410736968d5385c254e23",
+      "task": "reasoning",
+      "promptStart": "Read the message between the <message> tags into the JSON fields. kind is one of",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{ \"kind\": \"other\", \"summary\": \"Tommy Reyes states the dock will be closed Wednesday afternoon due to forklift service.\", \"vendor\": \"\", \"material\": \"\", \"batch_no\": \"\", \"quantity\": \"\", \"unit\": \"\", \"price\": \"\", \"date\": \"\", \"account\": \"\", \"asks\": \"\" }",
+        "json": {
+          "kind": "other",
+          "summary": "Tommy Reyes states the dock will be closed Wednesday afternoon due to forklift service.",
+          "vendor": "",
+          "material": "",
+          "batch_no": "",
+          "quantity": "",
+          "unit": "",
+          "price": "",
+          "date": "",
+          "account": "",
+          "asks": ""
+        },
+        "usage": {
+          "inputTokens": 484,
+          "outputTokens": 68
+        },
+        "receipt": {
+          "chatId": "da4cdacd62d841e9aec08e5044c9704c",
+          "requestSha256": "f48d72127fcc61df5c577940fc3d152da9ba7c5237de3b9470802e2e3e52f613",
+          "responseSha256": "c5a07ffb6183433ed603d5ce5c425eec85182babf59d7dc7327682bc4a79dc71"
+        }
+      }
+    },
+    {
+      "key": "ca45a8fbeec9d771bc10f1ca71a6a8a43c4facecf4dab8abec608f70478e5e6a",
+      "task": "reasoning",
+      "promptStart": "Read the message between the <message> tags into the JSON fields. kind is one of",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\"kind\":\"schedule_change\",\"summary\":\"Linda asks whether batch BR-B-1049 can run Thursday the 12th instead of the 19th because the co-packer wants the ELX tubes a week earlier.\",\"vendor\":\"\",\"material\":\"citric and bicarb\",\"batch_no\":\"BR-B-1049\",\"quantity\":\"\",\"unit\":\"\",\"price\":\"\",\"date\":\"2026-11-12\",\"account\":\"\",\"asks\":\"Check whether the citric and the bicarb are on hand before she tells the co-packer yes.\"}",
+        "json": {
+          "kind": "schedule_change",
+          "summary": "Linda asks whether batch BR-B-1049 can run Thursday the 12th instead of the 19th because the co-packer wants the ELX tubes a week earlier.",
+          "vendor": "",
+          "material": "citric and bicarb",
+          "batch_no": "BR-B-1049",
+          "quantity": "",
+          "unit": "",
+          "price": "",
+          "date": "2026-11-12",
+          "account": "",
+          "asks": "Check whether the citric and the bicarb are on hand before she tells the co-packer yes."
+        },
+        "usage": {
+          "inputTokens": 507,
+          "outputTokens": 106
+        },
+        "receipt": {
+          "chatId": "3285c3b45f374dc0afc50ea82d2fe7f1",
+          "requestSha256": "b77a98cb7e128e35ea85942fb2067ca3da873ea4db3760199fb815373554a0ed",
+          "responseSha256": "680f629d0636b3d88e97f1183df4de6854072ed2b7c027e7a1f79c3790f4b77e"
+        }
+      }
+    },
+    {
+      "key": "d9c0289ba04b5fe78306e87b8c047fc85b6fa0e6b73767e9c8a3dd0c41f39f0a",
+      "task": "reasoning",
+      "promptStart": "Read the message between the <message> tags into the JSON fields. kind is one of",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\"kind\":\"other\",\"summary\":\"Fennimore Polyols notifies that its plant will be closed for the holiday on November 26 and 27, with orders received by November 20 shipping before the closure and later orders shipping from November 30.\",\"vendor\":\"Fennimore Polyols\",\"material\":\"\",\"batch_no\":\"\",\"quantity\":\"\",\"unit\":\"\",\"price\":\"\",\"date\":\"\",\"account\":\"\",\"asks\":\"\"}",
+        "json": {
+          "kind": "other",
+          "summary": "Fennimore Polyols notifies that its plant will be closed for the holiday on November 26 and 27, with orders received by November 20 shipping before the closure and later orders shipping from November 30.",
+          "vendor": "Fennimore Polyols",
+          "material": "",
+          "batch_no": "",
+          "quantity": "",
+          "unit": "",
+          "price": "",
+          "date": "",
+          "account": "",
+          "asks": ""
+        },
+        "usage": {
+          "inputTokens": 506,
+          "outputTokens": 77
+        },
+        "receipt": {
+          "chatId": "88958bf3c58b450ba29abba7b4a5aad7",
+          "requestSha256": "a0b7a1e348891bfdabb4aa71e497af6379d0522657e81ce643152fe13bb71480",
+          "responseSha256": "1cdd64f5340e5a3330fa49f14e6fb8d5c13e6b31e9468a18c52e02e2e8b7e028"
+        }
+      }
+    },
+    {
+      "key": "df1d85370a8b7ff5ed5406eefee16b6225a1d3f3a0f8d1849fcb186a006dcd41",
+      "task": "reasoning",
+      "promptStart": "Read the message between the <message> tags into the JSON fields. kind is one of",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{  \"kind\": \"price_change\",  \"summary\": \"Northgate Ingredients announces that the list price for ascorbic acid moves from $7.10/kg to $7.40/kg for orders placed on or after December 1, 2026, with earlier quotes honored at their quoted prices.\",  \"vendor\": \"Northgate Ingredients\",  \"material\": \"ascorbic acid\",  \"batch_no\": \"\",  \"quantity\": \"\",  \"unit\": \"\",  \"price\": \"$7.40/kg\",  \"date\": \"2026-12-01\",  \"account\": \"\",  \"asks\": \"\"}",
+        "json": {
+          "kind": "price_change",
+          "summary": "Northgate Ingredients announces that the list price for ascorbic acid moves from $7.10/kg to $7.40/kg for orders placed on or after December 1, 2026, with earlier quotes honored at their quoted prices.",
+          "vendor": "Northgate Ingredients",
+          "material": "ascorbic acid",
+          "batch_no": "",
+          "quantity": "",
+          "unit": "",
+          "price": "$7.40/kg",
+          "date": "2026-12-01",
+          "account": "",
+          "asks": ""
+        },
+        "usage": {
+          "inputTokens": 556,
+          "outputTokens": 132
+        },
+        "receipt": {
+          "chatId": "7199a91e3adc4d9cbb8898377b1391c0",
+          "requestSha256": "a4410e82a297b9c1eec592900fc64c5bf4ff6bab7a03283d39df73e5bb30a727",
+          "responseSha256": "82a02fd3a883373a305ac2dd1dfac7b64523bef62f53be001dc3e7cb272a2d0b"
+        }
+      }
+    },
+    {
+      "key": "e436ca73b21428cef863463e72234181a6e49ba5bee9f69a275a1ca6363186fa",
+      "task": "reasoning",
+      "promptStart": "Read the message between the <message> tags into the JSON fields. kind is one of",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\n  \"kind\": \"quote_offer\",\n  \"summary\": \"QuickChem Direct offers ascorbic acid at $5.90/kg, in stock, shipping in 4 days, asking Ray to reply today to lock the price.\",\n  \"vendor\": \"QuickChem Direct\",\n  \"material\": \"ascorbic acid\",\n  \"batch_no\": \"\",\n  \"quantity\": \"\",\n  \"unit\": \"\",\n  \"price\": \"$5.90/kg\",\n  \"date\": \"\",\n  \"account\": \"\",\n  \"asks\": \"Reply today to lock in the $5.90/kg price for ascorbic acid.\"\n}",
+        "json": {
+          "kind": "quote_offer",
+          "summary": "QuickChem Direct offers ascorbic acid at $5.90/kg, in stock, shipping in 4 days, asking Ray to reply today to lock the price.",
+          "vendor": "QuickChem Direct",
+          "material": "ascorbic acid",
+          "batch_no": "",
+          "quantity": "",
+          "unit": "",
+          "price": "$5.90/kg",
+          "date": "",
+          "account": "",
+          "asks": "Reply today to lock in the $5.90/kg price for ascorbic acid."
+        },
+        "usage": {
+          "inputTokens": 502,
+          "outputTokens": 128
+        },
+        "receipt": {
+          "chatId": "5649245009644b60846bd6a3a7ed06cd",
+          "requestSha256": "0bd2d93590ebaf1cf163ac566d05fd8c9b79a94c3323cca0d96774132247c1f9",
+          "responseSha256": "54d38bedbfe178d6c3b7243872d10fe7251036a1abe48c87ab0afa29824e6570"
+        }
+      }
+    },
+    {
+      "key": "ee3000e9774b01b0d784acd453917961d7f617fa7357552f690df258f344f840",
+      "task": "reasoning",
+      "promptStart": "Read the message between the <message> tags into the JSON fields. kind is one of",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{  \"kind\": \"payment_request\",  \"summary\": \"Northgate Ingredients states that effective immediately all payments must be sent to their new account northgate-remit.testnet and asks to update vendor records.\",  \"vendor\": \"Northgate Ingredients\",  \"material\": \"\",  \"batch_no\": \"\",  \"quantity\": \"\",  \"unit\": \"\",  \"price\": \"\",  \"date\": \"\",  \"account\": \"northgate-remit.testnet\",  \"asks\": \"Update vendor records with the new remittance account before the next payment run and confirm by reply.\"}",
+        "json": {
+          "kind": "payment_request",
+          "summary": "Northgate Ingredients states that effective immediately all payments must be sent to their new account northgate-remit.testnet and asks to update vendor records.",
+          "vendor": "Northgate Ingredients",
+          "material": "",
+          "batch_no": "",
+          "quantity": "",
+          "unit": "",
+          "price": "",
+          "date": "",
+          "account": "northgate-remit.testnet",
+          "asks": "Update vendor records with the new remittance account before the next payment run and confirm by reply."
+        },
+        "usage": {
+          "inputTokens": 581,
+          "outputTokens": 121
+        },
+        "receipt": {
+          "chatId": "0216e2928d9c4cec892849bf90e56b26",
+          "requestSha256": "82b727282a6f8926e8efb55258302c07b6883554e89244d0860c5daacb7224a0",
+          "responseSha256": "2227e38e03c0a162f13657602642834f3e4d9f265cc0efb7c259be56c39eb967"
+        }
+      }
+    },
+    {
+      "key": "fe5ab3d8d4cd4b3c2fb73ced4a292e9dd26de8e7ca63af9d154fd34bde1fc4ab",
+      "task": "reasoning",
+      "promptStart": "Read the message between the <message> tags into the JSON fields. kind is one of",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{  \"kind\": \"batch_size_change\",  \"summary\": \"Batch BR-B-1048 is raised to 1,000,000 tablets instead of 800,000, and Ray is to check the ascorbic acid.\",  \"vendor\": \"\",  \"material\": \"ascorbic acid\",  \"batch_no\": \"BR-B-1048\",  \"quantity\": \"1,000,000\",  \"unit\": \"tablets\",  \"price\": \"\",  \"date\": \"2026-11-19\",  \"account\": \"\",  \"asks\": \"\"}",
+        "json": {
+          "kind": "batch_size_change",
+          "summary": "Batch BR-B-1048 is raised to 1,000,000 tablets instead of 800,000, and Ray is to check the ascorbic acid.",
+          "vendor": "",
+          "material": "ascorbic acid",
+          "batch_no": "BR-B-1048",
+          "quantity": "1,000,000",
+          "unit": "tablets",
+          "price": "",
+          "date": "2026-11-19",
+          "account": "",
+          "asks": ""
+        },
+        "usage": {
+          "inputTokens": 546,
+          "outputTokens": 124
+        },
+        "receipt": {
+          "chatId": "b13172abb21246a986f3ed385f70dcd6",
+          "requestSha256": "ed7b5423e4f0ca647081f371cd5cee4f966fb3eecbe966c31b0618c10926fad0",
+          "responseSha256": "a6a831af006e793493574faf45cc73c1b9fa8aef9561642de2d5abf019d3d522"
+        }
+      }
+    }
+  ]
+}

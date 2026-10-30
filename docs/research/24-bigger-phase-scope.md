@@ -30,6 +30,8 @@ Tony's two ideas for the "bigger" phase (Oct 28, relayed by Muse in bridge messa
 
 **Recommendation.** Second, and only if the Nov 10 cut is a clear go. Build the ledger-only 5am brief first (half a day), then the mailbox half if time remains.
 
+**Built Oct 30 (first slice, unattended run):** the mailbox (`server/src/seed/mailbox.ts`), the reader and the checks (`agents/kevin/src/morningReview.ts`), `npm run review` with its recording and attestation. Two things the scope did not foresee: the model invented a company or a price in about one short message in five, so every reading is checked against the raw text, read again on a miss, and then becomes a question; and the plant's schedule, not a PO, is what most messages touch (a batch moved, a batch resized). Left: the sign-off on Ray's screen, the attack case in `npm run test:attacks`.
+
 ## Order against the existing stretch list
 
 After the Nov 10 cut: (1) watched folder, (2) 5am brief → morning review, then the rest of the T2 list as it stands (3D twin, Kevin as an MCP server, natural-language policy, NEAR Auth spike). Group purchasing, supplier credentials and sealed bids run in their own sessions (#33) and are not affected.

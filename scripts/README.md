@@ -21,4 +21,4 @@
 
 `demo.ts` (`npm run demo`, `npm run demo:live`) builds its run from `api/src/env.ts`, the same environment the HTTP API (`npm run api`) uses, so the scripted run and the click-by-click run cannot drift apart.
 
-Spec for the rest (deploy, demo, replay, reset): docs/DEMO_SCRIPT.md. Every other script (`attacks`, `sealed`, `verify`, `verify-round`, `books`, `brief`, `policy-change`, `import`, `render-import`, `erp-*`, `bakeoff`, `web-data`) has one row with its exact command in the commands table of `AGENTS.md`; the keyless ones are also in the README.
+Spec for the rest (deploy, demo, replay, reset): docs/DEMO_SCRIPT.md. Every other script (`attacks`, `sealed`, `verify`, `verify-round`, `books`, `brief`, `review`, `policy-change`, `import`, `render-import`, `erp-*`, `bakeoff`, `web-data`) has one row with its exact command in the commands table of `AGENTS.md`; the keyless ones are also in the README.

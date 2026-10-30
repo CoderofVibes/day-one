@@ -23,6 +23,7 @@ Around the loop:
 - `src/transferSuggestions.ts`: before buying, proposes moving stock from a sister plant with surplus.
 - `src/massBalance.ts`: material issued against tablets, QC samples and recorded waste; flags unaccounted material.
 - `src/brief.ts`: Kevin's printable 5am brief for one plant (`npm run brief`).
+- `src/morningReview.ts`: Kevin's overnight read of the purchaser's mailbox (`server/src/seed/mailbox.ts`, `npm run review`): the model turns each message into fields, the ledger decides (move or resize a batch, note a price, nothing, a question, or a refusal on the raw text for any payment or payee request), and `applyProposal` is the signature.
 - `src/policyChange.ts`: reads HQ's plain-words limit change and drafts the one owner call (`npm run policy`). Kevin never signs it.
 - `src/invoices.ts`, `src/payments.ts`: supplier invoices and "please pay again" messages; neither can move money.
 - `src/erp.ts`: posts Day One's records to the acquirer's ERP through the connector (docs/ERP.md).

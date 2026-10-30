@@ -51,6 +51,7 @@ export const STEPS: Step[] = [
   },
   { name: "books", command: "npm run books" },
   { name: "brief", command: "npm run brief" },
+  { name: "review", command: "npm run review", expect: "3 ready to sign" },
   {
     name: "import",
     command: 'npm run import -- "data/imports/INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx"',

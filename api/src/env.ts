@@ -72,6 +72,8 @@ export function fixtureFiles(root = REPO_ROOT) {
     transcript: join(root, "data/replay/transcript.txt"),
     /** The vision answers for the other scans in the demo inbox (npm run inbox -- --live --record). */
     inboxLlm: join(root, "data/replay/inbox-llm.json"),
+    /** The reading of each mailbox message for the morning review (npm run review -- --live --record). */
+    reviewLlm: join(root, "data/replay/review-llm.json"),
     proof: join(root, "data/batch-records/BR-B-1045.json"),
   };
 }
