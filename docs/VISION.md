@@ -364,10 +364,20 @@ Build order, each step committed with the checks green, sized in build sessions 
 | 3 | **Shell and design system**: tokens v2, sidebar, picker, header, charts module, number and chart cards, activity feed, review sheet, Kevin panel | Overview live and static, wide and phone |
 | 4 | **The integration program**: the seven stage screens, progress from the ledger, the two new sheet kinds, the schedule confirm, the limits stage, the replay | a person can walk stages 0–7 live; the static host plays them recorded |
 | 5 | **Pages**: Batch records, Inventory & forecast, Schedule, Purchasing, Invoices, Spreadsheets, 5am brief, Three plants, ERP connection, the six HQ pages, with trends (done Oct 30: the plant tables from `server/src/ledger/views.ts` at `GET /api/plant`, the static snapshot in `web/src/data/pages.json`; the ERP's numbers come from the recorded run with the ERP attached, `npm run erp:demo -- --json`, in both modes, so the live `/api/erp/*` proxies were not needed; Books became Invoices and Bookkeeper export) | every page on both sources |
-| 6 | **Twin**: the large plant in `layout.ts` and `buildings.ts`, glass, zones, click to the area sheet, equipment rows, pings, layers, the Plant map page; the flat map on the same footprints | `web:shot:3d` 0 label problems, both runs |
-| 7 | **Finish**: video page on the shell, phone and dark passes, screenshots, README screenshot list, `host:build`, the clean clone | all checks green; merge |
+| 6 | **Twin**: the large plant in `layout.ts` and `buildings.ts`, glass, zones, click to the area sheet, equipment rows, pings, layers, the Plant map page; the flat map on the same footprints (done Oct 30, docs/TWIN3D.md "The site plan": glass transmission and pad clicks not built, said there) | `web:shot:3d` 0 label problems, both runs |
+| 7 | **Finish**: video page on the shell, phone and dark passes, screenshots, README screenshot list, `host:build`, the clean clone (done Oct 30: the video page plays on the new twin unchanged, as §6.8 planned; screens in `docs/v2/after/`, list in §6.12.7) | all checks green; merge |
 
 Target: steps 1–4 by Nov 3, 5–7 by Nov 6, merged by Nov 7. Nov 8–10 stay as buffer and for the video storyboard rewrite (main session). If a step runs long, the order above is also the order of importance.
+
+#### 6.12.7 Screens for the README after the merge
+
+Taken with `npm run web:shot` (`PAGE=<id>`, wide light and phone dark, curtain on) and `npm run web:shot:3d` from the static build, in `docs/v2/after/`. Worth putting in the README in place of the Floor shots (UI_DESIGN.md "For the README"):
+
+- `integration/wide.png`: the integration program, the first thing a plant sees.
+- `overview/wide.png` and `phone.png`: the Overview mid-run, with the curtain's transactions beside it.
+- `map-3d/wide.png`: the site plan in 3D on the Plant map page.
+- `twin/wide-07-refused.png` and `twin/wide-11-quarantine.png`: the refusal at the vault, the pallet in its cage.
+- `purchasing/wide.png`, `inventory/wide.png`, `erp/wide.png`, `suppliers/wide.png`: the pages with history behind them.
 
 #### 6.12.6 Still open
 

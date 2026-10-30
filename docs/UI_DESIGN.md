@@ -1,5 +1,7 @@
 # UI design pass — proposal
 
+> **Superseded for layout by v2 (docs/VISION.md §6, branch `v2-design`, Oct 30).** The Floor and its four tabs became the sidebar's pages (Your integration, Overview, Plant map, the plant, Acme and HQ pages); the tokens, the status colours and the curtain from this pass stay. The rest of this file is the Oct 29 record.
+
 **Session of Oct 29, 2026 (branch `ui-design`, Fable).** Step 1 of the UI design pass (PLAN.md "In progress"): what each screen is for, what is wrong with it today, and the design to build in step 2 once Tony says go. Screenshots of today's UI are in `docs/ui-design/before/` (taken with `npm run web:shot`, `npm run web:shot:3d` and a survey script against `npm run api` and `npm run erp`); the mockups are static pages in `docs/ui-design/mockups/` with their screenshots in `docs/ui-design/after-mockups/`. The mockups use the recorded run's real wording and numbers; nothing in them is invented beyond layout.
 
 Nothing in this pass changes what Kevin says (the transcripts), the contract, the agents, the fixtures or the README. It changes how the screens are arranged, styled and navigated.

@@ -605,8 +605,8 @@ function Guide({ data }: { data: DemoRun }) {
         {s ? ` (${s.transactions} transactions, ${s.refusedByDesign} refused by design)` : ""}.
         Press <strong>Play</strong> or the → key. Staff see dollars and POs only; switch on{" "}
         <strong>Behind the curtain</strong> for every transaction with its explorer link,{" "}
-        <strong>3D</strong> on the map for the twin, and the pages on the left for the three plants,
-        the books and Kevin's limits.
+        <strong>3D</strong> on the map for the twin, and the pages on the left for the integration
+        program, every plant page, the three plants and HQ.
       </p>
     </aside>
   );

@@ -55,6 +55,17 @@ The map pane's bar has a second switch, **This run | Group buy**. "Group buy" pl
 
 The twin's geometry and motion are unchanged. Its colours and DOM labels now read the page's tokens (`web/src/tokens.css`: `--brand`, `--refused`, `--quarantine`, `--money`, `--paid`, `--held`), so a quarantined lot, a refused coin and a paid coin wear the same pill colours as the cards on the Floor. The bullet list under the stage is gone from both the flat map and the twin: the map panel (`PlantView`) shows one caption line (the plants' state plus the newest money or material line) and a legend, and the full description stays as the canvas's accessible label. `npm run web:shot:3d` still reports 0 label problems at every moment, wide and phone, in both runs.
 
+## The site plan (Oct 30, branch `v2-design`; docs/VISION.md §6.5, §6.12.1)
+
+Tony asked for real buildings instead of a grid of boxes. Each plant is now a site (`web/src/twin/layout.ts`): Hollow Pine has a warehouse with its receiving docks and apron, the processing hall under a sawtooth roof (silos over the weigh cells, a blend tank, a dust stack over the presses), the dry side, the QC lab, a three-floor office with parking, a utilities yard, a gatehouse, a road and trees; Riverside is the same kit at seven tenths without a powder line; Lakeview is a warehouse, the dry side and an office. Each building is split into the ledger's twenty areas, and each area lights with the story department it belongs to (the nine `TwinState` tracks), on its roof panel or sawtooth glass and in its windows. The buildings stand from the start, since the plant existed before Day One; nothing rises any more. Flows land on the roof over each department's main area, and the quarantined pallet waits over the warehouse's quarantine area.
+
+- **One instanced mesh per geometry** (boxes, cylinders, cones, gables, sawtooth, windows) instead of one per part kind: the busiest step is 57 draw calls, was 70.
+- **Click any area** of any plant, 3D or flat, and the Plant map page opens its sheet (`web/src/pages/MapPage.tsx`; `GET /api/areas`, `server/src/ledger/areas.ts`): the equipment (`server/src/seed/equipment.ts`, fictional), the lots there now and the latest events, each event placed in an area by what it is, since lot events carry no area.
+- **The stage's controls**: zoom in, zoom out and Fit (back to the story's framing), and layer switches for equipment, orders and money, and labels. A ring pings where each step's change happened.
+- **Not built**: frosted-glass transmission (a second render pass per frame; the panes are opaque with the status colour), clicking the suppliers', escrow and HQ pads (their pages hold the same), and the rooms image Tony mentioned (not received; the hall keeps its sawtooth bays).
+
+`npm run web:shot:3d` reports 0 label problems at every moment, wide and phone, in both runs.
+
 ## Left for a later session
 
 - Transfers as trucks between plants in the demo run, once it records a transfer step (the group run's earmarked share already drives one).
