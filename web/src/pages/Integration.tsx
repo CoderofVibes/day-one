@@ -1008,7 +1008,7 @@ function Rules({
               <tr key={v.code}>
                 <td>
                   <b>{v.name}</b>
-                  {v.notes && <small className="note">{v.notes}</small>}
+                  {v.notes && <small className="sub">{v.notes}</small>}
                 </td>
                 <td>
                   <Pill
@@ -1134,7 +1134,7 @@ function Order({ stage, go }: { stage: JourneyStage; go: (page: PageId) => void 
 // ------------------------------------------------------------------ stage 6
 
 /** Each reconciliation check in staff words; the full line, with accounts and transactions, shows behind the curtain. */
-const RECON_PLAIN: Record<string, string> = {
+export const RECON_PLAIN: Record<string, string> = {
   Inventory: "Stock agrees lot by lot, and so does its value.",
   "Purchase orders": "Every PO is in the ERP with the same total, supplier and outcome.",
   Payments: "Every payment matches an approved bill in the ERP.",
@@ -1254,7 +1254,11 @@ function Daily({ go }: { go: (page: PageId) => void }) {
               "Three plants",
               "One ledger across the plants: moves Kevin proposes, what does not add up.",
             ],
-            ["books", "Books", "Settled orders, held invoices and the bookkeeper's export."],
+            [
+              "invoices",
+              "Invoices",
+              "Every bill matched to its PO and receipt, and the held invoice.",
+            ],
           ] as const
         ).map(([page, title, text]) => (
           <button key={page} type="button" className="tile-link" onClick={() => go(page)}>

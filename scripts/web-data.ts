@@ -29,6 +29,12 @@ import { verifyAttestation } from "../server/src/attestation/verify.ts";
 import { books, booksCsv } from "../server/src/ledger/books.ts";
 import { plantInventory } from "../server/src/ledger/inventory.ts";
 import { historySeries, stockedMaterials, stockSeries } from "../server/src/ledger/series.ts";
+import {
+  batchRecordViews,
+  lotViews,
+  purchaseOrderViews,
+  rfqViews,
+} from "../server/src/ledger/views.ts";
 import { INVENTORY_FILE, INVENTORY_WORKBOOK } from "../server/src/seed/inventorySheet.ts";
 import { PLANT_AGENTS } from "./lib/dayone-sandbox.ts";
 
@@ -37,6 +43,7 @@ const OUT = join(root, "web/src/data/demo-run.json");
 const PLANTS = join(root, "web/src/data/plants.json");
 const SERIES = join(root, "web/src/data/series.json");
 const JOURNEY = join(root, "web/src/data/journey.json");
+const PAGES = join(root, "web/src/data/pages.json");
 const BRIEF = join(root, "web/public/brief.html");
 const CSV = join(root, "web/public/books.csv");
 const RELAYER = "dayone-relayer.testnet";
@@ -167,6 +174,59 @@ const series = {
     PLANT_CODES.map((plant) => [plant, plantSchedule(env.db, { facility: plant, now, days: 28 })]),
   ),
 };
+// The v2 pages' tables for each plant and Kevin's brief for each, at the same clock; and the
+// recordings HQ's pages read in both modes (the ERP attached to the run, the sealed round, the
+// fourteen attacks, each supplier's credential as the contract last reported it).
+const recordedJson = (script: string, ...args: string[]) => {
+  const out = spawnSync(process.execPath, ["--import", "tsx", script, "--json", ...args], {
+    cwd: root,
+    encoding: "utf8",
+  });
+  const line = out.stdout.trim().split("\n").at(-1) ?? "";
+  if (out.status !== 0 || !line.startsWith("{")) {
+    console.error(`${script} --json failed:\n${out.stderr}`);
+    process.exit(1);
+  }
+  return JSON.parse(line);
+};
+const credentialFile = JSON.parse(
+  readFileSync(join(root, "data/attacks/credentials-testnet.json"), "utf8"),
+) as {
+  recordedAt: string;
+  entries: { type: string; request: { method?: string }; result?: unknown }[];
+};
+const standing = new Map<string, unknown>();
+for (const e of credentialFile.entries) {
+  if (e.type !== "view" || e.request.method !== "get_supplier_standing") continue;
+  const r = e.result as { supplier: string };
+  standing.set(r.supplier, r);
+}
+const pages = {
+  at: now,
+  plant: Object.fromEntries(
+    PLANT_CODES.map((plant) => [
+      plant,
+      {
+        facility: plant,
+        at: now,
+        orders: purchaseOrderViews(env.db, plant),
+        rfqs: rfqViews(env.db, plant),
+        lots: lotViews(env.db, plant, now),
+        batches: batchRecordViews(env.db, plant),
+      },
+    ]),
+  ),
+  brief: Object.fromEntries(
+    PLANT_CODES.map((plant) => [plant, morningBrief(env.db, { now, facility: plant })]),
+  ),
+  recorded: {
+    erp: recordedJson("scripts/erp-demo.ts", "--memory"),
+    sealed: recordedJson("scripts/sealed.ts"),
+    attacks: recordedJson("scripts/attacks.ts"),
+    credentials: { recordedAt: credentialFile.recordedAt, suppliers: [...standing.values()] },
+  },
+};
+
 // The integration program walked through on the recorded run (docs/VISION.md §6.12.3), for the
 // static host: each stage as the people at Hollow Pine answered it, with Kevin's recorded
 // reading. A session of its own, watching a throwaway folder, so nothing in data/ moves.
@@ -244,6 +304,7 @@ const files: [string, string][] = [
   [PLANTS, `${JSON.stringify(plants, null, 2)}\n`],
   [SERIES, `${JSON.stringify(series)}\n`],
   [JOURNEY, `${JSON.stringify(journey)}\n`],
+  [PAGES, `${JSON.stringify(pages)}\n`],
   [BRIEF, briefHtml(morningBrief(env.db, { now }))],
   [CSV, booksCsv(env.db)],
 ];

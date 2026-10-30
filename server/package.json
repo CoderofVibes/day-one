@@ -43,7 +43,8 @@
     "./attestation/fetch": "./src/attestation/fetch.ts",
     "./attestation/fixture": "./src/attestation/fixture.ts",
     "./ledger/series": "./src/ledger/series.ts",
-    "./ledger/catalog": "./src/ledger/catalog.ts"
+    "./ledger/catalog": "./src/ledger/catalog.ts",
+    "./ledger/views": "./src/ledger/views.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate"

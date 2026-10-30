@@ -1185,9 +1185,326 @@ table.data .n {
   }
 }
 
-/* A supplier's note sits under its name in the integration program's supplier table. */
-.v2 table.data td small.note {
+/* ---------- The plant, buying, Acme and HQ pages (docs/VISION.md §6.6) ---------- */
+.split-wide {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: var(--s-4);
+  align-items: start;
+}
+.split-wide > .col,
+.page.v2 .col {
+  display: grid;
+  gap: var(--s-4);
+  min-width: 0;
+}
+.charts-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-4);
+}
+.three-cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-4);
+}
+.three-cols h4,
+.po-detail h4,
+.rfq h4,
+.brief-sections h4 {
+  margin: 0 0 6px;
+  font-size: var(--t-sm);
+}
+
+/* Tabs over one panel. */
+.page-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  margin: -6px 0 var(--s-3);
+}
+.tab {
+  appearance: none;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+  padding: 8px 12px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.tab:hover {
+  color: var(--ink);
+}
+.tab.on {
+  color: var(--ink);
+  font-weight: 600;
+  border-bottom-color: var(--brand);
+}
+.tab:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.tab-count {
+  font-size: var(--t-xs);
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+/* Long tables scroll inside their card. */
+.table-wrap.tall {
+  max-height: 520px;
+  overflow: auto;
+}
+.table-wrap.tall thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+/* A line under a cell's main value: a supplier's note, a category, who confirmed. */
+.v2 td small.sub {
   display: block;
   color: var(--ink-2);
   font-weight: 400;
+  font-size: var(--t-xs);
+}
+.v2 tr.on td {
+  background: var(--brand-soft);
+}
+.v2 tr.detail td {
+  background: var(--surface-2);
+}
+.v2 td.bad {
+  color: var(--refused);
+  font-weight: 600;
+}
+.mini-select {
+  font: inherit;
+  font-size: var(--t-xs);
+  padding: 2px 6px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--ink);
+}
+.kevin-sentence {
+  margin: 0;
+  padding: 10px 14px;
+  border-left: 3px solid var(--brand);
+  background: var(--surface);
+  border-radius: var(--r-sm);
+}
+.on-acme {
+  margin: 0;
+}
+
+/* A purchase order opened in its table. */
+.po-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: var(--s-4);
+  padding: 6px 2px;
+  white-space: normal;
+}
+ul.plain {
+  list-style: none;
+  margin: 0 0 var(--s-3);
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.order-steps.timeline li {
+  align-items: flex-start;
+}
+.order-steps.timeline .dot {
+  margin-top: 4px;
+  flex: none;
+}
+.order-steps.timeline small {
+  display: block;
+}
+.rfq + .rfq {
+  margin-top: var(--s-4);
+}
+
+/* Category caps as thin meters. */
+.meters {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  font-size: var(--t-sm);
+}
+.meters li {
+  display: grid;
+  grid-template-columns: 7.5em minmax(0, 1fr) auto;
+  gap: var(--s-2);
+  align-items: center;
+}
+.meter {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.meter i {
+  display: block;
+  height: 100%;
+  background: var(--chart-1);
+}
+
+/* The schedule as a strip, one row per day. */
+.strip {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.strip > li {
+  display: grid;
+  grid-template-columns: 7.5em minmax(0, 1fr);
+  gap: var(--s-3);
+  align-items: start;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.strip-day {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  padding-top: 6px;
+}
+.strip-batches {
+  display: grid;
+  gap: 6px;
+}
+.strip-batch {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 6px 10px;
+  background: var(--surface);
+  font-size: var(--t-sm);
+}
+.strip-batch summary {
+  cursor: pointer;
+}
+.strip-batch[open] summary {
+  margin-bottom: 8px;
+}
+
+/* The brief's four sections. */
+.brief-sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-4);
+  margin-top: var(--s-3);
+}
+.brief-sections ul {
+  margin: 0;
+  padding-left: 1.1em;
+  display: grid;
+  gap: 6px;
+  font-size: var(--t-sm);
+}
+
+/* What crossed to the ERP, step by step. */
+.crossed {
+  margin: 0 0 var(--s-4);
+  padding-left: 1.2em;
+  display: grid;
+  gap: 10px;
+  font-size: var(--t-sm);
+}
+.crossed ul {
+  margin: 4px 0 0;
+  padding-left: 1em;
+  color: var(--ink-2);
+  display: grid;
+  gap: 2px;
+}
+
+/* Attempts that were refused. */
+.attacks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  font-size: var(--t-sm);
+}
+.attacks > li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px var(--s-2);
+  align-items: baseline;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.attacks > li > small,
+.attacks > li > ul {
+  grid-column: 2;
+  color: var(--ink-2);
+  margin: 0;
+}
+.attacks > li > ul {
+  padding-left: 1em;
+}
+.recon.wide li {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.recon.wide li > ul {
+  flex-basis: 100%;
+  margin: 4px 0 0;
+  padding-left: 1.2em;
+  color: var(--ink-2);
+}
+
+@container (max-width: 980px) {
+  .split-wide,
+  .po-detail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@container (max-width: 760px) {
+  .charts-2,
+  .three-cols,
+  .brief-sections {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .strip > li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .strip-day {
+    padding-top: 0;
+  }
+}
+
+/* Transaction ids and accounts behind the curtain wrap instead of widening the page. */
+.crossed li,
+.attacks li,
+.recon.wide li,
+.po-detail li {
+  overflow-wrap: anywhere;
+}
+.filter-check {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 0 0 8px;
+}
+.recon li > small {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }

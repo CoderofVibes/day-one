@@ -6,7 +6,25 @@
 import { useEffect, useState } from "react";
 import { initials } from "./feed.tsx";
 
-export type PageId = "integration" | "overview" | "map" | "plants" | "books" | "hq";
+export type PageId =
+  | "integration"
+  | "overview"
+  | "map"
+  | "brief"
+  | "batches"
+  | "inventory"
+  | "schedule"
+  | "purchasing"
+  | "invoices"
+  | "spreadsheets"
+  | "plants"
+  | "erp"
+  | "hq"
+  | "suppliers"
+  | "group"
+  | "sealed"
+  | "export"
+  | "reconciliation";
 export type PlantCode = "A" | "B" | "C";
 
 export const PLANTS: { code: PlantCode; name: string; note: string }[] = [
@@ -28,16 +46,33 @@ export const NAV: { group: string; items: NavItem[] }[] = [
       { id: "integration", label: "Your integration", icon: "flag" },
       { id: "overview", label: "Overview", icon: "grid" },
       { id: "map", label: "Plant map", icon: "cube" },
+      { id: "brief", label: "5am brief", icon: "sun" },
+      { id: "batches", label: "Batch records", icon: "doc" },
+      { id: "inventory", label: "Inventory & forecast", icon: "box" },
+      { id: "schedule", label: "Schedule", icon: "calendar" },
+      { id: "purchasing", label: "Purchasing", icon: "cart" },
+      { id: "invoices", label: "Invoices", icon: "receipt" },
+      { id: "spreadsheets", label: "Spreadsheets", icon: "sheet" },
     ],
   },
   {
     group: "Across Acme",
     items: [
       { id: "plants", label: "Three plants", icon: "bars" },
-      { id: "books", label: "Books", icon: "receipt" },
+      { id: "erp", label: "ERP connection", icon: "link" },
     ],
   },
-  { group: "Acme HQ", items: [{ id: "hq", label: "Spending limits", icon: "shield" }] },
+  {
+    group: "Acme HQ",
+    items: [
+      { id: "hq", label: "Spending limits", icon: "shield" },
+      { id: "suppliers", label: "Suppliers", icon: "truck" },
+      { id: "group", label: "Group purchasing", icon: "group" },
+      { id: "sealed", label: "Sealed bids", icon: "lock" },
+      { id: "export", label: "Bookkeeper export", icon: "download" },
+      { id: "reconciliation", label: "Reconciliation", icon: "check" },
+    ],
+  },
 ];
 
 const PAGE_IDS = new Set(NAV.flatMap((g) => g.items.map((i) => i.id)));
@@ -243,6 +278,20 @@ const ICONS = {
   bars: "M2 15.5h14M3.5 15V9h3v6M7.5 15V4h3v11M11.5 15v-4h3v4",
   receipt: "M4 2h10v14l-2-1.2-2 1.2-2-1.2-2 1.2-2-1.2zM6.5 6h5M6.5 9h5",
   shield: "M9 2l6 2.2v4.3c0 3.6-2.5 6-6 7.5-3.5-1.5-6-3.9-6-7.5V4.2z",
+  sun: "M9 5.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zM9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2M3.7 3.7l1.4 1.4M12.9 12.9l1.4 1.4M3.7 14.3l1.4-1.4M12.9 5.1l1.4-1.4",
+  doc: "M4.5 1.5h6l3 3v12h-9zM10.5 1.5v3h3M6.5 8.5h5M6.5 11.5h5",
+  box: "M2 5l7-3.5L16 5v8l-7 3.5L2 13zM2 5l7 3.5L16 5M9 8.5v8",
+  calendar: "M2.5 3.5h13v12h-13zM2.5 7h13M6 1.5v3M12 1.5v3",
+  cart: "M1.5 2.5h2.2l1.8 9h9l1.5-6.5H4.6M7 15a1 1 0 1 0 0 .1M13 15a1 1 0 1 0 0 .1",
+  sheet: "M2.5 2.5h13v13h-13zM2.5 6.5h13M2.5 10.5h13M7 2.5v13",
+  link: "M7.5 10.5l3-3M6 8l-2 2a2.5 2.5 0 0 0 3.5 3.5l2-2M12 10l2-2a2.5 2.5 0 0 0-3.5-3.5l-2 2",
+  truck:
+    "M1.5 4.5h9v8h-9zM10.5 7.5h3.5l2.5 2.5v2.5h-6M4.5 14.5a1.2 1.2 0 1 0 0 .1M13 14.5a1.2 1.2 0 1 0 0 .1",
+  group:
+    "M6 7.5a2.5 2.5 0 1 0 0-.1M13 8a2 2 0 1 0 0-.1M1.5 15.5c.5-3 2.3-4.5 4.5-4.5s4 1.5 4.5 4.5M11 11.5c2.5-.5 4.5 1 5 4",
+  lock: "M3.5 8h11v8h-11zM5.5 8V5.5a3.5 3.5 0 0 1 7 0V8",
+  download: "M9 2v9M5.5 7.5L9 11l3.5-3.5M2.5 13v2.5h13V13",
+  check: "M2.5 9.5l4 4 9-9",
 } as const;
 
 function Icon({ name }: { name: keyof typeof ICONS }) {

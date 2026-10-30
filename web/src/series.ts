@@ -75,6 +75,8 @@ export interface MaterialForecast {
   reorder: boolean;
 }
 export interface PlantForecast {
+  /** The days ahead the forecast looks (the API says; the snapshot is 10). */
+  horizonDays?: number;
   facility: string;
   at: string;
   materials: MaterialForecast[];

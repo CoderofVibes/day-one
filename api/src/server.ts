@@ -127,6 +127,8 @@ async function route(
   if (method === "GET" && path === "/api/policy") return reply(res, 200, await session.policy());
   if (method === "GET" && path === "/api/history") return reply(res, 200, session.history());
   if (method === "GET" && path === "/api/catalog") return reply(res, 200, session.catalog());
+  if (method === "GET" && path === "/api/plant")
+    return reply(res, 200, session.plant(url.searchParams.get("plant") ?? undefined));
   if (method === "GET" && path === "/api/erp/reconcile")
     return reply(res, 200, await recordedReconciliation(REPO_ROOT));
   if (method === "GET" && path === "/api/journey")

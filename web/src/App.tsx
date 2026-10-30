@@ -39,11 +39,16 @@ import {
 } from "./api.ts";
 import { Curtain } from "./Curtain.tsx";
 import { initials, Pill, StaffFeed } from "./feed.tsx";
+import { ImportPane } from "./ImportPane.tsx";
 import { InboxPane } from "./InboxPane.tsx";
 import { postDecision, postDropScans } from "./journey.ts";
 import { type Action, actionsFor, actorOf } from "./live.ts";
+import { ErpPage, ThreeSchedules } from "./pages/Acme.tsx";
+import { InvoicesPage, PurchasingPage, SpreadsheetsPage } from "./pages/Buying.tsx";
+import { GroupPage, ReconciliationPage, SealedPage, SuppliersPage } from "./pages/Hq.tsx";
 import { Integration } from "./pages/Integration.tsx";
 import { Overview } from "./pages/Overview.tsx";
+import { BatchRecordsPage, BriefPage, InventoryPage, SchedulePage } from "./pages/Plant.tsx";
 import { BooksPane, HqPane, PlantsPane } from "./panes.tsx";
 import { plantsSnapshot, STATIC_BOOKS_URL, STATIC_BRIEF_URL } from "./plants.ts";
 import {
@@ -137,117 +142,261 @@ const PLANT_NAMES: Record<PlantCode, string> = {
   C: "Acme Lakeview",
 };
 
-/** The pages both sources share; each source hands in its own panes. */
+/** Each page's header: where it sits, its title and one plain sentence. */
+const PAGE_TEXT: Record<
+  Exclude<PageId, "integration" | "overview">,
+  { group: "plant" | "acme" | "hq"; title: string; sentence: string }
+> = {
+  map: {
+    group: "plant",
+    title: "Plant map",
+    sentence: "The three plants, the suppliers, the escrow and HQ, as the run moves through them.",
+  },
+  brief: {
+    group: "plant",
+    title: "5am brief",
+    sentence: "What moved since the last working day, what waits on a person, what to buy first.",
+  },
+  batches: {
+    group: "plant",
+    title: "Batch records",
+    sentence:
+      "Every batch with its yield and waste; this week's scans wait here until Ray checks them.",
+  },
+  inventory: {
+    group: "plant",
+    title: "Inventory & forecast",
+    sentence: "What the plant holds, what the plan will draw, and every lot with its state.",
+  },
+  schedule: {
+    group: "plant",
+    title: "Schedule",
+    sentence: "The next four weeks of batches, what each one draws and what it leaves.",
+  },
+  purchasing: {
+    group: "plant",
+    title: "Purchasing",
+    sentence:
+      "Every order with its approval, receipt and QC decision, the quotes, and what each order changed.",
+  },
+  invoices: {
+    group: "plant",
+    title: "Invoices",
+    sentence:
+      "Every bill matched to its PO and receipt before it is paid; anything odd waits for Marcy.",
+  },
+  spreadsheets: {
+    group: "plant",
+    title: "Spreadsheets",
+    sentence:
+      "The sheets the plant brings in, what Kevin read in them and what he asked before posting.",
+  },
+  plants: {
+    group: "acme",
+    title: "Three plants",
+    sentence:
+      "One ledger for the three plants: stock, the moves Kevin proposes, and what does not add up.",
+  },
+  erp: {
+    group: "acme",
+    title: "ERP connection",
+    sentence: "What Day One sends the acquirer's ERP, and the checks that say the two agree.",
+  },
+  hq: {
+    group: "hq",
+    title: "Spending limits",
+    sentence:
+      "Kevin's limits as the contract enforces them, the category caps and supplier standing.",
+  },
+  suppliers: {
+    group: "hq",
+    title: "Suppliers",
+    sentence:
+      "Who Kevin may buy from and the order may pay, and what happened when someone tried anyway.",
+  },
+  group: {
+    group: "hq",
+    title: "Group purchasing",
+    sentence: "Plants that need the same material pool it into one order; each pays its own share.",
+  },
+  sealed: {
+    group: "hq",
+    title: "Sealed bids",
+    sentence:
+      "Quotes stay sealed until the deadline, so nobody, Kevin included, can peek or change one.",
+  },
+  export: {
+    group: "hq",
+    title: "Bookkeeper export",
+    sentence: "Settled purchase orders, one row per line, ready for the bookkeeper.",
+  },
+  reconciliation: {
+    group: "hq",
+    title: "Reconciliation",
+    sentence:
+      "Day One's ledger, the ERP and the contract, checked against each other line by line.",
+  },
+};
+
+/** The pages both sources share; each source hands in its own panes and reads. */
 function Pages({
   page,
   plant,
   source,
+  curtain,
   inventory,
+  books,
+  policy,
+  inbox,
+  links,
   map,
   kevin,
   activity,
   integration,
   plants,
-  books,
+  queue,
+  wizard,
+  exportPane,
   hq,
+  goMap,
   foot,
 }: {
   page: PageId;
   plant: PlantCode;
   source: Source;
+  curtain: boolean;
   inventory: PlantInventory | null;
+  books: Books | null;
+  policy: PolicyState | null;
+  inbox: InboxState | null;
+  links: { brief: string | null; books: string };
   map: React.ReactNode;
   kevin: React.ReactNode;
   activity: React.ReactNode;
   integration: React.ReactNode;
   plants: React.ReactNode;
-  books: React.ReactNode;
+  /** Live: the scan queue on Batch records. */
+  queue: React.ReactNode;
+  /** Live: the import wizard on Spreadsheets. */
+  wizard: React.ReactNode;
+  exportPane: React.ReactNode;
   hq: React.ReactNode;
+  /** Open the plant map on the group purchase. */
+  goMap: () => void;
   foot: React.ReactNode;
 }) {
-  switch (page) {
-    case "integration":
-      return (
-        <>
-          {integration}
-          <div className="page v2 foot-wrap">{foot}</div>
-        </>
-      );
-    case "map":
-      return (
-        <Page
-          label="Plant map"
-          crumb={`${PLANT_NAMES[plant]} › Plant map`}
-          title="Plant map"
-          sentence="The three plants, the suppliers, the escrow and HQ, as the run moves through them."
-        >
-          <div className="map-page">{map}</div>
-          {foot}
-        </Page>
-      );
-    case "plants":
-      return (
-        <Page
-          label="Three plants page"
-          crumb="Across Acme › Three plants"
-          title="Three plants"
-          sentence="One ledger for the three plants: stock, the moves Kevin proposes, and what does not add up."
-        >
-          {plants}
-          {foot}
-        </Page>
-      );
-    case "books":
-      return (
-        <Page
-          label="Books page"
-          crumb="Across Acme › Books"
-          title="Books"
-          sentence="Settled purchase orders, held invoices and the export for the bookkeeper."
-        >
-          {books}
-          {foot}
-        </Page>
-      );
-    case "hq":
-      return (
-        <Page
-          label="Spending limits page"
-          crumb="Acme HQ › Spending limits"
-          title="Spending limits"
-          sentence="Kevin's limits as the contract enforces them, the category caps and supplier standing."
-        >
-          {hq}
-          {foot}
-        </Page>
-      );
-    default:
-      return (
-        <>
-          <Overview
-            plant={plant}
-            source={source}
-            inventory={inventory}
-            map={map}
-            kevin={kevin}
-            activity={activity}
-          />
-          <div className="page v2 foot-wrap">{foot}</div>
-        </>
-      );
-  }
+  if (page === "integration")
+    return (
+      <>
+        {integration}
+        <div className="page v2 foot-wrap">{foot}</div>
+      </>
+    );
+  if (page === "overview")
+    return (
+      <>
+        <Overview
+          plant={plant}
+          source={source}
+          inventory={inventory}
+          map={map}
+          kevin={kevin}
+          activity={activity}
+        />
+        <div className="page v2 foot-wrap">{foot}</div>
+      </>
+    );
+  const text = PAGE_TEXT[page];
+  const where =
+    text.group === "plant" ? PLANT_NAMES[plant] : text.group === "acme" ? "Across Acme" : "Acme HQ";
+  const props = { plant, source, curtain };
+  const body = (() => {
+    switch (page) {
+      case "map":
+        return <div className="map-page">{map}</div>;
+      case "brief":
+        return (
+          <BriefPage {...props} printUrl={links.brief ? briefUrl(links.brief, plant) : null} />
+        );
+      case "batches":
+        return <BatchRecordsPage {...props} inbox={inbox} queue={queue} />;
+      case "inventory":
+        return <InventoryPage {...props} inventory={inventory} />;
+      case "schedule":
+        return <SchedulePage {...props} />;
+      case "purchasing":
+        return <PurchasingPage {...props} policy={policy} />;
+      case "invoices":
+        return <InvoicesPage {...props} books={books} exportUrl={links.books} />;
+      case "spreadsheets":
+        return <SpreadsheetsPage {...props} wizard={wizard} />;
+      case "plants":
+        return (
+          <>
+            {plants}
+            <ThreeSchedules source={source} />
+          </>
+        );
+      case "erp":
+        return <ErpPage source={source} curtain={curtain} />;
+      case "hq":
+        return hq;
+      case "suppliers":
+        return <SuppliersPage source={source} curtain={curtain} />;
+      case "group":
+        return <GroupPage go={goMap} />;
+      case "sealed":
+        return <SealedPage source={source} curtain={curtain} />;
+      case "export":
+        return exportPane;
+      case "reconciliation":
+        return <ReconciliationPage source={source} curtain={curtain} />;
+    }
+  })();
+  return (
+    <Page
+      label={`${text.title} page`}
+      crumb={`${where} › ${text.title}`}
+      title={text.title}
+      sentence={text.sentence}
+    >
+      {body}
+      {foot}
+    </Page>
+  );
 }
 
-/** Open moves and reviews on Three plants, held invoices on Books: the sidebar's counts. */
+/** The plant map opened on the recorded group purchase (the map reads ?run=group when it opens). */
+function openGroupOnMap(go: (next: { page: PageId }) => void) {
+  const q = new URLSearchParams(location.search);
+  q.set("run", "group");
+  history.replaceState(null, "", `?${q.toString()}`);
+  go({ page: "map" });
+}
+
+/** The printable brief for a plant: the API takes ?plant=; the static host has Hollow Pine's. */
+function briefUrl(base: string, plant: PlantCode) {
+  if (base === STATIC_BRIEF_URL) return plant === "B" ? base : "";
+  return `${base}?plant=${plant}`;
+}
+
+/** Things waiting on a person, per page: the sidebar's counts. */
 function badgesOf(
   inventory: PlantInventory | null,
   moves: TransferSuggestions | null,
   books: Books | null,
+  inbox: InboxState | null,
 ): Partial<Record<PageId, { count: number; tone: "attention" | "problem" }>> {
   const reviews = inventory?.discrepancies.filter((d) => d.status === "open").length ?? 0;
+  const low = inventory?.materials.filter((m) => m.byPlant.B?.low).length ?? 0;
   return {
     plants: { count: reviews + (moves?.suggestions.length ?? 0), tone: "attention" },
-    books: { count: books?.held.length ?? 0, tone: "problem" },
+    invoices: { count: books?.held.length ?? 0, tone: "problem" },
+    inventory: { count: low, tone: "attention" },
+    batches: {
+      count: inbox?.items.filter((i) => i.status === "waiting").length ?? 0,
+      tone: "attention",
+    },
   };
 }
 
@@ -344,7 +493,12 @@ function ReplayApp() {
       go={route.go}
       curtain={curtain}
       setCurtain={setCurtain}
-      badges={badgesOf(plantsSnapshot.inventory, plantsSnapshot.transfers, plantsSnapshot.books)}
+      badges={badgesOf(
+        plantsSnapshot.inventory,
+        plantsSnapshot.transfers,
+        plantsSnapshot.books,
+        null,
+      )}
       person={upNext ?? { name: "Day One", role: "Run complete" }}
     >
       <WithRail curtain={curtain} rail={<Curtain data={data} upTo={at} />}>
@@ -352,7 +506,15 @@ function ReplayApp() {
           page={route.page}
           plant={route.plant}
           source={{ live: false, version: 0 }}
+          curtain={curtain}
           inventory={plantsSnapshot.inventory}
+          books={plantsSnapshot.books}
+          policy={null}
+          inbox={null}
+          links={links}
+          queue={null}
+          wizard={null}
+          goMap={() => openGroupOnMap(route.go)}
           map={<PlantView run={data} at={at} curtain={curtain} onStep={go} />}
           kevin={
             <>
@@ -384,7 +546,7 @@ function ReplayApp() {
               snapshotAt={plantsSnapshot.at}
             />
           }
-          books={
+          exportPane={
             <BooksPane
               books={plantsSnapshot.books}
               error={null}
@@ -555,7 +717,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
     if (route.page === "plants") {
       load(getPolicy, setPolicy);
       load(getMassBalance, setMass);
-    } else if (route.page === "hq" || route.page === "integration") {
+    } else if (["hq", "integration", "purchasing"].includes(route.page)) {
       load(getPolicy, setPolicy);
     }
     return () => {
@@ -660,7 +822,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
       curtain={curtain}
       setCurtain={setCurtain}
       badges={{
-        ...badgesOf(inventory, moves, books),
+        ...badgesOf(inventory, moves, books, inbox),
         overview: { count: waiting, tone: "attention" },
       }}
       person={{ name: actor.name, role: actor.role ?? null }}
@@ -669,8 +831,29 @@ function LiveApp({ initial }: { initial: LiveState }) {
         <Pages
           page={route.page}
           plant={route.plant}
-          source={{ live: true, version: state.steps.length }}
+          source={{ live: true, version: `${state.steps.length}-${acted}` }}
+          curtain={curtain}
           inventory={inventory}
+          books={books}
+          policy={policy}
+          inbox={inbox}
+          links={{ brief: BRIEF_URL, books: BOOKS_EXPORT_URL }}
+          queue={
+            queue ? (
+              <InboxPane
+                inbox={queue}
+                busy={busy !== null}
+                viewer="Ray Delgado"
+                onConfirm={confirmScan}
+              />
+            ) : null
+          }
+          wizard={
+            <section className="card-v2">
+              <ImportPane key={runs} onPosted={() => setActed((n) => n + 1)} />
+            </section>
+          }
+          goMap={() => openGroupOnMap(route.go)}
           map={<PlantView run={state} at={last} curtain={curtain} />}
           kevin={
             <>
@@ -742,12 +925,11 @@ function LiveApp({ initial }: { initial: LiveState }) {
               }}
             />
           }
-          books={
+          exportPane={
             <BooksPane
               books={books}
               error={plantsError}
               links={{ brief: BRIEF_URL, books: BOOKS_EXPORT_URL }}
-              wizardKey={runs}
               run={state}
               curtain={curtain}
             />

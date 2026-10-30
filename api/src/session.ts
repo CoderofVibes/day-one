@@ -42,6 +42,12 @@ import { catalog } from "@day-one/server/ledger/catalog";
 import { plantInventory } from "@day-one/server/ledger/inventory";
 import { approvals, chainTx, staff, vendors } from "@day-one/server/ledger/schema";
 import { historySeries, stockedMaterials, stockSeries } from "@day-one/server/ledger/series";
+import {
+  batchRecordViews,
+  lotViews,
+  purchaseOrderViews,
+  rfqViews,
+} from "@day-one/server/ledger/views";
 import { eq } from "drizzle-orm";
 import {
   ALL_SCANS,
@@ -523,6 +529,24 @@ export class DemoSession {
   /** The charts' series: output, yield and waste per batch, spend and QC per month (all plants). */
   history() {
     return historySeries(this.env.db);
+  }
+
+  /**
+   * One plant's tables for the v2 pages at the run's clock: its purchase orders, requests for
+   * quotes, lots and batch records (server/src/ledger/views.ts).
+   */
+  plant(facility = "B") {
+    if (!["A", "B", "C"].includes(facility)) throw new SessionError(400, `no plant ${facility}`);
+    const at = this.env.clock();
+    const db = this.env.db;
+    return {
+      facility,
+      at,
+      orders: purchaseOrderViews(db, facility),
+      rfqs: rfqViews(db, facility),
+      lots: lotViews(db, facility, at),
+      batches: batchRecordViews(db, facility),
+    };
   }
 
   /** Every product with its formula and plants, every supplier with what it supplies. */

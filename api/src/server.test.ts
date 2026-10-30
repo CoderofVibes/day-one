@@ -349,6 +349,15 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(schedule.body.facility).toBe("B");
     expect(schedule.body.batches.map((b: { batchNo: string }) => b.batchNo)).toContain("BR-B-1048");
     expect((await api("GET", "/api/schedule?plant=Z")).status).toBe(400);
+
+    // The pages' tables for one plant (server/src/ledger/views.ts).
+    const plant = await api("GET", "/api/plant?plant=B");
+    expect(plant.body.facility).toBe("B");
+    expect(plant.body.orders.map((o: { poNo: string }) => o.poNo)).toContain("PO-1039");
+    expect(plant.body.batches.length).toBeGreaterThanOrEqual(45);
+    expect(plant.body.lots.every((l: { facility: string }) => l.facility === "B")).toBe(true);
+    expect(Array.isArray(plant.body.rfqs)).toBe(true);
+    expect((await api("GET", "/api/plant?plant=Z")).status).toBe(400);
   });
 
   it("exports the settled POs for the books: PO-1042 paid from escrow, PO-1041 still held", async () => {
