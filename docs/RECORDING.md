@@ -1,6 +1,6 @@
 # Recording the demo video — 15 minutes
 
-The video page plays the recorded testnet run to the storyboard (docs/DEMO_STORYBOARD.md) on a fixed clock: 1:57, captions burned in, no mouse. Every take is identical, so you can record the screen once and the voice-over separately. Settings from research 16.
+The video page plays the recorded testnet run to the storyboard (docs/DEMO_STORYBOARD.md) on a fixed clock: 2:05, captions burned in, no mouse. Every take is identical, so you can record the screen once and the voice-over separately. Settings from research 16.
 
 ## 1. Set up the PC (3 min)
 
@@ -26,7 +26,7 @@ Then open Edge as a bare window (no address bar, a clean profile with no extensi
 & "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --app="http://localhost:8787/?video=1&view=3d" --window-size=1920,1080 --user-data-dir="$env:TEMP\dayone-video"
 ```
 
-Press **F11** for full screen. You should see "BEFORE", the paper batch record and a green hint "Space to start · R to go back · 1:57 in all". The page always plays the recorded run, even with the API running, so nothing touches testnet.
+Press **F11** for full screen. You should see "BEFORE", the paper batch record and a green hint "Space to start · R to go back · 2:05 in all". The page always plays the recorded run, even with the API running, so nothing touches testnet.
 
 Use `?video=1` without `&view=3d` for the flat map instead.
 
@@ -46,7 +46,7 @@ Check **View → Stats** during a test take: "frames missed due to rendering lag
 ## 4. Record (2 min a take)
 
 1. Press R in the browser (back to the start), then Start Recording in OBS.
-2. Click once on the Edge window to focus it, move the mouse off-screen, press **Space**. The take runs 1:57 and stops on the closing card.
+2. Click once on the Edge window to focus it, move the mouse off-screen, press **Space**. The take runs 2:05 and stops on the closing card.
 3. Stop Recording.
 
 **Retake one beat:** add `&from=<beat>` to the address, e.g. `?video=1&view=3d&from=refusal`; the hint shows where it starts. Beat names are in the table below.

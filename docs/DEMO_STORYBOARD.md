@@ -1,6 +1,6 @@
 # Demo storyboard — "Kevin's Survival Guide to the Agentic Economy"
 
-Target: **2:03**, 1080p60, recorded in OBS from the video page (`?video=1`), which plays the recorded testnet run on a fixed-step clock with these beats and captions (research 16). How to record: docs/RECORDING.md; the timeline is `web/src/video.ts` (1:57 until the UI design session adds the "New bank details" beat below; then about 2:05). Voice-over by the human. Kevin is the character; the tone is warm and plain, never jokey about the money.
+Target: **2:05**, 1080p60, recorded in OBS from the video page (`?video=1`), which plays the recorded testnet run on a fixed-step clock with these beats and captions (research 16). How to record: docs/RECORDING.md; the timeline is `web/src/video.ts` (2:05 since the UI design session added the "New bank details" beat below on Oct 29, at 8.5 s; the shot list below sums to 2:03 with that beat at 8 s). Voice-over by the human. Kevin is the character; the tone is warm and plain, never jokey about the money.
 
 Each beat carries a **judge tag**: the judge whose likely question it answers (research 21). The README and the video make the same claims.
 
