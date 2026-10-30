@@ -411,6 +411,12 @@ body {
   gap: var(--s-4);
   min-width: 0;
 }
+/* On the Overview the run's history scrolls inside its card; the newest step stays on top. */
+.overview-grid .panel.run .feed {
+  max-height: 640px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
 .charts-3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

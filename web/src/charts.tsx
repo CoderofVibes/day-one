@@ -180,7 +180,9 @@ function niceTicks(min: number, max: number, count = 4) {
   const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? raw;
   const lo = Math.floor(min / step) * step;
   const ticks: number[] = [];
-  for (let v = lo; v <= max + step * 0.001; v += step) ticks.push(Number(v.toFixed(10)));
+  // The top tick is at or above the largest value, so no mark rises past the axis.
+  const hi = Math.ceil(max / step - 1e-9) * step;
+  for (let v = lo; v <= hi + step * 0.001; v += step) ticks.push(Number(v.toFixed(10)));
   return ticks;
 }
 
@@ -458,9 +460,12 @@ export function BarChart({
                   })
                 }
               />
-              <text className="tick" x={cx} y={height - 8} textAnchor="middle">
-                {c}
-              </text>
+              {/* Only every n-th label when the bands are too narrow for all of them. */}
+              {i % Math.max(1, Math.ceil(54 / band)) === 0 && (
+                <text className="tick" x={cx} y={height - 8} textAnchor="middle">
+                  {c}
+                </text>
+              )}
             </g>
           );
         })}
