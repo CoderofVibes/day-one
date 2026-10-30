@@ -73,6 +73,8 @@ Check **View → Stats** during a test take: "frames missed due to rendering lag
 
 The "New bank details" beat (OPEN_QUESTIONS #41) is 8.5 s, so both its captions stay under 20 characters a second; the take is 2:05, under the 2:20 export limit, and nothing was trimmed. The invoice is the attack suite's recorded one (`data/attacks/invoices.json`, read with the recorded model answer in `data/replay/attacks-llm.json`), video-only: it sends nothing to the contract and prints nothing in the transcript.
 
+**On the v2 UI (Oct 30):** the page is unchanged by the v2 merge and plays on the v2 build with the site-plan twin: checked from the static build at seven beats (`title`, `batch-record`, `refusal`, `approve`, `bank-details`, `curtain`, `close`) in 3D and flat, each landing on its beat with its caption and no console errors. The recording can be made on v2 as written above.
+
 **Explorer insets** (optional, from the storyboard): screenshots of these recorded transactions on testnet.nearblocks.io:
 the refusal, [FQepeewB…](https://testnet.nearblocks.io/txns/FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af); Linda's relayed approval, [EW5A8qi3…](https://testnet.nearblocks.io/txns/EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8); the payout, [2zwgaHgW…](https://testnet.nearblocks.io/txns/2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn).
 
