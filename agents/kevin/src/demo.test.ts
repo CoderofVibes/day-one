@@ -264,7 +264,7 @@ describe("the demo loop (DEMO_SCRIPT §2)", () => {
     const staff = Object.fromEntries(run.steps.map((s) => [s.title, s.staff.join(" ")]));
     expect(staff).toMatchObject({
       "Load seed":
-        "Loaded 3 facilities, 33 materials, 12 vendors, 7 batch records, 56 days of history.",
+        "Loaded 3 facilities, 54 materials, 18 vendors, 7 batch records, 118 days of history.",
       "Upload BR-B-1045":
         "Kevin read BR-B-1045 (VC500, 800,000 tablets). 8 materials, all within tolerance. Yield 90.8%.",
       "Ray confirms":

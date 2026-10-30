@@ -55,7 +55,7 @@ describe("the REST shape", () => {
     const vendors = bodyOf<{ totalResults: number; items: { entityId: string }[] }>(
       call("GET", "/vendor?limit=5"),
     );
-    expect(vendors.totalResults).toBe(12);
+    expect(vendors.totalResults).toBe(18);
     expect(vendors.items).toHaveLength(5);
     expect(
       bodyOf<{ entityId: string; custentity_vendor_status: { id: string } }>(

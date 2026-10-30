@@ -51,7 +51,7 @@ function onHand(materialCode: string, facilityCode: string) {
 }
 
 describe("reference data", () => {
-  it("has the four facilities, 33 materials, 12 vendors and three products", () => {
+  it("has the four facilities, 54 materials, 18 vendors and ten products (§17)", () => {
     expect(
       db
         .select()
@@ -59,9 +59,9 @@ describe("reference data", () => {
         .all()
         .map((f) => f.code),
     ).toEqual(["ACME", "A", "B", "C"]);
-    expect(db.select().from(materials).all()).toHaveLength(33);
-    expect(db.select().from(vendors).all()).toHaveLength(12);
-    expect(db.select().from(products).all()).toHaveLength(3);
+    expect(db.select().from(materials).all()).toHaveLength(54);
+    expect(db.select().from(vendors).all()).toHaveLength(18);
+    expect(db.select().from(products).all()).toHaveLength(10);
   });
 
   it("starts Plant B's departments grey and the others online", () => {
@@ -70,7 +70,7 @@ describe("reference data", () => {
       .from(departments)
       .where(eq(departments.facilityId, facility("B")))
       .all();
-    expect(b).toHaveLength(9);
+    expect(b).toHaveLength(20);
     expect(new Set(b.map((d) => d.onboardingStatus))).toEqual(new Set(["grey"]));
     const c = db
       .select()
@@ -92,7 +92,7 @@ describe("reference data", () => {
       .innerJoin(products, eq(products.id, formulas.productId))
       .groupBy(products.code)
       .all();
-    expect(totals).toHaveLength(3);
+    expect(totals).toHaveLength(10);
     for (const p of totals) expect(p.total, p.code).toBe(p.blend);
   });
 

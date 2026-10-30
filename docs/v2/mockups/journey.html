@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Day One v2 mockup · Your integration</title>
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="mock.css" />
+<style>
+  .journey { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: var(--s-4); align-items: start; }
+  .stages { display: grid; gap: 0; }
+  .stages .st { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 11px 10px; border-radius: 10px; }
+  .stages .st.on { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+  .stages .n { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line-2); }
+  .stages .n.done { background: var(--ok); color: #fff; border-color: var(--ok); }
+  .stages .n.now { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .stages b { display: block; font-size: var(--t-sm); }
+  .stages small { display: block; color: var(--ink-2); font-size: var(--t-xs); }
+  .progress { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; margin: 6px 0 12px; }
+  .progress i { display: block; height: 100%; width: 31%; background: var(--brand); border-radius: 999px; }
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: var(--s-4); }
+  .old { background: #f7f5ef; border-color: #e6e1d3; }
+  .old h3 .pill { margin-left: auto; }
+  .artifact { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; align-items: start; margin-top: 10px; }
+  .artifact img { width: 120px; border-radius: 4px; box-shadow: 0 4px 14px rgb(0 0 0 / .18); transform: rotate(-2deg); border: 1px solid #d9d2c0; }
+  .artifact p { margin: 0 0 8px; font-size: var(--t-sm); }
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: var(--t-sm); }
+  .steps li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  .steps li.done { opacity: .75; }
+  .steps li.now { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+  .steps .k { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--surface-2); }
+  .steps li.done .k { background: var(--ok); color: #fff; }
+  .steps li.now .k { background: var(--brand); color: #fff; }
+  .tally { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--s-3); }
+  .tally .t { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  .tally .t b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .tally .t span { font-size: var(--t-xs); color: var(--ink-2); }
+</style>
+</head>
+<body>
+<div class="frame">
+  <aside class="sidebar">
+    <div class="brand"><span class="mark">K</span><div><b>Day One</b><small>Kevin, AI assistant</small></div></div>
+    <div class="picker"><span class="ico">B</span><div><b>Hollow Pine Tablet Co.</b><small>Plant B · day 3 of the integration</small></div><span class="chev">▾</span></div>
+    <nav class="nav">
+      <a aria-current="page">Your integration<span class="count">stage 2</span></a>
+      <h6>Plant</h6>
+      <a>Overview</a><a>Plant map</a><a>Batch records<span class="count">2</span></a><a>Inventory &amp; forecast</a><a>Schedule</a><a>Purchasing</a><a>Invoices</a>
+      <h6>Across Acme</h6>
+      <a>Three plants</a><a>ERP connection</a>
+      <h6>Acme HQ</h6>
+      <a>Spending limits</a><a>Suppliers</a><a>Reconciliation</a>
+    </nav>
+    <div class="bottom">
+      <div class="trust"><span class="dot"></span><b>Protected</b> · see how</div>
+      <div class="person"><span class="avatar">RD</span><div><b>Ray Delgado</b><small>Purchaser · switch person</small></div></div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="header">
+      <div>
+        <div class="crumb">Hollow Pine Tablet Co. › Your integration</div>
+        <h1>Your integration</h1>
+        <p>Seven stages. Each one moves a piece of the plant's work from the old way to Kevin, with you checking every step. Nothing posts until you say so.</p>
+      </div>
+      <div class="right">
+        <span class="pill attention">stage 2 of 7</span>
+        <span class="clock">Ledger time <b>Wed Nov 4, 2026 · 10:20</b></span>
+      </div>
+    </div>
+
+    <div class="journey">
+      <section class="card">
+        <h3>Progress <span class="right">2 of 7 done</span></h3>
+        <div class="progress"><i></i></div>
+        <div class="stages">
+          <div class="st"><span class="n done">✓</span><div><b>0 · Meet Kevin</b><small>Who does what, and how Kevin works</small></div></div>
+          <div class="st"><span class="n done">✓</span><div><b>1 · Your spreadsheets</b><small>Inventory workbook, vendors, open POs posted</small></div><span class="pill ok">done</span></div>
+          <div class="st on"><span class="n now">2</span><div><b>2 · Your paper</b><small>Batch records read and confirmed</small></div><span class="pill attention">4 of 7</span></div>
+          <div class="st"><span class="n">3</span><div><b>3 · Your products and schedule</b><small>10 products, the next four weeks</small></div></div>
+          <div class="st"><span class="n">4</span><div><b>4 · Suppliers and spend rules</b><small>Standing per supplier, Kevin's limits</small></div></div>
+          <div class="st"><span class="n">5</span><div><b>5 · Your first order</b><small>Forecast, quotes, approval, delivery, QC, paid</small></div></div>
+          <div class="st"><span class="n">6</span><div><b>6 · Your books and the ERP</b><small>Matched, exported, reconciled</small></div></div>
+          <div class="st"><span class="n">7</span><div><b>7 · Day to day</b><small>The brief, the map, the trends</small></div></div>
+        </div>
+      </section>
+
+      <div class="col">
+        <section class="card kevin">
+          <div class="who"><span class="mark">K</span><b>Kevin</b> · stage 2, your paper <span class="pill attention">for Ray</span></div>
+          <div class="say">Four records are in. Three to go: BR-B-1044, BR-B-1045 and BR-B-1046. Drop them in the folder or open each one; I read it, you check it, then it posts.</div>
+          <div class="actions"><button class="btn primary">Open the next scan</button><button class="btn">Drop scans in the folder</button><button class="btn quiet">Do it later</button></div>
+        </section>
+
+        <div class="split">
+          <section class="card old">
+            <h3>How it is done today <span class="pill neutral plain">the old way</span></h3>
+            <div class="artifact">
+              <img src="../../../data/batch-records/BR-B-1043.jpg" alt="A paper batch record" />
+              <div>
+                <p>Every batch is written on a paper record in Weigh &amp; Dispense: lots, targets, what was weighed, initials. The binder goes to the office at the end of the week.</p>
+                <p>Marcy types each record into the acquirer's ERP by hand: 7 to 9 lines, the yield, the waste. A struck-through number or a smudged one is a phone call to the floor.</p>
+                <p class="muted small">Stock is updated when the binder is typed, so the forecast is a week behind the floor.</p>
+              </div>
+            </div>
+          </section>
+          <section class="card">
+            <h3>With Kevin <span class="right">you check, Kevin posts</span></h3>
+            <ul class="steps">
+              <li class="done"><span class="k">✓</span><div><b>BR-B-1041</b> · Vitamin C 500 · read, all within tolerance, confirmed by Ray</div><span class="pill ok">posted</span></li>
+              <li class="done"><span class="k">✓</span><div><b>BR-B-1042</b> · Cal-Mag + D3 · grams on paper, kilograms in stock; Kevin converted, Ray confirmed</div><span class="pill ok">posted</span></li>
+              <li class="done"><span class="k">✓</span><div><b>BR-B-1043</b> · Vitamin C 500 · a struck-through 102.100 corrected to 120.100 (DW); Kevin took the corrected value</div><span class="pill ok">posted</span></li>
+              <li class="done"><span class="k">✓</span><div><b>BR-A-2207</b> · Riverside's record · draws from the shared lot; flagged for the discrepancy check</div><span class="pill ok">posted</span></li>
+              <li class="now"><span class="k">5</span><div><b>BR-B-1044</b> · Electrolyte · high waste (13.8%), "compression sticking" in the margin; Kevin flags the yield</div><span class="pill attention">check it</span></li>
+              <li><span class="k">6</span><div><b>BR-B-1045</b> · Vitamin C 500 · the one that pushes ascorbic acid below its reorder point</div><span class="pill neutral">waiting</span></li>
+              <li><span class="k">7</span><div><b>BR-B-1046</b> · Cal-Mag + D3 · one smudged number; Kevin will ask</div><span class="pill neutral">waiting</span></li>
+            </ul>
+          </section>
+        </div>
+
+        <section class="card">
+          <h3>So far, from the ledger <span class="right">counts, not estimates</span></h3>
+          <div class="tally">
+            <div class="t"><b>19</b><span>spreadsheet rows read</span></div>
+            <div class="t"><b>9</b><span>questions Kevin asked</span></div>
+            <div class="t"><b>4</b><span>records confirmed</span></div>
+            <div class="t"><b>1</b><span>unit conversion caught</span></div>
+            <div class="t"><b>1</b><span>correction honoured</span></div>
+            <div class="t"><b>0</b><span>posted without a person</span></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

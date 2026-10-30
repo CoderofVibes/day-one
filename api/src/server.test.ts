@@ -284,20 +284,103 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect((await api("GET", "/api/brief?plant=Z")).status).toBe(400);
   });
 
+  it("serves the integration program and records a decision (VISION §6.12.3)", async () => {
+    const before = await api("GET", "/api/journey");
+    expect(before.status).toBe(200);
+    expect(before.body.stages).toHaveLength(8);
+    expect(before.body.stages[0]).toMatchObject({ key: "meet", done: false });
+    const after = await api("POST", "/api/journey/decisions", {
+      stage: 0,
+      item: "start",
+      decision: "started",
+      staff: "Ray Delgado",
+    });
+    expect(after.status).toBe(200);
+    expect(after.body.stages[0]).toMatchObject({ key: "meet", done: true });
+    expect((await api("POST", "/api/journey/decisions", { stage: 5, item: "Paid" })).status).toBe(
+      400,
+    );
+    expect((await api("POST", "/api/journey/decisions", { item: "start" })).status).toBe(400);
+    // This server watches no folder: there is nowhere to drop the scans.
+    expect((await api("POST", "/api/batch-records/inbox", {})).status).toBe(409);
+  });
+
+  it("serves the catalogue and drafts a limit change in plain words, signing nothing", async () => {
+    const cat = await api("GET", "/api/catalog");
+    expect(cat.body.products).toHaveLength(10);
+    expect(cat.body.vendors).toHaveLength(18);
+    const draft = await api("POST", "/api/policy/draft", {
+      request: "raise Kevin's per-PO limit to $3,000",
+    });
+    expect(draft.status).toBe(200);
+    expect(draft.body).toMatchObject({ understood: true });
+    expect(draft.body.changes).toEqual([
+      expect.objectContaining({ field: "per_po_limit", from: "$2,500.00", to: "$3,000.00" }),
+    ]);
+    expect(draft.body.call.method).toBe("set_agent_policy");
+    expect((await api("POST", "/api/policy/draft", {})).status).toBe(400);
+    chainDown = true;
+    expect((await api("POST", "/api/policy/draft", { request: "pause Kevin" })).status).toBe(503);
+    chainDown = false;
+  });
+
+  it("serves the charts' series, a stock line, the forecast and the schedule (VISION §6.7)", async () => {
+    const history = await api("GET", "/api/history");
+    expect(history.status).toBe(200);
+    expect(history.body.production.length).toBeGreaterThanOrEqual(78);
+    expect(history.body.spend.months.length).toBeGreaterThan(0);
+
+    const held = await api("GET", "/api/history/stock?plant=B");
+    expect(held.body.materials).toContain("ASC");
+    const asc = await api("GET", "/api/history/stock?plant=B&material=ASC");
+    expect(asc.body).toMatchObject({
+      facility: "B",
+      material: "ASC",
+      reorderPointBase: 500_000_000,
+    });
+    expect((await api("GET", "/api/history/stock?plant=B&material=NOPE")).status).toBe(404);
+
+    const forecast = await api("GET", "/api/forecast?plant=B&days=10");
+    expect(forecast.body).toMatchObject({ facility: "B", horizonDays: 10 });
+    expect(forecast.body.materials[0]).toMatchObject({ material: "ASC" });
+    expect((await api("GET", "/api/forecast?plant=B&days=500")).status).toBe(400);
+
+    const schedule = await api("GET", "/api/schedule?plant=B&days=14");
+    expect(schedule.body.facility).toBe("B");
+    expect(schedule.body.batches.map((b: { batchNo: string }) => b.batchNo)).toContain("BR-B-1048");
+    expect((await api("GET", "/api/schedule?plant=Z")).status).toBe(400);
+
+    // The pages' tables for one plant (server/src/ledger/views.ts).
+    const plant = await api("GET", "/api/plant?plant=B");
+    expect(plant.body.facility).toBe("B");
+    expect(plant.body.orders.map((o: { poNo: string }) => o.poNo)).toContain("PO-1039");
+    expect(plant.body.batches.length).toBeGreaterThanOrEqual(45);
+    expect(plant.body.lots.every((l: { facility: string }) => l.facility === "B")).toBe(true);
+    expect(Array.isArray(plant.body.rfqs)).toBe(true);
+    expect((await api("GET", "/api/plant?plant=Z")).status).toBe(400);
+
+    // Each area's sheet on the plant map (server/src/ledger/areas.ts).
+    const areas = await api("GET", "/api/areas?plant=B");
+    expect(Object.keys(areas.body.areas)).toHaveLength(20);
+    expect(areas.body.areas.weigh_cells.equipment.map((q: { id: string }) => q.id)).toEqual([
+      "W1",
+      "W2",
+      "W3",
+      "W4",
+    ]);
+    expect((await api("GET", "/api/areas?plant=Z")).status).toBe(400);
+  });
+
   it("exports the settled POs for the books: PO-1042 paid from escrow, PO-1041 still held", async () => {
     const { status, body } = await api("GET", "/api/books");
     expect(status).toBe(200);
+    // The plant's earlier POs (PO-1007 to PO-1034, FICTIONAL_DATA §17), the bookkeeper pack's six
+    // and PO-1042; PO-1041 is escrowed, not settled.
     expect(body.settled.map((po: { poNo: string }) => po.poNo)).toEqual([
-      "PO-1035",
-      "PO-1036",
-      "PO-1037",
-      "PO-1038",
-      "PO-1039",
-      "PO-1040",
+      ...Array.from({ length: 34 }, (_, i) => `PO-${1007 + i}`),
       "PO-1042",
     ]);
-    // $9,632.50 of history plus PO-1042's $5,150.00; PO-1041 is escrowed, not settled.
-    expect(body.totalUsdc).toBe(14_782_500_000);
+    expect(body.totalUsdc).toBe(190_860_850_000);
     const state = (await api("GET", "/api/run")).body;
     const txOf = (method: string) =>
       state.transactions.find((t: { method: string }) => t.method === method)?.tx;
@@ -306,7 +389,7 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(po1042.recordRef).toBe(state.transactions.at(-1).tx);
     expect(po1042.releasedOn).toBe("2026-11-16");
     expect(body.sentences[0]).toBe(
-      "7 settled purchase orders, $14,782.50, each matched to a receipt; 1 paid from escrow on QC release, the rest by check before Day One.",
+      "35 settled purchase orders, $190,860.85, each matched to a receipt; 1 paid from escrow on QC release, the rest by check before Day One.",
     );
     expect(body.alerts.map((a: { poNo: string }) => a.poNo)).toEqual(["PO-1040"]);
 

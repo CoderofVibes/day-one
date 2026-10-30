@@ -52,15 +52,31 @@ export const facilities = sqliteTable(
   ],
 );
 
+/** The twenty areas of a plant, by building (docs/VISION.md §6.12.1). */
 export const DEPARTMENTS = [
+  // Warehouse
   "receiving",
-  "warehouse",
-  "weigh_dispense",
-  "blending",
-  "compression",
-  "packaging",
+  "quarantine",
+  "rm_storage",
+  "pkg_storage",
+  "fg_storage",
+  "shipping",
+  // Processing
+  "rm_staging",
+  "weigh_cells",
+  "formulation",
+  "tableting",
+  "bulk_hold",
+  // Dry side
+  "bottling",
+  "labeling",
+  "cartoning",
+  "palletizing",
+  "powder_fill",
+  // Lab and office
   "qc_lab",
   "purchasing",
+  "planning",
   "accounting",
 ] as const;
 
@@ -438,6 +454,26 @@ export const transferDismissals = sqliteTable("transfer_dismissals", {
   dismissedBy: integer().references(() => staff.id),
   dismissedAt: text().notNull(),
 });
+
+/**
+ * The integration program (docs/VISION.md §6.12.3): what a person confirmed, approved or held
+ * at each stage. Append-only like the rest of the ledger; the latest row for a stage and item is
+ * the one in force.
+ */
+export const JOURNEY_DECISIONS = ["started", "confirmed", "approved", "held"] as const;
+export const journeyDecisions = sqliteTable(
+  "journey_decisions",
+  {
+    id: id(),
+    stage: integer().notNull(),
+    item: text().notNull(),
+    decision: text({ enum: JOURNEY_DECISIONS }).notNull(),
+    staffId: integer().references(() => staff.id),
+    note: text(),
+    decidedAt: text().notNull(),
+  },
+  (t) => [oneOf("journey_decisions_decision", t.decision, JOURNEY_DECISIONS)],
+);
 
 // ---------------------------------------------------------------- 6. Production and genealogy
 

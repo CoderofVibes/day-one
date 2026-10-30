@@ -1,0 +1,63 @@
+/* Day One v2 design tokens (docs/VISION.md §6.3). Built from web/src/tokens.css: the status
+   colours and the type scale stay; the surfaces take the reference's light, frosted look.
+   System font stack, no download, so the page works offline and in record mode. */
+
+:root {
+  --bg: #eef1f4;
+  --wash-1: rgb(31 111 92 / 0.10);
+  --wash-2: rgb(78 127 209 / 0.12);
+  --surface: rgb(255 255 255 / 0.96);
+  --surface-2: #f4f6f8;
+  --ink: #16191d;
+  --ink-2: #5b6470;
+  --ink-3: #8a93a0;
+  --line: #e3e7eb;
+  --line-2: #cfd5dc;
+
+  --brand: #1f6f5c;
+  --brand-ink: #ffffff;
+  --brand-soft: #e3f1ec;
+
+  --ok: #1b6b3a;
+  --ok-bg: #e2f3e8;
+  --attention: #9a6700;
+  --attention-bg: #fff3d6;
+  --problem: #b3261e;
+  --problem-bg: #fbe9e7;
+  --held: #1e5aa8;
+  --held-bg: #e4eefb;
+  --neutral: #5b6470;
+  --neutral-bg: #eef1f4;
+
+  --chart-1: #1f6f5c;
+  --chart-2: #4e7fd1;
+  --chart-3: #c8912a;
+  --chart-4: #8a93a0;
+
+  --curtain: #14171c;
+  --curtain-ink: #d9dde3;
+
+  --t-xs: 12px;
+  --t-sm: 13px;
+  --t-md: 15px;
+  --t-lg: 17px;
+  --t-xl: 24px;
+  --t-2xl: 30px;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace;
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 32px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --shadow: 0 1px 2px rgb(16 24 40 / 0.04), 0 8px 24px rgb(16 24 40 / 0.06);
+  --focus: 0 0 0 3px color-mix(in srgb, var(--brand) 45%, transparent);
+
+  color-scheme: light;
+}

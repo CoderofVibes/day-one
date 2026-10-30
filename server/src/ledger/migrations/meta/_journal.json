@@ -71,6 +71,20 @@
       "when": 1793299544046,
       "tag": "0009_batch_record_inbox",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1793333932393,
+      "tag": "0010_plant_areas",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1793338905591,
+      "tag": "0011_journey",
+      "breakpoints": true
     }
   ]
 }

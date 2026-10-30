@@ -2,12 +2,20 @@ import { openErp } from "@day-one/erp/db";
 import { createRouter } from "@day-one/erp/http/router";
 import { trialBalance } from "@day-one/erp/posting";
 import { loadApHistory, seedErp } from "@day-one/erp/seed";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { type Ledger, openLedger } from "../ledger/db.ts";
-import { facilities, lotBalances, lots, materials } from "../ledger/schema.ts";
+import {
+  batchRecords,
+  facilities,
+  lotBalances,
+  lotEvents,
+  lots,
+  materials,
+} from "../ledger/schema.ts";
 import { seedLedger } from "../seed/index.ts";
 import { inProcessTransport, MockNetSuiteConnector } from "./mock-netsuite.ts";
+import { earlierBills } from "./rebuild.ts";
 import { syncLedgerToErp } from "./sync.ts";
 
 let dayOne: Ledger;
@@ -41,10 +49,18 @@ function dayOneBalances() {
 describe("the cutover sync", () => {
   it("mirrors the history and derives ERP balances that equal Day One's, lot by lot", async () => {
     const summary = await syncLedgerToErp(dayOne, erp);
-    expect(summary.purchaseOrders).toBe(6);
-    expect(summary.receipts).toBe(6);
+    // The plant's earlier POs (PO-1007 to PO-1034, FICTIONAL_DATA §17) and the pack's six.
+    expect(summary.purchaseOrders).toBe(34);
+    expect(summary.receipts).toBe(34);
     expect(summary.transfers).toBe(5);
-    expect(summary.productionIssues).toBe(9); // 8 history batches + Plant A's dispensing draw
+    // One issue per batch, plus each draw outside a batch (packaging runs, Plant A's dispensing).
+    const batches = dayOne.select().from(batchRecords).all().length;
+    const loose = dayOne
+      .select()
+      .from(lotEvents)
+      .where(and(eq(lotEvents.kind, "consumed"), isNull(lotEvents.refType)))
+      .all().length;
+    expect(summary.productionIssues).toBe(batches + loose);
     expect(summary.alreadyThere).toBe(0);
 
     const expected = dayOneBalances();
@@ -106,7 +122,7 @@ describe("the cutover sync", () => {
 
   it("matches the migrated AP history against the synced POs and receipts", async () => {
     await syncLedgerToErp(dayOne, erp);
-    const history = loadApHistory(erpDb);
+    const history = loadApHistory(erpDb, undefined, earlierBills(dayOne));
     const by = Object.fromEntries(history.bills.map((b) => [b.invoiceNo, b]));
     for (const inv of [
       "PEC-55120",
@@ -127,7 +143,7 @@ describe("the cutover sync", () => {
     expect(
       history.checks.every((c) => c.appliedTo === c.checkNo.replace(/.*/, c.appliedTo ?? "")),
     ).toBe(true);
-    expect(history.checks.map((c) => c.appliedTo)).toEqual([
+    expect(history.checks.slice(-6).map((c) => c.appliedTo)).toEqual([
       "PEC-55120",
       "FP-2026-0912",
       "LP-88231",
@@ -140,7 +156,7 @@ describe("the cutover sync", () => {
     expect(tb.rows.find((r) => r.acctNumber === "2000")?.balanceUsdc).toBe(0);
     expect(tb.rows.find((r) => r.acctNumber === "2100")?.balanceUsdc).toBe(0);
     expect(tb.rows.find((r) => r.acctNumber === "1000")?.balanceUsdc).toBe(
-      -(25_000 + 9_632.5) * 1_000_000,
+      -Math.round((25_000 + 185_710.85) * 1_000_000),
     );
   });
 });

@@ -149,6 +149,24 @@ export const VENDORS: readonly {
     payoutAccount: "quickchem-direct.testnet",
     comments: "Not qualified by Acme quality. AP blocked; no bills accepted.",
   },
+  // v2 (docs/VISION.md §6.12.2): the suppliers behind the seven new products.
+  { entityId: "CNP", companyName: "Cascade Nutrient Premix", status: "approved" },
+  { entityId: "HFC", companyName: "Halvorsen Fine Chemicals", status: "approved" },
+  {
+    entityId: "BWC",
+    companyName: "Brightwater Cultures",
+    status: "approved",
+    comments: "Ships cold; QC checks the logger on receipt.",
+  },
+  {
+    entityId: "KCC",
+    companyName: "Keystone Capsule Co.",
+    status: "approved",
+    // Shells ship by the carton; a 1% over-run on a bill is normal.
+    vbPoQtyToleranceBp: 100,
+  },
+  { entityId: "PFM", companyName: "Prairie Fiber Mills", status: "approved" },
+  { entityId: "NFC", companyName: "Northfield Folding Carton", status: "approved" },
 ];
 
 type ItemClass = "rawMaterial" | "packaging" | "labSupply" | "finishedGood";
@@ -389,6 +407,45 @@ export const ITEMS: readonly {
     unitsType: "ea",
     cost: 0,
   },
+  // v2 (docs/VISION.md §6.12.2): the seven new products' materials and the products themselves.
+  ...(
+    [
+      ["ZNG", "Zinc gluconate", "rawMaterial", "kg", 6.8],
+      ["BVP", "B-vitamin premix", "rawMaterial", "kg", 38.5],
+      ["MEL", "Melatonin", "rawMaterial", "kg", 410],
+      ["PBB", "Probiotic blend 100B CFU/g", "rawMaterial", "kg", 265],
+      ["PSY", "Psyllium husk powder", "rawMaterial", "kg", 4.1],
+      ["MBG", "Magnesium bisglycinate", "rawMaterial", "kg", 11.2],
+      ["DCP", "Dicalcium phosphate anhydrous", "rawMaterial", "kg", 1.45],
+      ["BT1", "100 cc HDPE bottle", "packaging", "ea", 0.018],
+      ["CP3", "33 mm CR cap with induction liner", "packaging", "ea", 0.012],
+      ["BT3", "250 cc HDPE bottle", "packaging", "ea", 0.026],
+      ["CP4", "45 mm CR cap with induction liner", "packaging", "ea", 0.016],
+      ["CAN", "300 g canister with scoop and lid", "packaging", "ea", 0.42],
+      ["CTN", "Folding carton, 100 cc bottle", "packaging", "ea", 0.055],
+      ["HPC", "Capsule shell, size 0, HPMC", "packaging", "ea", 0.0021],
+      ["LZN", "Label, ZN50", "packaging", "ea", 0.009],
+      ["LBC", "Label, BCX", "packaging", "ea", 0.009],
+      ["LML", "Label, MEL5", "packaging", "ea", 0.009],
+      ["LPR", "Label, PRO", "packaging", "ea", 0.009],
+      ["LFB", "Label, FBR canister", "packaging", "ea", 0.011],
+      ["LMG", "Label, MG100", "packaging", "ea", 0.009],
+      ["LD3", "Label, D3K", "packaging", "ea", 0.009],
+      ["P-ZN50", "Hollow Pine Zinc 50 mg Tablet", "finishedGood", "ea", 0],
+      ["P-MEL5", "Hollow Pine Melatonin 5 mg Tablet", "finishedGood", "ea", 0],
+      ["P-PRO", "Hollow Pine Probiotic 10B Capsule", "finishedGood", "ea", 0],
+      ["P-FBR", "Hollow Pine Fiber Powder Canister", "finishedGood", "ea", 0],
+      ["P-BCX", "Acme B-Complex Tablet", "finishedGood", "ea", 0],
+      ["P-MG100", "Acme Magnesium Glycinate 100 mg Tablet", "finishedGood", "ea", 0],
+      ["P-D3K", "Acme Vitamin D3 2,000 IU Tablet", "finishedGood", "ea", 0],
+    ] as const
+  ).map(([itemId, displayName, itemClass, unitsType, cost]) => ({
+    itemId,
+    displayName,
+    itemClass,
+    unitsType,
+    cost,
+  })),
 ];
 
 export const ASSET_ACCOUNT: Record<ItemClass, AccountNumber> = {

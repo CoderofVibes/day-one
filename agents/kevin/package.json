@@ -23,7 +23,8 @@
     "./erp": "./src/erp.ts",
     "./groupBuy": "./src/groupBuy.ts",
     "./mcp": "./src/mcp.ts",
-    "./transferSuggestions": "./src/transferSuggestions.ts"
+    "./transferSuggestions": "./src/transferSuggestions.ts",
+    "./schedule": "./src/schedule.ts"
   },
   "dependencies": {
     "@day-one/server": "*",

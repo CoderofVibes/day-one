@@ -37,6 +37,24 @@ export const RELAYER = "dayone-relayer.testnet";
 export const INBOX_DIR = join(REPO_ROOT, "data/inbox/batch-records");
 /** The PO numbers the demo submits; a contract accepts each id once. */
 export const DEMO_POS = ["PO-1041", "PO-1042"];
+
+const scan = (name: string) => `data/batch-records/${name}`;
+/** Plant B's week on paper: a yield note, the run's own record, a smudge, and a slip by mistake. */
+export const DEMO_INBOX = [
+  scan("BR-B-1044.jpg"),
+  scan("BR-B-1045.jpg"),
+  scan("BR-B-1046.jpg"),
+  "data/packing-slips/NG-PS-60417.jpg",
+];
+/** Every scan with a recorded answer. BR-B-1045's is the run's own (data/replay/demo-llm.json). */
+export const RECORDABLE_SCANS = [
+  ...["BR-B-1041", "BR-B-1042", "BR-B-1043", "BR-B-1044", "BR-B-1046", "BR-A-2207"].map((b) =>
+    scan(`${b}.jpg`),
+  ),
+  "data/packing-slips/NG-PS-60417.jpg",
+];
+/** The whole week: the run's record first, then every scan with a recorded answer. */
+export const ALL_SCANS = [scan("BR-B-1045.jpg"), ...RECORDABLE_SCANS];
 const BATCH_RECORD = "data/batch-records/BR-B-1045.jpg";
 const SLIP = "NG-PS-60417";
 

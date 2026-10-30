@@ -12,21 +12,19 @@ beforeEach(() => {
 });
 
 describe("the bookkeeper export (FEATURES_V2 §2)", () => {
-  it("lists the six settled history POs and reconciles to $9,632.50 to the cent", () => {
+  it("lists the settled history POs and reconciles to the cent", () => {
+    // The plant's earlier POs (PO-1007 to PO-1034, FICTIONAL_DATA §17) and the pack's six (§13).
     const b = books(db);
-    expect(b.settled.map((po) => po.poNo)).toEqual([
-      "PO-1035",
-      "PO-1036",
-      "PO-1037",
-      "PO-1038",
-      "PO-1039",
-      "PO-1040",
-    ]);
-    expect(b.totalUsdc).toBe(9_632_500_000);
+    expect(b.settled.map((po) => po.poNo)).toEqual(
+      Array.from({ length: 34 }, (_, i) => `PO-${1007 + i}`),
+    );
+    const pack = b.settled.filter((po) => po.poNo >= "PO-1035");
+    expect(pack.reduce((sum, po) => sum + po.totalUsdc, 0)).toBe(9_632_500_000);
+    expect(b.totalUsdc).toBe(185_710_850_000);
     const amounts = b.rows.map((r) => Number(r.Amount));
-    expect(amounts.reduce((a, c) => a + c, 0).toFixed(2)).toBe("9632.50");
+    expect(amounts.reduce((a, c) => a + c, 0).toFixed(2)).toBe("185710.85");
     expect(b.sentences[0]).toBe(
-      "6 settled purchase orders, $9,632.50, each matched to a receipt, all paid by check before Day One.",
+      "34 settled purchase orders, $185,710.85, each matched to a receipt, all paid by check before Day One.",
     );
     // Every settled PO has its receipt date; none was paid through Day One yet.
     expect(b.settled.every((po) => po.receivedOn && !po.paymentRef)).toBe(true);
@@ -38,14 +36,15 @@ describe("the bookkeeper export (FEATURES_V2 §2)", () => {
     expect(header).toBe(
       "PO,Vendor,Received,Released,Material,Description,Quantity,Unit,Unit price,Amount,Payment ref,Record ref",
     );
-    expect(lines).toHaveLength(8);
-    expect(lines[0]).toMatch(
+    expect(lines).toHaveLength(66);
+    const of = (poNo: string) => lines.filter((l) => l.startsWith(`${poNo},`));
+    expect(of("PO-1035")[0]).toMatch(
       /^PO-1035,Pacific Excipient Co\.,2026-\d\d-\d\d,2026-\d\d-\d\d,MGS,Magnesium stearate,50\.000,kg,8\.20,410\.00,,$/,
     );
-    expect(lines[2]).toMatch(
+    expect(of("PO-1036")[0]).toMatch(
       /^PO-1036,Fennimore Polyols,.*,SOR,Sorbitol,1000\.000,kg,2\.15,2150\.00,,$/,
     );
-    expect(lines[3]).toMatch(/,BTL,.*,100000,ea,0\.021,2100\.00,,$/);
+    expect(of("PO-1037")[0]).toMatch(/,BTL,.*,100000,ea,0\.021,2100\.00,,$/);
     expect(csv).not.toMatch(/wallet|token|gas|escrow|NEAR/i);
   });
 
@@ -58,11 +57,11 @@ describe("the bookkeeper export (FEATURES_V2 §2)", () => {
       material: "MGS",
       unitPriceUsdc: 9_350_000,
       trailingUsdc: 8_200_000,
-      trailingPoNos: ["PO-1035"],
+      trailingPoNos: ["PO-1017", "PO-1031", "PO-1035"],
       driftBp: 1402,
     });
     expect(b.sentences[1]).toBe(
-      "Pacific Excipient Co. billed magnesium stearate at $9.35/kg on PO-1040, up 14.0% on its $8.20/kg trailing price (PO-1035). It was a real, received order, so it is in the export with both prices; worth a call before the next one.",
+      "Pacific Excipient Co. billed magnesium stearate at $9.35/kg on PO-1040, up 14.0% on its $8.20/kg trailing price (PO-1017, PO-1031, PO-1035). It was a real, received order, so it is in the export with both prices; worth a call before the next one.",
     );
     // The drifted line is still exported.
     expect(b.rows.filter((r) => r.PO === "PO-1040")).toHaveLength(1);

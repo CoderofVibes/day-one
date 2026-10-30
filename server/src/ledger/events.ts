@@ -3,7 +3,7 @@
 // transaction. Nothing edits an event: corrections are compensating count_adjust events.
 
 import type { RunResult } from "better-sqlite3";
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { asc, desc, eq, sql } from "drizzle-orm";
 import type { BaseSQLiteDatabase } from "drizzle-orm/sqlite-core";
 import { canonicalJson, sha256Hex } from "../canonical.ts";
 import type * as schema from "./schema.ts";
@@ -139,43 +139,110 @@ function facilityAfter(kind: LotEventKind, current: number | null, eventFacility
   return current === null || kind === "transfer_in" ? eventFacility : current;
 }
 
-function onHand(db: LedgerDb, lotId: number, facilityId?: number): number {
-  const where =
-    facilityId === undefined
-      ? eq(lotEvents.lotId, lotId)
-      : and(eq(lotEvents.lotId, lotId), eq(lotEvents.facilityId, facilityId));
-  const row = db
-    .select({ total: sql<number>`coalesce(sum(${lotEvents.qtyDeltaBase}), 0)` })
-    .from(lotEvents)
-    .where(where)
-    .get();
-  return row?.total ?? 0;
+/**
+ * The statements appendLotEvent runs, prepared once per connection: building and preparing
+ * them on every call was most of the cost of a long history (the seed writes ~3,000 events).
+ * A transaction shares its database's session, so one cache entry serves both.
+ */
+function prepareStatements(db: LedgerDb) {
+  return {
+    lot: db
+      .select()
+      .from(lots)
+      .where(eq(lots.id, sql.placeholder("lotId")))
+      .prepare(),
+    onHand: db
+      .select({
+        total: sql<number>`coalesce(sum(${lotEvents.qtyDeltaBase}), 0)`,
+        atFacility: sql<number>`coalesce(sum(case when ${lotEvents.facilityId} = ${sql.placeholder("facilityId")} then ${lotEvents.qtyDeltaBase} else 0 end), 0)`,
+      })
+      .from(lotEvents)
+      .where(eq(lotEvents.lotId, sql.placeholder("lotId")))
+      .prepare(),
+    last: db
+      .select({ seq: lotEvents.seq, eventHash: lotEvents.eventHash })
+      .from(lotEvents)
+      .orderBy(desc(lotEvents.seq))
+      .limit(1)
+      .prepare(),
+    insert: db
+      .insert(lotEvents)
+      .values(
+        Object.fromEntries(EVENT_COLUMNS.map((c) => [c, sql.placeholder(c)])) as Record<
+          (typeof EVENT_COLUMNS)[number],
+          ReturnType<typeof sql.placeholder>
+        > as unknown as typeof lotEvents.$inferInsert,
+      )
+      .returning()
+      .prepare(),
+    project: db
+      .update(lots)
+      .set({
+        state: sql.placeholder("state") as unknown as LotState,
+        currentFacilityId: sql.placeholder("currentFacilityId") as unknown as number,
+      })
+      .where(eq(lots.id, sql.placeholder("lotId")))
+      .prepare(),
+  };
+}
+
+/** Every stored column of an event but its id, in insert order. */
+const EVENT_COLUMNS = [
+  "seq",
+  "lotId",
+  "kind",
+  "fromState",
+  "toState",
+  "qtyDeltaBase",
+  "facilityId",
+  "departmentId",
+  "refType",
+  "refId",
+  "actorType",
+  "actorId",
+  "reason",
+  "occurredAt",
+  "recordedAt",
+  "prevHash",
+  "eventHash",
+] as const;
+const STATEMENTS = new WeakMap<object, ReturnType<typeof prepareStatements>>();
+
+function statementsFor(db: LedgerDb) {
+  const key = (db as unknown as { session: object }).session;
+  let made = STATEMENTS.get(key);
+  if (!made) {
+    made = prepareStatements(db);
+    STATEMENTS.set(key, made);
+  }
+  return made;
 }
 
 /** Validates, hashes, inserts and projects one lot event. Returns the stored event. */
 export function appendLotEvent(db: LedgerDb, input: LotEventInput): LotEvent {
-  return db.transaction((tx) => {
-    const lot = tx.select().from(lots).where(eq(lots.id, input.lotId)).get();
+  const q = statementsFor(db);
+  // A savepoint, so a refused event leaves nothing behind inside a larger transaction.
+  return db.transaction(() => {
+    const lot = q.lot.get({ lotId: input.lotId });
     if (!lot) throw new LedgerRuleError(`lot ${input.lotId} does not exist`);
 
     checkQty(input.kind, input.qtyDeltaBase, MOVES[input.kind].qty);
     if (input.kind === "count_adjust" && !input.reason?.trim()) {
       throw new LedgerRuleError("count_adjust needs a reason");
     }
-    const atFacility = onHand(tx, lot.id, input.facilityId) + input.qtyDeltaBase;
+    const held = q.onHand.get({ lotId: lot.id, facilityId: input.facilityId }) ?? {
+      total: 0,
+      atFacility: 0,
+    };
+    const atFacility = held.atFacility + input.qtyDeltaBase;
     if (atFacility < 0) {
       throw new LedgerRuleError(
         `${input.kind} would leave lot ${lot.lotCode} at ${atFacility} base units at facility ${input.facilityId}`,
       );
     }
-    const toState = nextState(input.kind, lot.state, onHand(tx, lot.id) + input.qtyDeltaBase);
+    const toState = nextState(input.kind, lot.state, held.total + input.qtyDeltaBase);
 
-    const last = tx
-      .select({ seq: lotEvents.seq, eventHash: lotEvents.eventHash })
-      .from(lotEvents)
-      .orderBy(desc(lotEvents.seq))
-      .limit(1)
-      .get();
+    const last = q.last.get();
     const prevHash = last?.eventHash ?? GENESIS_HASH;
     const fields = {
       seq: (last?.seq ?? 0) + 1,
@@ -194,19 +261,17 @@ export function appendLotEvent(db: LedgerDb, input: LotEventInput): LotEvent {
       occurredAt: input.occurredAt,
       recordedAt: input.recordedAt ?? input.occurredAt,
     };
-    const stored = tx
-      .insert(lotEvents)
-      .values({ ...fields, prevHash, eventHash: eventHash(fields, prevHash) })
-      .returning()
-      .get();
+    const stored = q.insert.get({
+      ...fields,
+      prevHash,
+      eventHash: eventHash(fields, prevHash),
+    }) as LotEvent;
 
-    tx.update(lots)
-      .set({
-        state: toState,
-        currentFacilityId: facilityAfter(input.kind, lot.currentFacilityId, input.facilityId),
-      })
-      .where(eq(lots.id, lot.id))
-      .run();
+    q.project.run({
+      state: toState,
+      currentFacilityId: facilityAfter(input.kind, lot.currentFacilityId, input.facilityId),
+      lotId: lot.id,
+    });
     return stored;
   });
 }

@@ -21,8 +21,9 @@ describe("forecast", () => {
     const f = forecastMaterial(db, { facility: "B", material: "ASC", now: NOW });
     expect(f.plannedBatches.map((b) => b.batchNo)).toEqual(["BR-B-1047", "BR-B-1048"]);
     expect(f.onHandBase).toBe(310 * KG);
-    // History used exactly 412 kg per batch, BR-B-1045 used 412.350 kg: the average decides.
-    expect(f.needBase).toBe(Math.round(((412 * 2 + 412.35) * KG) / 3) * 2);
+    // History used exactly 412 kg per batch (the two of §10 and the four of §17), BR-B-1045 used
+    // 412.350 kg: the average decides. The sentence rounds it to 824 kg either way.
+    expect(f.needBase).toBe(Math.round(((412 * 6 + 412.35) * KG) / 7) * 2);
     expect(f.shortfallBase).toBe(f.needBase - 310 * KG);
     expect(f.recommendQtyBase).toBe(700 * KG);
     expect(f.needBy).toBe("2026-11-17");

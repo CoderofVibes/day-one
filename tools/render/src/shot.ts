@@ -15,7 +15,9 @@ const out = process.argv[2] ?? ".";
 const url = process.env.URL;
 const steps = Number(process.env.STEPS ?? 8);
 // VIEW=3d opens the 3D twin (web/src/twin3d) and waits for its transitions to settle.
-const query = process.env.VIEW === "3d" ? "?view=3d" : "";
+// The integration program is the home page; the run and its twin are on the Overview, so that
+// is where the shots open unless PAGE names another page (PAGE=integration).
+const query = `?page=${process.env.PAGE ?? "overview"}${process.env.VIEW === "3d" ? "&view=3d" : ""}`;
 const types: Record<string, string> = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -45,7 +47,8 @@ for (const [name, width, scheme] of [
     });
     await page.goto(`http://day-one.local/${query}`);
   }
-  await page.getByText("Behind the curtain").first().click();
+  // The trust marker sits in the sidebar on a wide screen and in the top bar on a phone.
+  await page.getByText("Behind the curtain").filter({ visible: true }).first().click();
   if (url) {
     // Live: start over, then take the primary action STEPS times, waiting for each to land.
     const bar = page.getByRole("region", { name: "Next action" });
@@ -71,14 +74,18 @@ for (const [name, width, scheme] of [
       );
     }
     if (process.env.PLANTS) {
-      await page.getByRole("tab", { name: "Plants" }).click();
+      // On a phone the page list is behind the menu button.
+      const menu = page.getByRole("button", { name: "Pages" });
+      if (await menu.isVisible()) await menu.click();
+      await page.getByRole("link", { name: "Three plants" }).click();
       await page.getByRole("region", { name: "Three plants" }).getByRole("table").first().waitFor();
     }
   } else {
     for (let i = 0; i < steps; i++) await page.keyboard.press("ArrowRight");
   }
-  if (query) await page.locator(".t3-stage canvas").waitFor();
-  await page.waitForTimeout(query ? 2400 : 600);
+  const threeD = process.env.VIEW === "3d";
+  if (threeD) await page.locator(".t3-stage canvas").waitFor();
+  await page.waitForTimeout(threeD ? 2400 : 600);
   await page.screenshot({ path: join(out, `${name}.png`), fullPage: Boolean(process.env.FULL) });
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,

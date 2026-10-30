@@ -608,6 +608,11 @@ a {
   color: var(--ink-2);
 }
 
+.queue > li > .review-box {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
 .queue .review {
   grid-column: 1 / -1;
 }
@@ -1040,6 +1045,22 @@ tbody th:first-child {
 .plant-map .dept .top {
   fill: var(--map-off);
   transition: fill 600ms ease;
+}
+
+/* A building's walls; its roof is split into its areas (.dept .top). */
+.plant-map .building .wall {
+  fill: var(--map-off);
+  filter: brightness(0.86);
+}
+.plant-map .building .wall.side-r {
+  filter: brightness(0.72);
+}
+.plant-map .building .dept .top {
+  stroke: var(--map-floor);
+  stroke-width: 0.25;
+}
+.plant-map .dept-label.online {
+  fill: var(--ink);
 }
 
 .plant-map .dept .side-l,

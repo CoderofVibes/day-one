@@ -100,7 +100,7 @@ describe("reconciling Day One, the ERP and the contract", () => {
     ]);
     expect(result.checks[6]?.skipped).toBeUndefined();
     expect(result.checks[0]?.lines[0]).toMatch(/^\d+ material-plant balances equal/);
-    expect(result.checks[1]?.lines[0]).toMatch(/^6 Day One POs mirrored/);
+    expect(result.checks[1]?.lines[0]).toMatch(/^34 Day One POs mirrored/);
     expect(result.checks[3]?.lines[0]).toBe(
       "ERP account 1050 $25,000.00 = contract budget $25,000.00 + in escrow $0.00",
     );
@@ -147,7 +147,7 @@ describe("reconciling Day One, the ERP and the contract", () => {
     const by = Object.fromEntries(result.checks.map((c) => [c.name, c]));
     expect(by.Inventory?.lines).toEqual(["ASC at Plant B: Day One 722.350 kg, ERP 723.350 kg"]);
     expect(by.Payments?.lines).toEqual([
-      "ERP payment VP-7 ($5,150.00, ref DEADBEEF…) matches no release Day One recorded",
+      "ERP payment VP-35 ($5,150.00, ref DEADBEEF…) matches no release Day One recorded",
     ]);
     // The ERP booked $5,150.00 paid out of escrow that the contract still holds.
     expect(by.Escrow?.lines[0]).toBe(

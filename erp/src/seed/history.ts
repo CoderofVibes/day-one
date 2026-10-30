@@ -6,7 +6,7 @@
 import { eq } from "drizzle-orm";
 import type { ErpDb } from "../db.ts";
 import { usd } from "../money.ts";
-import { createVendorBill, createVendorPayment } from "../posting/payables.ts";
+import { createVendorBill, createVendorPayment, decideVendorBill } from "../posting/payables.ts";
 import { users } from "../schema.ts";
 
 const KG = 1_000_000;
@@ -103,14 +103,17 @@ export const AP_HISTORY_BILLS: readonly HistoryBill[] = [
   },
 ];
 
-/** Net-30 checks that settled the history bills before Day One (fictional check numbers). */
-export const AP_HISTORY_CHECKS: readonly {
+/** A check that settled one history bill. */
+export interface HistoryCheck {
   checkNo: string;
   invoiceNo: string;
   vendorCode: string;
   date: string;
   amount: number;
-}[] = [
+}
+
+/** Net-30 checks that settled the history bills before Day One (fictional check numbers). */
+export const AP_HISTORY_CHECKS: readonly HistoryCheck[] = [
   {
     checkNo: "CHK-20311",
     invoiceNo: "PEC-55120",
@@ -166,12 +169,26 @@ export interface HistoryLoad {
   checks: { checkNo: string; appliedTo: string | null }[];
 }
 
-/** Posts the history as Marcy (AP) would have keyed it; idempotent like every posting. */
-export function loadApHistory(db: ErpDb, at = "2026-11-09T12:00:00.000Z"): HistoryLoad {
+/**
+ * Posts the history as Marcy (AP) would have keyed it; idempotent like every posting. `earlier`
+ * is the plant's older paid bills (Jul–Sep, built by the cutover from the POs the connector
+ * synced), posted before the §13 pack so the pack's alerts read against them.
+ */
+export function loadApHistory(
+  db: ErpDb,
+  at = "2026-11-09T12:00:00.000Z",
+  earlier: { bills: readonly HistoryBill[]; checks: readonly HistoryCheck[] } = {
+    bills: [],
+    checks: [],
+  },
+): HistoryLoad {
   const marcy = db.select().from(users).where(eq(users.username, "marcy.allen")).get();
   if (!marcy) throw new Error("loadApHistory: marcy.allen is not seeded");
-  const bills = AP_HISTORY_BILLS.map((b) => {
-    const result = createVendorBill(db, {
+  const allBills = [...earlier.bills, ...AP_HISTORY_BILLS];
+  const allChecks = [...earlier.checks, ...AP_HISTORY_CHECKS];
+  const earlierIds = new Set(earlier.bills.map((b) => b.invoiceNo));
+  const bills = allBills.map((b) => {
+    let result = createVendorBill(db, {
       tranId: b.invoiceNo,
       vendorCode: b.vendorCode,
       poTranId: b.poNo,
@@ -188,6 +205,16 @@ export function loadApHistory(db: ErpDb, at = "2026-11-09T12:00:00.000Z"): Histo
       userId: marcy.id,
       at,
     });
+    // The plant's earlier bills over $10,000 were approved by Marcy before they were paid.
+    if (earlierIds.has(b.invoiceNo) && result.approvalStatus === "pendingApproval") {
+      result = decideVendorBill(db, {
+        billId: result.id,
+        decision: "approve",
+        note: "Approved before cutover: matched to PO and receipt.",
+        userId: marcy.id,
+        at,
+      });
+    }
     return {
       invoiceNo: b.invoiceNo,
       matchStatus: result.matchStatus,
@@ -196,7 +223,7 @@ export function loadApHistory(db: ErpDb, at = "2026-11-09T12:00:00.000Z"): Histo
       priceDrift: result.priceDrift[0]?.driftBp ?? 0,
     };
   });
-  const checks = AP_HISTORY_CHECKS.map((c) => {
+  const checks = allChecks.map((c) => {
     const result = createVendorPayment(db, {
       externalId: c.checkNo,
       vendorCode: c.vendorCode,

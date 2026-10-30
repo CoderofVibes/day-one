@@ -32,7 +32,8 @@ const COLUMNS: Record<string, string> = {
   notes: "notes",
 };
 
-export function ImportPane() {
+/** `onPosted` runs once the opening stock is in, so a page around the wizard can read again. */
+export function ImportPane({ onPosted }: { onPosted?: () => void } = {}) {
   const [view, setView] = useState<ImportView | null>(null);
   const [answers, setAnswers] = useState<Record<string, ImportAnswer>>({});
   const [result, setResult] = useState<{ result: ImportResult; opening: OpeningLine[] } | null>(
@@ -159,6 +160,7 @@ export function ImportPane() {
                   onClick={() =>
                     run("Posting the opening stock", async () => {
                       setResult(await postImportConfirm(view.id, answers));
+                      onPosted?.();
                     })
                   }
                 >

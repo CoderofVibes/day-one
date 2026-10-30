@@ -4,7 +4,15 @@
 // testable without a GPU. Positions come from the same layout.ts the flat map uses: a layout
 // point (x, y) is the world point (x, 0, y), and heights are the same DEPT_Z and FLOOR_Z.
 
-import { type Box, DEPT_Z, FACILITY_LAYOUTS, FLOOR_Z, PAD_Z, PADS } from "../twin/layout.ts";
+import {
+  type Box,
+  DEPT_Z,
+  FACILITY_LAYOUTS,
+  FLOOR_Z,
+  PAD_Z,
+  PADS,
+  zoneOf,
+} from "../twin/layout.ts";
 import type {
   DeptCode,
   DeptStatus,
@@ -15,7 +23,7 @@ import type {
   TwinQuote,
   TwinState,
 } from "../twin/model.ts";
-import { topHeight } from "./buildings.ts";
+import { siteTop, topHeight } from "./buildings.ts";
 
 export type V3 = [number, number, number];
 
@@ -37,7 +45,8 @@ export function ease(u: number): number {
 }
 
 export function lerp(a: number, b: number, u: number): number {
-  return a + (b - a) * u;
+  // Exact at both ends (a at 0, b at 1), so a finished transition lands on its framing.
+  return a * (1 - u) + b * u;
 }
 
 export function lerp3(a: V3, b: V3, u: number): V3 {
@@ -120,17 +129,17 @@ export function blendDepartments(prev: TwinState, next: TwinState, u: number): D
 
 // ------------------------------------------------------------------ anchors and paths
 
-/** Where a flow starts or ends: just above the middle of a department roof or a pad. */
-export function anchor3(ref: NodeRef, state: TwinState): V3 {
+/**
+ * Where a flow starts or ends: just above the middle of a department's main area or a pad. The
+ * buildings stand from the start, so a grey area's anchor is at roof height like a lit one's;
+ * the state is kept in the signature for the callers that pass it.
+ */
+export function anchor3(ref: NodeRef, _state?: TwinState): V3 {
   if (ref.kind === "dept") {
     const box = deptBox(ref.facility, ref.dept);
-    const status =
-      state.facilities
-        .find((f) => f.id === ref.facility)
-        ?.departments.find((d) => d.code === ref.dept)?.status ?? "offline";
     if (box) {
       const [x, y] = centerOf(box);
-      return world(x, y, FLOOR_Z + topHeight(ref.dept, heightOf(lookOf(ref.facility, status))) + 1);
+      return world(x, y, FLOOR_Z + topHeight(ref.dept, ref.facility) + 1);
     }
   }
   const pad = PADS[ref.kind === "dept" ? "hq" : ref.kind];
@@ -262,6 +271,7 @@ export function blendFlows(prev: TwinState, next: TwinState, u: number): FlowFra
 
 export interface LotFrame {
   lot: TwinLot;
+  /** Where the pallet stands: the warehouse's quarantine area, or its department's main area. */
   box: Box;
   /** The cage's height above its resting place while it drops in. */
   drop: number;
@@ -275,7 +285,8 @@ export function blendLots(prev: TwinState, next: TwinState, u: number): LotFrame
   const e = ease(u);
   const out: LotFrame[] = [];
   for (const lot of next.lots) {
-    const box = deptBox(lot.facility, lot.department);
+    // A delivered lot waits in the warehouse's quarantine cage until QC decides, wherever QC sits.
+    const box = zoneOf(lot.facility, "quarantine")?.box ?? deptBox(lot.facility, lot.department);
     if (!box) continue;
     const was = prev.lots.find((l) => l.code === lot.code);
     if (!was) {
@@ -338,7 +349,7 @@ const ISO = Math.PI / 4;
 const UP = 0.62;
 
 /** Department labels hide beyond this camera distance; the whole-site view keeps plant names only. */
-export const LABEL_DISTANCE = 135;
+export const LABEL_DISTANCE = 190;
 
 /** The canvas in CSS pixels. Labels are DOM, so their size is in pixels, whatever the camera does. */
 export interface Viewport {
@@ -422,8 +433,7 @@ export function depotPositions(): V3[] {
 function plantSubjects(id: FacilityId): Subject[] {
   const layout = FACILITY_LAYOUTS.find((l) => l.id === id);
   if (!layout) return [];
-  const top =
-    FLOOR_Z + Math.max(...layout.departments.map((d) => topHeight(d.code, DEPT_Z.online)));
+  const top = FLOOR_Z + siteTop(id);
   return [
     ...boxSubjects(layout.floor, top),
     { point: plantLabelPoint(layout.floor), padPx: PLANT_LABEL_PX },
@@ -449,10 +459,12 @@ const SUPPLIERS = (): Subject[] => [
     padPx: DEPOT_LABEL_PX,
   })),
 ];
-/** Plant B's dock: the truck stops west of receiving, on the side it came from. */
+/** Plant B's dock: the truck stops in front of receiving, on the apron it came in by. */
 const DOCK = (): Subject[] => {
   const box = deptBox("B", "receiving");
-  return box ? [{ point: world(box.x - 5, box.y + box.d / 2, 0), padPx: TRUCK_LABEL_PX }] : [];
+  return box
+    ? [{ point: world(box.x + box.w / 2, box.y + box.d + 5, 0), padPx: TRUCK_LABEL_PX }]
+    : [];
 };
 
 const SITE: Shot = {
@@ -511,7 +523,7 @@ const COIN_LABEL_PX: [number, number] = [110, 18];
 function deptSubjects(id: FacilityId, code: DeptCode): Subject[] {
   const box = deptBox(id, code);
   if (!box) return [];
-  const top = FLOOR_Z + topHeight(code, DEPT_Z.online);
+  const top = FLOOR_Z + topHeight(code, id);
   const [x, y] = centerOf(box);
   return [...boxSubjects(box, top), { point: world(x, y, top + 3), padPx: COIN_LABEL_PX }];
 }

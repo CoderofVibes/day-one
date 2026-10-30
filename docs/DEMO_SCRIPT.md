@@ -30,7 +30,7 @@ The demo clock starts at `2026-11-09T13:00:00Z`. Each step prints a plain-langua
 
 | # | Step | Expected staff-facing output | Expected chain output |
 |---|---|---|---|
-| 0 | Load seed | `Loaded 3 facilities, 33 materials, 12 vendors, 7 batch records, 56 days of history.` (days since the first seeded batch, BR-B-1033 on Sep 14) | `chain: spend-policy budget 25,000.00 DTUSD, escrowed 0.00 DTUSD` |
+| 0 | Load seed | `Loaded 3 facilities, 54 materials, 18 vendors, 7 batch records, 118 days of history.` (days since the first seeded batch, Jul 14; FICTIONAL_DATA §17) | `chain: spend-policy budget 25,000.00 DTUSD, escrowed 0.00 DTUSD` |
 | 1 | Upload BR-B-1045 | `Kevin read BR-B-1045 (VC500, 800,000 tablets). 8 materials, all within tolerance. Yield 90.8%.` | — |
 | 2 | Ray confirms | `Inventory updated. Ascorbic acid at Plant B: 722.4 kg → 310.0 kg (reorder point 500 kg).` | `chain: anchored BR-B-1045 0x… ✓ (tx …)` |
 | 3 | Discrepancy | `Plant A still shows 12.55 kg of lot ASC-261009-01, but Plant B weighed in 187.45 kg of the 200 kg sent. Proposed adjustment sent to Plant A for review.` | — |

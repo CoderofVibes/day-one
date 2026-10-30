@@ -1,14 +1,17 @@
-// The 2D plant map: plain SVG from one TwinState (research 16). Three plants as isometric
-// slabs, Plant B's departments grey until Kevin processes a record for them, the quarantined
-// lot caged in amber, and the material and money flows as arcs between the plants, the
+// The 2D plant map: plain SVG from one TwinState (research 16). Three plants as isometric sites
+// with the same buildings as the 3D twin (layout.ts): each building's roof split into its areas,
+// Plant B's areas grey until Kevin processes a record for their department, the quarantined lot
+// caged in amber over the warehouse's quarantine area, and the material and money flows as arcs between the plants, the
 // suppliers, the escrow and HQ. No chain words on the map itself; behind the curtain the flow
 // labels carry their transaction hash. The frame around it (the switches, the caption and the
 // legend) is PlantView's; the map's full description is its accessible label.
 
 import {
+  AREAS,
+  type AreaCode,
   anchor,
   arc,
-  DEPT_Z,
+  type BuildingKind,
   FACILITY_LAYOUTS,
   FLOOR_Z,
   front,
@@ -17,6 +20,7 @@ import {
   PADS,
   roof,
   roofCenter,
+  siteScale,
   slab,
   VIEW,
 } from "./layout.ts";
@@ -29,12 +33,31 @@ import {
   type TwinState,
 } from "./model.ts";
 
-export function PlantMap({ state, curtain }: { state: TwinState; curtain: boolean }) {
-  const deptZ = (facility: FacilityId, dept: DeptCode) =>
-    DEPT_Z[
-      state.facilities.find((f) => f.id === facility)?.departments.find((d) => d.code === dept)
-        ?.status ?? "offline"
-    ];
+/** An area of a plant, as the maps hand it to the area sheet. */
+export interface AreaPick {
+  facility: FacilityId;
+  area: AreaCode;
+}
+
+export function PlantMap({
+  state,
+  curtain,
+  onPick,
+  picked,
+}: {
+  state: TwinState;
+  curtain: boolean;
+  /** An area was clicked: the plant map opens its sheet. */
+  onPick?: (pick: AreaPick) => void;
+  picked?: AreaPick | null;
+}) {
+  // Flows leave and land on the roof of the department's building.
+  const deptZ = (facility: FacilityId, dept: DeptCode) => {
+    const layout = FACILITY_LAYOUTS.find((l) => l.id === facility);
+    const box = layout?.departments.find((d) => d.code === dept)?.box;
+    const zone = layout?.zones.find((z) => z.dept === dept && z.box === box);
+    return zone ? FLAT_HEIGHT[zone.building] * siteScale(facility) : FLAT_HEIGHT.warehouse;
+  };
   const notes = formatTwinState(state, curtain);
 
   return (
@@ -50,68 +73,111 @@ export function PlantMap({ state, curtain }: { state: TwinState; curtain: boolea
         if (!facility) return null;
         const floor = slab(layout.floor, 0, FLOOR_Z);
         const [nx, ny] = front(layout.floor);
-        const sorted = [...layout.departments].sort(
-          (a, b) => a.box.x + a.box.y - (b.box.x + b.box.y),
+        const sk = siteScale(layout.id);
+        const statusOf = (dept: DeptCode) =>
+          facility.departments.find((d) => d.code === dept)?.status ?? "offline";
+        // Back to front, so nearer buildings overlap farther ones.
+        const buildings = [...layout.buildings].sort(
+          (a, b) => a.box.x + a.box.y + a.box.w + a.box.d - (b.box.x + b.box.y + b.box.w + b.box.d),
         );
+        const quarantine = layout.zones.find((z) => z.area === "quarantine");
+        const lots = state.lots.filter((l) => l.facility === layout.id);
         return (
           <g key={layout.id} className={`facility plant-${layout.id}`}>
             <path className="floor top" d={floor.top} />
             <path className="floor side-l" d={floor.left} />
             <path className="floor side-r" d={floor.right} />
-            {sorted.map(({ code, box }) => {
-              const status = facility.departments.find((d) => d.code === code)?.status ?? "offline";
-              const z1 = FLOOR_Z + DEPT_Z[status];
-              const s = slab(box, FLOOR_Z, z1);
-              const [lx, ly] = roofCenter(box, z1);
-              const label = facility.departments.find((d) => d.code === code)?.label ?? code;
-              const lots = state.lots.filter(
-                (l) => l.facility === layout.id && l.department === code,
-              );
-              const caged = lots.some((l) => l.state === "quarantine");
+            {buildings.map((b) => {
+              const z1 = FLOOR_Z + FLAT_HEIGHT[b.kind] * sk;
+              const walls = slab(b.box, FLOOR_Z, z1);
+              const zones = layout.zones.filter((z) => z.building === b.kind);
               return (
-                <g key={code} className={`dept ${status}`} data-dept={code}>
-                  <path className="side-l" d={s.left} />
-                  <path className="side-r" d={s.right} />
-                  <path className="top" d={s.top} />
-                  {status === "onboarding" && (
-                    <polygon className="pulse" points={roof(box, z1 + 0.6)} />
-                  )}
-                  {caged && (
-                    <g className="cage">
-                      <polygon points={roof(box, z1 + 3)} />
-                      {[0, 1, 2, 3].map((corner) => {
-                        const c = [
-                          [box.x, box.y],
-                          [box.x + box.w, box.y],
-                          [box.x + box.w, box.y + box.d],
-                          [box.x, box.y + box.d],
-                        ][corner] as [number, number];
-                        const [x0, y0] = iso(c[0], c[1], z1);
-                        const [x1, y1] = iso(c[0], c[1], z1 + 3);
-                        return <line key={corner} x1={x0} y1={y0} x2={x1} y2={y1} />;
-                      })}
-                    </g>
-                  )}
-                  {layout.id === "B" && (
-                    <text className="dept-label" x={lx} y={ly + 0.9} textAnchor="middle">
-                      {label}
-                    </text>
-                  )}
-                  {lots.map((l) => (
-                    <text
-                      key={l.code}
-                      className={`lot ${l.state}`}
-                      x={lx}
-                      y={ly + 3.8}
-                      textAnchor="middle"
-                    >
-                      {l.state === "quarantine" ? "⚠ " : l.state === "released" ? "✓ " : "✗ "}
-                      {l.code}
-                    </text>
-                  ))}
+                <g key={b.kind} className={`building ${b.kind}`}>
+                  <path className="wall side-l" d={walls.left} />
+                  <path className="wall side-r" d={walls.right} />
+                  {zones.map((z) => {
+                    const status = statusOf(z.dept);
+                    const on = picked?.facility === layout.id && picked.area === z.area;
+                    const choose = () => onPick?.({ facility: layout.id, area: z.area });
+                    return (
+                      <g
+                        key={z.area}
+                        className={`dept ${status}${on ? " picked" : ""}${onPick ? " pickable" : ""}`}
+                        data-area={z.area}
+                        {...(onPick
+                          ? {
+                              role: "button",
+                              tabIndex: 0,
+                              "aria-label": `${AREAS[z.area].label}, ${facility.name}`,
+                              onClick: choose,
+                              onKeyDown: (e: React.KeyboardEvent) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  choose();
+                                }
+                              },
+                            }
+                          : {})}
+                      >
+                        <path className="top" d={slab(z.box, z1, z1).top} />
+                        {status === "onboarding" && (
+                          <polygon className="pulse" points={roof(z.box, z1 + 0.6)} />
+                        )}
+                      </g>
+                    );
+                  })}
                 </g>
               );
             })}
+            {layout.id === "B" &&
+              layout.departments.map(({ code, box }) => {
+                const zone = layout.zones.find((z) => z.box === box);
+                const z1 = FLOOR_Z + FLAT_HEIGHT[zone?.building ?? "warehouse"] * sk;
+                const [lx, ly] = roofCenter(box, z1);
+                const label = facility.departments.find((d) => d.code === code)?.label ?? code;
+                return (
+                  <text
+                    key={code}
+                    className={`dept-label ${statusOf(code)}`}
+                    x={lx}
+                    y={ly + 0.9}
+                    textAnchor="middle"
+                  >
+                    {label}
+                  </text>
+                );
+              })}
+            {quarantine &&
+              lots.map((l) => {
+                const box = quarantine.box;
+                const z1 = FLOOR_Z + FLAT_HEIGHT.warehouse * sk;
+                const [lx, ly] = roofCenter(box, z1);
+                return (
+                  <g key={l.code}>
+                    {l.state === "quarantine" && (
+                      <g className="cage">
+                        <polygon points={roof(box, z1 + 3)} />
+                        {(
+                          [
+                            [box.x, box.y],
+                            [box.x + box.w, box.y],
+                            [box.x + box.w, box.y + box.d],
+                            [box.x, box.y + box.d],
+                          ] as [number, number][]
+                        ).map(([cx, cy]) => {
+                          const [x0, y0] = iso(cx, cy, z1);
+                          const [x1, y1] = iso(cx, cy, z1 + 3);
+                          return <line key={`${cx}:${cy}`} x1={x0} y1={y0} x2={x1} y2={y1} />;
+                        })}
+                      </g>
+                    )}
+                    <text className={`lot ${l.state}`} x={lx} y={ly + 3.8} textAnchor="middle">
+                      {l.state === "quarantine" ? "⚠ " : l.state === "released" ? "✓ " : "✗ "}
+                      {l.code}
+                    </text>
+                  </g>
+                );
+              })}
             <text className="plant-name" x={nx} y={ny + 4} textAnchor="middle">
               {facility.name}
             </text>
@@ -161,6 +227,15 @@ export function PlantMap({ state, curtain }: { state: TwinState; curtain: boolea
     </svg>
   );
 }
+
+/** The buildings' heights on the flat map: lower than the twin's, so the roofs stay readable. */
+const FLAT_HEIGHT: Record<BuildingKind, number> = {
+  warehouse: 4,
+  processing: 3.6,
+  dryside: 3,
+  lab: 2.8,
+  office: 5.2,
+};
 
 function FlowArc({
   flow,

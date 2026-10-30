@@ -24,6 +24,16 @@
 //   GET  /api/brief                            Kevin's 5am brief (?plant=A|B|C; the acquired plant by default)
 //   GET  /api/brief.html                       the same brief as one printable page
 //   GET  /api/policy                           HQ's view: the limits the contract enforces now, policy changes
+//   GET  /api/journey                          the integration program: seven stages, what each holds (VISION §6.12.3)
+//   POST /api/journey/decisions                JSON {"stage": 3, "item": "plan", "decision"?: "confirmed", "staff"?: …, "note"?: …}
+//   POST /api/batch-records/inbox              JSON {"all"?: true}: drops the week's scans into the watched folder, as npm run inbox
+//   GET  /api/catalog                          products with formulas and plants, suppliers with what they supply
+//   POST /api/policy/draft                     JSON {"request": …}: Kevin's draft of HQ's owner call; nothing is signed
+//   GET  /api/erp/reconcile                    the recorded run's ERP reconciliation (npm run erp:reconcile -- --json)
+//   GET  /api/history                          the charts' series: batches, spend and QC per month
+//   GET  /api/history/stock                    ?plant=B&material=ASC: stock over time; no material: what the plant held
+//   GET  /api/forecast                         ?plant=B&days=10: Kevin's forecast for every material the plant uses
+//   GET  /api/schedule                         ?plant=B&days=14: planned batches, what each draws, cover and cost
 //   POST /api/mass-balance/proposals           Kevin sends each flagged batch's plant a waste correction
 //   POST /api/discrepancies/:id/review        JSON {"decision": "apply" | "dismiss", "staff"?: …}
 //   GET  /api/imports                          the import plant's opening inventory, posted imports, review queue
@@ -43,8 +53,9 @@ import { extname, join, normalize, resolve, sep } from "node:path";
 import { DemoOrderError } from "@day-one/kevin/demo";
 import { ExtractionError } from "@day-one/kevin/extraction";
 import { explainFailure } from "@day-one/server/chain/explain";
-import { DemoEnvError } from "./env.ts";
+import { DemoEnvError, REPO_ROOT } from "./env.ts";
 import { ImportDesk } from "./imports.ts";
+import { recordedReconciliation } from "./reconcile.ts";
 import { type DemoSession, SessionError, type StepView, stepView } from "./session.ts";
 
 export interface ServerOptions {
@@ -114,6 +125,37 @@ async function route(
   if (method === "GET" && path === "/api/batch-records")
     return reply(res, 200, await session.inbox());
   if (method === "GET" && path === "/api/policy") return reply(res, 200, await session.policy());
+  if (method === "GET" && path === "/api/history") return reply(res, 200, session.history());
+  if (method === "GET" && path === "/api/catalog") return reply(res, 200, session.catalog());
+  if (method === "GET" && path === "/api/areas")
+    return reply(res, 200, session.areas(url.searchParams.get("plant") ?? undefined));
+  if (method === "GET" && path === "/api/plant")
+    return reply(res, 200, session.plant(url.searchParams.get("plant") ?? undefined));
+  if (method === "GET" && path === "/api/erp/reconcile")
+    return reply(res, 200, await recordedReconciliation(REPO_ROOT));
+  if (method === "GET" && path === "/api/journey")
+    return reply(res, 200, session.journey(desk.state().imports));
+  if (method === "GET" && path === "/api/history/stock")
+    return reply(
+      res,
+      200,
+      session.stock(
+        url.searchParams.get("plant") ?? undefined,
+        url.searchParams.get("material") ?? undefined,
+      ),
+    );
+  if (method === "GET" && path === "/api/forecast")
+    return reply(
+      res,
+      200,
+      session.forecast(url.searchParams.get("plant") ?? undefined, numberParam(url, "days")),
+    );
+  if (method === "GET" && path === "/api/schedule")
+    return reply(
+      res,
+      200,
+      session.schedule(url.searchParams.get("plant") ?? undefined, numberParam(url, "days")),
+    );
   if (method === "GET" && path === "/api/brief")
     return reply(res, 200, session.brief(url.searchParams.get("plant") ?? undefined));
   if (method === "GET" && path === "/api/brief.html") {
@@ -190,6 +232,42 @@ async function route(
     const file = text(body.file);
     if (!file) throw new SessionError(400, "send the photo as image/jpeg, or JSON {file}");
     return steps(res, session, await session.upload({ file }));
+  }
+
+  if (path === "/api/policy/draft") {
+    const body = await readJson(req, maxBody);
+    const request = text(body.request);
+    if (!request)
+      throw new SessionError(400, 'send JSON {"request": "raise Kevin\'s per-PO limit to $3,000"}');
+    return reply(res, 200, await session.draftPolicy(request));
+  }
+
+  if (path === "/api/batch-records/inbox") {
+    const body = await readJson(req, maxBody);
+    return reply(res, 200, await session.dropScans(body.all === true));
+  }
+
+  if (path === "/api/journey/decisions") {
+    const body = await readJson(req, maxBody);
+    const stage = Number(body.stage);
+    const item = text(body.item);
+    if (!Number.isInteger(stage) || !item) {
+      throw new SessionError(400, 'send JSON {"stage": 3, "item": "plan"}');
+    }
+    const decision = text(body.decision);
+    if (decision && !["started", "confirmed", "approved", "held"].includes(decision)) {
+      throw new SessionError(400, "decision must be started, confirmed, approved or held");
+    }
+    const note = text(body.note);
+    const staff = text(body.staff);
+    await session.decide({
+      stage,
+      item,
+      ...(decision ? { decision: decision as "started" | "confirmed" | "approved" | "held" } : {}),
+      ...(note ? { note } : {}),
+      ...(staff ? { staff } : {}),
+    });
+    return reply(res, 200, session.journey(desk.state().imports));
   }
 
   const confirm = /^\/api\/batch-records\/([\w-]+)\/confirm$/.exec(path);
@@ -390,4 +468,15 @@ function serveStatic(res: ServerResponse, staticDir: string | undefined, path: s
   if (extname(file) !== ".html") return res.end(readFileSync(file));
   // The page learns it is served by the API from this tag; on a static host it does not probe.
   res.end(readFileSync(file, "utf8").replace("<head>", `<head>${API_MARK}`));
+}
+
+/** A whole-number query parameter from 0 to 90, or undefined when absent. */
+function numberParam(url: URL, name: string): number | undefined {
+  const raw = url.searchParams.get(name);
+  if (raw === null) return undefined;
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 0 || n > 90) {
+    throw new SessionError(400, `${name} must be a whole number from 0 to 90`);
+  }
+  return n;
 }

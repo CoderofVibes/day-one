@@ -1,7 +1,11 @@
-// The only place the plant map's coordinates live (research 16). Everything is in plant units
-// on a flat ground plane: a facility is a footprint with a grid of department cells, and the
-// suppliers, the escrow and Acme HQ are pads beside the plants. `iso` projects a point to the
-// screen for the 2D map; a 3D view would read the same numbers as (x, 0, y).
+// The only place the plant map's coordinates live (research 16, docs/VISION.md §6.5 and §6.12.1).
+// Everything is in plant units on a flat ground plane. Each plant is a site laid out the way a
+// plant is: a warehouse with its docks, the processing hall, the dry side, the QC lab and the
+// office, plus a utilities yard and a gatehouse that carry no status. Each building is split into
+// the ledger's areas (server/src/ledger/schema.ts DEPARTMENTS, twenty codes), and each area lights
+// with the story department it belongs to (the nine the run's TwinState tracks). The suppliers, the
+// escrow and Acme HQ are pads beside the plants. `iso` projects a point to the screen for the flat
+// map; the 3D view reads the same numbers as (x, 0, y).
 
 import type { DeptCode, FacilityId, NodeRef } from "./model.ts";
 import { DEPARTMENTS } from "./model.ts";
@@ -23,100 +27,301 @@ export interface Box {
   d: number;
 }
 
+/** The ledger's twenty areas (server/src/ledger/schema.ts), grouped by building. */
+export type AreaCode =
+  | "receiving"
+  | "quarantine"
+  | "rm_storage"
+  | "pkg_storage"
+  | "fg_storage"
+  | "shipping"
+  | "rm_staging"
+  | "weigh_cells"
+  | "formulation"
+  | "tableting"
+  | "bulk_hold"
+  | "bottling"
+  | "labeling"
+  | "cartoning"
+  | "palletizing"
+  | "powder_fill"
+  | "qc_lab"
+  | "purchasing"
+  | "planning"
+  | "accounting";
+
+export type BuildingKind = "warehouse" | "processing" | "dryside" | "lab" | "office";
+/** Drawn on the site but not a ledger area: nothing in the ledger knows steam or the gate. */
+export type DecorKind = "utilities" | "gatehouse";
+
+/** Each area: its name on screen, its building and the story department whose status it shows. */
+export const AREAS: Record<AreaCode, { label: string; building: BuildingKind; dept: DeptCode }> = {
+  receiving: { label: "Receiving", building: "warehouse", dept: "receiving" },
+  quarantine: { label: "Quarantine", building: "warehouse", dept: "warehouse" },
+  rm_storage: { label: "Raw material storage", building: "warehouse", dept: "warehouse" },
+  pkg_storage: { label: "Packaging storage", building: "warehouse", dept: "warehouse" },
+  fg_storage: { label: "Finished goods", building: "warehouse", dept: "warehouse" },
+  shipping: { label: "Shipping", building: "warehouse", dept: "warehouse" },
+  rm_staging: { label: "Dispensary store", building: "processing", dept: "weigh_dispense" },
+  weigh_cells: { label: "Weigh cells", building: "processing", dept: "weigh_dispense" },
+  formulation: { label: "Blending suites", building: "processing", dept: "blending" },
+  tableting: { label: "Presses and filler", building: "processing", dept: "compression" },
+  bulk_hold: { label: "Bulk hold", building: "processing", dept: "compression" },
+  bottling: { label: "Bottling lines", building: "dryside", dept: "packaging" },
+  labeling: { label: "Labeling", building: "dryside", dept: "packaging" },
+  cartoning: { label: "Cartoning", building: "dryside", dept: "packaging" },
+  palletizing: { label: "Palletizing", building: "dryside", dept: "packaging" },
+  powder_fill: { label: "Powder line", building: "dryside", dept: "packaging" },
+  qc_lab: { label: "QC lab", building: "lab", dept: "qc_lab" },
+  purchasing: { label: "Purchasing", building: "office", dept: "purchasing" },
+  planning: { label: "Planning", building: "office", dept: "purchasing" },
+  accounting: { label: "Accounting", building: "office", dept: "accounting" },
+};
+
+export const BUILDING_NAMES: Record<BuildingKind, string> = {
+  warehouse: "Warehouse",
+  processing: "Processing",
+  dryside: "Dry side",
+  lab: "QC lab",
+  office: "Office",
+};
+
+/** Where each story department's flows land and its name hangs: its main area. */
+const MAIN_AREA: Record<DeptCode, AreaCode> = {
+  receiving: "receiving",
+  warehouse: "rm_storage",
+  weigh_dispense: "weigh_cells",
+  blending: "formulation",
+  compression: "tableting",
+  packaging: "bottling",
+  qc_lab: "qc_lab",
+  purchasing: "purchasing",
+  accounting: "accounting",
+};
+
+export interface Zone {
+  area: AreaCode;
+  dept: DeptCode;
+  building: BuildingKind;
+  box: Box;
+}
+
+export interface Building {
+  kind: BuildingKind;
+  box: Box;
+}
+
 export interface FacilityLayout {
   id: FacilityId;
+  /** The site: the fenced lot every building stands on. */
   floor: Box;
+  buildings: Building[];
+  zones: Zone[];
+  /** The utilities yard and the gatehouse: drawn, no status. */
+  decor: { kind: DecorKind; box: Box }[];
+  /** Each story department at its main area: flows, cages and labels anchor here. */
   departments: { code: DeptCode; box: Box }[];
 }
 
-/** How tall things stand: the floor slab, and a department by its status. */
+/** How tall things stand: the site slab, a department by its status (the flat map), a pad. */
 export const FLOOR_Z = 1.5;
 export const DEPT_Z = { offline: 1, onboarding: 3, online: 5 } as const;
 export const PAD_Z = 1;
 
-interface Grid {
-  origin: Pt;
-  cell: number;
-  gap: number;
-  margin: number;
-  cols: number;
-  /** Row-major, back row first; `null` leaves the cell empty. */
-  order: (DeptCode | null)[];
+/** A building split into rows (back to front, by depth weight) of areas (left to right, by width weight). */
+interface Plan {
+  kind: BuildingKind;
+  box: Box;
+  rows: [number, [AreaCode, number][]][];
 }
 
-// Receiving sits at the front left, towards the suppliers; purchasing and accounting at the back
-// right, towards HQ and the escrow; the production line runs across the middle.
-const GRIDS: Record<FacilityId, Grid> = {
-  B: {
-    origin: [0, 0],
-    cell: 10,
-    gap: 2,
-    margin: 2,
-    cols: 3,
-    order: [
-      "packaging",
-      "accounting",
-      "purchasing",
-      "weigh_dispense",
-      "blending",
-      "compression",
-      "receiving",
-      "warehouse",
-      "qc_lab",
-    ],
-  },
-  A: {
-    origin: [-50, 4],
-    cell: 7,
-    gap: 1.5,
-    margin: 2,
-    cols: 3,
-    order: [
-      "packaging",
-      "accounting",
-      "purchasing",
-      "weigh_dispense",
-      "blending",
-      "compression",
-      "receiving",
-      "warehouse",
-      "qc_lab",
-    ],
-  },
-  C: {
-    origin: [14, -34],
-    cell: 7,
-    gap: 1.5,
-    margin: 2,
-    cols: 2,
-    order: ["packaging", "accounting", "receiving", "warehouse"],
-  },
+/** Hollow Pine's site, the full kit, in units from the site's back left corner. */
+const FULL: { floor: Box; plans: Plan[]; decor: { kind: DecorKind; box: Box }[] } = {
+  floor: { x: 0, y: 0, w: 70, d: 56 },
+  plans: [
+    {
+      kind: "warehouse",
+      box: { x: 3, y: 4, w: 24, d: 42 },
+      rows: [
+        [
+          10,
+          [
+            ["shipping", 10],
+            ["fg_storage", 14],
+          ],
+        ],
+        [
+          12,
+          [
+            ["pkg_storage", 10],
+            ["rm_storage", 14],
+          ],
+        ],
+        [9, [["quarantine", 1]]],
+        [11, [["receiving", 1]]],
+      ],
+    },
+    {
+      kind: "processing",
+      box: { x: 31, y: 10, w: 24, d: 22 },
+      rows: [
+        [
+          7,
+          [
+            ["rm_staging", 1],
+            ["bulk_hold", 1],
+          ],
+        ],
+        [
+          15,
+          [
+            ["weigh_cells", 1],
+            ["formulation", 1],
+            ["tableting", 1],
+          ],
+        ],
+      ],
+    },
+    {
+      kind: "dryside",
+      box: { x: 31, y: 36, w: 24, d: 12 },
+      rows: [
+        [
+          1,
+          [
+            ["bottling", 6],
+            ["labeling", 4],
+            ["cartoning", 5],
+            ["palletizing", 4],
+            ["powder_fill", 5],
+          ],
+        ],
+      ],
+    },
+    { kind: "lab", box: { x: 59, y: 23, w: 8, d: 10 }, rows: [[1, [["qc_lab", 1]]]] },
+    {
+      kind: "office",
+      box: { x: 59, y: 37, w: 8, d: 13 },
+      rows: [
+        [1, [["planning", 1]]],
+        [1, [["purchasing", 1]]],
+        [1, [["accounting", 1]]],
+      ],
+    },
+  ],
+  decor: [
+    { kind: "utilities", box: { x: 59, y: 6, w: 8, d: 13 } },
+    { kind: "gatehouse", box: { x: 28.5, y: 51.5, w: 3, d: 3 } },
+  ],
 };
 
+/** Lakeview packs and ships for the others: a warehouse, the dry side and an office. */
+const LAKEVIEW: typeof FULL = {
+  floor: { x: 0, y: 0, w: 46, d: 34 },
+  plans: [
+    {
+      kind: "warehouse",
+      box: { x: 3, y: 3, w: 18, d: 27 },
+      rows: [
+        [
+          9,
+          [
+            ["shipping", 1],
+            ["fg_storage", 1],
+          ],
+        ],
+        [8, [["pkg_storage", 1]]],
+        [
+          10,
+          [
+            ["quarantine", 1],
+            ["receiving", 1.6],
+          ],
+        ],
+      ],
+    },
+    {
+      kind: "dryside",
+      box: { x: 24, y: 5, w: 18, d: 12 },
+      rows: [
+        [
+          1,
+          [
+            ["bottling", 6],
+            ["labeling", 4],
+            ["cartoning", 5],
+            ["palletizing", 4],
+          ],
+        ],
+      ],
+    },
+    { kind: "office", box: { x: 24, y: 21, w: 10, d: 9 }, rows: [[1, [["accounting", 1]]]] },
+  ],
+  decor: [{ kind: "gatehouse", box: { x: 37, y: 29.5, w: 3, d: 3 } }],
+};
+
+/** Where each plant's site stands, how large its kit is drawn, and which kit. */
+const SITES: Record<FacilityId, { origin: Pt; scale: number; kit: typeof FULL }> = {
+  B: { origin: [0, 0], scale: 1, kit: FULL },
+  // Riverside: the same kit at seven tenths the size, no powder line.
+  A: { origin: [-64, 10], scale: 0.7, kit: FULL },
+  C: { origin: [10, -46], scale: 1, kit: LAKEVIEW },
+};
+
+/** How large a plant's kit is drawn: heights scale with the footprints. */
+export function siteScale(id: FacilityId): number {
+  return SITES[id].scale;
+}
+
+/** The area a story department's flows land on (its main area). */
+export function mainArea(code: DeptCode): AreaCode {
+  return MAIN_AREA[code];
+}
+
+function place(b: Box, origin: Pt, s: number): Box {
+  return { x: origin[0] + b.x * s, y: origin[1] + b.y * s, w: b.w * s, d: b.d * s };
+}
+
 function layoutFacility(id: FacilityId): FacilityLayout {
-  const g = GRIDS[id];
-  const has = new Set(DEPARTMENTS.filter((d) => d.plants.includes(id)).map((d) => d.code));
-  const rows = Math.ceil(g.order.length / g.cols);
-  const side = (n: number) => n * g.cell + (n - 1) * g.gap + 2 * g.margin;
-  const departments = g.order.flatMap((code, i) => {
-    if (!code || !has.has(code)) return [];
-    const col = i % g.cols;
-    const row = Math.floor(i / g.cols);
-    return [
-      {
-        code,
-        box: {
-          x: g.origin[0] + g.margin + col * (g.cell + g.gap),
-          y: g.origin[1] + g.margin + row * (g.cell + g.gap),
-          w: g.cell,
-          d: g.cell,
-        },
-      },
-    ];
+  const { origin, scale, kit } = SITES[id];
+  const depts = new Set(DEPARTMENTS.filter((d) => d.plants.includes(id)).map((d) => d.code));
+  // An area shows when its department exists at the plant; Riverside has no powder line.
+  const hasArea = (area: AreaCode) =>
+    depts.has(AREAS[area].dept) && !(id === "A" && area === "powder_fill");
+  const buildings: Building[] = [];
+  const zones: Zone[] = [];
+  for (const plan of kit.plans) {
+    const rows = plan.rows
+      .map(([depth, cells]) => [depth, cells.filter(([a]) => hasArea(a))] as const)
+      .filter(([, cells]) => cells.length > 0);
+    if (rows.length === 0) continue;
+    const box = place(plan.box, origin, scale);
+    buildings.push({ kind: plan.kind, box });
+    const totalDepth = rows.reduce((s, [d]) => s + d, 0);
+    let y = box.y;
+    for (const [depth, cells] of rows) {
+      const d = (box.d * depth) / totalDepth;
+      const totalWidth = cells.reduce((s, [, w]) => s + w, 0);
+      let x = box.x;
+      for (const [area, weight] of cells) {
+        const w = (box.w * weight) / totalWidth;
+        zones.push({ area, dept: AREAS[area].dept, building: plan.kind, box: { x, y, w, d } });
+        x += w;
+      }
+      y += d;
+    }
+  }
+  const departments = DEPARTMENTS.filter((d) => depts.has(d.code)).flatMap(({ code }) => {
+    const zone =
+      zones.find((z) => z.area === MAIN_AREA[code]) ?? zones.find((z) => z.dept === code);
+    return zone ? [{ code, box: zone.box }] : [];
   });
   return {
     id,
-    floor: { x: g.origin[0], y: g.origin[1], w: side(g.cols), d: side(rows) },
+    floor: place(kit.floor, origin, scale),
+    buildings,
+    zones,
+    decor: kit.decor.map((d) => ({ kind: d.kind, box: place(d.box, origin, scale) })),
     departments,
   };
 }
@@ -125,12 +330,29 @@ export const FACILITY_LAYOUTS: FacilityLayout[] = (["C", "A", "B"] as FacilityId
   layoutFacility,
 );
 
-/** The pads beside the plants. */
+/** The pads beside the plants: the suppliers down the road from receiving, the money to the east. */
 export const PADS: Record<"suppliers" | "escrow" | "hq", Box> = {
-  suppliers: { x: 0, y: 64, w: 11, d: 11 },
-  escrow: { x: 58, y: 8, w: 11, d: 11 },
-  hq: { x: 70, y: -18, w: 11, d: 11 },
+  suppliers: { x: 6, y: 68, w: 13, d: 13 },
+  escrow: { x: 80, y: 18, w: 11, d: 11 },
+  hq: { x: 92, y: -16, w: 11, d: 11 },
 };
+
+/** One area of a plant, if the plant has it. */
+export function zoneOf(facility: FacilityId, area: AreaCode): Zone | undefined {
+  return FACILITY_LAYOUTS.find((l) => l.id === facility)?.zones.find((z) => z.area === area);
+}
+
+/** The building that holds a box (a department's main area), for its height. */
+export function buildingOf(facility: FacilityId, box: Box): Building | undefined {
+  const f = FACILITY_LAYOUTS.find((l) => l.id === facility);
+  return f?.buildings.find(
+    (b) =>
+      box.x >= b.box.x - 0.01 &&
+      box.y >= b.box.y - 0.01 &&
+      box.x + box.w <= b.box.x + b.box.w + 0.01 &&
+      box.y + box.d <= b.box.y + b.box.d + 0.01,
+  );
+}
 
 function center(b: Box): Pt {
   return [b.x + b.w / 2, b.y + b.d / 2];

@@ -35,7 +35,8 @@ import {
   PLANNED_BATCHES,
   QC_SAMPLE_MG,
 } from "./history.ts";
-import { LOTS, TRANSFERS, t, vendorLotCode } from "./lots.ts";
+import { LOTS, type LotSpec, TRANSFERS, t, vendorLotCode } from "./lots.ts";
+import { addDays, productionHistory, RELEASE_AFTER_DAYS } from "./production.ts";
 import {
   DEPARTMENTS_BY_FACILITY,
   EXPECTED_YIELD_BP,
@@ -231,8 +232,24 @@ export function seedLedger(db: Ledger, options: { referenceOnly?: boolean } = {}
 
     if (options.referenceOnly) return;
 
+    // The longer past (production.ts): its own lots, POs, batches, packaging runs and plan.
+    const generated = productionHistory(new Set(LOTS.map((l) => l.code)));
+    const generatedLots: LotSpec[] = generated.lots.map((g) => ({
+      code: g.code,
+      material: g.material,
+      vendor: g.vendor,
+      facility: g.facility,
+      ...(g.po ? { po: g.po } : {}),
+      steps: [
+        { kind: "received", qty: g.qty, at: t(g.receivedOn, "14:00") },
+        { kind: "quarantined", at: t(g.receivedOn, "14:30") },
+        { kind: "released", at: t(addDays(g.receivedOn, RELEASE_AFTER_DAYS), "16:00") },
+      ],
+    }));
+    const allLots = [...LOTS, ...generatedLots];
+
     const lotId = new Map<string, number>();
-    for (const lot of LOTS) {
+    for (const lot of allLots) {
       const row = tx
         .insert(lots)
         .values({
@@ -245,6 +262,8 @@ export function seedLedger(db: Ledger, options: { referenceOnly?: boolean } = {}
         .get();
       lotId.set(lot.code, row.id);
     }
+    // Lots of the longer past: only its own batches draw them, and its batches draw only them.
+    const generatedLotIds = new Set(generatedLots.map((l) => idOf(lotId, l.code)));
 
     const staffId = (name: string) => {
       const row = tx.select().from(staff).where(eq(staff.name, name)).get();
@@ -256,7 +275,7 @@ export function seedLedger(db: Ledger, options: { referenceOnly?: boolean } = {}
     const qcLead: Partial<Record<FacilityCode, number>> = { B: staffId("Priya Natarajan") };
 
     const poId = new Map<string, number>();
-    for (const po of HISTORY_POS) {
+    for (const po of [...generated.pos, ...HISTORY_POS]) {
       const lines = po.lines.map(([code, qty, price], i) => {
         const mat = material(code);
         const unitPriceUsdc = usd(price);
@@ -311,7 +330,7 @@ export function seedLedger(db: Ledger, options: { referenceOnly?: boolean } = {}
     // equal times), so each batch draws from exactly the stock released by its day.
     const timeline: { at: string; apply: () => void }[] = [];
 
-    for (const lot of LOTS) {
+    for (const lot of allLots) {
       const mat = material(lot.material);
       const po = lot.po ? idOf(poId, lot.po) : null;
       for (const step of lot.steps) {
@@ -401,15 +420,19 @@ export function seedLedger(db: Ledger, options: { referenceOnly?: boolean } = {}
       move("transfer_in", tr.receivedAt, tr.received, tr.to);
     }
 
-    /** Books a summarized batch, drawing each formula line first-in, first-out. */
-    const bookBatch = (batch: BatchSpec) => {
+    /** Books a summarized batch, drawing each formula line first-in, first-out from its pool. */
+    const bookBatch = (batch: BatchSpec & { generated?: boolean; hour?: number }) => {
+      const inPool = (id: number) => generatedLotIds.has(id) === (batch.generated ?? false);
       const product = idOf(productInfo, batch.product);
       const facility = idOf(facilityId, batch.facility);
       const issuedMg = product.lines.reduce(
         (sum, [code, kgPerBatch]) => sum + kg(kgPerBatch) + (batch.extraMg?.[code] ?? 0),
         0,
       );
-      const at = (hhmm: string) => t(batch.date, hhmm);
+      // A later batch on the same day starts an hour later per batch before it (production.ts).
+      const hour = String(batch.hour ?? 6).padStart(2, "0");
+      const at = (hhmm: string) =>
+        t(batch.date, hhmm === BATCH_TIMES.completed ? hhmm : `${hour}${hhmm.slice(2)}`);
       const row = tx
         .insert(batchRecords)
         .values({
@@ -449,7 +472,7 @@ export function seedLedger(db: Ledger, options: { referenceOnly?: boolean } = {}
           )
           .orderBy(asc(lots.lotCode))
           .all();
-        for (const c of candidates) {
+        for (const c of candidates.filter((x) => inPool(x.lotId))) {
           if (remaining === 0) break;
           const qty = Math.min(remaining, c.onHand);
           remaining -= qty;
@@ -490,6 +513,101 @@ export function seedLedger(db: Ledger, options: { referenceOnly?: boolean } = {}
     for (const batch of HISTORY_BATCHES) {
       timeline.push({ at: t(batch.date, BATCH_TIMES.issued), apply: () => bookBatch(batch) });
     }
+    for (const batch of generated.batches) {
+      timeline.push({
+        at: t(batch.date, `${String(batch.hour).padStart(2, "0")}:00`),
+        apply: () => bookBatch({ ...batch, generated: true }),
+      });
+    }
+
+    /** A packaging run on the dry side (or capsule shells at the batch): drawn from the pool. */
+    const batchIdOf = (batchNo: string) => {
+      const row = tx.select().from(batchRecords).where(eq(batchRecords.batchNo, batchNo)).get();
+      if (!row) throw new Error(`seed: no batch ${batchNo}`);
+      return row.id;
+    };
+    for (const run of generated.packaging) {
+      // Capsule shells go in after their batch's own draws (:00–:50); the dry side runs at 11:00.
+      const hh = String(run.hour).padStart(2, "0");
+      const [startAt, issuedAt, consumedAt, returnedAt] = (
+        run.atBatch ? [":51", ":52", ":54", ":56"] : [":00", ":05", ":10", ":15"]
+      ).map((mm) => t(run.date, `${hh}${mm}`)) as [string, string, string, string];
+      timeline.push({
+        at: startAt,
+        apply: () => {
+          batchIdOf(run.batchNo);
+          const facility = idOf(facilityId, run.facility);
+          const reason = run.atBatch
+            ? `Capsule shells for ${run.batchNo}`
+            : `Packaging run for ${run.batchNo}: ${run.units.toLocaleString("en-US")} packs`;
+          // Pick every lot first, then issue, consume and return in three passes, as a batch does.
+          const picks: { lotId: number; qty: number }[] = [];
+          for (const [code, qty] of run.draws) {
+            let remaining = qty;
+            const candidates = tx
+              .select({ lotId: lots.id, onHand: lotBalances.onHandBase })
+              .from(lotBalances)
+              .innerJoin(lots, eq(lots.id, lotBalances.lotId))
+              .where(
+                and(
+                  eq(lots.materialId, idOf(materialId, code)),
+                  eq(lots.state, "released"),
+                  eq(lotBalances.facilityId, facility),
+                  gt(lotBalances.onHandBase, 0),
+                ),
+              )
+              .orderBy(asc(lots.lotCode))
+              .all()
+              .filter((c) => generatedLotIds.has(c.lotId));
+            for (const c of candidates) {
+              if (remaining === 0) break;
+              const take = Math.min(remaining, c.onHand);
+              remaining -= take;
+              picks.push({ lotId: c.lotId, qty: take });
+            }
+            if (remaining > 0) {
+              throw new Error(`seed: ${run.batchNo} packaging is short ${remaining} of ${code}`);
+            }
+          }
+          const base = {
+            facilityId: facility,
+            refType: null,
+            refId: null,
+            actorType: "system" as const,
+            reason,
+          };
+          for (const pick of picks) {
+            appendLotEvent(tx, {
+              ...base,
+              lotId: pick.lotId,
+              kind: "issued",
+              qtyDeltaBase: 0,
+              occurredAt: issuedAt,
+            });
+          }
+          const used = picks.map((pick) =>
+            appendLotEvent(tx, {
+              ...base,
+              lotId: pick.lotId,
+              kind: "consumed",
+              qtyDeltaBase: -pick.qty,
+              occurredAt: consumedAt,
+            }),
+          );
+          for (const e of used) {
+            if (e.toState === "in_use") {
+              appendLotEvent(tx, {
+                ...base,
+                lotId: e.lotId,
+                kind: "returned",
+                qtyDeltaBase: 0,
+                occurredAt: returnedAt,
+              });
+            }
+          }
+        },
+      });
+    }
 
     timeline
       .map((item, i) => ({ ...item, i }))
@@ -500,7 +618,7 @@ export function seedLedger(db: Ledger, options: { referenceOnly?: boolean } = {}
 
     tx.insert(productionPlan)
       .values(
-        PLANNED_BATCHES.map((p) => {
+        [...PLANNED_BATCHES, ...generated.plan].map((p) => {
           const product = idOf(productInfo, p.product);
           return {
             batchNo: p.batchNo,

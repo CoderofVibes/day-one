@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Day One v2 mockup · Inventory &amp; forecast</title>
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="mock.css" />
+<style>
+  .two { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: var(--s-4); align-items: start; }
+  .kevinbar { display: flex; align-items: center; gap: var(--s-3); padding: 10px 14px; border-radius: var(--r-sm); border: 1px solid color-mix(in srgb, var(--brand) 40%, var(--line)); background: color-mix(in srgb, var(--brand-soft) 55%, var(--surface)); font-size: var(--t-sm); }
+  .kevinbar .mark { width: 26px; height: 26px; border-radius: 8px; font-size: 13px; }
+  .kevinbar .btn { margin-left: auto; padding: 6px 12px; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <aside class="sidebar">
+    <div class="brand"><span class="mark">K</span><div><b>Day One</b><small>Kevin, AI assistant</small></div></div>
+    <div class="picker"><span class="ico">B</span><div><b>Hollow Pine Tablet Co.</b><small>Plant B · acquired Nov 2026</small></div><span class="chev">▾</span></div>
+    <nav class="nav">
+      <h6>Plant</h6>
+      <a>Overview</a><a>Plant map</a><a>5am brief</a><a>Batch records<span class="count">2</span></a>
+      <a aria-current="page">Inventory &amp; forecast<span class="count problem">3</span></a>
+      <a>Schedule</a><a>Purchasing<span class="count">1</span></a><a>Invoices<span class="count">1</span></a><a>Spreadsheets</a>
+      <h6>Across Acme</h6>
+      <a>Three plants<span class="count">5</span></a><a>ERP connection</a>
+      <h6>Acme HQ</h6>
+      <a>Spending limits</a><a>Suppliers</a><a>Group purchasing</a><a>Sealed bids</a><a>Bookkeeper export</a><a>Reconciliation</a>
+    </nav>
+    <div class="bottom">
+      <div class="trust"><span class="dot"></span><b>Protected</b> · see how</div>
+      <div class="person"><span class="avatar">RD</span><div><b>Ray Delgado</b><small>Purchaser · switch person</small></div></div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="header">
+      <div>
+        <div class="crumb">Hollow Pine Tablet Co. › Inventory &amp; forecast</div>
+        <h1>Inventory &amp; forecast</h1>
+        <p>Stock by material, what the next ten days need, and where Kevin would buy or move first.</p>
+      </div>
+      <div class="right">
+        <span class="pill ok">operating</span>
+        <span class="clock">Ledger time <b>Mon Nov 16, 2026 · 08:05</b></span>
+      </div>
+    </div>
+
+    <div class="kevinbar"><span class="mark">K</span><b>Kevin:</b> ascorbic acid is covered for BR-B-1047 and BR-B-1048 now that PO-1042 landed; bottles and caps are still short, and Lakeview has spare of both. <span class="pill attention">2 moves proposed</span><button class="btn">Check the moves</button></div>
+
+    <div class="cards-4">
+      <div class="card stat"><div class="label">Below reorder point</div><div class="value num">3 <small>of 26 stocked here</small></div><div class="delta"><b class="up">↓ 1</b> vs Friday · ascorbic acid received</div><svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none"><polyline fill="none" stroke="#b3261e" stroke-width="1.5" points="0,22 20,22 40,18 60,18 80,10 100,6 112,6 120,14"/></svg></div>
+      <div class="card stat"><div class="label">In quarantine</div><div class="value num">1 <small>lot</small></div><div class="delta"><span class="pill attention">MGS-261106-01 · 10 days</span></div><svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none"><polyline fill="none" stroke="#9a6700" stroke-width="1.5" points="0,30 20,14 30,30 55,30 65,14 75,30 95,14 120,14"/></svg></div>
+      <div class="card stat"><div class="label">On order</div><div class="value num">$612.00</div><div class="delta">PO-1041 · 4 × acetonitrile, 4 × buffer · held in escrow</div><svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none"><polyline fill="none" stroke="#1e5aa8" stroke-width="1.5" points="0,30 30,30 60,26 70,4 100,4 110,20 120,24"/></svg></div>
+      <div class="card stat"><div class="label">10-day need covered</div><div class="value num">24 <small>of 26 materials</small></div><div class="delta"><b class="down">2 short</b> · 150 cc bottles, 38 mm caps</div><svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none"><polyline fill="none" stroke="#1f6f5c" stroke-width="1.5" points="0,10 40,10 60,16 80,22 100,22 110,8 120,8"/></svg></div>
+    </div>
+
+    <div class="two">
+      <section class="card">
+        <h3>Ascorbic acid at Hollow Pine <span class="right">kg on hand · 90 days · reorder point 500 kg</span></h3>
+        <svg class="chart" viewBox="0 0 640 230">
+          <!-- y: 0..1100 kg → 200..20 ; x: Aug 20 .. Nov 24 (96 days) → 50..620 -->
+          <line class="axis" x1="50" y1="200" x2="620" y2="200"/>
+          <text x="8" y="24">1,000</text><text x="8" y="106">500</text><text x="8" y="204">0</text>
+          <line class="axis" x1="50" y1="36" x2="620" y2="36" stroke-dasharray="2 4"/>
+          <line class="rule" x1="50" y1="118" x2="620" y2="118"/><text x="560" y="113" style="fill:#b3261e">reorder point</text>
+          <!-- the demo clock -->
+          <line x1="573" y1="20" x2="573" y2="200" stroke="#8a93a0" stroke-dasharray="3 3"/><text x="577" y="196">today</text>
+          <!-- history as steps: Aug 28 658.9 · Sep 14 246.9 · Sep 21 946.9 · Oct 1 534.9 · Nov 3 722.35 · Nov 16 310 → 1,010 -->
+          <path class="area" d="M97,92 L198,92 L198,160 L240,160 L240,45 L299,45 L299,112 L495,112 L495,82 L573,82 L573,149 L573,34 L573,200 L97,200 Z"/>
+          <polyline class="line" points="97,92 198,92 198,160 240,160 240,45 299,45 299,112 495,112 495,82 573,82 573,149 573,34"/>
+          <!-- ahead: Nov 17 −412 → 598 · Nov 19 −412 → 186 -->
+          <polyline class="line ahead" points="573,34 579,34 579,102 591,102 591,170 620,170"/>
+          <circle class="pt" cx="97" cy="92" r="3"/><circle class="pt" cx="240" cy="45" r="3"/><circle class="pt" cx="495" cy="82" r="3"/><circle class="pt" cx="573" cy="149" r="3"/><circle class="pt" cx="573" cy="34" r="3"/>
+          <text x="97" y="216" text-anchor="middle">Aug 28</text><text x="198" y="216" text-anchor="middle">Sep 14</text><text x="240" y="216" text-anchor="middle">Sep 21</text><text x="299" y="216" text-anchor="middle">Oct 1</text><text x="495" y="216" text-anchor="middle">Nov 3</text><text x="573" y="216" text-anchor="middle">Nov 16</text><text x="612" y="216" text-anchor="middle">Nov 19</text>
+          <text x="104" y="86">+658.9 received</text><text x="246" y="41">+700 received</text><text x="420" y="78">+187.45 from Plant A</text><text x="440" y="150" style="fill:#16191d">BR-B-1045 −412.35 → 310.0 kg</text><text x="330" y="30" style="fill:#16191d">PO-1042 +700 released today → 1,010.0 kg</text>
+          <text x="600" y="186" text-anchor="end" style="fill:#1e5aa8">two VC500 batches planned</text>
+        </svg>
+        <div class="legend-list" style="margin-top:8px;grid-template-columns:1fr 1fr 1fr;display:grid;gap:12px">
+          <div><i style="background:#1f6f5c"></i>On hand (ledger events)</div>
+          <div><i style="background:#1e5aa8"></i>Planned draws (schedule)</div>
+          <div><i style="background:#b3261e"></i>Reorder point</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Materials by state <span class="right">Hollow Pine</span></h3>
+        <div class="donut-wrap">
+          <svg class="chart" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#e3e7eb" stroke-width="14"/>
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#1f6f5c" stroke-width="14" stroke-dasharray="244 289" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#b3261e" stroke-width="14" stroke-dasharray="33 289" stroke-dashoffset="-244" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#9a6700" stroke-width="14" stroke-dasharray="11 289" stroke-dashoffset="-277" transform="rotate(-90 60 60)"/>
+            <text class="big" x="60" y="60">22</text><text x="60" y="76" text-anchor="middle">ok</text>
+          </svg>
+          <div class="legend-list">
+            <div><i style="background:#1f6f5c"></i>At or above reorder <b>22</b></div>
+            <div><i style="background:#b3261e"></i>Below reorder point <b>3</b></div>
+            <div><i style="background:#9a6700"></i>Quarantined <b>1</b></div>
+            <div><i style="background:#1e5aa8"></i>On order <b>2</b></div>
+          </div>
+        </div>
+        <h3 style="margin-top:20px">Next ten days <span class="right">from the schedule</span></h3>
+        <table>
+          <tr><td><b>BR-B-1047</b><small>Vitamin C 500 · Nov 17</small></td><td class="n">412 kg ascorbic</td><td><span class="pill ok">covered</span></td></tr>
+          <tr><td><b>BR-B-1048</b><small>Vitamin C 500 · Nov 19</small></td><td class="n">412 kg ascorbic</td><td><span class="pill ok">covered</span></td></tr>
+          <tr><td><b>Bottling</b><small>both batches · 150 cc bottles, caps</small></td><td class="n">24,000 of 40,000</td><td><span class="pill attention">move from Lakeview</span></td></tr>
+        </table>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="subtabs"><span class="on">Stock</span><span>Forecast</span><span>Lots</span><span>Numbers</span></div>
+      <div class="filters">Show <span class="seg"><span class="on">All plants</span><span>A · Riverside</span><span>B · Hollow Pine</span><span>C · Lakeview</span></span><span class="switch"><i></i>Only low stock and reviews</span><span class="faint">33 materials · 6 shown</span></div>
+      <table>
+        <thead><tr><th>Material</th><th class="n">A · Acme Riverside</th><th class="n">B · Hollow Pine Tablet Co.</th><th class="n">C · Acme Lakeview</th><th class="n">10-day need (B)</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><b>Ascorbic acid</b><small>ASC · reorder 500 kg</small></td><td class="n"><span class="low">12.55 kg</span><small>below 500 kg</small></td><td class="n">1,010.0 kg<small>+700 released today</small></td><td class="n">—</td><td class="n">824 kg</td><td><span class="pill ok">covered</span> <span class="pill attention">Plant A to review</span></td><td><a>Open</a></td></tr>
+          <tr><td><b>Calcium carbonate</b><small>CAC · reorder 800 kg</small></td><td class="n"><span class="low">249.995 kg</span><small>below 800 kg</small></td><td class="n">875 kg</td><td class="n">—</td><td class="n">—</td><td><span class="pill held">move proposed · 75 kg to Riverside</span></td><td><a>Open</a></td></tr>
+          <tr><td><b>Acetonitrile, HPLC grade, 4 L</b><small>ACN · reorder 2</small></td><td class="n">—</td><td class="n"><span class="low">1</span><small>below 2</small></td><td class="n">—</td><td class="n">—</td><td><span class="pill held">on order · PO-1041</span></td><td><a>Open</a></td></tr>
+          <tr><td><b>150 cc HDPE bottle</b><small>BTL · reorder 40,000</small></td><td class="n">—</td><td class="n"><span class="low">24,000</span><small>below 40,000</small></td><td class="n">136,000</td><td class="n">32,000</td><td><span class="pill held">move proposed · 16,000 from Lakeview</span></td><td><a>Open</a></td></tr>
+          <tr><td><b>38 mm CR cap with induction liner</b><small>CAP · reorder 40,000</small></td><td class="n">—</td><td class="n"><span class="low">24,000</span><small>below 40,000</small></td><td class="n">96,000</td><td class="n">32,000</td><td><span class="pill held">move proposed · 16,000 from Lakeview</span></td><td><a>Open</a></td></tr>
+          <tr><td><b>Label, CMD</b><small>LCM · reorder 20,000</small></td><td class="n"><span class="low">15,000</span><small>below 20,000</small></td><td class="n">—</td><td class="n">45,000</td><td class="n">—</td><td><span class="pill held">move proposed · 5,000 to Riverside</span></td><td><a>Open</a></td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</div>
+</body>
+</html>

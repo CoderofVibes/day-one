@@ -4,8 +4,8 @@
 // clicks at once cannot interleave the run.
 
 import { randomBytes } from "node:crypto";
-import { readdirSync, readFileSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { copyFileSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
+import { basename, join, relative, sep } from "node:path";
 import { briefHtml, morningBrief } from "@day-one/kevin/brief";
 import { type DemoPhase, type DemoStep, formatTranscript, startDemo } from "@day-one/kevin/demo";
 import { reviewDiscrepancy } from "@day-one/kevin/discrepancies";
@@ -20,6 +20,8 @@ import {
   waitingInboxItem,
 } from "@day-one/kevin/inbox";
 import { massBalance, proposeWasteCorrections } from "@day-one/kevin/massBalance";
+import { draftPolicyChange } from "@day-one/kevin/policyChange";
+import { plantForecast, plantSchedule } from "@day-one/kevin/schedule";
 import {
   approveTransfer,
   dismissTransfer,
@@ -35,11 +37,22 @@ import { explainFailure } from "@day-one/server/chain/explain";
 import { LiveTransport } from "@day-one/server/chain/live";
 import { type PolicyView, readPolicy, type ViewFn } from "@day-one/server/chain/policy";
 import { summarizeChainTx } from "@day-one/server/chain/summary";
+import { areaViews } from "@day-one/server/ledger/areas";
 import { books, booksCsv } from "@day-one/server/ledger/books";
+import { catalog } from "@day-one/server/ledger/catalog";
 import { plantInventory } from "@day-one/server/ledger/inventory";
 import { approvals, chainTx, staff, vendors } from "@day-one/server/ledger/schema";
+import { historySeries, stockedMaterials, stockSeries } from "@day-one/server/ledger/series";
+import {
+  batchRecordViews,
+  lotViews,
+  purchaseOrderViews,
+  rfqViews,
+} from "@day-one/server/ledger/views";
 import { eq } from "drizzle-orm";
 import {
+  ALL_SCANS,
+  DEMO_INBOX,
   type DemoEnv,
   type DemoEnvOptions,
   loadBatchRecord,
@@ -48,6 +61,13 @@ import {
   pageOf,
 } from "./env.ts";
 import { heldInvoiceDemo } from "./heldInvoice.ts";
+import {
+  type Decision,
+  JourneyError,
+  type JourneyInputs,
+  journeyState,
+  recordDecision,
+} from "./journey.ts";
 import { type FolderWatch, watchFolder } from "./watcher.ts";
 
 export interface StepView {
@@ -218,6 +238,65 @@ export class DemoSession {
       folder: dir ? relative(this.env.root, dir).split(sep).join("/") : null,
       items: inboxItems(this.env.db),
     };
+  }
+
+  /**
+   * Drops the week's scans into the watched folder, as npm run inbox does, and waits for Kevin
+   * to read them: the demo's four, or every scan with a recorded answer.
+   */
+  async dropScans(all = false) {
+    const dir = this.extras.inbox?.dir;
+    if (!dir) throw new SessionError(409, "no folder is watched: start the API with npm run api");
+    mkdirSync(dir, { recursive: true });
+    const names = (all ? ALL_SCANS : DEMO_INBOX).map((file) => {
+      copyFileSync(join(this.env.root, file), join(dir, basename(file)));
+      return basename(file);
+    });
+    // A file is read once it has settled in the folder; wait until every one has been.
+    const deadline = Date.now() + 30_000;
+    for (;;) {
+      const state = await this.inbox(true);
+      const read = new Set(state.items.map((i) => i.file.split("/").at(-1)));
+      if (names.every((n) => read.has(n)) || Date.now() > deadline) return state;
+      await new Promise((done) => setTimeout(done, this.extras.inbox?.pollMs ?? 200));
+    }
+  }
+
+  /** The integration program, from the ledger, the import desk and the run (docs/VISION.md §6.12.3). */
+  journey(imports: JourneyInputs["imports"]) {
+    const state = this.state();
+    return journeyState({
+      db: this.env.db,
+      imports,
+      inbox: inboxItems(this.env.db),
+      runDone: state.next.phase === "done",
+      runSteps: state.steps.map((s) => s.title),
+    });
+  }
+
+  /** A person's decision at a stage of the program, recorded in the ledger. */
+  decide(input: {
+    stage: number;
+    item: string;
+    decision?: Decision;
+    staff?: string;
+    note?: string;
+  }) {
+    return this.run(async () => {
+      try {
+        return recordDecision(this.env.db, {
+          stage: input.stage,
+          item: input.item,
+          decision: input.decision ?? "confirmed",
+          staffId: input.staff ? this.staffId(input.staff) : null,
+          note: input.note ?? null,
+          at: this.env.clock(),
+        });
+      } catch (error) {
+        if (error instanceof JourneyError) throw new SessionError(400, error.message);
+        throw error;
+      }
+    });
   }
 
   /** Stops watching the folder (the server is closing). */
@@ -446,6 +525,99 @@ export class DemoSession {
 
   briefHtml(facility?: string) {
     return briefHtml(this.brief(facility));
+  }
+
+  /** The charts' series: output, yield and waste per batch, spend and QC per month (all plants). */
+  history() {
+    return historySeries(this.env.db);
+  }
+
+  /**
+   * One plant's tables for the v2 pages at the run's clock: its purchase orders, requests for
+   * quotes, lots and batch records (server/src/ledger/views.ts).
+   */
+  plant(facility = "B") {
+    if (!["A", "B", "C"].includes(facility)) throw new SessionError(400, `no plant ${facility}`);
+    const at = this.env.clock();
+    const db = this.env.db;
+    return {
+      facility,
+      at,
+      orders: purchaseOrderViews(db, facility),
+      rfqs: rfqViews(db, facility),
+      lots: lotViews(db, facility, at),
+      batches: batchRecordViews(db, facility),
+    };
+  }
+
+  /** What each of a plant's twenty areas holds and did, for the plant map's area sheet. */
+  areas(facility = "B") {
+    if (!["A", "B", "C"].includes(facility)) throw new SessionError(400, `no plant ${facility}`);
+    return {
+      facility,
+      at: this.env.clock(),
+      areas: areaViews(this.env.db, facility, this.env.clock()),
+    };
+  }
+
+  /** Every product with its formula and plants, every supplier with what it supplies. */
+  catalog() {
+    return catalog(this.env.db);
+  }
+
+  /**
+   * Kevin's draft of HQ's owner call for a plain-words request, against the policy the contract
+   * holds now. Draft only: the contract takes the call from its owner alone (npm run policy).
+   */
+  async draftPolicy(request: string) {
+    const state = await this.policy();
+    if (!state.reachable) {
+      throw new SessionError(503, `the contract could not be read: ${state.error}`);
+    }
+    const agent = state.policy.agent;
+    if (!agent) throw new SessionError(409, "the contract holds no policy for Kevin");
+    return draftPolicyChange(request, agent, state.names[agent.approver] ?? agent.approver);
+  }
+
+  /** One material's stock over time at one plant, or the materials the plant has held. */
+  stock(facility = "B", material?: string) {
+    if (!material) return { facility, materials: stockedMaterials(this.env.db, facility) };
+    const series = stockSeries(this.env.db, { facility, material });
+    if (!series) throw new SessionError(404, `no material ${material} at plant ${facility}`);
+    return series;
+  }
+
+  /** Kevin's forecast for every material a plant holds or plans to use, at the run's clock. */
+  forecast(facility = "B", horizonDays?: number) {
+    try {
+      const now = this.env.clock();
+      const materials = plantForecast(this.env.db, {
+        facility,
+        now,
+        ...(horizonDays === undefined ? {} : { horizonDays }),
+      });
+      return {
+        facility,
+        at: now,
+        horizonDays: materials[0]?.horizonDays ?? horizonDays,
+        materials,
+      };
+    } catch (error) {
+      throw new SessionError(400, (error as Error).message);
+    }
+  }
+
+  /** The plant's planned batches from the run's clock, with their draws, cover and cost. */
+  schedule(facility = "B", days?: number) {
+    try {
+      return plantSchedule(this.env.db, {
+        facility,
+        now: this.env.clock(),
+        ...(days === undefined ? {} : { days }),
+      });
+    } catch (error) {
+      throw new SessionError(400, (error as Error).message);
+    }
   }
 
   /**

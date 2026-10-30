@@ -173,3 +173,63 @@
 .t3-label.dept.far {
   display: none;
 }
+
+/* The stage's zoom buttons (top right) and layer switches (bottom left); not in record mode. */
+.t3-tools,
+.t3-layers {
+  position: absolute;
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--shadow);
+  z-index: 20;
+}
+.t3-tools {
+  top: 10px;
+  right: 10px;
+}
+.t3-layers {
+  bottom: 10px;
+  left: 10px;
+  flex-wrap: wrap;
+  max-width: calc(100% - 20px);
+}
+.t3-tools button,
+.t3-layers button {
+  font: inherit;
+  font-size: var(--t-xs);
+  min-width: 28px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.t3-tools button:hover,
+.t3-layers button:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.t3-layers button[aria-pressed="true"] {
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 600;
+}
+.t3-tools button:focus-visible,
+.t3-layers button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+.t3-stage.no-labels .t3-label {
+  display: none;
+}
+@media (max-width: 560px) {
+  .t3-layers {
+    display: none;
+  }
+}

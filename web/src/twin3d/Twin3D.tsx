@@ -11,9 +11,18 @@ import { createContext, useContext, useEffect, useId, useMemo, useRef, useState 
 import * as THREE from "three";
 import type { Line2, OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { RunData } from "../run.ts";
-import { type Box, FACILITY_LAYOUTS, FLOOR_Z, PAD_Z, PADS } from "../twin/layout.ts";
+import {
+  type AreaCode,
+  type Box,
+  FACILITY_LAYOUTS,
+  FLOOR_Z,
+  PAD_Z,
+  PADS,
+  siteScale,
+} from "../twin/layout.ts";
 import {
   deriveTwinState,
+  type FacilityId,
   type Flow,
   formatCents,
   formatQuotes,
@@ -23,10 +32,10 @@ import {
   type TwinState,
 } from "../twin/model.ts";
 import {
-  bodyHeight,
-  buildingParts,
-  type Part,
+  BUILDING_HEIGHT,
   type PartKind,
+  type SitePart,
+  siteParts,
   type Tint,
   topHeight,
 } from "./buildings.ts";
@@ -73,6 +82,16 @@ export interface Twin3DProps {
   onStep?: (at: number) => void;
   /** How the run starts (every plant online for the group run); the demo's default otherwise. */
   options?: TwinOptions;
+  /** An area was clicked: the plant map opens its sheet. */
+  onPick?: (pick: AreaPick) => void;
+  /** The area whose sheet is open, outlined on the map. */
+  picked?: AreaPick | null;
+}
+
+/** An area of a plant, as the maps hand it to the area sheet. */
+export interface AreaPick {
+  facility: FacilityId;
+  area: AreaCode;
 }
 
 // ------------------------------------------------------------------ theme
@@ -166,13 +185,32 @@ interface Frame {
   flows: FlowFrame[];
   lots: LotFrame[];
   escrowCents: number;
-  /** The buildings, one part list per frame (buildings.ts). */
-  parts: { part: Part; dept: DeptFrame }[];
+  /** The sites' buildings and grounds, one part list per frame (buildings.ts). */
+  parts: SitePart[];
   /** How far the camera is from what it looks at; department labels hide when far. */
   cameraDistance: number;
 }
 
 const FrameContext = createContext<React.RefObject<Frame> | null>(null);
+
+/** What the stage's buttons ask of the camera; read and cleared by StoryCamera each frame. */
+interface CameraCommand {
+  /** Multiply the distance by this (below 1 closer); 1 for nothing pending. */
+  zoom: number;
+  /** Hand the camera back to the story's framing for the step. */
+  fit: boolean;
+}
+const CommandContext = createContext<React.RefObject<CameraCommand> | null>(null);
+
+/** The stage's layers (docs/VISION.md §6.5.6): the buildings always, the rest switchable. */
+export interface Layers {
+  equipment: boolean;
+  money: boolean;
+  labels: boolean;
+}
+
+/** Equipment on and around the buildings: silos, tanks, stacks, rooftop units and vents. */
+const EQUIPMENT_KINDS = new Set<PartKind>(["silo", "tank", "stack", "unit", "vent"]);
 
 /** A label's box on screen this frame, for the overprint pass (LabelPass). */
 interface LabelSlot {
@@ -248,7 +286,7 @@ function Driver({
       flows: blendFlows(prev, next, u),
       lots: blendLots(prev, next, u),
       escrowCents: blendEscrowCents(prev, next, u),
-      parts: departments.flatMap((d) => buildingParts(d).map((part) => ({ part, dept: d }))),
+      parts: siteParts(departments),
       cameraDistance: frame.current.cameraDistance,
     };
   }, -1);
@@ -293,11 +331,30 @@ function StoryCamera({
   const since = useRef(0);
   const seen = useRef(-1);
   const sized = useRef(`${size.width}x${size.height}`);
+  const command = useContext(CommandContext);
 
   useFrame(() => {
     const f = frame.current;
     const c = controls.current;
     if (!c) return;
+    const cmd = command?.current;
+    if (cmd?.fit) {
+      // "Fit": the story takes the camera back, easing from where the user left it.
+      cmd.fit = false;
+      from.current = framingOf(camera, c.target);
+      to.current = framingFor(title, size, pooled);
+      since.current = f.t;
+      free.current = false;
+    }
+    if (cmd && cmd.zoom !== 1 && !record) {
+      // A zoom button: the camera moves along its line to the target and stays where it lands.
+      const d = camera.position.clone().sub(c.target);
+      const next = Math.min(480, Math.max(25, d.length() * cmd.zoom));
+      camera.position.copy(c.target).add(d.setLength(next));
+      c.update();
+      cmd.zoom = 1;
+      free.current = true;
+    }
     const sizeNow = `${size.width}x${size.height}`;
     if (seen.current !== at) {
       // A new step: the story takes the camera back from wherever the user left it.
@@ -492,19 +549,36 @@ function lookColor(theme: Theme, look: DeptLook): string {
 const LIT = "#f6e3a1";
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
 
-/** How many of each part the instanced meshes can hold; the site needs well under these. */
-const PART_CAPACITY: Record<PartKind, number> = {
-  body: 24,
-  gable: 12,
-  saw: 32,
-  silo: 8,
-  tank: 4,
-  stack: 12,
-  window: 900,
-  door: 48,
-  vent: 16,
-  unit: 24,
-  dock: 4,
+/**
+ * The instanced meshes, one per geometry, and the part kinds each draws: one draw call per group
+ * (and one more for its shadow), whatever the number of buildings. The sites need well under the
+ * capacities.
+ */
+type MeshGroup = "box" | "round" | "cone" | "gable" | "saw" | "window";
+const GROUP_OF: Record<PartKind, MeshGroup> = {
+  body: "box",
+  door: "box",
+  vent: "box",
+  unit: "box",
+  dock: "box",
+  panel: "box",
+  paving: "box",
+  car: "box",
+  silo: "round",
+  tank: "round",
+  stack: "round",
+  tree: "cone",
+  gable: "gable",
+  saw: "saw",
+  window: "window",
+};
+const GROUP_CAPACITY: Record<MeshGroup, number> = {
+  box: 700,
+  round: 60,
+  cone: 120,
+  gable: 8,
+  saw: 96,
+  window: 1600,
 };
 
 /** A unit prism: a gable (ridge in the middle) or a sawtooth (vertical face at +x). */
@@ -526,15 +600,25 @@ function litness(look: DeptLook, t: number): number {
   return 0;
 }
 
-function tintColor(theme: Theme, tint: Tint, d: DeptFrame, t: number): THREE.Color {
+/** Trees: one muted green in both themes. */
+const TREE = "#6f9a78";
+
+function tintColor(theme: Theme, tint: Tint, d: DeptFrame | null, t: number): THREE.Color {
   switch (tint) {
-    case "body":
+    case "shell":
+      return COLORS.set(theme.panel).lerp(COLOR_B.set(theme.off), 0.3);
+    case "zone":
+      if (!d) return COLORS.set(theme.off);
       return COLORS.set(lookColor(theme, d.from)).lerp(
         COLOR_B.set(lookColor(theme, d.look)),
         d.mix,
       );
     case "roof":
-      return tintColor(theme, "body", d, t).multiplyScalar(0.78);
+      return tintColor(theme, "zone", d, t).multiplyScalar(0.86);
+    case "paving":
+      return COLORS.set(theme.off).lerp(COLOR_B.set(theme.ink), 0.12);
+    case "tree":
+      return COLORS.set(TREE);
     case "metal":
       return COLORS.set(theme.off).lerp(COLOR_B.set(theme.panel), 0.5);
     case "dark":
@@ -542,27 +626,51 @@ function tintColor(theme: Theme, tint: Tint, d: DeptFrame, t: number): THREE.Col
     case "pad":
       return COLORS.set(theme.pad);
     default: {
-      const on = lerp(litness(d.from, t), litness(d.look, t), d.mix);
+      const on = d ? lerp(litness(d.from, t), litness(d.look, t), d.mix) : 0.15;
       return COLORS.set(theme.off).multiplyScalar(0.5).lerp(COLOR_B.set(LIT), on);
     }
   }
 }
 
-/** Every building on the site: one instanced mesh per part kind (buildings.ts). */
-function Buildings({ theme }: { theme: Theme }) {
+/** Every building and the grounds: one instanced mesh per geometry (buildings.ts). */
+/** The area under a point on the ground plane, at any plant. */
+function areaAt(x: number, z: number): AreaPick | null {
+  for (const f of FACILITY_LAYOUTS)
+    for (const zone of f.zones)
+      if (
+        x >= zone.box.x &&
+        x <= zone.box.x + zone.box.w &&
+        z >= zone.box.y &&
+        z <= zone.box.y + zone.box.d
+      )
+        return { facility: f.id, area: zone.area };
+  return null;
+}
+
+function Buildings({
+  theme,
+  onPick,
+  equipment = true,
+}: {
+  theme: Theme;
+  onPick?: ((pick: AreaPick) => void) | undefined;
+  equipment?: boolean;
+}) {
   const frame = useFrameRef();
-  const meshes = useRef<Partial<Record<PartKind, THREE.InstancedMesh | null>>>({});
+  const meshes = useRef<Partial<Record<MeshGroup, THREE.InstancedMesh | null>>>({});
   const gable = useMemo(() => prism(false), []);
   const saw = useMemo(() => prism(true), []);
   useFrame(() => {
     const f = frame.current;
-    const counts: Partial<Record<PartKind, number>> = {};
+    const counts: Partial<Record<MeshGroup, number>> = {};
     for (const { part, dept } of f.parts) {
-      const m = meshes.current[part.kind];
+      if (!equipment && EQUIPMENT_KINDS.has(part.kind)) continue;
+      const group = GROUP_OF[part.kind];
+      const m = meshes.current[group];
       if (!m) continue;
-      const i = counts[part.kind] ?? 0;
-      if (i >= PART_CAPACITY[part.kind]) continue;
-      counts[part.kind] = i + 1;
+      const i = counts[group] ?? 0;
+      if (i >= GROUP_CAPACITY[group]) continue;
+      counts[group] = i + 1;
       POSITION.set(part.position[0], part.position[1], part.position[2]);
       SCALE.set(
         Math.max(0.01, part.scale[0]),
@@ -573,65 +681,91 @@ function Buildings({ theme }: { theme: Theme }) {
       m.setMatrixAt(i, MATRIX.compose(POSITION, QUAT, SCALE));
       m.setColorAt(i, tintColor(theme, part.tint, dept, f.t));
     }
-    for (const kind of Object.keys(PART_CAPACITY) as PartKind[]) {
-      const m = meshes.current[kind];
+    for (const group of Object.keys(GROUP_CAPACITY) as MeshGroup[]) {
+      const m = meshes.current[group];
       if (!m) continue;
-      m.count = counts[kind] ?? 0;
+      m.count = counts[group] ?? 0;
       m.instanceMatrix.needsUpdate = true;
       if (m.instanceColor) m.instanceColor.needsUpdate = true;
     }
   });
-  const ref = (kind: PartKind) => (el: THREE.InstancedMesh | null) => {
-    meshes.current[kind] = el;
+  const ref = (group: MeshGroup) => (el: THREE.InstancedMesh | null) => {
+    meshes.current[group] = el;
   };
-  const boxes: PartKind[] = ["body", "door", "vent", "unit", "dock"];
-  const rounds: PartKind[] = ["silo", "tank", "stack"];
+  // A click on a building picks the area under it: the hit point, moved a little inward from the
+  // face it struck, decides which area's footprint it is in.
+  const pick = onPick
+    ? {
+        onClick: (e: {
+          stopPropagation: () => void;
+          point: THREE.Vector3;
+          face?: THREE.Face | null;
+        }) => {
+          e.stopPropagation();
+          const n = e.face?.normal;
+          const hit = areaAt(e.point.x - (n?.x ?? 0) * 0.2, e.point.z - (n?.z ?? 0) * 0.2);
+          if (hit) onPick(hit);
+        },
+        onPointerOver: () => {
+          document.body.style.cursor = "pointer";
+        },
+        onPointerOut: () => {
+          document.body.style.cursor = "";
+        },
+      }
+    : {};
   return (
     <>
-      {boxes.map((kind) => (
-        <instancedMesh
-          key={kind}
-          ref={ref(kind)}
-          args={[undefined, undefined, PART_CAPACITY[kind]]}
-          castShadow
-          receiveShadow
-          frustumCulled={false}
-        >
-          <boxGeometry />
-          <meshStandardMaterial color="#ffffff" roughness={0.85} metalness={0} />
-        </instancedMesh>
-      ))}
-      {rounds.map((kind) => (
-        <instancedMesh
-          key={kind}
-          ref={ref(kind)}
-          args={[undefined, undefined, PART_CAPACITY[kind]]}
-          castShadow
-          frustumCulled={false}
-        >
-          <cylinderGeometry args={[0.5, 0.5, 1, 18]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.5} metalness={0.25} />
-        </instancedMesh>
-      ))}
+      <instancedMesh
+        ref={ref("box")}
+        args={[undefined, undefined, GROUP_CAPACITY.box]}
+        castShadow
+        receiveShadow
+        frustumCulled={false}
+        {...pick}
+      >
+        <boxGeometry />
+        <meshStandardMaterial color="#ffffff" roughness={0.82} metalness={0.02} />
+      </instancedMesh>
+      <instancedMesh
+        ref={ref("round")}
+        args={[undefined, undefined, GROUP_CAPACITY.round]}
+        castShadow
+        frustumCulled={false}
+      >
+        <cylinderGeometry args={[0.5, 0.5, 1, 18]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.45} metalness={0.3} />
+      </instancedMesh>
+      <instancedMesh
+        ref={ref("cone")}
+        args={[undefined, undefined, GROUP_CAPACITY.cone]}
+        castShadow
+        frustumCulled={false}
+      >
+        <coneGeometry args={[0.5, 1, 10]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.95} />
+      </instancedMesh>
       <instancedMesh
         ref={ref("gable")}
-        args={[gable, undefined, PART_CAPACITY.gable]}
+        args={[gable, undefined, GROUP_CAPACITY.gable]}
         castShadow
         frustumCulled={false}
       >
         <meshStandardMaterial color="#ffffff" roughness={0.9} />
       </instancedMesh>
+      {/* The hall's sawtooth glass: smoother, so the status colour reads as lit panes. */}
       <instancedMesh
         ref={ref("saw")}
-        args={[saw, undefined, PART_CAPACITY.saw]}
+        args={[saw, undefined, GROUP_CAPACITY.saw]}
         castShadow
         frustumCulled={false}
+        {...pick}
       >
-        <meshStandardMaterial color="#ffffff" roughness={0.9} />
+        <meshStandardMaterial color="#ffffff" roughness={0.35} metalness={0.15} />
       </instancedMesh>
       <instancedMesh
         ref={ref("window")}
-        args={[undefined, undefined, PART_CAPACITY.window]}
+        args={[undefined, undefined, GROUP_CAPACITY.window]}
         frustumCulled={false}
       >
         <boxGeometry />
@@ -641,35 +775,125 @@ function Buildings({ theme }: { theme: Theme }) {
   );
 }
 
-/** The glow around a department the moment it comes online, and its label (a pill). */
-function DepartmentExtras({ theme, hideLabels }: { theme: Theme; hideLabels: boolean }) {
+/** Up to this many rings at once: the departments a step changed and the ends of its new flows. */
+const PINGS = 6;
+
+/** Where a step's changes happened: departments whose status moved, and the ends of new flows. */
+function pingPoints(prev: TwinState, next: TwinState): [number, number][] {
+  const out: [number, number][] = [];
+  const at = (facility: FacilityId, code: string) => {
+    const box = FACILITY_LAYOUTS.find((l) => l.id === facility)?.departments.find(
+      (d) => d.code === code,
+    )?.box;
+    if (box) out.push(centerOf(box));
+  };
+  for (const f of next.facilities)
+    for (const d of f.departments) {
+      const was = prev.facilities
+        .find((x) => x.id === f.id)
+        ?.departments.find((x) => x.code === d.code);
+      if (was && was.status !== d.status) at(f.id, d.code);
+    }
+  for (const flow of next.flows) {
+    if (prev.flows.some((x) => x.id === flow.id && x.status === flow.status)) continue;
+    for (const end of [flow.from, flow.to]) {
+      if (end.kind === "dept") at(end.facility, end.dept);
+      else out.push(centerOf(PADS[end.kind]));
+    }
+  }
+  return out.slice(0, PINGS);
+}
+
+/** Soft rings that spread and fade over the beat where the step's change happened. */
+function Pings({ prev, next, theme }: { prev: TwinState; next: TwinState; theme: Theme }) {
   const frame = useFrameRef();
-  const glows = useRef<(THREE.Mesh | null)[]>([]);
-  const labels = useRef<(THREE.Group | null)[]>([]);
-  const plantB = useMemo(() => FACILITY_LAYOUTS.find((l) => l.id === "B")?.departments ?? [], []);
+  const points = useMemo(() => pingPoints(prev, next), [prev, next]);
+  const rings = useRef<(THREE.Mesh | null)[]>([]);
   useFrame(() => {
-    const f = frame.current;
-    plantB.forEach(({ code, box }, i) => {
-      const d = f.departments.find((x) => x.facility === "B" && x.code === code);
-      const [cx, cy] = centerOf(box);
-      const glow = glows.current[i];
-      if (glow && d) {
-        glow.visible = d.glow > 0.01;
-        const h = bodyHeight(d.code, d.height);
-        glow.position.set(cx, FLOOR_Z + h / 2, cy);
-        const s = 1 + 0.12 * (1 - d.glow);
-        glow.scale.set(box.w * 0.88 * s, h * s, box.d * 0.88 * s);
-        (glow.material as THREE.MeshBasicMaterial).opacity = d.glow * 0.55;
-      }
-      const label = labels.current[i];
-      if (label && d) label.position.set(cx, FLOOR_Z + topHeight(d.code, d.height) + 0.6, cy);
+    const u = frame.current.u;
+    rings.current.forEach((ring, i) => {
+      if (!ring) return;
+      const p = points[i];
+      ring.visible = Boolean(p) && u < 1;
+      if (!p) return;
+      ring.position.set(p[0], 0.08, p[1]);
+      const r = 2 + u * 9;
+      ring.scale.set(r, r, r);
+      (ring.material as THREE.MeshBasicMaterial).opacity = 0.55 * (1 - u);
     });
   });
   return (
     <>
-      {plantB.map(({ code }, i) => (
+      {Array.from({ length: PINGS }, (_, i) => (
         <mesh
-          key={`glow-${code}`}
+          // biome-ignore lint/suspicious/noArrayIndexKey: a fixed pool of rings, reused every step
+          key={i}
+          ref={(el) => {
+            rings.current[i] = el;
+          }}
+          rotation={[-Math.PI / 2, 0, 0]}
+          visible={false}
+        >
+          <ringGeometry args={[0.85, 1, 48]} />
+          <meshBasicMaterial color={theme.accent} transparent opacity={0} depthWrite={false} />
+        </mesh>
+      ))}
+    </>
+  );
+}
+
+/** The picked area: an outline round it from the ground to its roof. */
+function PickedOutline({ picked, theme }: { picked: AreaPick; theme: Theme }) {
+  const layout = FACILITY_LAYOUTS.find((l) => l.id === picked.facility);
+  const zone = layout?.zones.find((z) => z.area === picked.area);
+  if (!zone) return null;
+  const [cx, cy] = centerOf(zone.box);
+  const h = BUILDING_HEIGHT[zone.building] * siteScale(picked.facility) + 0.6;
+  return (
+    <mesh position={[cx, FLOOR_Z + h / 2, cy]}>
+      <boxGeometry args={[zone.box.w + 0.3, h, zone.box.d + 0.3]} />
+      <meshBasicMaterial color={theme.accent} transparent opacity={0.12} depthWrite={false} />
+      <Edges color={theme.accent} lineWidth={2} />
+    </mesh>
+  );
+}
+
+/**
+ * The glow over each of Plant B's areas the moment its department comes online, and each
+ * department's name (a pill) over its main area.
+ */
+function DepartmentExtras({ theme, hideLabels }: { theme: Theme; hideLabels: boolean }) {
+  const frame = useFrameRef();
+  const glows = useRef<(THREE.Mesh | null)[]>([]);
+  const labels = useRef<(THREE.Group | null)[]>([]);
+  const layoutB = useMemo(() => FACILITY_LAYOUTS.find((l) => l.id === "B"), []);
+  const zones = layoutB?.zones ?? [];
+  const plantB = layoutB?.departments ?? [];
+  useFrame(() => {
+    const f = frame.current;
+    zones.forEach((zone, i) => {
+      const d = f.departments.find((x) => x.facility === "B" && x.code === zone.dept);
+      const glow = glows.current[i];
+      if (!glow || !d) return;
+      glow.visible = d.glow > 0.01;
+      const [cx, cy] = centerOf(zone.box);
+      const h = BUILDING_HEIGHT[zone.building];
+      glow.position.set(cx, FLOOR_Z + h / 2, cy);
+      const k = 1 + 0.1 * (1 - d.glow);
+      glow.scale.set(zone.box.w * k, h * k + 0.4, zone.box.d * k);
+      (glow.material as THREE.MeshBasicMaterial).opacity = d.glow * 0.5;
+    });
+    plantB.forEach(({ code, box }, i) => {
+      const label = labels.current[i];
+      const [cx, cy] = centerOf(box);
+      if (label) label.position.set(cx, FLOOR_Z + topHeight(code, "B") + 0.6, cy);
+    });
+  });
+  return (
+    <>
+      {zones.map((zone, i) => (
+        <mesh
+          key={`glow-${zone.area}`}
           ref={(el) => {
             glows.current[i] = el;
           }}
@@ -1085,9 +1309,9 @@ function LotView({ frameLot, theme }: { frameLot: LotFrame; theme: Theme }) {
   useFrame(() => {
     const f = frame.current;
     const l = f.lots.find((x) => x.lot.code === lot.code);
-    const d = f.departments.find((x) => x.facility === lot.facility && x.code === lot.department);
-    if (!l || !d) return;
-    const roof = FLOOR_Z + bodyHeight(d.code, d.height);
+    if (!l) return;
+    // The pallet stands on the roof over the quarantine area, the cage dropped over it.
+    const roof = FLOOR_Z + BUILDING_HEIGHT.warehouse * siteScale(lot.facility);
     const c = cage.current;
     if (c) {
       c.position.set(cx, roof + l.drop, cy);
@@ -1153,7 +1377,13 @@ function Scene({
   reduced,
   hideLabels,
   onStep,
+  onPick,
+  picked,
+  layers,
 }: {
+  onPick?: ((pick: AreaPick) => void) | undefined;
+  picked?: AreaPick | null | undefined;
+  layers: Layers;
   theme: Theme;
   prev: TwinState;
   next: TwinState;
@@ -1173,9 +1403,7 @@ function Scene({
     flows: blendFlows(prev, next, 1),
     lots: blendLots(prev, next, 1),
     escrowCents: next.escrowHeldCents,
-    parts: blendDepartments(prev, next, 1).flatMap((d) =>
-      buildingParts(d).map((part) => ({ part, dept: d })),
-    ),
+    parts: siteParts(blendDepartments(prev, next, 1)),
     cameraDistance: framingFor(title, undefined, isPooled(next)).distance,
   });
   const pooled = isPooled(next);
@@ -1226,24 +1454,25 @@ function Scene({
           <meshStandardMaterial color={theme.bg} roughness={1} />
         </mesh>
         <Floors theme={theme} state={next} />
-        <Buildings theme={theme} />
-        <DepartmentExtras theme={theme} hideLabels={hideLabels} />
+        <Buildings theme={theme} onPick={onPick} equipment={layers.equipment} />
+        <Pings prev={prev} next={next} theme={theme} />
+        {picked && <PickedOutline picked={picked} theme={theme} />}
+        <DepartmentExtras theme={theme} hideLabels={hideLabels || !layers.labels} />
         <Pads theme={theme} state={next} curtain={curtain} narrow={hideLabels} />
         <Road theme={theme} state={next} />
-        {flows.map((flow) => (
-          <FlowView
-            key={flow.id}
-            flow={flow}
-            state={next}
-            theme={theme}
-            curtain={curtain}
-            narrow={hideLabels}
-            index={stackIndex(flow.id)}
-          />
-        ))}
-        {lots.map((l) => (
-          <LotView key={l.lot.code} frameLot={l} theme={theme} />
-        ))}
+        {layers.money &&
+          flows.map((flow) => (
+            <FlowView
+              key={flow.id}
+              flow={flow}
+              state={next}
+              theme={theme}
+              curtain={curtain}
+              narrow={hideLabels}
+              index={stackIndex(flow.id)}
+            />
+          ))}
+        {layers.money && lots.map((l) => <LotView key={l.lot.code} frameLot={l} theme={theme} />)}
         <StoryCamera title={title} at={at} pooled={pooled} record={record} reduced={reduced} />
         <LabelPass />
       </SlotsContext.Provider>
@@ -1251,7 +1480,16 @@ function Scene({
   );
 }
 
-export default function Twin3D({ run, at, curtain, record, onStep, options }: Twin3DProps) {
+export default function Twin3D({
+  run,
+  at,
+  curtain,
+  record,
+  onStep,
+  options,
+  onPick,
+  picked,
+}: Twin3DProps) {
   const theme = useTheme();
   const reduced = useReducedMotion();
   const last = run.steps.length - 1;
@@ -1263,6 +1501,9 @@ export default function Twin3D({ run, at, curtain, record, onStep, options }: Tw
   const title = run.steps[Math.min(last, Math.max(0, Math.floor(at)))]?.title ?? "";
   const notes = [...formatTwinState(next, curtain), ...formatQuotes(next, curtain)];
   const [narrow, setNarrow] = useState(() => matchMedia("(max-width: 560px)").matches);
+  const command = useRef<CameraCommand>({ zoom: 1, fit: false });
+  const [layers, setLayers] = useState<Layers>({ equipment: true, money: true, labels: true });
+  const toggle = (k: keyof Layers) => setLayers((l) => ({ ...l, [k]: !l[k] }));
   useEffect(() => {
     const media = matchMedia("(max-width: 560px)");
     const update = () => setNarrow(media.matches);
@@ -1273,41 +1514,87 @@ export default function Twin3D({ run, at, curtain, record, onStep, options }: Tw
   // The frame around the stage (switches, caption, legend) is PlantView's; the notes are the
   // canvas's accessible description.
   return (
-    <div className="t3-stage" data-record={record ? "1" : undefined}>
-      <Canvas
-        flat
-        shadows
-        dpr={record ? 1 : [1, 1.5]}
-        frameloop="always"
-        gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
-        camera={{
-          fov: 32,
-          near: 2,
-          far: 1200,
-          position: cameraPosition(framingFor(title, undefined, isPooled(next))),
-        }}
-        aria-label={`3D plant view. ${notes.join(" ")}`}
-        onCreated={({ gl }) => {
-          // For npm run web:shot:3d: the renderer's draw calls and triangles per frame.
-          window.dayOneTwin = {
-            info: () => ({ calls: gl.info.render.calls, triangles: gl.info.render.triangles }),
-          };
-        }}
-      >
-        <Scene
-          theme={theme}
-          prev={prev}
-          next={next}
-          at={at}
-          last={last}
-          title={title}
-          curtain={curtain}
-          record={record}
-          reduced={reduced}
-          hideLabels={narrow}
-          onStep={onStep}
-        />
-      </Canvas>
+    <div
+      className={layers.labels ? "t3-stage" : "t3-stage no-labels"}
+      data-record={record ? "1" : undefined}
+    >
+      <CommandContext.Provider value={command}>
+        <Canvas
+          flat
+          shadows
+          dpr={record ? 1 : [1, 1.5]}
+          frameloop="always"
+          gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
+          camera={{
+            fov: 32,
+            near: 2,
+            far: 1200,
+            position: cameraPosition(framingFor(title, undefined, isPooled(next))),
+          }}
+          aria-label={`3D plant view. ${notes.join(" ")}`}
+          onCreated={({ gl }) => {
+            // For npm run web:shot:3d: the renderer's draw calls and triangles per frame.
+            window.dayOneTwin = {
+              info: () => ({ calls: gl.info.render.calls, triangles: gl.info.render.triangles }),
+            };
+          }}
+        >
+          <Scene
+            theme={theme}
+            prev={prev}
+            next={next}
+            at={at}
+            last={last}
+            title={title}
+            curtain={curtain}
+            record={record}
+            reduced={reduced}
+            hideLabels={narrow}
+            onStep={onStep}
+            onPick={onPick}
+            picked={picked}
+            layers={layers}
+          />
+        </Canvas>
+      </CommandContext.Provider>
+      {!record && (
+        <>
+          <fieldset className="t3-tools">
+            <legend className="sr-only">Zoom</legend>
+            <button
+              type="button"
+              aria-label="Zoom in"
+              onClick={() => (command.current.zoom = 0.75)}
+            >
+              +
+            </button>
+            <button
+              type="button"
+              aria-label="Zoom out"
+              onClick={() => (command.current.zoom = 1.33)}
+            >
+              −
+            </button>
+            <button type="button" onClick={() => (command.current.fit = true)}>
+              Fit
+            </button>
+          </fieldset>
+          <fieldset className="t3-layers">
+            <legend className="sr-only">Layers</legend>
+            {(
+              [
+                ["equipment", "Equipment"],
+                ["money", "Orders & money"],
+                ["labels", "Labels"],
+              ] as const
+            ).map(([k, label]) => (
+              <button key={k} type="button" aria-pressed={layers[k]} onClick={() => toggle(k)}>
+                {label}
+              </button>
+            ))}
+          </fieldset>
+        </>
+      )}
     </div>
   );
 }
