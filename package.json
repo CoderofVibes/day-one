@@ -26,6 +26,7 @@
     "verify": "tsx scripts/verify.ts",
     "docs:check": "tsx scripts/docs-check.ts",
     "repo:check": "tsx scripts/repo-check.ts",
+    "clean-clone": "tsx scripts/clean-clone.ts",
     "attest": "tsx scripts/attest.ts",
     "verify:attestation": "tsx scripts/verify-attestation.ts",
     "verify:round": "tsx scripts/verify-round.ts",
