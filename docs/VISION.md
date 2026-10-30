@@ -288,3 +288,94 @@ Buffer: Nov 8 is a half day and Nov 9 is a check day; a slip of more than a day 
 
 1. **The rooms image** for the twin is not in `C:\Dev\day-one-refs\`. Nov 8 is held for it; without it the departments keep their current shapes in glass.
 2. **Approve §6 as written, or say what to change.** The build starts on the seed and the shell the moment this thread says go.
+
+### 6.12 The bigger build (Tony, Oct 29, late evening)
+
+Tony's second note, after the site plan: a larger plant with named areas, about ten products with their own raw materials and schedules, production trends and the plant's numbers integrated from the ERP, and above all a **realistic integration program** that walks an employee from the slow, repetitive way to the automated way, rather than a button that loads a few messages. "The current setup looks basic and doesn't display the capabilities." This section replaces §6.2–§6.9 where they differ; the design system (§6.3), Kevin's pattern (§6.4) and the glass look (§6.5) stand. Sketches: `docs/v2/mockups/plant-large.html` and `journey.html`, screenshots in `shots/`.
+
+#### 6.12.1 The plant
+
+One site, five buildings, twenty areas. Every area is a row in the ledger's `departments` table (the enum grows from nine codes to twenty, grouped by building), so lots, batches, events, status and the twin's zones all key on the same list.
+
+| Building | Areas (ledger codes) | What happens there |
+|---|---|---|
+| **Warehouse** (the large one, back of the site, docks on both yards) | `receiving_dock`, `receiving`, `quarantine`, `rm_storage` (raw material racking), `pkg_storage` (bottles, caps, cartons, labels, shippers), `fg_storage` (finished goods), `shipping_dock` | Trucks in, slips checked, lots into the quarantine cage until QC releases them, then to racking; packaging components on their own racking; finished pallets out |
+| **Processing** (middle, the sawtooth roof) | `rm_staging` (the dispensary store), `weigh_cells` (four weigh-out cells, W1–W4), `formulation` (three blending suites, B1–B3), `tableting` (presses T1–T3 and the capsule filler C1), `bulk_hold` (in-process hold until QC passes the blend) | Raw material staged per batch, weighed in cells, blended, compressed or encapsulated, held in bulk |
+| **Dry side** (front right, the packaging hall) | `bottling` (two lines: count, fill, cap, induction seal), `labeling`, `cartoning` (cartons, case packing), `palletizing`, `powder_fill` (the canister line for powders) | Bulk becomes bottles, canisters, cartons and pallets, then finished goods storage |
+| **QC lab** | `qc_lab` | Incoming tests, in-process checks, release |
+| **Office** | `purchasing`, `planning`, `accounting` | Kevin's desk, the schedule, the books |
+| **Utilities** | `utilities` | Dust collection, compressed air, chilled and purified water (status from the ledger only as "online", no process data) |
+
+Riverside has the same buildings at two thirds the size and no powder line; Lakeview is the warehouse, the dry side and the office only (it packages for the others). The flat map and the twin draw the same footprints (`layout.ts`); each area is a clickable zone with its own glow; the hall's cells, suites and presses are the equipment rows in the area sheet (§6.5.3), lit when a batch is in them today.
+
+#### 6.12.2 Ten products, their materials, their rhythm
+
+All fictional, all solid dose, generic names. Each product has a formula (per-unit quantities with overage, as today), a batch size, a plant, a cadence and a packaging bill (bottle or canister, cap, label, carton, shipper), so the schedule drives both raw materials and packaging.
+
+| Code | Product | Form | Plant | Batch | Cadence | Distinct actives |
+|---|---|---|---|---|---|---|
+| P-VC500 | Vitamin C 500 mg Chewable | chewable tablet | B | 800,000 | twice a week | ascorbic acid (kept exactly as recorded) |
+| P-CMD | Cal-Mag + D3 Tablet | tablet | B, A | 500,000 | weekly | calcium carbonate, magnesium oxide, D3 |
+| P-ELX | Electrolyte Effervescent | effervescent tablet | B | 300,000 | weekly | citric acid, bicarbonate, potassium citrate |
+| P-MG400 | Magnesium Glycinate 400 mg | tablet | A | 400,000 | every two weeks | magnesium bisglycinate |
+| P-ZN50 | Zinc 50 mg | tablet | B | 600,000 | monthly | zinc gluconate |
+| P-BCX | B-Complex | tablet | B | 500,000 | every two weeks | B-vitamin premix |
+| P-MEL5 | Melatonin 5 mg | tablet | B | 1,000,000 | monthly | melatonin |
+| P-D3-2K | Vitamin D3 2,000 IU | tablet | A | 1,000,000 | monthly | D3 beadlet (shared with CMD) |
+| P-PRO | Probiotic 10B Capsule | capsule (C1) | B | 300,000 | every two weeks | probiotic blend, capsule shells |
+| P-FBR | Fiber Powder Canister | powder (powder line) | B | 20,000 canisters | weekly | psyllium husk |
+
+Shared excipients across most of them: MCC, magnesium stearate, croscarmellose, stearic acid, silica, dicalcium phosphate (new), sorbitol and flavors for the chewable and the effervescent. Packaging shared by family: the 150 cc bottle and cap serve five products; labels are per product; cartons and shippers are shared. The material list grows from 33 to about 52; the vendor list from 12 to about 16 (two more active vendors, one capsule-shell vendor, one carton vendor), all with the existing qualification kinds so the credential story still has its revoked, lapsed and suspended cases.
+
+**The invariant that keeps the recording valid.** The recorded run's chain calls are PO-1041 and PO-1042 and the record anchors; they do not depend on the catalogue. Kevin's forecast and purchasing steps are code, not recorded, so the expanded seed must leave, at the demo clock and inside the ten-day horizon at Hollow Pine, exactly the shortfalls the run has today: ascorbic acid (the 700 kg order) and the two lab chemicals (PO-1041). Every other material's opening stock and schedule are sized so it stays at or above its reorder point through the horizon; the other products' next batches sit at day 11 or later, or draw materials that are in stock. The seed's tests pin this ("only ASC, ACN and BUF short at the clock"), and `npm run demo`, `demo:group` and `test:attacks` replay unchanged. The "Load seed" counts change (wording only, `--accept`). If a later decision breaks the invariant on purpose, the cost is one re-record on testnet (the Oct 29 sequence, about half a day with Tony's keychain), which is listed, not hidden.
+
+#### 6.12.3 The integration program: Day One as a guided cutover
+
+This is the spine of v2 and the thing judges and buyers see first. The home screen is no longer "Floor": it is **Your integration**, a program of seven stages with a progress bar, and each stage is a real piece of the plant's work moved from the old way to the new one. The person does the work, with Kevin reading, showing and asking (§6.4); nothing loads by itself, and nothing posts until a person confirms. A stage is "done" when the ledger says so (the records are confirmed, the import is posted, the PO is paid), not when a button was pressed.
+
+| Stage | The old way (shown, not told) | With Kevin (what the person actually does) | Done when | What exists today |
+|---|---|---|---|---|
+| **0 · Meet Kevin** | A one-screen picture of Hollow Pine's day: the paper batch record, the inventory workbook with its "v7 USE THIS ONE" name, the re-keying into the acquirer's ERP, the e-mailed POs, the paper invoice | Who you are (Ray, Linda, Tommy, Priya, Marcy), what the next six stages do, the trust marker explained in one line | first stage opened | new (one screen) |
+| **1 · Your spreadsheets** | Ray's inventory workbook and its sales tab as they are | Drop the workbook; Kevin reads it, lists the 9 rows that need an answer; Ray answers row by row; Kevin posts the opening stock. Then the vendor list sheet and the open-POs sheet the same way | opening stock, vendors and open POs posted | the import wizard, extended with two sheet kinds (vendors, open POs: new fixtures in `data/imports/`) |
+| **2 · Your paper** | A stack of batch records, the binder, Marcy's 40-minute re-key per record | Drop the scans (the watched folder, or the seven rendered records one by one); Kevin reads each, shows what he read beside the scan, asks where he is unsure (BR-B-1046); Ray confirms; the yield history builds as they land | the seven rendered records confirmed, history keyed in | the inbox and confirm routes, the review sheet |
+| **3 · Your products and schedule** | The whiteboard schedule and the formula sheets | Kevin lists the ten products and their formulas as read from the records and the sheets; Linda confirms each; Kevin lays out the next four weeks from the cadences and Linda moves what is wrong; the forecast appears for the first time | the plan confirmed, the forecast computed | new: `/api/schedule` and a confirm route; formulas are in the seed |
+| **4 · Your suppliers and spend rules** | The vendor binder, the "call Linda for anything over $2,500" rule in someone's head | Jordan (HQ) sees the vendor list Kevin read, approves standing per supplier (issued, conditional, not listed); Linda sets Kevin's limits in plain words and sees the contract's reading back | limits and standing read back from the contract | `npm run policy` flow, the credentials data; on the static host the changes are the recorded ones |
+| **5 · Your first order** | An e-mailed PO, a phone call for approval, a cheque | The recorded run: forecast, quotes, PO-1041 funded, PO-1042 refused and approved by text, shipped, received, quarantined, released, paid; each person's step on their own screen | PO-1042 paid | the run as it is |
+| **6 · Your books and the ERP** | Re-keying bills into the ERP, matching by hand | Marcy sees the settled POs matched to receipts, the held invoice with its reasons, the CSV; the ERP connection shows what crossed and the seven reconciliation checks | reconciliation 7 of 7 | Books, the held invoice, the ERP views |
+| **7 · Day to day** | — | The 5am brief, the plant map, the trends: the program as it runs from here | — | the pages |
+
+Each stage's screen has the same shape (mockup `journey.html`): the stage list on the left with progress, the stage's title and one sentence, a **"How it is done today"** panel with the real artifact (the workbook, the scan, the binder) and a short plain description, the **"With Kevin"** panel where the work happens (the review sheet opens from it), and a running tally at the bottom read from the ledger: rows read, questions asked, records confirmed, discrepancies found, orders placed, refused by the rules. No invented time savings; the counts are what the ledger holds.
+
+The journey is also the replay for judges: on the hosted demo "Play" walks the seven stages with the recorded answers, each stage saying "recorded" in its footer. Live (`npm run api`), the person does every step; `npm run api:live` lets Kevin read live. The person's progress is in the ledger (a `journey` table: stage, status, who, when), so the API and the static snapshot serve the same shape.
+
+#### 6.12.4 Trends and the ERP's numbers
+
+Trends, all from the ledger series of §6.7 (`history.ts`), now per product: output per week by product (stacked bars, 16 weeks), yield by batch per product (lines), waste by product (bars), schedule adherence (planned vs completed per week), stock cover in days for the top materials, spend by month and category against the caps, QC decisions by month. The ERP's numbers come into Day One through the connector's read side (`GET /api/erp/*` proxies when `npm run erp` is up; the recorded views on the static host): inventory value by category, bills by state, payments, the trial balance's headline, cost per bottle from the ERP's standard costs. They sit on the Overview (inventory value, bills to pay), Purchasing (what the ERP has for each PO), Invoices (every bill with its match) and ERP connection (what crossed, the reconciliation). The ERP seed grows with the products (its item and vendor masters are built from Day One's seed by `erp:seed`, so the cutover stays one command).
+
+#### 6.12.5 What this does to the schedule
+
+This is a product, not a demo pass, and it does not fit in twelve days at the quality it deserves. Sized honestly for one builder:
+
+| Piece | Days |
+|---|---|
+| Seed: twenty areas, ~52 materials, ten products with formulas and packaging bills, 120 days of history across three plants, four-week schedules, the invariant tests, the ERP reseed and `erp:reconcile` green | 3 |
+| The integration program: seven stages, progress in the ledger, the two new sheet kinds, the schedule confirm, the stage screens, the replay on the static host | 3.5 |
+| Shell, pages and trends on the series; the ERP's numbers on four pages | 3 |
+| Twin: the large plant's footprints and kit, glass, click to the area sheet, pings | 3 |
+| Checks, phone pass, the video page on the shell, screenshots, `host:build` | 1.5 |
+| **Total** | **14 days** against 12 calendar days to Nov 10, with no buffer |
+
+Two honest ways through; Tony picks:
+
+**Option 1 (recommended): the program by Nov 10, in two layers.** Build it in the order a judge meets it, and merge whatever is green on Nov 10. Layer one, Oct 30–Nov 5: the seed with the twenty areas, ten products and schedules; the shell; the integration program's stages 0–2 and 5–6 on existing routes (spreadsheets, paper, the first order, the books) with stage 3 and 4 as read-only confirmations; trends on Overview, Batch records, Schedule and Purchasing; the ERP's numbers on Overview and ERP connection. Layer two, Nov 6–9: the twin on the large plant with glass and click; stage 3's four-week schedule edit and stage 4's plain-words limits live; Invoices and Suppliers pages. Cut for the hackathon: twin layers, equipment history, the Sealed bids and Group purchasing pages (links to the map's run and the round transcript), the Spreadsheets page (it is stage 1), the 5am brief page (the printable stays, linked from Overview). After Nov 14 the cut pieces and the rest of §6.6 continue on the same branch as the product.
+
+**Option 2: everything in §6.12, merged when it is done.** About Nov 16–18, past the submission. The video and README would then show v1 and the submission would not carry the program. Not recommended for the hackathon; right for the product if the hackathon stops mattering.
+
+Either way the video storyboard (RECORDING.md, 2:05) is rewritten around the program after the merge: the beats become "the old way → Kevin → confirmed" per stage, which is a better film than the run alone. That rewrite is the main session's work and is not in the days above.
+
+#### 6.12.6 For Tony
+
+1. **Option 1 or 2** (§6.12.5).
+2. **The ten products** (§6.12.2): fine as listed, or name the ones you want.
+3. **The areas** (§6.12.1): fine as listed, or add and remove.
+4. **The rooms image** still shapes the inside of the processing building when it arrives.
