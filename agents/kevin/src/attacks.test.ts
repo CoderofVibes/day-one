@@ -12,10 +12,11 @@ import { type Ledger, openLedger } from "@day-one/server/ledger/db";
 import { facilities, quotes, receipts } from "@day-one/server/ledger/schema";
 import { ReplayLlm } from "@day-one/server/llm/client";
 import { seedLedger } from "@day-one/server/seed";
+import { MAILBOX } from "@day-one/server/seed/mailbox";
 import { DEMO_QUOTES } from "@day-one/server/seed/quotes";
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
-import { runAttackSuite, type SigningKeyView } from "./attacks.ts";
+import { emailRedirectAttack, runAttackSuite, type SigningKeyView } from "./attacks.ts";
 import { forecastMaterial } from "./forecast.ts";
 import { type InvoiceReading, matchInvoice, screenForInstructions } from "./invoices.ts";
 import { answerPaymentClaim, type PoView } from "./payments.ts";
@@ -259,5 +260,25 @@ describe("payment claims", () => {
     const none = await answerPaymentClaim(new ChainClient(db, new Views(null)), POLICY, claim);
     expect(none.poStatus).toBeNull();
     expect(none.sentence).toContain("nothing is owed");
+  });
+});
+
+describe("new bank details by email", () => {
+  it("is refused by the morning review with nothing changed and no chain call", async () => {
+    const message = MAILBOX.find((m) => m.id === "M-03");
+    if (!message) throw new Error("no M-03 in the mailbox");
+    const result = await emailRedirectAttack(
+      db,
+      ReplayLlm.fromFile(fileURLToPath(file("data/replay/review-llm.json"))),
+      message,
+      NOW,
+    );
+    expect(result.attack).toBe("New bank details by email");
+    expect(result.held).toBe(true);
+    expect(result.evidence[1]).toContain(
+      "northgate-remit.testnet is not the account on Northgate Ingredients' supplier credential (northgate-ingredients.testnet)",
+    );
+    expect(result.evidence[2]).toContain("Note to the AI assistant");
+    expect(result.txHashes).toEqual([]);
   });
 });

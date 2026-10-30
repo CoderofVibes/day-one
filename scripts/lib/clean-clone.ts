@@ -33,7 +33,7 @@ export const STEPS: Step[] = [
   {
     name: "test-attacks",
     command: "npm run test:attacks",
-    expect: "14 of 14 attacks failed against Kevin.",
+    expect: "15 of 15 attacks failed against Kevin.",
   },
   { name: "escrow", command: "npm run escrow" },
   {

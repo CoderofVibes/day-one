@@ -1,12 +1,15 @@
-// npm run test:attacks — fourteen attacks on Kevin, each shown failing: seven in
-// agents/kevin/src/attacks.ts, four on supplier credentials in credential-attacks.ts and
-// the three sealed-bid attacks of agents/kevin/src/sealedRound.ts.
+// npm run test:attacks — fifteen attacks on Kevin, each shown failing: seven in
+// agents/kevin/src/attacks.ts, four on supplier credentials in credential-attacks.ts, the
+// three sealed-bid attacks of agents/kevin/src/sealedRound.ts, and the "new bank details"
+// email read by Kevin's morning review (emailRedirectAttack, from the recording of
+// `npm run review -- --live --record`).
 // Replays the recorded testnet calls and model answers by default: no keys, no network.
 // The credential attacks replay their testnet run (data/attacks/credentials-testnet.json,
 // written by `npm run record:credentials`) and the sealed-bid attacks the testnet round of
 // `npm run sealed -- --live --record` (data/sealed/).
 //   --record  run the first seven live on testnet and NEAR AI Cloud and rewrite their
-//             fixtures (needs .env keys); the credential and sealed-bid attacks still replay
+//             fixtures (needs .env keys); the credential, sealed-bid and email attacks still
+//             replay their own recordings
 //   --json    print one JSON line after the readable text
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -14,6 +17,7 @@ import { join, resolve } from "node:path";
 import { JsonRpcProvider } from "near-api-js";
 import {
   type AttackResult,
+  emailRedirectAttack,
   runAttackSuite,
   type SigningKeyView,
 } from "../agents/kevin/src/attacks.ts";
@@ -33,6 +37,7 @@ import { rebuildErp } from "../server/src/erp-connector/rebuild.ts";
 import { openLedger } from "../server/src/ledger/db.ts";
 import { createLlm, RecordingLlm, ReplayLlm } from "../server/src/llm/client.ts";
 import { seedLedger } from "../server/src/seed/index.ts";
+import { MAILBOX } from "../server/src/seed/mailbox.ts";
 
 const root = resolve(import.meta.dirname, "..");
 const args = process.argv.slice(2);
@@ -163,6 +168,18 @@ if (record && transport instanceof RecordingTransport && llm instanceof Recordin
 const sealed = openSealedEnv({ root });
 results.push(...sealedAttacks(await runSealedRound(sealed.deps)));
 if (sealed.transport instanceof ReplayTransport) sealed.transport.assertDone();
+
+// 15. The "new bank details" email, read by the morning review from its own recording.
+const bankDetails = MAILBOX.find((m) => m.id === "M-03");
+if (!bankDetails) throw new Error("server/src/seed/mailbox.ts has no M-03");
+results.push(
+  await emailRedirectAttack(
+    db,
+    ReplayLlm.fromFile(join(root, "data/replay/review-llm.json")),
+    bankDetails,
+    NOW,
+  ),
+);
 
 const held = results.filter((r) => r.held).length;
 console.log(`Attack suite (${record ? "live on testnet" : "replay of recorded testnet run"})`);

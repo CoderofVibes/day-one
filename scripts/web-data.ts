@@ -177,7 +177,7 @@ const series = {
 };
 // The v2 pages' tables for each plant and Kevin's brief for each, at the same clock; and the
 // recordings HQ's pages read in both modes (the ERP attached to the run, the sealed round, the
-// fourteen attacks, each supplier's credential as the contract last reported it).
+// fifteen attacks, each supplier's credential as the contract last reported it).
 const recordedJson = (script: string, ...args: string[]) => {
   const out = spawnSync(process.execPath, ["--import", "tsx", script, "--json", ...args], {
     cwd: root,
