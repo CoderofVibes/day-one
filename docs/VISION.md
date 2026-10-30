@@ -360,7 +360,7 @@ Build order, each step committed with the checks green, sized in build sessions 
 | Step | What | Done when |
 |---|---|---|
 | 1 | **Seed**: twenty areas (schema enum and migration), ~52 materials, ten products with formulas and packaging bills, vendors, 120 days of history across three plants, four-week schedules; the invariant tests; `erp:seed` from the new masters | `npm run demo`, `demo:group`, `test:attacks`, `erp:reconcile` replay unchanged apart from the seed counts |
-| 2 | **Series and reads**: `history.ts` and `GET /api/history`, `/api/forecast`, `/api/schedule`, the journey table and `/api/journey`, the ERP read proxies; the static snapshot carries them | series tests against hand-computed figures |
+| 2 | **Series and reads**: `server/src/ledger/series.ts` and `GET /api/history`, `/api/history/stock`; `agents/kevin/src/schedule.ts` and `/api/forecast`, `/api/schedule`; the static snapshot carries them in `web/src/data/series.json` (done Oct 30; the journey table moved to step 4 and the ERP read proxies to step 5, where they are used) | series tests against hand-computed figures |
 | 3 | **Shell and design system**: tokens v2, sidebar, picker, header, charts module, number and chart cards, activity feed, review sheet, Kevin panel | Overview live and static, wide and phone |
 | 4 | **The integration program**: the seven stage screens, progress from the ledger, the two new sheet kinds, the schedule confirm, the limits stage, the replay | a person can walk stages 0–7 live; the static host plays them recorded |
 | 5 | **Pages**: Batch records, Inventory & forecast, Schedule, Purchasing, Invoices, Spreadsheets, 5am brief, Three plants, ERP connection, the six HQ pages, with trends | every page on both sources |

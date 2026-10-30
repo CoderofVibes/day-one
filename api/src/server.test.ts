@@ -284,6 +284,33 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect((await api("GET", "/api/brief?plant=Z")).status).toBe(400);
   });
 
+  it("serves the charts' series, a stock line, the forecast and the schedule (VISION §6.7)", async () => {
+    const history = await api("GET", "/api/history");
+    expect(history.status).toBe(200);
+    expect(history.body.production.length).toBeGreaterThanOrEqual(78);
+    expect(history.body.spend.months.length).toBeGreaterThan(0);
+
+    const held = await api("GET", "/api/history/stock?plant=B");
+    expect(held.body.materials).toContain("ASC");
+    const asc = await api("GET", "/api/history/stock?plant=B&material=ASC");
+    expect(asc.body).toMatchObject({
+      facility: "B",
+      material: "ASC",
+      reorderPointBase: 500_000_000,
+    });
+    expect((await api("GET", "/api/history/stock?plant=B&material=NOPE")).status).toBe(404);
+
+    const forecast = await api("GET", "/api/forecast?plant=B&days=10");
+    expect(forecast.body).toMatchObject({ facility: "B", horizonDays: 10 });
+    expect(forecast.body.materials[0]).toMatchObject({ material: "ASC" });
+    expect((await api("GET", "/api/forecast?plant=B&days=500")).status).toBe(400);
+
+    const schedule = await api("GET", "/api/schedule?plant=B&days=14");
+    expect(schedule.body.facility).toBe("B");
+    expect(schedule.body.batches.map((b: { batchNo: string }) => b.batchNo)).toContain("BR-B-1048");
+    expect((await api("GET", "/api/schedule?plant=Z")).status).toBe(400);
+  });
+
   it("exports the settled POs for the books: PO-1042 paid from escrow, PO-1041 still held", async () => {
     const { status, body } = await api("GET", "/api/books");
     expect(status).toBe(200);

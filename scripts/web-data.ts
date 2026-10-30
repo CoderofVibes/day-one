@@ -6,7 +6,8 @@
 // It also writes the three-plant view as it stands at the end of that run, for the static
 // replay (a hosted demo has no API): web/src/data/plants.json (stock, discrepancies, mass
 // balance, books, Kevin's proposed moves) and, beside the built page, web/public/brief.html
-// (Kevin's 5am brief) and web/public/books.csv (the bookkeeper export). HQ's live read of the
+// (Kevin's 5am brief) and web/public/books.csv (the bookkeeper export). web/src/data/series.json
+// holds the charts' series, every plant's forecast and its four-week schedule at the same clock. HQ's live read of the
 // contract is not in the snapshot: it changes with the chain (npm run escrow reads it).
 //   --check   exit 1 if a committed file differs from a fresh export
 
@@ -16,6 +17,7 @@ import { join, resolve } from "node:path";
 import { briefHtml, morningBrief } from "../agents/kevin/src/brief.ts";
 import { runDemo } from "../agents/kevin/src/demo.ts";
 import { massBalance } from "../agents/kevin/src/massBalance.ts";
+import { plantForecast, plantSchedule } from "../agents/kevin/src/schedule.ts";
 import { suggestTransfers, transfersInTransit } from "../agents/kevin/src/transferSuggestions.ts";
 import { openDemoEnv } from "../api/src/env.ts";
 import { heldInvoiceDemo } from "../api/src/heldInvoice.ts";
@@ -23,10 +25,12 @@ import { readAttestationFixture, recordedReceipts } from "../server/src/attestat
 import { verifyAttestation } from "../server/src/attestation/verify.ts";
 import { books, booksCsv } from "../server/src/ledger/books.ts";
 import { plantInventory } from "../server/src/ledger/inventory.ts";
+import { historySeries, stockedMaterials, stockSeries } from "../server/src/ledger/series.ts";
 
 const root = resolve(import.meta.dirname, "..");
 const OUT = join(root, "web/src/data/demo-run.json");
 const PLANTS = join(root, "web/src/data/plants.json");
+const SERIES = join(root, "web/src/data/series.json");
 const BRIEF = join(root, "web/public/brief.html");
 const CSV = join(root, "web/public/books.csv");
 const RELAYER = "dayone-relayer.testnet";
@@ -130,9 +134,37 @@ const plants = {
     inTransit: transfersInTransit(env.db),
   },
 };
+// The charts' series, every plant's forecast and its four-week schedule at the same clock
+// (docs/VISION.md §6.7), loaded by the pages on demand so the first screen does not carry them.
+const PLANT_CODES = ["A", "B", "C"] as const;
+const series = {
+  at: now,
+  history: historySeries(env.db),
+  stock: Object.fromEntries(
+    PLANT_CODES.map((plant) => [
+      plant,
+      Object.fromEntries(
+        stockedMaterials(env.db, plant).map((material) => [
+          material,
+          stockSeries(env.db, { facility: plant, material }),
+        ]),
+      ),
+    ]),
+  ),
+  forecast: Object.fromEntries(
+    PLANT_CODES.map((plant) => [
+      plant,
+      { facility: plant, at: now, materials: plantForecast(env.db, { facility: plant, now }) },
+    ]),
+  ),
+  schedule: Object.fromEntries(
+    PLANT_CODES.map((plant) => [plant, plantSchedule(env.db, { facility: plant, now, days: 28 })]),
+  ),
+};
 const files: [string, string][] = [
   [OUT, text],
   [PLANTS, `${JSON.stringify(plants, null, 2)}\n`],
+  [SERIES, `${JSON.stringify(series)}\n`],
   [BRIEF, briefHtml(morningBrief(env.db, { now }))],
   [CSV, booksCsv(env.db)],
 ];

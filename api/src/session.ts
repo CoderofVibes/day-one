@@ -20,6 +20,7 @@ import {
   waitingInboxItem,
 } from "@day-one/kevin/inbox";
 import { massBalance, proposeWasteCorrections } from "@day-one/kevin/massBalance";
+import { plantForecast, plantSchedule } from "@day-one/kevin/schedule";
 import {
   approveTransfer,
   dismissTransfer,
@@ -38,6 +39,7 @@ import { summarizeChainTx } from "@day-one/server/chain/summary";
 import { books, booksCsv } from "@day-one/server/ledger/books";
 import { plantInventory } from "@day-one/server/ledger/inventory";
 import { approvals, chainTx, staff, vendors } from "@day-one/server/ledger/schema";
+import { historySeries, stockedMaterials, stockSeries } from "@day-one/server/ledger/series";
 import { eq } from "drizzle-orm";
 import {
   type DemoEnv,
@@ -446,6 +448,52 @@ export class DemoSession {
 
   briefHtml(facility?: string) {
     return briefHtml(this.brief(facility));
+  }
+
+  /** The charts' series: output, yield and waste per batch, spend and QC per month (all plants). */
+  history() {
+    return historySeries(this.env.db);
+  }
+
+  /** One material's stock over time at one plant, or the materials the plant has held. */
+  stock(facility = "B", material?: string) {
+    if (!material) return { facility, materials: stockedMaterials(this.env.db, facility) };
+    const series = stockSeries(this.env.db, { facility, material });
+    if (!series) throw new SessionError(404, `no material ${material} at plant ${facility}`);
+    return series;
+  }
+
+  /** Kevin's forecast for every material a plant holds or plans to use, at the run's clock. */
+  forecast(facility = "B", horizonDays?: number) {
+    try {
+      const now = this.env.clock();
+      const materials = plantForecast(this.env.db, {
+        facility,
+        now,
+        ...(horizonDays === undefined ? {} : { horizonDays }),
+      });
+      return {
+        facility,
+        at: now,
+        horizonDays: materials[0]?.horizonDays ?? horizonDays,
+        materials,
+      };
+    } catch (error) {
+      throw new SessionError(400, (error as Error).message);
+    }
+  }
+
+  /** The plant's planned batches from the run's clock, with their draws, cover and cost. */
+  schedule(facility = "B", days?: number) {
+    try {
+      return plantSchedule(this.env.db, {
+        facility,
+        now: this.env.clock(),
+        ...(days === undefined ? {} : { days }),
+      });
+    } catch (error) {
+      throw new SessionError(400, (error as Error).message);
+    }
   }
 
   /**

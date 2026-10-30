@@ -24,6 +24,10 @@
 //   GET  /api/brief                            Kevin's 5am brief (?plant=A|B|C; the acquired plant by default)
 //   GET  /api/brief.html                       the same brief as one printable page
 //   GET  /api/policy                           HQ's view: the limits the contract enforces now, policy changes
+//   GET  /api/history                          the charts' series: batches, spend and QC per month
+//   GET  /api/history/stock                    ?plant=B&material=ASC: stock over time; no material: what the plant held
+//   GET  /api/forecast                         ?plant=B&days=10: Kevin's forecast for every material the plant uses
+//   GET  /api/schedule                         ?plant=B&days=14: planned batches, what each draws, cover and cost
 //   POST /api/mass-balance/proposals           Kevin sends each flagged batch's plant a waste correction
 //   POST /api/discrepancies/:id/review        JSON {"decision": "apply" | "dismiss", "staff"?: …}
 //   GET  /api/imports                          the import plant's opening inventory, posted imports, review queue
@@ -114,6 +118,28 @@ async function route(
   if (method === "GET" && path === "/api/batch-records")
     return reply(res, 200, await session.inbox());
   if (method === "GET" && path === "/api/policy") return reply(res, 200, await session.policy());
+  if (method === "GET" && path === "/api/history") return reply(res, 200, session.history());
+  if (method === "GET" && path === "/api/history/stock")
+    return reply(
+      res,
+      200,
+      session.stock(
+        url.searchParams.get("plant") ?? undefined,
+        url.searchParams.get("material") ?? undefined,
+      ),
+    );
+  if (method === "GET" && path === "/api/forecast")
+    return reply(
+      res,
+      200,
+      session.forecast(url.searchParams.get("plant") ?? undefined, numberParam(url, "days")),
+    );
+  if (method === "GET" && path === "/api/schedule")
+    return reply(
+      res,
+      200,
+      session.schedule(url.searchParams.get("plant") ?? undefined, numberParam(url, "days")),
+    );
   if (method === "GET" && path === "/api/brief")
     return reply(res, 200, session.brief(url.searchParams.get("plant") ?? undefined));
   if (method === "GET" && path === "/api/brief.html") {
@@ -390,4 +416,15 @@ function serveStatic(res: ServerResponse, staticDir: string | undefined, path: s
   if (extname(file) !== ".html") return res.end(readFileSync(file));
   // The page learns it is served by the API from this tag; on a static host it does not probe.
   res.end(readFileSync(file, "utf8").replace("<head>", `<head>${API_MARK}`));
+}
+
+/** A whole-number query parameter from 0 to 90, or undefined when absent. */
+function numberParam(url: URL, name: string): number | undefined {
+  const raw = url.searchParams.get(name);
+  if (raw === null) return undefined;
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 0 || n > 90) {
+    throw new SessionError(400, `${name} must be a whole number from 0 to 90`);
+  }
+  return n;
 }
