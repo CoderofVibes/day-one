@@ -1,4 +1,4 @@
-# 24. Supplier credentials (soulbound tokens) and reputation
+# 25. Supplier credentials (soulbound tokens) and reputation
 
 **Question:** Can each approved supplier hold an on-chain credential that the spend-policy contract actually checks before it funds a PO (issued by HQ with an expiry and the categories the supplier may sell, revocable), with the supplier's delivery record folded into the same token? What does NEAR's soulbound token standard (NEP-393) say today, and does the credential live in `spend-policy` or in a separate registry contract?
 

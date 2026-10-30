@@ -1,4 +1,4 @@
-//! Supplier credentials with reputation (CONTRACTS.md §3.1, research 24).
+//! Supplier credentials with reputation (CONTRACTS.md §3.1, research 25).
 //!
 //! HQ issues each approved supplier a soulbound credential: the categories it may sell and an
 //! expiry. The credential is the permission: `submit_po` refuses a supplier whose credential is

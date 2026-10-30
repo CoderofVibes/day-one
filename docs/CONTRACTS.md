@@ -153,7 +153,7 @@ The retry after approval is the identical call. Within-limit and approved POs sh
 
 A `po_refused` event is logged immediately before the panic. Logs from aborted calls are kept: confirmed Oct 28 in the sandbox test (the refused `submit_po` outcome carries the `po_refused` log). Nothing depends on it, because the panic message itself is in the failed transaction's status.
 
-### 3.1 Supplier credentials and reputation (Oct 28, OPEN_QUESTIONS #35 and #36; research 24)
+### 3.1 Supplier credentials and reputation (Oct 28, OPEN_QUESTIONS #35 and #36; research 25)
 
 Each approved supplier holds a **soulbound credential** that HQ issues: the PO categories it may sell and an expiry. The credential is the permission: `submit_po` step 3a refuses a supplier without a live one, and no director approval overrides that. The same record carries the supplier's **delivery history**, which the contract updates itself, and a contract rule turns a run of QC rejects into a suspension that only HQ lifts. The contract is its own NEP-393 registry (the standard's single-contract case), so SBT-aware tools read the credentials through the standard views and `nep393` events.
 
