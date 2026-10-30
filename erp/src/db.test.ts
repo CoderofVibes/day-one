@@ -34,8 +34,8 @@ describe("the ERP database", () => {
   it("seeds the masters with no inventory and a balanced opening journal", () => {
     const db = openErp();
     seedErp(db, { ERP_TOKEN_KEVIN_DAYONE: "from-env" });
-    expect(db.select().from(vendors).all()).toHaveLength(12);
-    expect(db.select().from(items).all()).toHaveLength(36);
+    expect(db.select().from(vendors).all()).toHaveLength(18);
+    expect(db.select().from(items).all()).toHaveLength(64);
     expect(db.select().from(approvalRules).all()).toHaveLength(8);
     const statuses = Object.fromEntries(
       db

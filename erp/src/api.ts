@@ -1417,6 +1417,54 @@ export const readers = {
 export type RecordType = keyof typeof readers;
 export const RECORD_TYPES = Object.keys(readers) as RecordType[];
 
+/**
+ * `?externalId=` answered by an index lookup instead of serializing the whole collection: the
+ * connector asks this before every posting to stay idempotent, so a list scan would make a
+ * long history's cutover quadratic. Same result as the filtered list: zero or one record.
+ */
+export const byExternalId: Partial<Record<RecordType, (db: ErpDb, value: string) => unknown>> = {
+  purchaseOrder: (db, v) => {
+    const r = db.select().from(purchaseOrders).where(eq(purchaseOrders.externalId, v)).get();
+    return r ? serializePurchaseOrder(db, r) : null;
+  },
+  itemReceipt: (db, v) => {
+    const r = db.select().from(itemReceipts).where(eq(itemReceipts.externalId, v)).get();
+    return r ? serializeItemReceipt(db, r) : null;
+  },
+  inventoryAdjustment: (db, v) => {
+    const r = db
+      .select()
+      .from(inventoryAdjustments)
+      .where(eq(inventoryAdjustments.externalId, v))
+      .get();
+    return r ? serializeInventoryAdjustment(db, r) : null;
+  },
+  inventoryTransfer: (db, v) => {
+    const r = db
+      .select()
+      .from(inventoryTransfers)
+      .where(eq(inventoryTransfers.externalId, v))
+      .get();
+    return r ? serializeInventoryTransfer(db, r) : null;
+  },
+  inventoryStatusChange: (db, v) => {
+    const r = db
+      .select()
+      .from(inventoryStatusChanges)
+      .where(eq(inventoryStatusChanges.externalId, v))
+      .get();
+    return r ? serializeInventoryStatusChange(db, r) : null;
+  },
+  vendorBill: (db, v) => {
+    const r = db.select().from(vendorBills).where(eq(vendorBills.externalId, v)).get();
+    return r ? serializeVendorBill(db, r) : null;
+  },
+  vendorPayment: (db, v) => {
+    const r = db.select().from(vendorPayments).where(eq(vendorPayments.externalId, v)).get();
+    return r ? serializeVendorPayment(db, r) : null;
+  },
+};
+
 /** Vendor by code or payout account, for the connector's payee check. */
 export function findVendorByAccount(db: ErpDb, account: string) {
   const v = db.select().from(vendors).where(eq(vendors.payoutAccount, account)).get();

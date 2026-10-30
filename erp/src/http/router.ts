@@ -8,6 +8,7 @@ import {
   ApiError,
   authenticate,
   billStatusForPo,
+  byExternalId,
   type Clock,
   createInventoryAdjustment,
   createInventoryStatusChange,
@@ -187,11 +188,20 @@ export function createRouter(db: Erp, clock: Clock = { now: () => new Date().toI
 
       if (method === "GET") {
         require(principal, "read");
-        if (!key)
+        if (!key) {
+          const filters = [...url.searchParams.keys()].filter(
+            (k) => k !== "limit" && k !== "offset",
+          );
+          const lookup = byExternalId[type as RecordType];
+          if (lookup && filters.length === 1 && filters[0] === "externalId") {
+            const found = lookup(db, url.searchParams.get("externalId") ?? "");
+            return json(200, collection(found ? [found] : [], path, url.searchParams));
+          }
           return json(
             200,
             collection(filterBy(reader.list(db), url.searchParams), path, url.searchParams),
           );
+        }
         if (type === "purchaseOrder" && verb === "billStatus")
           return json(200, billStatusForPo(db, key));
         const record = reader.get(db, key);

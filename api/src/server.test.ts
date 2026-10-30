@@ -287,17 +287,13 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
   it("exports the settled POs for the books: PO-1042 paid from escrow, PO-1041 still held", async () => {
     const { status, body } = await api("GET", "/api/books");
     expect(status).toBe(200);
+    // The plant's earlier POs (PO-1007 to PO-1034, FICTIONAL_DATA §17), the bookkeeper pack's six
+    // and PO-1042; PO-1041 is escrowed, not settled.
     expect(body.settled.map((po: { poNo: string }) => po.poNo)).toEqual([
-      "PO-1035",
-      "PO-1036",
-      "PO-1037",
-      "PO-1038",
-      "PO-1039",
-      "PO-1040",
+      ...Array.from({ length: 34 }, (_, i) => `PO-${1007 + i}`),
       "PO-1042",
     ]);
-    // $9,632.50 of history plus PO-1042's $5,150.00; PO-1041 is escrowed, not settled.
-    expect(body.totalUsdc).toBe(14_782_500_000);
+    expect(body.totalUsdc).toBe(190_860_850_000);
     const state = (await api("GET", "/api/run")).body;
     const txOf = (method: string) =>
       state.transactions.find((t: { method: string }) => t.method === method)?.tx;
@@ -306,7 +302,7 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(po1042.recordRef).toBe(state.transactions.at(-1).tx);
     expect(po1042.releasedOn).toBe("2026-11-16");
     expect(body.sentences[0]).toBe(
-      "7 settled purchase orders, $14,782.50, each matched to a receipt; 1 paid from escrow on QC release, the rest by check before Day One.",
+      "35 settled purchase orders, $190,860.85, each matched to a receipt; 1 paid from escrow on QC release, the rest by check before Day One.",
     );
     expect(body.alerts.map((a: { poNo: string }) => a.poNo)).toEqual(["PO-1040"]);
 

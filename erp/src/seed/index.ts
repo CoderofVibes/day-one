@@ -129,4 +129,10 @@ export function seedErp(db: Erp, env: Record<string, string | undefined> = {}) {
   });
 }
 
-export { AP_HISTORY_BILLS, AP_HISTORY_CHECKS, loadApHistory } from "./history.ts";
+export {
+  AP_HISTORY_BILLS,
+  AP_HISTORY_CHECKS,
+  type HistoryBill,
+  type HistoryCheck,
+  loadApHistory,
+} from "./history.ts";

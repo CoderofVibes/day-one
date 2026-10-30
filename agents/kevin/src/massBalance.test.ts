@@ -43,7 +43,8 @@ describe("mass balance (FICTIONAL_DATA §15)", () => {
       ["A", "P-CMD"],
     ]);
     const cmdB = periods.find((p) => p.facility === "B" && p.product === "P-CMD");
-    expect(cmdB).toMatchObject({ batches: 1, unaccountedBase: 0, flagged: false });
+    // BR-B-1038 and the two July–August batches of FICTIONAL_DATA §17.
+    expect(cmdB).toMatchObject({ batches: 3, unaccountedBase: 0, flagged: false });
   });
 
   it("sums the period and says in one line that units are not the cause", () => {
@@ -115,7 +116,7 @@ describe("mass balance (FICTIONAL_DATA §15)", () => {
       .where(eq(batchRecords.batchNo, "BR-A-2201"))
       .get();
     expect(record?.wasteBase).toBe(25_310_454);
-    expect(periods.find((p) => p.facility === "A")).toMatchObject({
+    expect(periods.find((p) => p.facility === "A" && p.product === "P-CMD")).toMatchObject({
       reviewedWasteBase: 57_599_514,
       unaccountedBase: 57_599_514,
       unaccountedBp: 342,

@@ -295,18 +295,17 @@ Tony's second note, after the site plan: a larger plant with named areas, about 
 
 #### 6.12.1 The plant
 
-One site, five buildings, twenty areas. Every area is a row in the ledger's `departments` table (the enum grows from nine codes to twenty, grouped by building), so lots, batches, events, status and the twin's zones all key on the same list.
+One site, five buildings, twenty areas (as built Oct 30: `DEPARTMENTS` in `server/src/ledger/schema.ts`, migration 0010). Every area is a row in the ledger's `departments` table (the enum grows from nine codes to twenty, grouped by building), so lots, batches, events, status and the twin's zones all key on the same list.
 
 | Building | Areas (ledger codes) | What happens there |
 |---|---|---|
-| **Warehouse** (the large one, back of the site, docks on both yards) | `receiving_dock`, `receiving`, `quarantine`, `rm_storage` (raw material racking), `pkg_storage` (bottles, caps, cartons, labels, shippers), `fg_storage` (finished goods), `shipping_dock` | Trucks in, slips checked, lots into the quarantine cage until QC releases them, then to racking; packaging components on their own racking; finished pallets out |
+| **Warehouse** (the large one, back of the site, docks on both yards) | `receiving` (with the docks), `quarantine`, `rm_storage` (raw material racking), `pkg_storage` (bottles, caps, cartons, labels, shippers), `fg_storage` (finished goods), `shipping` | Trucks in, slips checked, lots into the quarantine cage until QC releases them, then to racking; packaging components on their own racking; finished pallets out |
 | **Processing** (middle, the sawtooth roof) | `rm_staging` (the dispensary store), `weigh_cells` (four weigh-out cells, W1–W4), `formulation` (three blending suites, B1–B3), `tableting` (presses T1–T3 and the capsule filler C1), `bulk_hold` (in-process hold until QC passes the blend) | Raw material staged per batch, weighed in cells, blended, compressed or encapsulated, held in bulk |
 | **Dry side** (front right, the packaging hall) | `bottling` (two lines: count, fill, cap, induction seal), `labeling`, `cartoning` (cartons, case packing), `palletizing`, `powder_fill` (the canister line for powders) | Bulk becomes bottles, canisters, cartons and pallets, then finished goods storage |
 | **QC lab** | `qc_lab` | Incoming tests, in-process checks, release |
 | **Office** | `purchasing`, `planning`, `accounting` | Kevin's desk, the schedule, the books |
-| **Utilities** | `utilities` | Dust collection, compressed air, chilled and purified water (status from the ledger only as "online", no process data) |
 
-Riverside has the same buildings at two thirds the size and no powder line; Lakeview is the warehouse, the dry side and the office only (it packages for the others). The flat map and the twin draw the same footprints (`layout.ts`); each area is a clickable zone with its own glow; the hall's cells, suites and presses are the equipment rows in the area sheet (§6.5.3), lit when a batch is in them today.
+The utilities yard is drawn on the site but is not a ledger area: nothing in the ledger knows steam or air, so it carries no status. Riverside has the same buildings at two thirds the size and no powder line; Lakeview is the warehouse, the dry side and the office only (it packages for the others). The flat map and the twin draw the same footprints (`layout.ts`); each area is a clickable zone with its own glow; the hall's cells, suites and presses are the equipment rows in the area sheet (§6.5.3), lit when a batch is in them today.
 
 #### 6.12.2 Ten products, their materials, their rhythm
 
@@ -314,18 +313,18 @@ All fictional, all solid dose, generic names. Each product has a formula (per-un
 
 | Code | Product | Form | Plant | Batch | Cadence | Distinct actives |
 |---|---|---|---|---|---|---|
-| P-VC500 | Vitamin C 500 mg Chewable | chewable tablet | B | 800,000 | twice a week | ascorbic acid (kept exactly as recorded) |
-| P-CMD | Cal-Mag + D3 Tablet | tablet | B, A | 500,000 | weekly | calcium carbonate, magnesium oxide, D3 |
-| P-ELX | Electrolyte Effervescent | effervescent tablet | B | 300,000 | weekly | citric acid, bicarbonate, potassium citrate |
-| P-MG400 | Magnesium Glycinate 400 mg | tablet | A | 400,000 | every two weeks | magnesium bisglycinate |
+| P-VC500 | Vitamin C 500 mg Chewable | chewable tablet | B | 800,000 | every two weeks | ascorbic acid (kept exactly as recorded) |
+| P-CMD | Cal-Mag + D3 Tablet | tablet | B, A (from Oct) | 500,000 | monthly at B, every two weeks at A | calcium carbonate, magnesium oxide, D3 |
+| P-ELX | Electrolyte Effervescent | effervescent tablet | B | 300,000 | weekly to Sep, then every one to two weeks | citric acid, bicarbonate, potassium citrate |
+| P-MG100 | Magnesium Glycinate 100 mg | tablet | A | 400,000 | weekly, every two weeks from Oct | magnesium bisglycinate |
 | P-ZN50 | Zinc 50 mg | tablet | B | 600,000 | monthly | zinc gluconate |
-| P-BCX | B-Complex | tablet | B | 500,000 | every two weeks | B-vitamin premix |
+| P-BCX | B-Complex | tablet | A | 500,000 | every two weeks | B-vitamin premix |
 | P-MEL5 | Melatonin 5 mg | tablet | B | 1,000,000 | monthly | melatonin |
-| P-D3-2K | Vitamin D3 2,000 IU | tablet | A | 1,000,000 | monthly | D3 beadlet (shared with CMD) |
+| P-D3K | Vitamin D3 2,000 IU | tablet | A | 1,000,000 | every two weeks | D3 beadlet (shared with CMD) |
 | P-PRO | Probiotic 10B Capsule | capsule (C1) | B | 300,000 | every two weeks | probiotic blend, capsule shells |
-| P-FBR | Fiber Powder Canister | powder (powder line) | B | 20,000 canisters | weekly | psyllium husk |
+| P-FBR | Fiber Powder Canister | powder (powder line) | B | 6,000 canisters of 300 g | every two weeks | psyllium husk |
 
-Shared excipients across most of them: MCC, magnesium stearate, croscarmellose, stearic acid, silica, dicalcium phosphate (new), sorbitol and flavors for the chewable and the effervescent. Packaging shared by family: the 150 cc bottle and cap serve five products; labels are per product; cartons and shippers are shared. The material list grows from 33 to about 52; the vendor list from 12 to about 16 (two more active vendors, one capsule-shell vendor, one carton vendor), all with the existing qualification kinds so the credential story still has its revoked, lapsed and suspended cases.
+Shared excipients across most of them: MCC, magnesium stearate, croscarmellose, stearic acid, silica, dicalcium phosphate (new), sorbitol and flavors for the chewable and the effervescent. Packaging shared by family: the 150 cc bottle and cap serve five products; labels are per product; cartons and shippers are shared. As built: 54 materials and 18 vendors (premix, melatonin, probiotic, capsule-shell, psyllium and carton suppliers), all qualified; the on-chain credential story (revoked, lapsed, suspended) is unchanged. The history and plan are generated by `server/src/seed/production.ts` (FICTIONAL_DATA §17).
 
 **The invariant that keeps the recording valid.** The recorded run's chain calls are PO-1041 and PO-1042 and the record anchors; they do not depend on the catalogue. Kevin's forecast and purchasing steps are code, not recorded, so the expanded seed must leave, at the demo clock and inside the ten-day horizon at Hollow Pine, exactly the shortfalls the run has today: ascorbic acid (the 700 kg order) and the two lab chemicals (PO-1041). Every other material's opening stock and schedule are sized so it stays at or above its reorder point through the horizon; the other products' next batches sit at day 11 or later, or draw materials that are in stock. The seed's tests pin this ("only ASC, ACN and BUF short at the clock"), and `npm run demo`, `demo:group` and `test:attacks` replay unchanged. The "Load seed" counts change (wording only, `--accept`). If a later decision breaks the invariant on purpose, the cost is one re-record on testnet (the Oct 29 sequence, about half a day with Tony's keychain), which is listed, not hidden.
 

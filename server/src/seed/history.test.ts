@@ -14,7 +14,7 @@ import {
   qcDecisions,
   receipts,
 } from "../ledger/schema.ts";
-import { QC_SAMPLE_MG } from "./history.ts";
+import { HISTORY_BATCHES, QC_SAMPLE_MG } from "./history.ts";
 import { seedLedger } from "./index.ts";
 import { kg, MATERIALS } from "./reference.ts";
 
@@ -43,7 +43,12 @@ function issued(batchId: number) {
 
 describe("history POs (FICTIONAL_DATA §13)", () => {
   it("has six paid POs totalling $9,632.50, each received and matched", () => {
-    const pos = db.select().from(purchaseOrders).all();
+    // The bookkeeper pack's six; the plant's earlier POs (PO-1007 to PO-1034) are §17's.
+    const pos = db
+      .select()
+      .from(purchaseOrders)
+      .all()
+      .filter((p) => p.poNo >= "PO-1035");
     expect(pos.map((p) => p.poNo)).toEqual([
       "PO-1035",
       "PO-1036",
@@ -54,7 +59,14 @@ describe("history POs (FICTIONAL_DATA §13)", () => {
     ]);
     expect(new Set(pos.map((p) => p.status))).toEqual(new Set(["paid"]));
     expect(pos.reduce((sum, p) => sum + p.totalUsdc, 0)).toBe(9_632_500_000);
-    expect(db.select().from(receipts).all()).toHaveLength(6);
+    const received = new Set(
+      db
+        .select()
+        .from(receipts)
+        .all()
+        .map((r) => r.poId),
+    );
+    expect(pos.every((p) => received.has(p.id))).toBe(true);
   });
 
   it("keeps each PO total equal to its lines", () => {
@@ -87,26 +99,31 @@ describe("history POs (FICTIONAL_DATA §13)", () => {
       )
       .where(and(eq(lotEvents.kind, "received"), eq(lotEvents.refType, "po")))
       .all();
-    expect(rows).toHaveLength(8);
+    expect(rows).toHaveLength(db.select().from(poLines).all().length);
     for (const r of rows) expect(r.received, r.poNo).toBe(r.ordered);
   });
 
   it("bills magnesium stearate at $8.20/kg, then $9.35/kg (the price drift)", () => {
     const prices = db
-      .select({ price: poLines.unitPriceUsdc })
+      .select({ price: poLines.unitPriceUsdc, poNo: purchaseOrders.poNo })
       .from(poLines)
+      .innerJoin(purchaseOrders, eq(purchaseOrders.id, poLines.poId))
       .innerJoin(materials, eq(materials.id, poLines.materialId))
       .where(eq(materials.code, "MGS"))
-      .orderBy(poLines.poId)
+      .orderBy(purchaseOrders.poNo)
       .all();
-    expect(prices.map((p) => p.price)).toEqual([8_200_000, 9_350_000]);
+    expect(prices.at(-1)).toEqual({ price: 9_350_000, poNo: "PO-1040" });
+    expect(new Set(prices.slice(0, -1).map((p) => p.price))).toEqual(new Set([8_200_000]));
+    expect(prices.map((p) => p.poNo)).toContain("PO-1035");
   });
 });
 
 describe("history batches (FICTIONAL_DATA §10, §15)", () => {
   it("has eight confirmed summarized batches, none of the rendered §7 records", () => {
     const all = db.select().from(batchRecords).all();
-    expect(all).toHaveLength(8);
+    const handWritten = new Set(HISTORY_BATCHES.map((b) => b.batchNo));
+    expect(all.filter((b) => handWritten.has(b.batchNo))).toHaveLength(8);
+    expect(all.some((b) => /^BR-[AB]-104[1-6]$|^BR-A-2207$/.test(b.batchNo))).toBe(false);
     expect(new Set(all.map((b) => b.status))).toEqual(new Set(["confirmed"]));
     expect(all.every((b) => b.sourceFile === null)).toBe(true);
   });
@@ -187,7 +204,10 @@ describe("Plant B stock at demo start", () => {
     const blendMaterials = MATERIALS.filter(
       (m) => m.category === "active" || m.category === "excipient",
     );
-    expect(rows).toHaveLength(blendMaterials.length);
+    // Plant B holds every blend material but Riverside's B-vitamin premix and bisglycinate (§17).
+    expect(rows).toHaveLength(
+      blendMaterials.filter((m) => m.code !== "BVP" && m.code !== "MBG").length,
+    );
     for (const r of rows) {
       if (r.code === "ASC") continue;
       expect(r.onHand, r.code).toBeGreaterThanOrEqual(r.reorderPoint ?? 0);

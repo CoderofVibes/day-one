@@ -52,15 +52,31 @@ export const facilities = sqliteTable(
   ],
 );
 
+/** The twenty areas of a plant, by building (docs/VISION.md §6.12.1). */
 export const DEPARTMENTS = [
+  // Warehouse
   "receiving",
-  "warehouse",
-  "weigh_dispense",
-  "blending",
-  "compression",
-  "packaging",
+  "quarantine",
+  "rm_storage",
+  "pkg_storage",
+  "fg_storage",
+  "shipping",
+  // Processing
+  "rm_staging",
+  "weigh_cells",
+  "formulation",
+  "tableting",
+  "bulk_hold",
+  // Dry side
+  "bottling",
+  "labeling",
+  "cartoning",
+  "palletizing",
+  "powder_fill",
+  // Lab and office
   "qc_lab",
   "purchasing",
+  "planning",
   "accounting",
 ] as const;
 

@@ -496,3 +496,31 @@ Supplier volume breaks (`agents/suppliers/src/pricing.ts`), reached at 1,000 kg;
 | Ridgeway Ascorbics | 7.35 | 6.80 | $165 | 5 days | Runner-up: landed $9,685.00 |
 
 The pool: `RFQ-G-2611`, 1,400 kg (Plant B 700 kg, Plant A 700 kg; Plant C has no planned use). Each plant pledges at most its cost alone at the $7.10/kg on file ($5,150.00). The pooled PO `PO-G-2001` is $9,490.00, split by quantity: $4,745.00 each, both over the $2,500 per-PO limits, so the contract waits for Linda Park (Plant B) and Dana Whitfield (Plant A). Savings against buying alone: $810.00. Delivery is 1,400 kg to Plant B as supplier lot NG-24-9120 on packing slip NG-PS-60502; 700 kg is earmarked for Riverside.
+
+---
+
+## 17. Ten products and 120 days of plant history (v2, Oct 30)
+
+Added for the v2 program (docs/VISION.md §6.12). Everything here is generated, deterministically, by `server/src/seed/production.ts`; the sections above stay exactly as written, and the recorded run, the group purchase, the attacks, the sealed round and the ERP reconciliation replay unchanged (only the "Load seed" line counts more).
+
+**Areas.** Twenty per plant, by building: warehouse (receiving, quarantine, raw material storage, packaging storage, finished goods, shipping), processing (raw material staging, weigh-out cells, formulation, tableting, bulk hold), dry side (bottling, labeling, cartoning, palletizing, and at Hollow Pine a powder-fill line), QC lab, office (purchasing, planning, accounting). Lakeview has ten (no processing, no lab). The old nine codes map onto these in migration 0010.
+
+**Products.** The three of §3 plus seven, each formula summing to its batch's theoretical weight:
+
+| Code | Name | Plant | Batch | Unit | Formula (kg per batch) | Packaging per pack |
+|---|---|---|---|---|---|---|
+| P-ZN50 | Hollow Pine Zinc 50 mg Tablet | B | 600,000 | 700 mg tablet | zinc gluconate 210, DCP 120, MCC 75, CCS 8, MGS 4.2, SIO 2.8 | 100 ct: 100 cc bottle, 33 mm cap, label |
+| P-MEL5 | Hollow Pine Melatonin 5 mg Tablet | B | 1,000,000 | 150 mg tablet | melatonin 5, DCP 70, MCC 68, CCS 4, MGS 1.5, SIO 1.5 | 60 ct: 100 cc bottle, cap, label, carton |
+| P-PRO | Hollow Pine Probiotic 10B Capsule | B (capsule room) | 300,000 | 400 mg fill | probiotic blend 30, MCC 86, SIO 2, MGS 2; HPMC shells 1.02 per capsule | 30 ct: 100 cc bottle, cap, label, carton, desiccant |
+| P-FBR | Hollow Pine Fiber Powder Canister | B (powder room) | 6,000 | 300 g canister | psyllium 1,640, citric acid 120, lemon-lime 30, sucralose 6, SIO 4 | canister, label |
+| P-BCX | Acme B-Complex Tablet | A | 500,000 | 900 mg tablet | B-vitamin premix 180, DCP 140, MCC 110, CCS 10, MGS 6, SIO 4 | 100 ct: 250 cc bottle, 45 mm cap, label |
+| P-MG100 | Acme Magnesium Glycinate 100 mg Tablet | A | 400,000 | 1,000 mg tablet | magnesium bisglycinate 286, MCC 80, DCP 20, CCS 8, STA 4, MGS 2 | 120 ct: 250 cc bottle, cap, label |
+| P-D3K | Acme Vitamin D3 2,000 IU Tablet | A | 1,000,000 | 200 mg tablet | D3 beadlet 20, DCP 110, MCC 62, CCS 4, MGS 2, SIO 2 | 180 ct: 100 cc bottle, cap, label |
+
+Every packaging run also draws one shipper case per 48 packs (96 for cartoned, 12 for canisters). The new materials (21) and their list prices are in `reference.ts` (`MATERIALS`, `LIST_PRICE`); the acquirer's ERP carries the same prices as standard cost. Six new suppliers, all qualified: Cascade Nutrient Premix, Halvorsen Fine Chemicals, Brightwater Cultures (ships cold), Keystone Capsule Co., Prairie Fiber Mills, Northfield Folding Carton.
+
+**History, Jul 6 – Nov 6.** 70 batches: Hollow Pine's tablet line (BR-B-1014 to 1032 before Sep 14, then 1034 and 1035), its capsule room (BC-B-0301 to 0309) and powder room (BP-B-0501 to 0509), and Riverside (BR-A-2174 to 2200, then 2202, 2203, 2205, 2206), each in the gaps the hand-written numbers leave so every plant's numbers stay in date order. Yields come from a hash of the batch number (tablets 88.6–92.0%, capsules 96.2–98.5%, powder 94.5–97.0%); waste is what was issued less units and QC samples. 64 packaging runs on the dry side the day after each batch. Opening stock is on hand Jul 6. Hollow Pine buys in two rounds (Aug 24, Sep 21) on PO-1007 to PO-1034, one PO per supplier per round, split under the ERP's $25,000 controller threshold, received a week later and released by QC two days after that; the ERP holds a matching bill and a net-30 check for each (bills over $10,000 approved by Marcy). Riverside buys every four weeks on Acme's own system (no Day One PO), as its lots in §6 do.
+
+**What it leaves alone.** It runs on its own lots: its batches draw only its lots and the hand-written batches never draw them. Ascorbic acid, calcium carbonate, magnesium oxide and the other materials it uses only before Aug 28 are bought to the gram and used up. It never touches the bottles, caps, labels and lab chemicals the brief and the transfer suggestions turn on. Its stock at the demo clock covers every planned batch it adds through Dec 7 (plus the reorder point for a new material), so no plant runs short inside any forecast window. `production.test.ts` holds each of these.
+
+**Plan, Nov 17 – Dec 7.** 18 planned batches beside BR-B-1047 and BR-B-1048: Hollow Pine's electrolyte, zinc, melatonin, probiotic and fiber; Riverside's magnesium, D3 and B-complex. The next Vitamin C and Cal-Mag batches (Dec 1–3) come after every forecast window the recorded run and the brief read, and are bought as usual. BR-A-2210 stays the group purchase's Vitamin C batch.

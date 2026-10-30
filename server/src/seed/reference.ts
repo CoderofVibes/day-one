@@ -29,31 +29,51 @@ export const FACILITIES = [
 
 export type FacilityCode = (typeof FACILITIES)[number]["code"];
 
-/** Departments per plant (§1). Plants A and C start online; Plant B starts grey. */
+/**
+ * Areas per plant (docs/VISION.md §6.12.1), grouped by building: the warehouse, the processing
+ * building, the dry side, the lab and the office. Plants A and C start online; Plant B starts
+ * grey and comes online stage by stage.
+ */
+const WAREHOUSE_AREAS = [
+  "receiving",
+  "quarantine",
+  "rm_storage",
+  "pkg_storage",
+  "fg_storage",
+  "shipping",
+] as const;
+const PROCESSING_AREAS = [
+  "rm_staging",
+  "weigh_cells",
+  "formulation",
+  "tableting",
+  "bulk_hold",
+] as const;
+const DRY_SIDE_AREAS = ["bottling", "labeling", "cartoning", "palletizing"] as const;
+const OFFICE_AREAS = ["purchasing", "planning", "accounting"] as const;
+
 export const DEPARTMENTS_BY_FACILITY: Record<Exclude<FacilityCode, "ACME">, readonly string[]> = {
-  A: [
-    "receiving",
-    "warehouse",
-    "weigh_dispense",
-    "blending",
-    "compression",
-    "packaging",
-    "qc_lab",
-    "purchasing",
-    "accounting",
-  ],
+  A: [...WAREHOUSE_AREAS, ...PROCESSING_AREAS, ...DRY_SIDE_AREAS, "qc_lab", ...OFFICE_AREAS],
   B: [
-    "receiving",
-    "warehouse",
-    "weigh_dispense",
-    "blending",
-    "compression",
-    "packaging",
+    ...WAREHOUSE_AREAS,
+    ...PROCESSING_AREAS,
+    ...DRY_SIDE_AREAS,
+    "powder_fill",
     "qc_lab",
+    ...OFFICE_AREAS,
+  ],
+  C: [
+    "receiving",
+    "quarantine",
+    "pkg_storage",
+    "fg_storage",
+    "shipping",
+    "labeling",
+    "cartoning",
+    "palletizing",
     "purchasing",
     "accounting",
   ],
-  C: ["receiving", "warehouse", "packaging", "accounting"],
 };
 
 export const STAFF = [
@@ -151,7 +171,92 @@ export const MATERIALS: readonly MaterialSpec[] = [
   m("PHA", "Phosphoric acid 85%, 500 mL", "lab_chemical", "ea", 1, 2, "BLS"),
   m("BUF", "pH 7.00 buffer, 500 mL", "lab_chemical", "ea", 2, 6, "BLS"),
   m("RSA", "Ascorbic acid reference standard, 200 mg", "lab_chemical", "ea", 1, 2, "BLS"),
+
+  // The seven products added with v2 (docs/VISION.md §6.12.2): their actives, one excipient,
+  // their bottles, caps, cartons, canisters, capsule shells and labels.
+  m("ZNG", "Zinc gluconate", "active", "kg", 150, 400, "SMS"),
+  m("BVP", "B-vitamin premix", "active", "kg", 120, 300, "CNP"),
+  m("MEL", "Melatonin", "active", "kg", 4, 10, "HFC"),
+  m("PBB", "Probiotic blend 100B CFU/g", "active", "kg", 25, 60, "BWC"),
+  m("PSY", "Psyllium husk powder", "active", "kg", 2_000, 5_000, "PFM"),
+  m("MBG", "Magnesium bisglycinate", "active", "kg", 500, 1_200, "SMS"),
+  m("DCP", "Dicalcium phosphate anhydrous", "excipient", "kg", 300, 800, "SMS"),
+  m("BT1", "100 cc HDPE bottle", "packaging", "ea", 20_000, 50_000, "LOW"),
+  m("CP3", "33 mm CR cap with induction liner", "packaging", "ea", 20_000, 50_000, "LOW"),
+  m("BT3", "250 cc HDPE bottle", "packaging", "ea", 10_000, 30_000, "LOW"),
+  m("CP4", "45 mm CR cap with induction liner", "packaging", "ea", 10_000, 30_000, "LOW"),
+  m("CAN", "300 g canister with scoop and lid", "packaging", "ea", 5_000, 15_000, "LOW"),
+  m("CTN", "Folding carton, 100 cc bottle", "packaging", "ea", 10_000, 30_000, "NFC"),
+  m("HPC", "Capsule shell, size 0, HPMC", "packaging", "ea", 300_000, 1_000_000, "KCC"),
+  m("LZN", "Label, ZN50", "packaging", "ea", 10_000, 30_000, "CPL"),
+  m("LBC", "Label, BCX", "packaging", "ea", 10_000, 30_000, "CPL"),
+  m("LML", "Label, MEL5", "packaging", "ea", 10_000, 30_000, "CPL"),
+  m("LPR", "Label, PRO", "packaging", "ea", 10_000, 30_000, "CPL"),
+  m("LFB", "Label, FBR canister", "packaging", "ea", 10_000, 30_000, "CPL"),
+  m("LMG", "Label, MG100", "packaging", "ea", 10_000, 30_000, "CPL"),
+  m("LD3", "Label, D3K", "packaging", "ea", 10_000, 30_000, "CPL"),
 ];
+
+/**
+ * List price per inventory unit (dollars per kg or each): what the history POs pay and what
+ * the acquirer's ERP carries as standard cost (erp/src/seed/data.ts ITEMS).
+ */
+export const LIST_PRICE: Readonly<Record<string, number>> = {
+  ASC: 7.1,
+  CAC: 0.62,
+  MGO: 2.9,
+  VD3: 148,
+  KCT: 3.8,
+  SBC: 0.85,
+  CTA: 1.95,
+  NAC: 0.4,
+  SOR: 2.15,
+  MAN: 4.2,
+  MCC: 3.4,
+  CCS: 9.6,
+  STA: 2.75,
+  MGS: 8.2,
+  SIO: 6.5,
+  PEG: 4.9,
+  FOR: 46,
+  FLL: 44,
+  SUC: 92,
+  BTL: 0.021,
+  CAP: 0.034,
+  DES: 0.018,
+  TUB: 0.085,
+  TDC: 0.04,
+  LVC: 0.012,
+  LCM: 0.012,
+  LEX: 0.01,
+  SHC: 0.62,
+  ACN: 128,
+  MEO: 96,
+  PHA: 38,
+  BUF: 25,
+  RSA: 210,
+  ZNG: 6.8,
+  BVP: 38.5,
+  MEL: 410,
+  PBB: 265,
+  PSY: 4.1,
+  MBG: 11.2,
+  DCP: 1.45,
+  BT1: 0.018,
+  CP3: 0.012,
+  BT3: 0.026,
+  CP4: 0.016,
+  CAN: 0.42,
+  CTN: 0.055,
+  HPC: 0.0021,
+  LZN: 0.009,
+  LBC: 0.009,
+  LML: 0.009,
+  LPR: 0.009,
+  LFB: 0.011,
+  LMG: 0.009,
+  LD3: 0.009,
+};
 
 /** Base units for a quantity in a material's inventory UoM. */
 export function toBase(material: MaterialSpec, qty: number) {
@@ -180,7 +285,7 @@ export const VENDORS: readonly {
     code: "SMS",
     name: "Sierra Mineral Supply",
     qualification: "qualified",
-    supplies: ["CAC", "MGO", "SBC", "NAC"],
+    supplies: ["CAC", "MGO", "SBC", "NAC", "ZNG", "MBG", "DCP"],
   },
   {
     code: "PEC",
@@ -211,13 +316,13 @@ export const VENDORS: readonly {
     code: "LOW",
     name: "Lowell Packaging",
     qualification: "qualified",
-    supplies: ["BTL", "CAP", "DES", "TUB", "TDC"],
+    supplies: ["BTL", "CAP", "DES", "TUB", "TDC", "BT1", "CP3", "BT3", "CP4", "CAN"],
   },
   {
     code: "CPL",
     name: "Copperline Labels",
     qualification: "qualified",
-    supplies: ["LVC", "LCM", "LEX"],
+    supplies: ["LVC", "LCM", "LEX", "LZN", "LBC", "LML", "LPR", "LFB", "LMG", "LD3"],
   },
   { code: "HBX", name: "Harbor Box Co.", qualification: "qualified", supplies: ["SHC"] },
   {
@@ -242,6 +347,29 @@ export const VENDORS: readonly {
     supplies: ["ASC", "CTA"],
     account: "quickchem-direct.testnet",
     notes: "Not qualified. Kevin must not buy from them.",
+  },
+  // v2 (docs/VISION.md §6.12.2): the suppliers behind the seven new products.
+  { code: "CNP", name: "Cascade Nutrient Premix", qualification: "qualified", supplies: ["BVP"] },
+  {
+    code: "HFC",
+    name: "Halvorsen Fine Chemicals",
+    qualification: "qualified",
+    supplies: ["MEL"],
+  },
+  {
+    code: "BWC",
+    name: "Brightwater Cultures",
+    qualification: "qualified",
+    supplies: ["PBB"],
+    notes: "Ships cold; QC checks the logger on receipt.",
+  },
+  { code: "KCC", name: "Keystone Capsule Co.", qualification: "qualified", supplies: ["HPC"] },
+  { code: "PFM", name: "Prairie Fiber Mills", qualification: "qualified", supplies: ["PSY"] },
+  {
+    code: "NFC",
+    name: "Northfield Folding Carton",
+    qualification: "qualified",
+    supplies: ["CTN"],
   },
 ];
 
@@ -292,6 +420,105 @@ export const PRODUCTS = [
       ["FLL", 12, 0],
       ["NAC", 6, 0],
       ["SUC", 3, 0],
+    ],
+  },
+  // v2 (docs/VISION.md §6.12.2). Each formula sums to the batch's theoretical weight, as the
+  // three above do, so a batch's waste is what it issued less its units and QC samples.
+  {
+    code: "P-ZN50",
+    name: "Hollow Pine Zinc 50 mg Tablet",
+    tabletWeightMg: 700,
+    batchTablets: 600_000,
+    lines: [
+      ["ZNG", 210, 0],
+      ["DCP", 120, 0],
+      ["MCC", 75, 0],
+      ["CCS", 8, 0],
+      ["MGS", 4.2, 0],
+      ["SIO", 2.8, 0],
+    ],
+  },
+  {
+    code: "P-MEL5",
+    name: "Hollow Pine Melatonin 5 mg Tablet",
+    tabletWeightMg: 150,
+    batchTablets: 1_000_000,
+    lines: [
+      ["MEL", 5, 0],
+      ["DCP", 70, 0],
+      ["MCC", 68, 0],
+      ["CCS", 4, 0],
+      ["MGS", 1.5, 0],
+      ["SIO", 1.5, 0],
+    ],
+  },
+  {
+    // Fill weight per capsule; the shells are a component, drawn at encapsulation.
+    code: "P-PRO",
+    name: "Hollow Pine Probiotic 10B Capsule",
+    tabletWeightMg: 400,
+    batchTablets: 300_000,
+    lines: [
+      ["PBB", 30, 0],
+      ["MCC", 86, 0],
+      ["SIO", 2, 0],
+      ["MGS", 2, 0],
+    ],
+  },
+  {
+    // One unit is a 300 g canister.
+    code: "P-FBR",
+    name: "Hollow Pine Fiber Powder Canister",
+    tabletWeightMg: 300_000,
+    batchTablets: 6_000,
+    lines: [
+      ["PSY", 1_640, 0],
+      ["CTA", 120, 0],
+      ["FLL", 30, 0],
+      ["SUC", 6, 0],
+      ["SIO", 4, 0],
+    ],
+  },
+  {
+    code: "P-BCX",
+    name: "Acme B-Complex Tablet",
+    tabletWeightMg: 900,
+    batchTablets: 500_000,
+    lines: [
+      ["BVP", 180, 0],
+      ["DCP", 140, 0],
+      ["MCC", 110, 0],
+      ["CCS", 10, 0],
+      ["MGS", 6, 0],
+      ["SIO", 4, 0],
+    ],
+  },
+  {
+    code: "P-MG100",
+    name: "Acme Magnesium Glycinate 100 mg Tablet",
+    tabletWeightMg: 1_000,
+    batchTablets: 400_000,
+    lines: [
+      ["MBG", 286, 0],
+      ["MCC", 80, 0],
+      ["DCP", 20, 0],
+      ["CCS", 8, 0],
+      ["STA", 4, 0],
+      ["MGS", 2, 0],
+    ],
+  },
+  {
+    code: "P-D3K",
+    name: "Acme Vitamin D3 2,000 IU Tablet",
+    tabletWeightMg: 200,
+    batchTablets: 1_000_000,
+    lines: [
+      ["VD3", 20, 0],
+      ["DCP", 110, 0],
+      ["MCC", 62, 0],
+      ["CCS", 4, 0],
+      ["MGS", 2, 0],
+      ["SIO", 2, 0],
     ],
   },
 ] as const satisfies readonly {
