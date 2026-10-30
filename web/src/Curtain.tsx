@@ -110,12 +110,25 @@ export function Curtain({ data, upTo }: { data: RunData; upTo: number }) {
       ));
 
   // Follow the newest transaction when the run moves; not on mount, so opening the curtain on
-  // another screen does not scroll the page.
+  // another screen does not scroll the page. Beside the page (the sticky rail of a wide screen)
+  // the rail scrolls itself; under the page (a phone) nothing moves, so the reader keeps their
+  // place instead of being carried to the bottom of the rail.
   const seen = useRef(upTo);
   useEffect(() => {
     if (seen.current === upTo) return;
     seen.current = upTo;
-    pane.current?.querySelector(".fresh")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    const fresh = pane.current?.querySelector(".fresh");
+    const rail = pane.current?.closest<HTMLElement>(".rail-v2");
+    if (!fresh) return;
+    if (!rail) {
+      fresh.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      return;
+    }
+    if (getComputedStyle(rail).position !== "sticky") return;
+    const r = fresh.getBoundingClientRect();
+    const p = rail.getBoundingClientRect();
+    if (r.bottom > p.bottom) rail.scrollBy({ top: r.bottom - p.bottom + 12, behavior: "smooth" });
+    else if (r.top < p.top) rail.scrollBy({ top: r.top - p.top - 12, behavior: "smooth" });
   }, [upTo]);
 
   return (
