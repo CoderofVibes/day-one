@@ -1,8 +1,9 @@
 // npm run repo:check [--json]: the tracked repo against the freeze rules (PLAN.md Nov 12–13).
 // No private key, token or .env secret in any tracked file; no key file tracked; no stub marker
-// (TODO, FIXME, "not implemented", …) in code; every npm script runs a file that exists; no folder
-// on disk with nothing tracked in it (an unbuilt feature's leftovers); and every markdown file
-// passes npm run docs:check. No keys, no network. Exit 1 when anything is wrong.
+// in code (the words scripts/lib/repo-check.ts lists, spelled there so the check passes itself);
+// every npm script runs a file that exists; no folder on disk with nothing tracked in it (an
+// unbuilt feature's leftovers); and every markdown file passes npm run docs:check. No keys, no
+// network. Exit 1 when anything is wrong.
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";

@@ -5,6 +5,7 @@
 # failures. The clone is deleted afterwards (KEEP=1 keeps it). Needs Node 24 and Rust with
 # cargo-near; a Node in ~/.local/node is used first (AGENTS.md).
 set -uo pipefail
+# The clone is of HEAD: commit first, or the clone tests the previous commit.
 SRC=$(cd "$(dirname "$0")/.." && pwd)
 [ -d "$HOME/.local/node/bin" ] && export PATH="$HOME/.local/node/bin:$PATH"
 [ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
@@ -52,6 +53,7 @@ expect inbox "4 of 4 scans landed" npm run inbox
 expect verify-round "VALID" npm run verify:round -- data/sealed/RFQ-2611-02.round.json
 run web-build npm run web:build
 run web-data-check npm run web:data -- --check
+expect repo-check "The repo is ready to freeze." npm run repo:check
 run check npm run check
 grep -E "Tests" "$LOGS/check" | tail -1
 expect cargo-test "test result: ok" bash -c 'cd contracts && cargo test'
