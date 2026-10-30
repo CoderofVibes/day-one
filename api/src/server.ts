@@ -24,6 +24,9 @@
 //   GET  /api/brief                            Kevin's 5am brief (?plant=A|B|C; the acquired plant by default)
 //   GET  /api/brief.html                       the same brief as one printable page
 //   GET  /api/policy                           HQ's view: the limits the contract enforces now, policy changes
+//   GET  /api/journey                          the integration program: seven stages, what each holds (VISION §6.12.3)
+//   POST /api/journey/decisions                JSON {"stage": 3, "item": "plan", "decision"?: "confirmed", "staff"?: …, "note"?: …}
+//   POST /api/batch-records/inbox              JSON {"all"?: true}: drops the week's scans into the watched folder, as npm run inbox
 //   GET  /api/history                          the charts' series: batches, spend and QC per month
 //   GET  /api/history/stock                    ?plant=B&material=ASC: stock over time; no material: what the plant held
 //   GET  /api/forecast                         ?plant=B&days=10: Kevin's forecast for every material the plant uses
@@ -119,6 +122,8 @@ async function route(
     return reply(res, 200, await session.inbox());
   if (method === "GET" && path === "/api/policy") return reply(res, 200, await session.policy());
   if (method === "GET" && path === "/api/history") return reply(res, 200, session.history());
+  if (method === "GET" && path === "/api/journey")
+    return reply(res, 200, session.journey(desk.state().imports));
   if (method === "GET" && path === "/api/history/stock")
     return reply(
       res,
@@ -216,6 +221,34 @@ async function route(
     const file = text(body.file);
     if (!file) throw new SessionError(400, "send the photo as image/jpeg, or JSON {file}");
     return steps(res, session, await session.upload({ file }));
+  }
+
+  if (path === "/api/batch-records/inbox") {
+    const body = await readJson(req, maxBody);
+    return reply(res, 200, await session.dropScans(body.all === true));
+  }
+
+  if (path === "/api/journey/decisions") {
+    const body = await readJson(req, maxBody);
+    const stage = Number(body.stage);
+    const item = text(body.item);
+    if (!Number.isInteger(stage) || !item) {
+      throw new SessionError(400, 'send JSON {"stage": 3, "item": "plan"}');
+    }
+    const decision = text(body.decision);
+    if (decision && !["started", "confirmed", "approved", "held"].includes(decision)) {
+      throw new SessionError(400, "decision must be started, confirmed, approved or held");
+    }
+    const note = text(body.note);
+    const staff = text(body.staff);
+    await session.decide({
+      stage,
+      item,
+      ...(decision ? { decision: decision as "started" | "confirmed" | "approved" | "held" } : {}),
+      ...(note ? { note } : {}),
+      ...(staff ? { staff } : {}),
+    });
+    return reply(res, 200, session.journey(desk.state().imports));
   }
 
   const confirm = /^\/api\/batch-records\/([\w-]+)\/confirm$/.exec(path);

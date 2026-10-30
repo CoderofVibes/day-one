@@ -4,8 +4,8 @@
 // clicks at once cannot interleave the run.
 
 import { randomBytes } from "node:crypto";
-import { readdirSync, readFileSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { copyFileSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
+import { basename, join, relative, sep } from "node:path";
 import { briefHtml, morningBrief } from "@day-one/kevin/brief";
 import { type DemoPhase, type DemoStep, formatTranscript, startDemo } from "@day-one/kevin/demo";
 import { reviewDiscrepancy } from "@day-one/kevin/discrepancies";
@@ -42,6 +42,8 @@ import { approvals, chainTx, staff, vendors } from "@day-one/server/ledger/schem
 import { historySeries, stockedMaterials, stockSeries } from "@day-one/server/ledger/series";
 import { eq } from "drizzle-orm";
 import {
+  ALL_SCANS,
+  DEMO_INBOX,
   type DemoEnv,
   type DemoEnvOptions,
   loadBatchRecord,
@@ -50,6 +52,13 @@ import {
   pageOf,
 } from "./env.ts";
 import { heldInvoiceDemo } from "./heldInvoice.ts";
+import {
+  type Decision,
+  JourneyError,
+  type JourneyInputs,
+  journeyState,
+  recordDecision,
+} from "./journey.ts";
 import { type FolderWatch, watchFolder } from "./watcher.ts";
 
 export interface StepView {
@@ -220,6 +229,65 @@ export class DemoSession {
       folder: dir ? relative(this.env.root, dir).split(sep).join("/") : null,
       items: inboxItems(this.env.db),
     };
+  }
+
+  /**
+   * Drops the week's scans into the watched folder, as npm run inbox does, and waits for Kevin
+   * to read them: the demo's four, or every scan with a recorded answer.
+   */
+  async dropScans(all = false) {
+    const dir = this.extras.inbox?.dir;
+    if (!dir) throw new SessionError(409, "no folder is watched: start the API with npm run api");
+    mkdirSync(dir, { recursive: true });
+    const names = (all ? ALL_SCANS : DEMO_INBOX).map((file) => {
+      copyFileSync(join(this.env.root, file), join(dir, basename(file)));
+      return basename(file);
+    });
+    // A file is read once it has settled in the folder; wait until every one has been.
+    const deadline = Date.now() + 30_000;
+    for (;;) {
+      const state = await this.inbox(true);
+      const read = new Set(state.items.map((i) => i.file.split("/").at(-1)));
+      if (names.every((n) => read.has(n)) || Date.now() > deadline) return state;
+      await new Promise((done) => setTimeout(done, this.extras.inbox?.pollMs ?? 200));
+    }
+  }
+
+  /** The integration program, from the ledger, the import desk and the run (docs/VISION.md §6.12.3). */
+  journey(imports: JourneyInputs["imports"]) {
+    const state = this.state();
+    return journeyState({
+      db: this.env.db,
+      imports,
+      inbox: inboxItems(this.env.db),
+      runDone: state.next.phase === "done",
+      runSteps: state.steps.map((s) => s.title),
+    });
+  }
+
+  /** A person's decision at a stage of the program, recorded in the ledger. */
+  decide(input: {
+    stage: number;
+    item: string;
+    decision?: Decision;
+    staff?: string;
+    note?: string;
+  }) {
+    return this.run(async () => {
+      try {
+        return recordDecision(this.env.db, {
+          stage: input.stage,
+          item: input.item,
+          decision: input.decision ?? "confirmed",
+          staffId: input.staff ? this.staffId(input.staff) : null,
+          note: input.note ?? null,
+          at: this.env.clock(),
+        });
+      } catch (error) {
+        if (error instanceof JourneyError) throw new SessionError(400, error.message);
+        throw error;
+      }
+    });
   }
 
   /** Stops watching the folder (the server is closing). */

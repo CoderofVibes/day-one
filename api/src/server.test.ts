@@ -284,6 +284,27 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect((await api("GET", "/api/brief?plant=Z")).status).toBe(400);
   });
 
+  it("serves the integration program and records a decision (VISION §6.12.3)", async () => {
+    const before = await api("GET", "/api/journey");
+    expect(before.status).toBe(200);
+    expect(before.body.stages).toHaveLength(8);
+    expect(before.body.stages[0]).toMatchObject({ key: "meet", done: false });
+    const after = await api("POST", "/api/journey/decisions", {
+      stage: 0,
+      item: "start",
+      decision: "started",
+      staff: "Ray Delgado",
+    });
+    expect(after.status).toBe(200);
+    expect(after.body.stages[0]).toMatchObject({ key: "meet", done: true });
+    expect((await api("POST", "/api/journey/decisions", { stage: 5, item: "Paid" })).status).toBe(
+      400,
+    );
+    expect((await api("POST", "/api/journey/decisions", { item: "start" })).status).toBe(400);
+    // This server watches no folder: there is nowhere to drop the scans.
+    expect((await api("POST", "/api/batch-records/inbox", {})).status).toBe(409);
+  });
+
   it("serves the charts' series, a stock line, the forecast and the schedule (VISION §6.7)", async () => {
     const history = await api("GET", "/api/history");
     expect(history.status).toBe(200);

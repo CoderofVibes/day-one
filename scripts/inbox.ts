@@ -14,7 +14,14 @@ import { join, relative, resolve, sep } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { DEMO_CLOCK } from "../agents/kevin/src/demo.ts";
 import { type InboxItem, inboxLine, readInboxFile } from "../agents/kevin/src/inbox.ts";
-import { fixtureFiles, INBOX_DIR, inboxReplay } from "../api/src/env.ts";
+import {
+  ALL_SCANS,
+  DEMO_INBOX,
+  fixtureFiles,
+  INBOX_DIR,
+  inboxReplay,
+  RECORDABLE_SCANS,
+} from "../api/src/env.ts";
 import { watchFolder } from "../api/src/watcher.ts";
 import { openLedger } from "../server/src/ledger/db.ts";
 import { createLlm, RecordingLlm } from "../server/src/llm/client.ts";
@@ -31,26 +38,7 @@ if (record && !live) {
   process.exit(2);
 }
 
-const page = (name: string) => `data/batch-records/${name}`;
-/** Plant B's week on paper: a yield note, the run's own record, a smudge, and a slip by mistake. */
-const DEMO_INBOX = [
-  page("BR-B-1044.jpg"),
-  page("BR-B-1045.jpg"),
-  page("BR-B-1046.jpg"),
-  "data/packing-slips/NG-PS-60417.jpg",
-];
-/** Every scan with a recorded answer. BR-B-1045's is the run's own (data/replay/demo-llm.json). */
-const RECORDABLE = [
-  ...["BR-B-1041", "BR-B-1042", "BR-B-1043", "BR-B-1044", "BR-B-1046", "BR-A-2207"].map((b) =>
-    page(`${b}.jpg`),
-  ),
-  "data/packing-slips/NG-PS-60417.jpg",
-];
-const sources = record
-  ? RECORDABLE
-  : args.includes("--all")
-    ? [page("BR-B-1045.jpg"), ...RECORDABLE]
-    : DEMO_INBOX;
+const sources = record ? RECORDABLE_SCANS : args.includes("--all") ? ALL_SCANS : DEMO_INBOX;
 
 const fixtures = fixtureFiles(root);
 let llm: LlmClient;
@@ -81,7 +69,7 @@ mkdirSync(INBOX_DIR, { recursive: true });
 // file lands again (Kevin keys the queue on content anyway). Anything else in it is left alone.
 const nameOf = (s: string) => s.split("/").at(-1) ?? s;
 const names = sources.map(nameOf);
-for (const s of [page("BR-B-1045.jpg"), ...RECORDABLE]) {
+for (const s of ALL_SCANS) {
   rmSync(join(INBOX_DIR, nameOf(s)), { force: true });
 }
 

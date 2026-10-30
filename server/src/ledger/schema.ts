@@ -455,6 +455,26 @@ export const transferDismissals = sqliteTable("transfer_dismissals", {
   dismissedAt: text().notNull(),
 });
 
+/**
+ * The integration program (docs/VISION.md §6.12.3): what a person confirmed, approved or held
+ * at each stage. Append-only like the rest of the ledger; the latest row for a stage and item is
+ * the one in force.
+ */
+export const JOURNEY_DECISIONS = ["started", "confirmed", "approved", "held"] as const;
+export const journeyDecisions = sqliteTable(
+  "journey_decisions",
+  {
+    id: id(),
+    stage: integer().notNull(),
+    item: text().notNull(),
+    decision: text({ enum: JOURNEY_DECISIONS }).notNull(),
+    staffId: integer().references(() => staff.id),
+    note: text(),
+    decidedAt: text().notNull(),
+  },
+  (t) => [oneOf("journey_decisions_decision", t.decision, JOURNEY_DECISIONS)],
+);
+
 // ---------------------------------------------------------------- 6. Production and genealogy
 
 export const PLAN_STATUS = ["planned", "done", "cancelled"] as const;
