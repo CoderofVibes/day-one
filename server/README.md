@@ -2,8 +2,8 @@
 
 Inventory ledger, NEAR integration, relayer client and the shared libraries the API, Kevin and the scripts use. Design: docs/ARCHITECTURE.md and docs/DATA_MODEL.md.
 
-- `src/ledger/` — SQLite ledger (Drizzle), hash-chained lot events; also the three-plant inventory read and the bookkeeper export (`books.ts`).
-- `src/seed/` — the fictional company and its 30-day history (`npm run seed`).
+- `src/ledger/` — SQLite ledger (Drizzle), hash-chained lot events; the three-plant inventory read and the bookkeeper export (`books.ts`); and the pure reads behind the v2 pages (docs/VISION.md §6.6): `areas.ts` (what each of a plant's twenty areas holds and did, the sheet the plant map opens), `series.ts` (the charts' series: output and yield per batch, stock over time, spend and QC per month), `views.ts` (every PO, request for quotes, lot and batch record with its state) and `catalog.ts` (products with their formulas and plants, suppliers with what they are approved to supply).
+- `src/seed/` — the fictional company (`npm run seed`): three plants split into twenty areas with their equipment (`equipment.ts`), ten products, the hand-written history behind the demo (`history.ts`, `lots.ts`) and about 120 days of deterministic batches, purchases and packaging runs with a four-week plan (`production.ts`; docs/VISION.md §6.12.2).
 - `src/llm/` — `LlmClient`: routes each task (`reasoning`, `vision`) to NEAR AI Cloud or Anthropic from `LLM_ROUTE_*`, and records or replays answers (replay unless `DAYONE_MODE=live`).
 - `src/extraction/` — the batch-record transcription schema and the bake-off scorer.
 - `src/attestation/` — fetches and verifies NEAR AI Cloud's attestation report and the signature of each recorded answer (`npm run attest`, `npm run verify:attestation`).

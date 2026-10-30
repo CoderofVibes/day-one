@@ -5,6 +5,7 @@ Kevin, the AI purchasing and inventory assistant. Design: docs/ARCHITECTURE.md. 
 The purchasing loop:
 
 - `src/extraction.ts`: reads a batch record. The vision model only transcribes (`server/src/extraction/schema.ts`); code converts units and checks each material against the formula and each lot against the ledger.
+- `src/inbox.ts`: the watched batch-record folder (`data/inbox/batch-records/`, `npm run inbox`): a scan dropped there goes through the same reading and checks as an upload, then waits in the review queue until the plant's purchaser confirms it. Nothing posts on its own.
 - `src/discrepancies.ts`: a transfer weighed in short while the sending plant's book still shows the difference is phantom stock; Kevin raises a discrepancy with both numbers.
 - `src/forecast.ts`: the reorder forecast for one material at one plant. Need = planned batches in the horizon (default 10 days) × actual use per tablet at that plant; shortfall = need − on hand − on order; recommends a multiple of the reorder quantity when stock would fall below the reorder point. No LLM.
 - `src/purchasing.ts`: `requestQuotes` (one quote per listed vendor that answers, hashed), `rankQuotes` (unqualified and late quotes excluded with a reason, the rest by landed cost; conditional vendors flagged for approval), `draftPo` and `draftPoFromRanking` (lines, freight, total, `po_hash`, one spend category per PO).
@@ -18,6 +19,7 @@ Around the loop:
 - `src/groupBuy.ts`: the plants pool one material into one RFQ and one pooled PO with per-plant shares and approvals (docs/GROUP_BUY.md; `npm run demo:group`).
 - `src/sealed.ts`, `src/sealedRound.ts`, `src/sealedEnv.ts`: sealed quote rounds, where no price is readable before the deadline (CONTRACTS.md §10; `npm run sealed`).
 - `src/usdcOrder.ts`: PO-1047 in Circle testnet USDC on a second deployment of the same contract (`npm run usdc`).
+- `src/schedule.ts`: the plant's planned batches in a window, what each draws, whether stock on hand and on order covers it and what it costs at the last price paid; and the forecast for every material the plant holds or plans to use (`GET /api/schedule`, `/api/forecast`). Pure reads.
 - `src/transferSuggestions.ts`: before buying, proposes moving stock from a sister plant with surplus.
 - `src/massBalance.ts`: material issued against tablets, QC samples and recorded waste; flags unaccounted material.
 - `src/brief.ts`: Kevin's printable 5am brief for one plant (`npm run brief`).
