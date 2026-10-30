@@ -1,7 +1,7 @@
 // The video page (?video=1, docs/RECORDING.md): the recorded run played to the storyboard's
 // beats on a fixed clock, one 1000/60 ms step per rendered frame, with the captions burned in.
 // No mouse: Space starts and pauses, R goes back to the start, ?from=<beat id> starts at a beat
-// for a retake, ?autostart=1 starts on load. Add &view=3d for the 3D twin. Always the recorded
+// for a retake, ?autostart=1 starts on load. Always the recorded
 // run, even when the API serves the page, so every take is the same.
 
 import { useEffect, useMemo, useRef, useState } from "react";

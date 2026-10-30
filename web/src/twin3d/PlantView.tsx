@@ -1,9 +1,8 @@
-// The map panel: a flat | 3D switch (docs/TWIN3D.md) and a run switch: this run, or the recorded
-// group purchase (docs/GROUP_BUY.md) with its own steps; under the map one caption line and the
-// legend. The flat map is the default; the 3D view is chosen with ?view=3d or the switch, and
-// its bundle (three.js) loads only then, so the default page's JavaScript stays where it was.
-// Without WebGL the flat map stays. ?run=group opens on the group purchase
-// (npm run web:shot:3d -- RUN=group).
+// The map panel: the 3D twin (docs/TWIN3D.md; the only view since Tony, Oct 30) and a run switch:
+// this run, or the recorded group purchase (docs/GROUP_BUY.md) with its own steps; under the map
+// one caption line and the legend. Three.js loads in its own bundle after the page. A browser
+// without WebGL gets the flat map instead, with a line saying why. ?run=group opens on the group
+// purchase (npm run web:shot:3d -- RUN=group).
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { GROUP_TWIN, groupRun } from "../groupBuy.ts";
@@ -63,7 +62,6 @@ export function PlantView({
 }) {
   // The video page (?video=1) drives the steps itself; the twin keeps its fixed-step clock.
   const record = useMemo(() => params().get("record") === "1" || params().get("video") === "1", []);
-  const [three, setThree] = useState(() => params().get("view") === "3d");
   const [group, setGroup] = useState(() => params().get("run") === "group");
   const [groupAt, setGroupAt] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -88,7 +86,6 @@ export function PlantView({
   const shownAt = group ? groupAt : at;
   const options = group ? GROUP_TWIN : undefined;
   const state = useMemo(() => deriveTwinState(shown, shownAt, options), [shown, shownAt, options]);
-  const show3d = three && can;
   // The sheet gets the area's department status at this step with the pick.
   const choose = onPick
     ? (p: AreaPick) =>
@@ -151,19 +148,6 @@ export function PlantView({
               </button>
             </div>
           )}
-          <div className="seg view-switch">
-            <button type="button" aria-pressed={!show3d} onClick={() => setThree(false)}>
-              Flat
-            </button>
-            <button
-              type="button"
-              aria-pressed={show3d}
-              onClick={() => setThree(true)}
-              disabled={!can}
-            >
-              3D
-            </button>
-          </div>
         </div>
       </div>
       {group && (
@@ -172,10 +156,8 @@ export function PlantView({
           its own share. Not this run.
         </p>
       )}
-      {three && !can && (
-        <p className="view-note">This browser has no WebGL; showing the flat map.</p>
-      )}
-      {show3d ? (
+      {!can && <p className="view-note">This browser has no WebGL; showing the flat map.</p>}
+      {can ? (
         <Suspense fallback={<p className="view-note">Loading the 3D view…</p>}>
           <Twin3D
             run={shown}

@@ -5,7 +5,7 @@
 
 :root {
   /* Surfaces and ink */
-  --bg: #eef1f4;
+  --bg: #dde4e9;
   --surface: #ffffff;
   --surface-2: #f4f6f8;
   --ink: #16191d;
@@ -16,6 +16,18 @@
   /* The wash under the cards: two soft radial tints, no image file. */
   --wash-1: rgb(31 111 92 / 0.1);
   --wash-2: rgb(78 127 209 / 0.12);
+
+  /* Frosted glass (Tony, Oct 30: the translucent look of his reference): cards and the sidebar
+     are see-through white over the backdrop, blurred, with a light top edge. */
+  --glass: rgb(255 255 255 / 0.55);
+  --glass-strong: rgb(255 255 255 / 0.78);
+  --glass-edge: rgb(255 255 255 / 0.85);
+  --glass-line: rgb(22 25 29 / 0.07);
+  --glass-blur: blur(18px) saturate(1.4);
+  --backdrop-1: #a9bccb;
+  --backdrop-2: #c2d3c8;
+  --backdrop-3: #9fb2c4;
+  --backdrop-4: #e4e9ec;
 
   /* Charts: four series at most, in this order (validated: dataviz validate_palette.js). */
   --chart-1: #0f8a68;
@@ -95,6 +107,14 @@
     --ink-3: #7b8490;
     --wash-1: rgb(79 179 154 / 0.06);
     --wash-2: rgb(102 144 224 / 0.07);
+    --glass: rgb(30 35 42 / 0.58);
+    --glass-strong: rgb(30 35 42 / 0.76);
+    --glass-edge: rgb(255 255 255 / 0.08);
+    --glass-line: rgb(255 255 255 / 0.06);
+    --backdrop-1: #1d2a33;
+    --backdrop-2: #18231f;
+    --backdrop-3: #222c3a;
+    --backdrop-4: #14181d;
     --chart-1: #28a57d;
     --chart-2: #6690e0;
     --chart-3: #b37f22;
@@ -139,6 +159,14 @@
   --ink-3: #7b8490;
   --wash-1: rgb(79 179 154 / 0.06);
   --wash-2: rgb(102 144 224 / 0.07);
+  --glass: rgb(30 35 42 / 0.58);
+  --glass-strong: rgb(30 35 42 / 0.76);
+  --glass-edge: rgb(255 255 255 / 0.08);
+  --glass-line: rgb(255 255 255 / 0.06);
+  --backdrop-1: #1d2a33;
+  --backdrop-2: #18231f;
+  --backdrop-3: #222c3a;
+  --backdrop-4: #14181d;
   --chart-1: #28a57d;
   --chart-2: #6690e0;
   --chart-3: #b37f22;

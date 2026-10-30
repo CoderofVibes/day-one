@@ -3,10 +3,16 @@
    v2 tokens from tokens.css. */
 
 body {
+  /* A soft, out-of-focus scene behind the glass: sky, a pale horizon and green-gray ground,
+     drawn with gradients so there is no image to download. */
   background-color: var(--bg);
   background-image:
-    radial-gradient(900px 520px at 12% -8%, var(--wash-1), transparent 70%),
-    radial-gradient(900px 620px at 96% 6%, var(--wash-2), transparent 70%);
+    radial-gradient(1100px 700px at 8% -10%, var(--backdrop-1), transparent 65%),
+    radial-gradient(900px 600px at 92% 0%, var(--backdrop-3), transparent 62%),
+    radial-gradient(1200px 520px at 50% 105%, var(--backdrop-2), transparent 70%),
+    radial-gradient(700px 480px at 70% 55%, var(--wash-2), transparent 70%),
+    radial-gradient(800px 520px at 20% 70%, var(--wash-1), transparent 70%),
+    linear-gradient(180deg, var(--backdrop-4), var(--bg));
   background-attachment: fixed;
 }
 
@@ -493,9 +499,10 @@ tr.formula span {
   flex-direction: column;
   gap: var(--s-4);
   padding: var(--s-5) var(--s-4);
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  backdrop-filter: blur(12px);
-  border-right: 1px solid var(--line);
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-right: 1px solid var(--glass-edge);
 }
 .sidebar .brand {
   display: flex;
@@ -761,15 +768,26 @@ tr.formula span {
   gap: var(--s-2);
 }
 
-/* Every card on a v2 page shares one surface, radius and shadow. */
+/* Every card on a v2 page shares one frosted-glass surface, radius and shadow. */
 .page.v2 .panel,
 .card-v2,
 .chart-card,
 .stat {
-  background: color-mix(in srgb, var(--surface) 96%, transparent);
-  border: 1px solid var(--line);
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-edge);
   border-radius: var(--r-md);
-  box-shadow: var(--shadow);
+  box-shadow: inset 0 1px 0 var(--glass-edge), var(--shadow);
+}
+/* Cards inside a glass card sit a shade more solid, so text over text stays readable. */
+.page.v2 .panel .card,
+.page.v2 .panel .stat,
+.card-v2 .card {
+  background: var(--glass-strong);
+  border-color: var(--glass-line);
+  backdrop-filter: none;
+  box-shadow: none;
 }
 .card-v2,
 .chart-card {

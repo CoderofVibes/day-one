@@ -1,5 +1,7 @@
 # The 3D twin — proposal, what was built, what was dropped
 
+**Oct 30 (Tony): the 3D view is the only map.** The Flat | 3D switch is gone; `PlantView` always shows the twin, and the flat map (`web/src/twin/`) is kept only for a browser without WebGL, with a line saying so. `?view=3d` is still accepted and changes nothing. The notes below are the Oct 29 session's, when the flat map was the default.
+
 **Session of Oct 29, 2026 (branch `twin3d`, Fable).** The flat plant map (`web/src/twin/`) stays the default. This is the 3D view of the same `TwinState` and the same `layout.ts`, switched on with `?view=3d` or the "3D" button on the map pane. Keep-or-delete rule from research 16: if it is not clearly better than the flat map, delete `web/src/twin3d/`.
 
 ## The two-second idea
