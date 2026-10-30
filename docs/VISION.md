@@ -352,30 +352,24 @@ The journey is also the replay for judges: on the hosted demo "Play" walks the s
 
 Trends, all from the ledger series of §6.7 (`history.ts`), now per product: output per week by product (stacked bars, 16 weeks), yield by batch per product (lines), waste by product (bars), schedule adherence (planned vs completed per week), stock cover in days for the top materials, spend by month and category against the caps, QC decisions by month. The ERP's numbers come into Day One through the connector's read side (`GET /api/erp/*` proxies when `npm run erp` is up; the recorded views on the static host): inventory value by category, bills by state, payments, the trial balance's headline, cost per bottle from the ERP's standard costs. They sit on the Overview (inventory value, bills to pay), Purchasing (what the ERP has for each PO), Invoices (every bill with its match) and ERP connection (what crossed, the reconciliation). The ERP seed grows with the products (its item and vendor masters are built from Day One's seed by `erp:seed`, so the cutover stays one command).
 
-#### 6.12.5 What this does to the schedule
+#### 6.12.5 Schedule: the whole of §6.12, by the real pace
 
-This is a product, not a demo pass, and it does not fit in twelve days at the quality it deserves. Sized honestly for one builder:
+**Decision (Tony, Oct 30 in the v2 chat):** build all of §6.12; the first estimate (14 days) was in human-days, and the repo's own record says otherwise (164 commits on Oct 28–29, the original 14-day plan done in about a day). Products and areas as listed in §6.12.1–2. The two-option split and its cut list are withdrawn; nothing in §6.6 is cut except what §6.8 already cut for having no data behind it.
 
-| Piece | Days |
-|---|---|
-| Seed: twenty areas, ~52 materials, ten products with formulas and packaging bills, 120 days of history across three plants, four-week schedules, the invariant tests, the ERP reseed and `erp:reconcile` green | 3 |
-| The integration program: seven stages, progress in the ledger, the two new sheet kinds, the schedule confirm, the stage screens, the replay on the static host | 3.5 |
-| Shell, pages and trends on the series; the ERP's numbers on four pages | 3 |
-| Twin: the large plant's footprints and kit, glass, click to the area sheet, pings | 3 |
-| Checks, phone pass, the video page on the shell, screenshots, `host:build` | 1.5 |
-| **Total** | **14 days** against 12 calendar days to Nov 10, with no buffer |
+Build order, each step committed with the checks green, sized in build sessions rather than days:
 
-Two honest ways through; Tony picks:
+| Step | What | Done when |
+|---|---|---|
+| 1 | **Seed**: twenty areas (schema enum and migration), ~52 materials, ten products with formulas and packaging bills, vendors, 120 days of history across three plants, four-week schedules; the invariant tests; `erp:seed` from the new masters | `npm run demo`, `demo:group`, `test:attacks`, `erp:reconcile` replay unchanged apart from the seed counts |
+| 2 | **Series and reads**: `history.ts` and `GET /api/history`, `/api/forecast`, `/api/schedule`, the journey table and `/api/journey`, the ERP read proxies; the static snapshot carries them | series tests against hand-computed figures |
+| 3 | **Shell and design system**: tokens v2, sidebar, picker, header, charts module, number and chart cards, activity feed, review sheet, Kevin panel | Overview live and static, wide and phone |
+| 4 | **The integration program**: the seven stage screens, progress from the ledger, the two new sheet kinds, the schedule confirm, the limits stage, the replay | a person can walk stages 0–7 live; the static host plays them recorded |
+| 5 | **Pages**: Batch records, Inventory & forecast, Schedule, Purchasing, Invoices, Spreadsheets, 5am brief, Three plants, ERP connection, the six HQ pages, with trends | every page on both sources |
+| 6 | **Twin**: the large plant in `layout.ts` and `buildings.ts`, glass, zones, click to the area sheet, equipment rows, pings, layers, the Plant map page; the flat map on the same footprints | `web:shot:3d` 0 label problems, both runs |
+| 7 | **Finish**: video page on the shell, phone and dark passes, screenshots, README screenshot list, `host:build`, the clean clone | all checks green; merge |
 
-**Option 1 (recommended): the program by Nov 10, in two layers.** Build it in the order a judge meets it, and merge whatever is green on Nov 10. Layer one, Oct 30–Nov 5: the seed with the twenty areas, ten products and schedules; the shell; the integration program's stages 0–2 and 5–6 on existing routes (spreadsheets, paper, the first order, the books) with stage 3 and 4 as read-only confirmations; trends on Overview, Batch records, Schedule and Purchasing; the ERP's numbers on Overview and ERP connection. Layer two, Nov 6–9: the twin on the large plant with glass and click; stage 3's four-week schedule edit and stage 4's plain-words limits live; Invoices and Suppliers pages. Cut for the hackathon: twin layers, equipment history, the Sealed bids and Group purchasing pages (links to the map's run and the round transcript), the Spreadsheets page (it is stage 1), the 5am brief page (the printable stays, linked from Overview). After Nov 14 the cut pieces and the rest of §6.6 continue on the same branch as the product.
+Target: steps 1–4 by Nov 3, 5–7 by Nov 6, merged by Nov 7. Nov 8–10 stay as buffer and for the video storyboard rewrite (main session). If a step runs long, the order above is also the order of importance.
 
-**Option 2: everything in §6.12, merged when it is done.** About Nov 16–18, past the submission. The video and README would then show v1 and the submission would not carry the program. Not recommended for the hackathon; right for the product if the hackathon stops mattering.
+#### 6.12.6 Still open
 
-Either way the video storyboard (RECORDING.md, 2:05) is rewritten around the program after the merge: the beats become "the old way → Kevin → confirmed" per stage, which is a better film than the run alone. That rewrite is the main session's work and is not in the days above.
-
-#### 6.12.6 For Tony
-
-1. **Option 1 or 2** (§6.12.5).
-2. **The ten products** (§6.12.2): fine as listed, or name the ones you want.
-3. **The areas** (§6.12.1): fine as listed, or add and remove.
-4. **The rooms image** still shapes the inside of the processing building when it arrives.
+- **The rooms image** shapes the inside of the processing building when it arrives; step 6 builds the zones either way.
