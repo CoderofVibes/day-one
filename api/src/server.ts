@@ -27,6 +27,9 @@
 //   GET  /api/journey                          the integration program: seven stages, what each holds (VISION §6.12.3)
 //   POST /api/journey/decisions                JSON {"stage": 3, "item": "plan", "decision"?: "confirmed", "staff"?: …, "note"?: …}
 //   POST /api/batch-records/inbox              JSON {"all"?: true}: drops the week's scans into the watched folder, as npm run inbox
+//   GET  /api/catalog                          products with formulas and plants, suppliers with what they supply
+//   POST /api/policy/draft                     JSON {"request": …}: Kevin's draft of HQ's owner call; nothing is signed
+//   GET  /api/erp/reconcile                    the recorded run's ERP reconciliation (npm run erp:reconcile -- --json)
 //   GET  /api/history                          the charts' series: batches, spend and QC per month
 //   GET  /api/history/stock                    ?plant=B&material=ASC: stock over time; no material: what the plant held
 //   GET  /api/forecast                         ?plant=B&days=10: Kevin's forecast for every material the plant uses
@@ -50,8 +53,9 @@ import { extname, join, normalize, resolve, sep } from "node:path";
 import { DemoOrderError } from "@day-one/kevin/demo";
 import { ExtractionError } from "@day-one/kevin/extraction";
 import { explainFailure } from "@day-one/server/chain/explain";
-import { DemoEnvError } from "./env.ts";
+import { DemoEnvError, REPO_ROOT } from "./env.ts";
 import { ImportDesk } from "./imports.ts";
+import { recordedReconciliation } from "./reconcile.ts";
 import { type DemoSession, SessionError, type StepView, stepView } from "./session.ts";
 
 export interface ServerOptions {
@@ -122,6 +126,9 @@ async function route(
     return reply(res, 200, await session.inbox());
   if (method === "GET" && path === "/api/policy") return reply(res, 200, await session.policy());
   if (method === "GET" && path === "/api/history") return reply(res, 200, session.history());
+  if (method === "GET" && path === "/api/catalog") return reply(res, 200, session.catalog());
+  if (method === "GET" && path === "/api/erp/reconcile")
+    return reply(res, 200, await recordedReconciliation(REPO_ROOT));
   if (method === "GET" && path === "/api/journey")
     return reply(res, 200, session.journey(desk.state().imports));
   if (method === "GET" && path === "/api/history/stock")
@@ -221,6 +228,14 @@ async function route(
     const file = text(body.file);
     if (!file) throw new SessionError(400, "send the photo as image/jpeg, or JSON {file}");
     return steps(res, session, await session.upload({ file }));
+  }
+
+  if (path === "/api/policy/draft") {
+    const body = await readJson(req, maxBody);
+    const request = text(body.request);
+    if (!request)
+      throw new SessionError(400, 'send JSON {"request": "raise Kevin\'s per-PO limit to $3,000"}');
+    return reply(res, 200, await session.draftPolicy(request));
   }
 
   if (path === "/api/batch-records/inbox") {

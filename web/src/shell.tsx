@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 import { initials } from "./feed.tsx";
 
-export type PageId = "overview" | "map" | "plants" | "books" | "hq";
+export type PageId = "integration" | "overview" | "map" | "plants" | "books" | "hq";
 export type PlantCode = "A" | "B" | "C";
 
 export const PLANTS: { code: PlantCode; name: string; note: string }[] = [
@@ -25,6 +25,7 @@ export const NAV: { group: string; items: NavItem[] }[] = [
   {
     group: "Plant",
     items: [
+      { id: "integration", label: "Your integration", icon: "flag" },
       { id: "overview", label: "Overview", icon: "grid" },
       { id: "map", label: "Plant map", icon: "cube" },
     ],
@@ -46,7 +47,7 @@ function fromUrl(): { page: PageId; plant: PlantCode } {
   const page = q.get("page") as PageId | null;
   const plant = q.get("plant") as PlantCode | null;
   return {
-    page: page && PAGE_IDS.has(page) ? page : "overview",
+    page: page && PAGE_IDS.has(page) ? page : "integration",
     plant: plant && PLANTS.some((p) => p.code === plant) ? plant : "B",
   };
 }
@@ -65,7 +66,7 @@ export function useRoute() {
     q.set("page", merged.page);
     if (merged.plant === "B") q.delete("plant");
     else q.set("plant", merged.plant);
-    if (merged.page === "overview") q.delete("page");
+    if (merged.page === "integration") q.delete("page");
     const search = q.toString();
     history.pushState(null, "", search ? `?${search}` : location.pathname);
     setRoute(merged);
@@ -236,6 +237,7 @@ export function PageHeader({
 }
 
 const ICONS = {
+  flag: "M4 16V2.5M4 3h9l-2 3 2 3H4",
   grid: "M2.5 2.5h5v5h-5zM10.5 2.5h5v5h-5zM2.5 10.5h5v5h-5zM10.5 10.5h5v5h-5z",
   cube: "M2 5.5l7-3.5 7 3.5-7 3.5zM2 5.5v7l7 3.5 7-3.5v-7M9 9v7",
   bars: "M2 15.5h14M3.5 15V9h3v6M7.5 15V4h3v11M11.5 15v-4h3v4",

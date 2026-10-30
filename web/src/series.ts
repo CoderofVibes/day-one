@@ -130,7 +130,7 @@ async function get<T>(path: string): Promise<T> {
 export interface Source {
   live: boolean;
   /** Bumped when the run moves, so live reads refresh. */
-  version: number;
+  version: number | string;
 }
 
 export function readHistory(source: Source): Promise<History> {

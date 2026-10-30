@@ -187,6 +187,8 @@ export class ImportDesk {
           rowsFound: i.rowsFound,
           lotsPosted: i.lotsPosted,
           review: JSON.parse(i.reviewJson) as { row: number; item: string; reason: string }[],
+          // The flags Kevin raised on the sheet before it was posted (the upload is in memory).
+          questions: this.#uploads.get(i.fileSha256)?.analysis.flags.length ?? 0,
           postedAt: i.postedAt,
         })),
     };

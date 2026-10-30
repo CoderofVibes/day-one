@@ -40,7 +40,9 @@ import {
 import { Curtain } from "./Curtain.tsx";
 import { initials, Pill, StaffFeed } from "./feed.tsx";
 import { InboxPane } from "./InboxPane.tsx";
+import { postDecision, postDropScans } from "./journey.ts";
 import { type Action, actionsFor, actorOf } from "./live.ts";
+import { Integration } from "./pages/Integration.tsx";
 import { Overview } from "./pages/Overview.tsx";
 import { BooksPane, HqPane, PlantsPane } from "./panes.tsx";
 import { plantsSnapshot, STATIC_BOOKS_URL, STATIC_BRIEF_URL } from "./plants.ts";
@@ -144,6 +146,7 @@ function Pages({
   map,
   kevin,
   activity,
+  integration,
   plants,
   books,
   hq,
@@ -156,12 +159,20 @@ function Pages({
   map: React.ReactNode;
   kevin: React.ReactNode;
   activity: React.ReactNode;
+  integration: React.ReactNode;
   plants: React.ReactNode;
   books: React.ReactNode;
   hq: React.ReactNode;
   foot: React.ReactNode;
 }) {
   switch (page) {
+    case "integration":
+      return (
+        <>
+          {integration}
+          <div className="page v2 foot-wrap">{foot}</div>
+        </>
+      );
     case "map":
       return (
         <Page
@@ -350,6 +361,17 @@ function ReplayApp() {
             </>
           }
           activity={<StaffFeed data={data} upTo={at} onPick={go} curtain={curtain} />}
+          integration={
+            <Integration
+              source={{ live: false, version: 0 }}
+              books={plantsSnapshot.books}
+              policy={null}
+              inbox={null}
+              busy={false}
+              go={(page) => route.go({ page })}
+              curtain={curtain}
+            />
+          }
           plants={
             <PlantsPane
               error={null}
@@ -488,6 +510,8 @@ function LiveApp({ initial }: { initial: LiveState }) {
   // Kevin's line about the last approve, dismiss or receipt; the refresh below does not clear it.
   const [moveNote, setMoveNote] = useState<string[]>([]);
   const [inbox, setInbox] = useState<InboxState | null>(null);
+  /** Bumped by every action, so the program's stages read again after a decision. */
+  const [acted, setActed] = useState(0);
 
   // Scans land in the watched folder at any time: the queue is read again every few seconds
   // and after every action. A failed read keeps what is on screen.
@@ -531,7 +555,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
     if (route.page === "plants") {
       load(getPolicy, setPolicy);
       load(getMassBalance, setMass);
-    } else if (route.page === "hq") {
+    } else if (route.page === "hq" || route.page === "integration") {
       load(getPolicy, setPolicy);
     }
     return () => {
@@ -565,6 +589,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
       }
     } finally {
       setBusy(null);
+      setActed((n) => n + 1);
     }
   }, []);
 
@@ -679,6 +704,27 @@ function LiveApp({ initial }: { initial: LiveState }) {
             </>
           }
           activity={<StaffFeed data={state} upTo={last} curtain={curtain} />}
+          integration={
+            <Integration
+              source={{
+                live: true,
+                version: `${state.steps.length}-${acted}-${inbox?.items.map((i) => i.status).join("") ?? ""}`,
+              }}
+              books={books}
+              policy={policy}
+              inbox={inbox}
+              busy={busy !== null}
+              act={{
+                decide: (input) => send("Record the decision", () => postDecision(input)),
+                dropScans: (all) => send("Drop the scans", () => postDropScans(all)),
+                posted: () => setActed((n) => n + 1),
+                confirmScan,
+              }}
+              go={(page) => route.go({ page })}
+              curtain={curtain}
+              wizardKey={runs}
+            />
+          }
           plants={
             <PlantsPane
               error={plantsError}

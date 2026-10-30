@@ -608,6 +608,11 @@ a {
   color: var(--ink-2);
 }
 
+.queue > li > .review-box {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
 .queue .review {
   grid-column: 1 / -1;
 }

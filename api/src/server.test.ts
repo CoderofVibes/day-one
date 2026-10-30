@@ -305,6 +305,25 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect((await api("POST", "/api/batch-records/inbox", {})).status).toBe(409);
   });
 
+  it("serves the catalogue and drafts a limit change in plain words, signing nothing", async () => {
+    const cat = await api("GET", "/api/catalog");
+    expect(cat.body.products).toHaveLength(10);
+    expect(cat.body.vendors).toHaveLength(18);
+    const draft = await api("POST", "/api/policy/draft", {
+      request: "raise Kevin's per-PO limit to $3,000",
+    });
+    expect(draft.status).toBe(200);
+    expect(draft.body).toMatchObject({ understood: true });
+    expect(draft.body.changes).toEqual([
+      expect.objectContaining({ field: "per_po_limit", from: "$2,500.00", to: "$3,000.00" }),
+    ]);
+    expect(draft.body.call.method).toBe("set_agent_policy");
+    expect((await api("POST", "/api/policy/draft", {})).status).toBe(400);
+    chainDown = true;
+    expect((await api("POST", "/api/policy/draft", { request: "pause Kevin" })).status).toBe(503);
+    chainDown = false;
+  });
+
   it("serves the charts' series, a stock line, the forecast and the schedule (VISION §6.7)", async () => {
     const history = await api("GET", "/api/history");
     expect(history.status).toBe(200);

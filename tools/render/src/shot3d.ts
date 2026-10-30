@@ -62,7 +62,7 @@ const moments =
     : group
       ? KEY_GROUP
       : KEY;
-const query = group ? "?view=3d&run=group" : "?view=3d";
+const query = group ? "?page=overview&view=3d&run=group" : "?page=overview&view=3d";
 const prefix = group ? "group-" : "";
 /** The step counter that must reach the last step in record mode. */
 const counterSel = group ? ".group-step-count" : ".step-count";

@@ -20,6 +20,7 @@ import {
   waitingInboxItem,
 } from "@day-one/kevin/inbox";
 import { massBalance, proposeWasteCorrections } from "@day-one/kevin/massBalance";
+import { draftPolicyChange } from "@day-one/kevin/policyChange";
 import { plantForecast, plantSchedule } from "@day-one/kevin/schedule";
 import {
   approveTransfer,
@@ -37,6 +38,7 @@ import { LiveTransport } from "@day-one/server/chain/live";
 import { type PolicyView, readPolicy, type ViewFn } from "@day-one/server/chain/policy";
 import { summarizeChainTx } from "@day-one/server/chain/summary";
 import { books, booksCsv } from "@day-one/server/ledger/books";
+import { catalog } from "@day-one/server/ledger/catalog";
 import { plantInventory } from "@day-one/server/ledger/inventory";
 import { approvals, chainTx, staff, vendors } from "@day-one/server/ledger/schema";
 import { historySeries, stockedMaterials, stockSeries } from "@day-one/server/ledger/series";
@@ -521,6 +523,25 @@ export class DemoSession {
   /** The charts' series: output, yield and waste per batch, spend and QC per month (all plants). */
   history() {
     return historySeries(this.env.db);
+  }
+
+  /** Every product with its formula and plants, every supplier with what it supplies. */
+  catalog() {
+    return catalog(this.env.db);
+  }
+
+  /**
+   * Kevin's draft of HQ's owner call for a plain-words request, against the policy the contract
+   * holds now. Draft only: the contract takes the call from its owner alone (npm run policy).
+   */
+  async draftPolicy(request: string) {
+    const state = await this.policy();
+    if (!state.reachable) {
+      throw new SessionError(503, `the contract could not be read: ${state.error}`);
+    }
+    const agent = state.policy.agent;
+    if (!agent) throw new SessionError(409, "the contract holds no policy for Kevin");
+    return draftPolicyChange(request, agent, state.names[agent.approver] ?? agent.approver);
   }
 
   /** One material's stock over time at one plant, or the materials the plant has held. */

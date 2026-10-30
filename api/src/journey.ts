@@ -96,7 +96,14 @@ const ITEMS: Record<StageKey, { key: string; label: string; who: string }[]> = {
 export interface JourneyInputs {
   db: Ledger;
   /** The import desk's posted imports (api/src/imports.ts). */
-  imports: { fileName: string; rowsFound: number; lotsPosted: number; review: unknown[] }[];
+  imports: {
+    fileName: string;
+    rowsFound: number;
+    lotsPosted: number;
+    review: unknown[];
+    /** Flags Kevin raised on the sheet. */
+    questions?: number;
+  }[];
   /** Scans in the watched folder (agents/kevin/src/inbox.ts). */
   inbox: {
     file: string;
@@ -303,7 +310,8 @@ export function journeyState(input: JourneyInputs): Journey {
     { label: "records confirmed by a person", value: confirmedRecords.length },
     {
       label: "questions Kevin asked",
-      value: inboxQuestions + input.imports.reduce((s, i) => s + i.review.length, 0),
+      value:
+        inboxQuestions + input.imports.reduce((s, i) => s + (i.questions ?? i.review.length), 0),
     },
     { label: "decisions people recorded", value: count },
   ];

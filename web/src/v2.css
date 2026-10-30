@@ -37,6 +37,444 @@ body {
   }
 }
 
+/* ---------- Your integration (docs/VISION.md §6.12.3) ---------- */
+.journey {
+  display: grid;
+  grid-template-columns: 290px minmax(0, 1fr);
+  gap: var(--s-4);
+  align-items: start;
+}
+.stages ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+  margin: 2px 0 var(--s-3);
+}
+.progress i {
+  display: block;
+  height: 100%;
+  background: var(--brand);
+  border-radius: 999px;
+  transition: width 0.4s;
+}
+.stages .st {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: var(--s-3);
+  align-items: center;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.stages .st:hover {
+  background: var(--surface-2);
+}
+.stages .st.on {
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.stages .st:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+.stages .n {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: var(--t-xs);
+  font-weight: 700;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  border: 1px solid var(--line-2);
+}
+.stages .n.done {
+  background: var(--paid);
+  border-color: var(--paid);
+  color: var(--surface);
+}
+.stages .n.now {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--brand-ink);
+}
+.stages b {
+  display: block;
+  font-size: var(--t-sm);
+}
+.stages small {
+  display: block;
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+}
+.stage-screen {
+  display: grid;
+  gap: var(--s-4);
+  min-width: 0;
+}
+.kevin-line {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--brand-soft) 55%, var(--surface)),
+    var(--surface) 80%
+  );
+}
+.kevin-line p {
+  margin: 0;
+  font-size: var(--t-lg);
+  line-height: 1.4;
+}
+.kevin-line p b {
+  font-size: var(--t-sm);
+}
+.kevin-line .pill {
+  margin-left: auto;
+  flex: none;
+}
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: var(--s-4);
+  align-items: start;
+}
+.old-way {
+  background: color-mix(in srgb, #f7f2e6 70%, var(--surface));
+  border-color: color-mix(in srgb, #d9cfb4 60%, var(--line));
+}
+.old-body {
+  display: grid;
+  gap: var(--s-3);
+  font-size: var(--t-sm);
+}
+.old-body p {
+  margin: 0 0 var(--s-2);
+}
+.old-body .artifact {
+  width: 100%;
+  max-width: 280px;
+  border-radius: 4px;
+  border: 1px solid var(--line-2);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.16);
+  transform: rotate(-1.5deg);
+  margin: 4px auto 6px;
+  display: block;
+}
+.sheet-grid {
+  margin: 0;
+  border: 1px solid #c9ccc4;
+  border-radius: 4px;
+  background: #fff;
+  overflow-x: auto;
+  font-family: Calibri, "Segoe UI", sans-serif;
+  color: #1d1d1d;
+}
+.sheet-name {
+  padding: 4px 8px;
+  background: #217346;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+.sheet-grid table {
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.sheet-grid th,
+.sheet-grid td {
+  border: 1px solid #e1e1e1;
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+.sheet-grid th {
+  background: #f3f3f3;
+  color: #666;
+  font-weight: 400;
+}
+.stage-body {
+  display: grid;
+  gap: var(--s-3);
+  min-width: 0;
+}
+.stage-body h4 {
+  margin: var(--s-2) 0 0;
+  font-size: var(--t-sm);
+  font-weight: 600;
+}
+.stage-body .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  align-items: center;
+}
+.stage-body .check {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.people {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+.people li {
+  display: flex;
+  gap: var(--s-2);
+  align-items: flex-start;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: var(--t-sm);
+}
+.people small {
+  display: block;
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+}
+.flag-list,
+.scans,
+.recon {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: var(--t-sm);
+}
+.scans li,
+.recon li {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.scans li small,
+.recon li small {
+  display: block;
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+}
+.recon li b {
+  white-space: nowrap;
+}
+.scans .page {
+  width: 26px;
+  height: 32px;
+  flex: none;
+  border: 1px solid var(--line-2);
+  border-radius: 3px;
+  background: repeating-linear-gradient(
+    180deg,
+    var(--surface) 0 6px,
+    var(--line) 6px 7px
+  );
+}
+.scans li .pill {
+  margin-left: auto;
+}
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.steps li {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: var(--t-sm);
+}
+.steps li.done {
+  background: color-mix(in srgb, var(--paid-bg) 40%, var(--surface));
+}
+.steps .k {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  font-size: 10px;
+  font-weight: 700;
+}
+.steps li.done .k {
+  background: var(--paid);
+  color: var(--surface);
+}
+.steps .what small {
+  display: block;
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+}
+.steps .hold {
+  display: flex;
+  gap: 6px;
+}
+.steps .hold input,
+.plain-words input {
+  padding: 6px 9px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--surface);
+  font: inherit;
+  font-size: var(--t-sm);
+  min-width: 0;
+}
+.plain-words {
+  display: grid;
+  gap: var(--s-2);
+}
+.plain-words label {
+  display: grid;
+  gap: 4px;
+}
+.limits {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+.limits div {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.limits small {
+  display: block;
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+}
+.limits b {
+  font-size: var(--t-lg);
+}
+.order-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: var(--t-sm);
+}
+.order-steps li {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+  color: var(--ink-2);
+}
+.order-steps li.done {
+  color: var(--ink);
+}
+.order-steps .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--line-2);
+}
+.order-steps li.done .dot {
+  background: var(--paid);
+  border-color: var(--paid);
+}
+.order-steps small {
+  color: var(--ink-3);
+}
+tr.formula td {
+  background: var(--surface-2);
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+}
+tr.formula span {
+  display: inline-block;
+  margin-right: 14px;
+}
+.tally {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+.tally .t {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.tally .t b {
+  display: block;
+  font-size: 22px;
+}
+.tally .t span {
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+}
+.tiles-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+.tile-link {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.tile-link:hover {
+  border-color: var(--brand);
+}
+.tile-link small {
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+}
+@container (max-width: 980px) {
+  .journey,
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tally {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@container (max-width: 560px) {
+  .people,
+  .tiles-2,
+  .limits {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tally {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* ---------- Frame ---------- */
 .app {
   display: grid;
@@ -745,4 +1183,11 @@ table.data .n {
   .stat-value {
     font-size: 22px;
   }
+}
+
+/* A supplier's note sits under its name in the integration program's supplier table. */
+.v2 table.data td small.note {
+  display: block;
+  color: var(--ink-2);
+  font-weight: 400;
 }
