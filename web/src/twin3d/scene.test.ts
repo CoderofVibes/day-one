@@ -130,10 +130,10 @@ describe("transitions between steps", () => {
 });
 
 describe("paths and anchors", () => {
-  it("anchors a flow above the department roof at its current height", () => {
+  it("anchors a flow above the roof over the department's main area", () => {
     const s = deriveTwinState(run, index("Delivery"));
     const [x, y, z] = anchor3({ kind: "dept", facility: "B", dept: "receiving" }, s);
-    expect(y).toBe(FLOOR_Z + topHeight("receiving", DEPT_Z.online) + 1);
+    expect(y).toBe(FLOOR_Z + topHeight("receiving", "B") + 1);
     expect(x).toBeGreaterThan(0);
     expect(z).toBeGreaterThan(0);
     const [, py] = anchor3({ kind: "escrow" }, s);

@@ -11,7 +11,7 @@ import { createContext, useContext, useEffect, useId, useMemo, useRef, useState 
 import * as THREE from "three";
 import type { Line2, OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { RunData } from "../run.ts";
-import { type Box, FACILITY_LAYOUTS, FLOOR_Z, PAD_Z, PADS } from "../twin/layout.ts";
+import { type Box, FACILITY_LAYOUTS, FLOOR_Z, PAD_Z, PADS, siteScale } from "../twin/layout.ts";
 import {
   deriveTwinState,
   type Flow,
@@ -23,10 +23,10 @@ import {
   type TwinState,
 } from "../twin/model.ts";
 import {
-  bodyHeight,
-  buildingParts,
-  type Part,
+  BUILDING_HEIGHT,
   type PartKind,
+  type SitePart,
+  siteParts,
   type Tint,
   topHeight,
 } from "./buildings.ts";
@@ -166,8 +166,8 @@ interface Frame {
   flows: FlowFrame[];
   lots: LotFrame[];
   escrowCents: number;
-  /** The buildings, one part list per frame (buildings.ts). */
-  parts: { part: Part; dept: DeptFrame }[];
+  /** The sites' buildings and grounds, one part list per frame (buildings.ts). */
+  parts: SitePart[];
   /** How far the camera is from what it looks at; department labels hide when far. */
   cameraDistance: number;
 }
@@ -248,7 +248,7 @@ function Driver({
       flows: blendFlows(prev, next, u),
       lots: blendLots(prev, next, u),
       escrowCents: blendEscrowCents(prev, next, u),
-      parts: departments.flatMap((d) => buildingParts(d).map((part) => ({ part, dept: d }))),
+      parts: siteParts(departments),
       cameraDistance: frame.current.cameraDistance,
     };
   }, -1);
@@ -492,19 +492,36 @@ function lookColor(theme: Theme, look: DeptLook): string {
 const LIT = "#f6e3a1";
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
 
-/** How many of each part the instanced meshes can hold; the site needs well under these. */
-const PART_CAPACITY: Record<PartKind, number> = {
-  body: 24,
-  gable: 12,
-  saw: 32,
-  silo: 8,
-  tank: 4,
-  stack: 12,
-  window: 900,
-  door: 48,
-  vent: 16,
-  unit: 24,
-  dock: 4,
+/**
+ * The instanced meshes, one per geometry, and the part kinds each draws: one draw call per group
+ * (and one more for its shadow), whatever the number of buildings. The sites need well under the
+ * capacities.
+ */
+type MeshGroup = "box" | "round" | "cone" | "gable" | "saw" | "window";
+const GROUP_OF: Record<PartKind, MeshGroup> = {
+  body: "box",
+  door: "box",
+  vent: "box",
+  unit: "box",
+  dock: "box",
+  panel: "box",
+  paving: "box",
+  car: "box",
+  silo: "round",
+  tank: "round",
+  stack: "round",
+  tree: "cone",
+  gable: "gable",
+  saw: "saw",
+  window: "window",
+};
+const GROUP_CAPACITY: Record<MeshGroup, number> = {
+  box: 700,
+  round: 60,
+  cone: 120,
+  gable: 8,
+  saw: 96,
+  window: 1600,
 };
 
 /** A unit prism: a gable (ridge in the middle) or a sawtooth (vertical face at +x). */
@@ -526,15 +543,25 @@ function litness(look: DeptLook, t: number): number {
   return 0;
 }
 
-function tintColor(theme: Theme, tint: Tint, d: DeptFrame, t: number): THREE.Color {
+/** Trees: one muted green in both themes. */
+const TREE = "#6f9a78";
+
+function tintColor(theme: Theme, tint: Tint, d: DeptFrame | null, t: number): THREE.Color {
   switch (tint) {
-    case "body":
+    case "shell":
+      return COLORS.set(theme.panel).lerp(COLOR_B.set(theme.off), 0.3);
+    case "zone":
+      if (!d) return COLORS.set(theme.off);
       return COLORS.set(lookColor(theme, d.from)).lerp(
         COLOR_B.set(lookColor(theme, d.look)),
         d.mix,
       );
     case "roof":
-      return tintColor(theme, "body", d, t).multiplyScalar(0.78);
+      return tintColor(theme, "zone", d, t).multiplyScalar(0.86);
+    case "paving":
+      return COLORS.set(theme.off).lerp(COLOR_B.set(theme.ink), 0.12);
+    case "tree":
+      return COLORS.set(TREE);
     case "metal":
       return COLORS.set(theme.off).lerp(COLOR_B.set(theme.panel), 0.5);
     case "dark":
@@ -542,27 +569,28 @@ function tintColor(theme: Theme, tint: Tint, d: DeptFrame, t: number): THREE.Col
     case "pad":
       return COLORS.set(theme.pad);
     default: {
-      const on = lerp(litness(d.from, t), litness(d.look, t), d.mix);
+      const on = d ? lerp(litness(d.from, t), litness(d.look, t), d.mix) : 0.15;
       return COLORS.set(theme.off).multiplyScalar(0.5).lerp(COLOR_B.set(LIT), on);
     }
   }
 }
 
-/** Every building on the site: one instanced mesh per part kind (buildings.ts). */
+/** Every building and the grounds: one instanced mesh per geometry (buildings.ts). */
 function Buildings({ theme }: { theme: Theme }) {
   const frame = useFrameRef();
-  const meshes = useRef<Partial<Record<PartKind, THREE.InstancedMesh | null>>>({});
+  const meshes = useRef<Partial<Record<MeshGroup, THREE.InstancedMesh | null>>>({});
   const gable = useMemo(() => prism(false), []);
   const saw = useMemo(() => prism(true), []);
   useFrame(() => {
     const f = frame.current;
-    const counts: Partial<Record<PartKind, number>> = {};
+    const counts: Partial<Record<MeshGroup, number>> = {};
     for (const { part, dept } of f.parts) {
-      const m = meshes.current[part.kind];
+      const group = GROUP_OF[part.kind];
+      const m = meshes.current[group];
       if (!m) continue;
-      const i = counts[part.kind] ?? 0;
-      if (i >= PART_CAPACITY[part.kind]) continue;
-      counts[part.kind] = i + 1;
+      const i = counts[group] ?? 0;
+      if (i >= GROUP_CAPACITY[group]) continue;
+      counts[group] = i + 1;
       POSITION.set(part.position[0], part.position[1], part.position[2]);
       SCALE.set(
         Math.max(0.01, part.scale[0]),
@@ -573,65 +601,67 @@ function Buildings({ theme }: { theme: Theme }) {
       m.setMatrixAt(i, MATRIX.compose(POSITION, QUAT, SCALE));
       m.setColorAt(i, tintColor(theme, part.tint, dept, f.t));
     }
-    for (const kind of Object.keys(PART_CAPACITY) as PartKind[]) {
-      const m = meshes.current[kind];
+    for (const group of Object.keys(GROUP_CAPACITY) as MeshGroup[]) {
+      const m = meshes.current[group];
       if (!m) continue;
-      m.count = counts[kind] ?? 0;
+      m.count = counts[group] ?? 0;
       m.instanceMatrix.needsUpdate = true;
       if (m.instanceColor) m.instanceColor.needsUpdate = true;
     }
   });
-  const ref = (kind: PartKind) => (el: THREE.InstancedMesh | null) => {
-    meshes.current[kind] = el;
+  const ref = (group: MeshGroup) => (el: THREE.InstancedMesh | null) => {
+    meshes.current[group] = el;
   };
-  const boxes: PartKind[] = ["body", "door", "vent", "unit", "dock"];
-  const rounds: PartKind[] = ["silo", "tank", "stack"];
   return (
     <>
-      {boxes.map((kind) => (
-        <instancedMesh
-          key={kind}
-          ref={ref(kind)}
-          args={[undefined, undefined, PART_CAPACITY[kind]]}
-          castShadow
-          receiveShadow
-          frustumCulled={false}
-        >
-          <boxGeometry />
-          <meshStandardMaterial color="#ffffff" roughness={0.85} metalness={0} />
-        </instancedMesh>
-      ))}
-      {rounds.map((kind) => (
-        <instancedMesh
-          key={kind}
-          ref={ref(kind)}
-          args={[undefined, undefined, PART_CAPACITY[kind]]}
-          castShadow
-          frustumCulled={false}
-        >
-          <cylinderGeometry args={[0.5, 0.5, 1, 18]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.5} metalness={0.25} />
-        </instancedMesh>
-      ))}
+      <instancedMesh
+        ref={ref("box")}
+        args={[undefined, undefined, GROUP_CAPACITY.box]}
+        castShadow
+        receiveShadow
+        frustumCulled={false}
+      >
+        <boxGeometry />
+        <meshStandardMaterial color="#ffffff" roughness={0.82} metalness={0.02} />
+      </instancedMesh>
+      <instancedMesh
+        ref={ref("round")}
+        args={[undefined, undefined, GROUP_CAPACITY.round]}
+        castShadow
+        frustumCulled={false}
+      >
+        <cylinderGeometry args={[0.5, 0.5, 1, 18]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.45} metalness={0.3} />
+      </instancedMesh>
+      <instancedMesh
+        ref={ref("cone")}
+        args={[undefined, undefined, GROUP_CAPACITY.cone]}
+        castShadow
+        frustumCulled={false}
+      >
+        <coneGeometry args={[0.5, 1, 10]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.95} />
+      </instancedMesh>
       <instancedMesh
         ref={ref("gable")}
-        args={[gable, undefined, PART_CAPACITY.gable]}
+        args={[gable, undefined, GROUP_CAPACITY.gable]}
         castShadow
         frustumCulled={false}
       >
         <meshStandardMaterial color="#ffffff" roughness={0.9} />
       </instancedMesh>
+      {/* The hall's sawtooth glass: smoother, so the status colour reads as lit panes. */}
       <instancedMesh
         ref={ref("saw")}
-        args={[saw, undefined, PART_CAPACITY.saw]}
+        args={[saw, undefined, GROUP_CAPACITY.saw]}
         castShadow
         frustumCulled={false}
       >
-        <meshStandardMaterial color="#ffffff" roughness={0.9} />
+        <meshStandardMaterial color="#ffffff" roughness={0.35} metalness={0.15} />
       </instancedMesh>
       <instancedMesh
         ref={ref("window")}
-        args={[undefined, undefined, PART_CAPACITY.window]}
+        args={[undefined, undefined, GROUP_CAPACITY.window]}
         frustumCulled={false}
       >
         <boxGeometry />
@@ -641,35 +671,42 @@ function Buildings({ theme }: { theme: Theme }) {
   );
 }
 
-/** The glow around a department the moment it comes online, and its label (a pill). */
+/**
+ * The glow over each of Plant B's areas the moment its department comes online, and each
+ * department's name (a pill) over its main area.
+ */
 function DepartmentExtras({ theme, hideLabels }: { theme: Theme; hideLabels: boolean }) {
   const frame = useFrameRef();
   const glows = useRef<(THREE.Mesh | null)[]>([]);
   const labels = useRef<(THREE.Group | null)[]>([]);
-  const plantB = useMemo(() => FACILITY_LAYOUTS.find((l) => l.id === "B")?.departments ?? [], []);
+  const layoutB = useMemo(() => FACILITY_LAYOUTS.find((l) => l.id === "B"), []);
+  const zones = layoutB?.zones ?? [];
+  const plantB = layoutB?.departments ?? [];
   useFrame(() => {
     const f = frame.current;
-    plantB.forEach(({ code, box }, i) => {
-      const d = f.departments.find((x) => x.facility === "B" && x.code === code);
-      const [cx, cy] = centerOf(box);
+    zones.forEach((zone, i) => {
+      const d = f.departments.find((x) => x.facility === "B" && x.code === zone.dept);
       const glow = glows.current[i];
-      if (glow && d) {
-        glow.visible = d.glow > 0.01;
-        const h = bodyHeight(d.code, d.height);
-        glow.position.set(cx, FLOOR_Z + h / 2, cy);
-        const s = 1 + 0.12 * (1 - d.glow);
-        glow.scale.set(box.w * 0.88 * s, h * s, box.d * 0.88 * s);
-        (glow.material as THREE.MeshBasicMaterial).opacity = d.glow * 0.55;
-      }
+      if (!glow || !d) return;
+      glow.visible = d.glow > 0.01;
+      const [cx, cy] = centerOf(zone.box);
+      const h = BUILDING_HEIGHT[zone.building];
+      glow.position.set(cx, FLOOR_Z + h / 2, cy);
+      const k = 1 + 0.1 * (1 - d.glow);
+      glow.scale.set(zone.box.w * k, h * k + 0.4, zone.box.d * k);
+      (glow.material as THREE.MeshBasicMaterial).opacity = d.glow * 0.5;
+    });
+    plantB.forEach(({ code, box }, i) => {
       const label = labels.current[i];
-      if (label && d) label.position.set(cx, FLOOR_Z + topHeight(d.code, d.height) + 0.6, cy);
+      const [cx, cy] = centerOf(box);
+      if (label) label.position.set(cx, FLOOR_Z + topHeight(code, "B") + 0.6, cy);
     });
   });
   return (
     <>
-      {plantB.map(({ code }, i) => (
+      {zones.map((zone, i) => (
         <mesh
-          key={`glow-${code}`}
+          key={`glow-${zone.area}`}
           ref={(el) => {
             glows.current[i] = el;
           }}
@@ -1085,9 +1122,9 @@ function LotView({ frameLot, theme }: { frameLot: LotFrame; theme: Theme }) {
   useFrame(() => {
     const f = frame.current;
     const l = f.lots.find((x) => x.lot.code === lot.code);
-    const d = f.departments.find((x) => x.facility === lot.facility && x.code === lot.department);
-    if (!l || !d) return;
-    const roof = FLOOR_Z + bodyHeight(d.code, d.height);
+    if (!l) return;
+    // The pallet stands on the roof over the quarantine area, the cage dropped over it.
+    const roof = FLOOR_Z + BUILDING_HEIGHT.warehouse * siteScale(lot.facility);
     const c = cage.current;
     if (c) {
       c.position.set(cx, roof + l.drop, cy);
@@ -1173,9 +1210,7 @@ function Scene({
     flows: blendFlows(prev, next, 1),
     lots: blendLots(prev, next, 1),
     escrowCents: next.escrowHeldCents,
-    parts: blendDepartments(prev, next, 1).flatMap((d) =>
-      buildingParts(d).map((part) => ({ part, dept: d })),
-    ),
+    parts: siteParts(blendDepartments(prev, next, 1)),
     cameraDistance: framingFor(title, undefined, isPooled(next)).distance,
   });
   const pooled = isPooled(next);
