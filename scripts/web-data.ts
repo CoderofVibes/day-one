@@ -5,7 +5,8 @@
 // receives and her reply.
 // It also writes the three-plant view as it stands at the end of that run, for the static
 // replay (a hosted demo has no API): web/src/data/plants.json (stock, discrepancies, mass
-// balance, books, Kevin's proposed moves) and, beside the built page, web/public/brief.html
+// balance, books, Kevin's proposed moves), web/src/data/review.json (Kevin's morning review of
+// Ray's mailbox, unsigned) and, beside the built page, web/public/brief.html
 // (Kevin's 5am brief) and web/public/books.csv (the bookkeeper export). web/src/data/series.json
 // holds the charts' series, every plant's forecast and its four-week schedule at the same clock. HQ's live read of the
 // contract is not in the snapshot: it changes with the chain (npm run escrow reads it).
@@ -20,9 +21,10 @@ import { runDemo } from "../agents/kevin/src/demo.ts";
 import { massBalance } from "../agents/kevin/src/massBalance.ts";
 import { plantForecast, plantSchedule } from "../agents/kevin/src/schedule.ts";
 import { suggestTransfers, transfersInTransit } from "../agents/kevin/src/transferSuggestions.ts";
-import { openDemoEnv } from "../api/src/env.ts";
+import { fixtureFiles, openDemoEnv } from "../api/src/env.ts";
 import { heldInvoiceDemo } from "../api/src/heldInvoice.ts";
 import { ImportDesk } from "../api/src/imports.ts";
+import { ReviewDesk } from "../api/src/review.ts";
 import { DemoSession } from "../api/src/session.ts";
 import { readAttestationFixture, recordedReceipts } from "../server/src/attestation/fixture.ts";
 import { verifyAttestation } from "../server/src/attestation/verify.ts";
@@ -36,6 +38,7 @@ import {
   purchaseOrderViews,
   rfqViews,
 } from "../server/src/ledger/views.ts";
+import { ReplayLlm } from "../server/src/llm/client.ts";
 import { INVENTORY_FILE, INVENTORY_WORKBOOK } from "../server/src/seed/inventorySheet.ts";
 import { PLANT_AGENTS } from "./lib/dayone-sandbox.ts";
 
@@ -45,6 +48,7 @@ const PLANTS = join(root, "web/src/data/plants.json");
 const SERIES = join(root, "web/src/data/series.json");
 const JOURNEY = join(root, "web/src/data/journey.json");
 const PAGES = join(root, "web/src/data/pages.json");
+const REVIEW = join(root, "web/src/data/review.json");
 const BRIEF = join(root, "web/public/brief.html");
 const CSV = join(root, "web/public/books.csv");
 const RELAYER = "dayone-relayer.testnet";
@@ -130,6 +134,13 @@ const text = `${JSON.stringify(data, null, 2)}\n`;
 
 // The same replay in this process, kept at its end, for the three-plant snapshot.
 const env = await openDemoEnv({ root });
+// Kevin's morning review of Ray's mailbox, read on the ledger the run begins with, as the API
+// reads it (api/src/review.ts), from the recorded readings. Nothing is signed: the static page
+// shows the drafts as Kevin left them; signing needs npm run api.
+const review = await new ReviewDesk(
+  env.db,
+  ReplayLlm.fromFile(fixtureFiles(root).reviewLlm),
+).state();
 const end = await runDemo(env.deps);
 if (!end.ok) {
   console.error("The replay did not finish; the three-plant snapshot was not written.");
@@ -312,6 +323,7 @@ const files: [string, string][] = [
   [SERIES, `${JSON.stringify(series)}\n`],
   [JOURNEY, `${JSON.stringify(journey)}\n`],
   [PAGES, `${JSON.stringify(pages)}\n`],
+  [REVIEW, `${JSON.stringify(review, null, 2)}\n`],
   [BRIEF, briefHtml(morningBrief(env.db, { now }))],
   [CSV, booksCsv(env.db)],
 ];

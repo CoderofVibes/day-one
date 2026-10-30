@@ -17,6 +17,7 @@ export function ReviewPane({
   viewer,
   open,
   onSign,
+  readOnly,
 }: {
   review: ReviewState;
   busy: boolean;
@@ -25,10 +26,12 @@ export function ReviewPane({
   viewer: string;
   /** Unfolded: at the purchaser's turn. */
   open: boolean;
-  onSign: (messageId: string) => void;
+  /** Null on a static host, where nothing can be signed; `readOnly` then says so. */
+  onSign: ((messageId: string) => void) | null;
+  readOnly?: string;
 }) {
   const [shown, setShown] = useState<string | null>(null);
-  const mine = viewer === review.for;
+  const mine = viewer === review.for && onSign !== null;
   const first = review.for.split(" ")[0] ?? review.for;
   return (
     <details className="panel inbox review-pane" aria-label="Morning review" open={open}>
@@ -52,13 +55,14 @@ export function ReviewPane({
             open={shown === p.messageId}
             busy={busy}
             onOpen={() => setShown(shown === p.messageId ? null : p.messageId)}
-            onSign={() => onSign(p.messageId)}
+            onSign={() => onSign?.(p.messageId)}
           />
         ))}
       </ul>
       <p className="muted small">
         Nothing is changed until it is signed; a signature changes a vendor's card or the schedule,
         never where an order pays.
+        {onSign === null && readOnly ? ` ${readOnly}` : ""}
       </p>
     </details>
   );

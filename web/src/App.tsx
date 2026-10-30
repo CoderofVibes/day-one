@@ -46,6 +46,7 @@ import { ImportPane } from "./ImportPane.tsx";
 import { InboxPane } from "./InboxPane.tsx";
 import { postDecision, postDropScans } from "./journey.ts";
 import { type Action, actionsFor, actorOf } from "./live.ts";
+import { REVIEW_READ_ONLY, reviewSnapshot } from "./mail.ts";
 import { ErpPage, ThreeSchedules } from "./pages/Acme.tsx";
 import { InvoicesPage, PurchasingPage, SpreadsheetsPage } from "./pages/Buying.tsx";
 import { GroupPage, ReconciliationPage, SealedPage, SuppliersPage } from "./pages/Hq.tsx";
@@ -526,6 +527,15 @@ function ReplayApp() {
             <>
               <Guide data={data} />
               {kevin}
+              <ReviewPane
+                review={reviewSnapshot}
+                busy={false}
+                curtain={curtain}
+                viewer="Ray Delgado"
+                open={at < last && audienceOf(current).name === "Ray Delgado"}
+                onSign={null}
+                readOnly={REVIEW_READ_ONLY}
+              />
             </>
           }
           activity={<StaffFeed data={data} upTo={at} onPick={go} curtain={curtain} />}

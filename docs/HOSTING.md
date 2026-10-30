@@ -4,7 +4,7 @@
 
 ## What a judge gets from one link
 
-The static replay of the recorded testnet run (`web/dist`, about 1.7 MB, 11 files), no keys, no wallet, no server:
+The static replay of the recorded testnet run (`web/dist`, about 2.6 MB, 15 files since the v2 pages), no keys, no wallet, no server:
 
 - the plant floor step by step (Play, Back/Next, the arrow keys), with a short guide on first visit;
 - the flat map or the 3D twin (the "3D" button, or `?view=3d`);

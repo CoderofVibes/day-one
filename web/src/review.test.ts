@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ReviewProposal } from "./api.ts";
+import { REVIEW_READ_ONLY, reviewSnapshot } from "./mail.ts";
 import { longDate, reviewPill, senderOf, signingDoes, staffWords } from "./review.ts";
 
 const proposal = (partial: Partial<ReviewProposal>): ReviewProposal => ({
@@ -77,5 +78,23 @@ describe("the morning review on Ray's screen", () => {
     ).toBe('Note on the vendor\'s card: "List $7.40/kg."');
     expect(signingDoes(proposal({}))).toBeNull();
     expect(longDate("2026-11-19")).toBe("Thursday, Nov 19");
+  });
+
+  it("carries the recorded review into the static replay, unsigned", () => {
+    // The same ten messages npm run review prints (README), as Kevin left them for Ray.
+    expect(reviewSnapshot.for).toBe("Ray Delgado");
+    expect(reviewSnapshot.counts).toEqual({ sign: 3, ask: 0, refused: 1, none: 6 });
+    expect(reviewSnapshot.proposals).toHaveLength(10);
+    expect(reviewSnapshot.toSign).toBe(3);
+    for (const p of reviewSnapshot.proposals) expect(p.signed).toBeNull();
+    const refused = reviewSnapshot.proposals.filter((p) => p.decision === "refused");
+    expect(refused).toHaveLength(1);
+    expect(refused[0]?.flagged.length).toBeGreaterThan(0);
+    // Nothing a staff screen shows without the curtain names an account.
+    for (const p of reviewSnapshot.proposals) {
+      for (const line of [p.kevin, ...p.flagged])
+        expect(staffWords(line, false)).not.toMatch(/\.testnet\b/);
+    }
+    expect(REVIEW_READ_ONLY).toContain("npm run api");
   });
 });
