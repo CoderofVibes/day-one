@@ -61,6 +61,7 @@ import { postDecision, postDropScans } from "./journey.ts";
 import { type Action, actionsFor, actorOf } from "./live.ts";
 import { REVIEW_READ_ONLY, reviewSnapshot } from "./mail.ts";
 import { ErpPage, ThreeSchedules } from "./pages/Acme.tsx";
+import { ArenaPage } from "./pages/Arena.tsx";
 import { InvoicesPage, PurchasingPage, SpreadsheetsPage } from "./pages/Buying.tsx";
 import { GroupPage, ReconciliationPage, SealedPage, SuppliersPage } from "./pages/Hq.tsx";
 import { Integration } from "./pages/Integration.tsx";
@@ -113,7 +114,10 @@ function Foot({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** The page, with Behind the curtain as a dark rail beside it when the switch is on. */
+/**
+ * The page, with Behind the curtain as a dark rail beside it when the switch is on. The attack
+ * arena keeps its own log in that place, so it opens without the run's rail.
+ */
 function WithRail({
   curtain,
   rail,
@@ -162,7 +166,7 @@ const PLANT_NAMES: Record<PlantCode, string> = {
 /** Each page's header: where it sits, its title and one plain sentence. */
 const PAGE_TEXT: Record<
   Exclude<PageId, "integration" | "overview">,
-  { group: "plant" | "acme" | "hq"; title: string; sentence: string }
+  { group: "plant" | "acme" | "hq" | "proof"; title: string; sentence: string }
 > = {
   map: {
     group: "plant",
@@ -253,6 +257,11 @@ const PAGE_TEXT: Record<
     sentence:
       "Day One's ledger, the ERP and the contract, checked against each other line by line.",
   },
+  arena: {
+    group: "proof",
+    title: "Attack arena",
+    sentence: "Pick one of the fifteen recorded attacks, fire it, and see what refused it and why.",
+  },
 };
 
 /** The pages both sources share; each source hands in its own panes and reads. */
@@ -326,7 +335,13 @@ function Pages({
     );
   const text = PAGE_TEXT[page];
   const where =
-    text.group === "plant" ? PLANT_NAMES[plant] : text.group === "acme" ? "Across Acme" : "Acme HQ";
+    text.group === "plant"
+      ? PLANT_NAMES[plant]
+      : text.group === "acme"
+        ? "Across Acme"
+        : text.group === "proof"
+          ? "Proof"
+          : "Acme HQ";
   const props = { plant, source, curtain };
   const body = (() => {
     switch (page) {
@@ -369,6 +384,8 @@ function Pages({
         return exportPane;
       case "reconciliation":
         return <ReconciliationPage source={source} curtain={curtain} />;
+      case "arena":
+        return <ArenaPage />;
     }
   })();
   return (
@@ -530,7 +547,10 @@ function ReplayApp() {
       )}
       person={upNext ?? { name: "Day One", role: "Run complete" }}
     >
-      <WithRail curtain={curtain} rail={<Curtain data={data} upTo={at} />}>
+      <WithRail
+        curtain={curtain && route.page !== "arena"}
+        rail={<Curtain data={data} upTo={at} />}
+      >
         <Pages
           page={route.page}
           plant={route.plant}
@@ -914,7 +934,10 @@ function LiveApp({ initial }: { initial: LiveState }) {
       }}
       person={{ name: actor.name, role: actor.role ?? null }}
     >
-      <WithRail curtain={curtain} rail={<Curtain data={state} upTo={last} />}>
+      <WithRail
+        curtain={curtain && route.page !== "arena"}
+        rail={<Curtain data={state} upTo={last} />}
+      >
         <Pages
           page={route.page}
           plant={route.plant}

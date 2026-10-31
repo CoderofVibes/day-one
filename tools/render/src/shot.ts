@@ -4,7 +4,8 @@
 // With URL=http://localhost:8787/ it opens a running API instead (npm run api) and clicks the
 // primary action STEPS times, so the live screens get the same check; PLANTS=1 also opens the
 // Plants screen. FULL=1 captures the whole page instead of the first screen.
-// Prints console errors and whether the page scrolls sideways.
+// Prints console errors and whether the page scrolls sideways. PAGE=arena also fires three
+// attacks in the attack arena and checks each refusal shown against web/src/data/arena.json.
 
 import { existsSync, readFileSync } from "node:fs";
 import { extname, join } from "node:path";
@@ -88,6 +89,7 @@ for (const [name, width, scheme] of [
   } else {
     for (let i = 0; i < steps; i++) await page.keyboard.press("ArrowRight");
   }
+  if (process.env.PAGE === "arena") await fireThree(page, name);
   const threeD = process.env.VIEW === "3d" || (await page.locator(".map-frame").count()) > 0;
   if (threeD) await page.locator(".t3-stage canvas").waitFor();
   await page.waitForTimeout(threeD ? 2400 : 600);
@@ -99,3 +101,35 @@ for (const [name, width, scheme] of [
   await page.close();
 }
 await browser.close();
+
+/** The arena's browser check: three attacks fired, each reason as the suite recorded it. */
+async function fireThree(page: import("playwright-core").Page, name: string) {
+  const arena = JSON.parse(
+    readFileSync(join(import.meta.dirname, "../../../web/src/data/arena.json"), "utf8"),
+  ) as {
+    cases: { n: number; attack: string; reason: string; txs: { tx: string; status: string }[] }[];
+  };
+  const picks = [1, 5, 12].map((n) => arena.cases.find((c) => c.n === n));
+  const wrong: string[] = [];
+  for (const c of picks) {
+    if (!c) continue;
+    await page.locator(".arena-list button").filter({ hasText: c.attack }).click();
+    await page.getByRole("button", { name: "Fire attack" }).click();
+    const result = page.getByRole("region", { name: "Result" });
+    await result.waitFor();
+    const reason = await result.locator(".arena-reason").textContent();
+    if (reason !== c.reason) wrong.push(`${c.attack}: shows "${reason}"`);
+    const refused = c.txs.find((t) => t.status === "refused");
+    const hash = await result
+      .locator("code[title]")
+      .getAttribute("title")
+      .catch(() => null);
+    const text = (await result.textContent()) ?? "";
+    if (refused ? hash !== refused.tx : !text.includes("no transaction: refused before the chain"))
+      wrong.push(`${c.attack}: transaction shown does not match the recording`);
+  }
+  const tally = await page.locator(".arena-tally").textContent();
+  if (tally !== "Refused 3 of 3 you tried · Suite: 15 of 15") wrong.push(`tally reads "${tally}"`);
+  console.log(name, "arena:", wrong.length ? wrong : "3 attacks fired, reasons match the suite");
+  if (wrong.length) process.exitCode = 1;
+}

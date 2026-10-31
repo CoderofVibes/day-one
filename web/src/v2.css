@@ -1598,3 +1598,265 @@ ul.plain {
     max-height: none;
   }
 }
+
+/* ---------- The attack arena (docs/UPGRADE_BRIEF.md §3.1): a quiet security console ---------- */
+.arena {
+  display: grid;
+  gap: var(--s-3);
+}
+.arena-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+.arena-bar > .muted {
+  flex: 1 1 280px;
+}
+.arena-tally {
+  margin-left: auto;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--t-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.arena-grid {
+  display: grid;
+  grid-template-columns: minmax(210px, 260px) minmax(0, 1fr) minmax(260px, 320px);
+  gap: var(--s-4);
+  align-items: start;
+}
+.arena-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line-2);
+  transition: background-color 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.arena-dot.refused {
+  background: color-mix(in srgb, var(--refused) 80%, transparent);
+}
+.arena-list {
+  padding: var(--s-3);
+}
+.arena-list-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 0 var(--s-1) var(--s-2);
+}
+.arena-list-head h3 {
+  margin: 0;
+  font-size: var(--t-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.arena-list ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.arena-list li button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px var(--s-2);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  font: inherit;
+  font-size: var(--t-sm);
+  cursor: pointer;
+  transition: background-color 140ms;
+}
+.arena-list li button:hover {
+  background: var(--glass-strong);
+}
+.arena-list li button[aria-current] {
+  background: var(--brand-soft);
+  box-shadow: inset 2px 0 0 var(--brand);
+}
+.arena-row {
+  display: grid;
+  min-width: 0;
+}
+.arena-row small {
+  font-size: var(--t-xs);
+}
+.arena-code {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--refused);
+  animation: arena-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.arena-detail {
+  scroll-margin-top: 72px;
+  display: grid;
+  gap: var(--s-3);
+  align-content: start;
+}
+.arena-detail-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+.arena-detail-head .crumb {
+  font-size: var(--t-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+.arena-detail-head h2 {
+  margin: 4px 0 0;
+  font-size: var(--t-xl);
+  line-height: 1.2;
+}
+.arena-detail p {
+  margin: 0;
+}
+.arena-fire {
+  margin-left: auto;
+  white-space: nowrap;
+  border-color: var(--ink-3);
+  background: transparent;
+}
+.arena-fire:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+.arena-facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px var(--s-3);
+  margin: 0;
+  font-size: var(--t-sm);
+}
+.arena-facts dt {
+  color: var(--ink-2);
+}
+.arena-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.arena-facts code,
+.arena-reason code {
+  font-family: var(--mono);
+}
+.arena-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 var(--s-1);
+  display: grid;
+  gap: 6px;
+  font-size: var(--t-sm);
+}
+.arena-steps li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: arena-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.arena-steps li.pending {
+  visibility: hidden;
+}
+.arena-step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-3);
+}
+.arena-steps li:not(.pending) .arena-step-dot {
+  background: var(--ink-3);
+}
+.arena-steps li.result {
+  color: var(--refused);
+  font-weight: 600;
+}
+.arena-steps li.result .arena-step-dot {
+  border-color: var(--refused);
+  background: var(--refused);
+}
+.arena-result {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid color-mix(in srgb, var(--refused) 35%, var(--glass-line));
+  border-radius: var(--r-md);
+  background: var(--glass-strong);
+  animation: arena-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.arena-chip {
+  justify-self: start;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  background: var(--refused-bg);
+  color: var(--refused);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--refused) 10%, transparent);
+  animation: arena-badge 80ms ease-out;
+}
+.arena-reason {
+  font-size: var(--t-sm);
+  overflow-wrap: anywhere;
+}
+.arena-reason.long {
+  font-size: var(--t-xs);
+  line-height: 1.55;
+}
+.arena-log .head time {
+  font-family: var(--mono);
+}
+.arena-log .st {
+  white-space: nowrap;
+}
+.arena-detail-head > div {
+  flex: 1 1 220px;
+}
+.arena-log .offchain {
+  border-style: dashed;
+}
+@keyframes arena-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes arena-badge {
+  from {
+    transform: scale(0.92);
+  }
+}
+@container (max-width: 900px) {
+  .arena-grid {
+    grid-template-columns: minmax(210px, 260px) minmax(0, 1fr);
+  }
+  .arena-log {
+    grid-column: 1 / -1;
+  }
+}
+@container (max-width: 700px) {
+  .arena-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arena-dot,
+  .arena-code,
+  .arena-steps li,
+  .arena-result,
+  .arena-chip {
+    animation: none;
+    transition: none;
+  }
+}
