@@ -233,3 +233,323 @@
     display: none;
   }
 }
+
+/* Full screen (F, Esc to leave): the map frame covers the window, its head a thin glass bar
+   that keeps the run switch, the curtain and the exit, and the canvas takes the rest. */
+body.twin-full-open {
+  overflow: hidden;
+}
+/* A glass card round the map (backdrop-filter) would make it the box `fixed` is measured from
+   and a stacking context under the sidebar; while full screen its ancestors drop both. */
+body.twin-full-open :has(.twin-full) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transform: none !important;
+  filter: none !important;
+  z-index: auto !important;
+}
+body .panel.map-frame.twin-full {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--map-floor);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+.twin-full .twin-bar {
+  margin: 0;
+  padding: 6px 12px;
+  background: var(--glass-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-edge);
+}
+.twin-full .view-note {
+  margin: 0;
+  padding: 4px 12px;
+}
+.twin-full .t3-stage {
+  flex: 1;
+  min-height: 0;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+.twin-full .caption,
+.twin-full .legend {
+  margin: 0;
+  padding: 4px 12px;
+}
+.twin-curtain {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+/* The overlays on the stage: the Views pill (top left), the Objects list under it, the
+   inspector on the right (a bottom sheet on a narrow screen) and the shortcut help. */
+.twin-views,
+.objects-list,
+.inspector,
+.twin-help {
+  background: var(--glass-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--shadow);
+}
+.twin-views {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 20;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  max-width: calc(100% - 140px);
+  overflow-x: auto;
+}
+.twin-views button {
+  font: inherit;
+  font-size: var(--t-xs);
+  white-space: nowrap;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.twin-views button:hover {
+  background: var(--surface-2);
+}
+.twin-views button[aria-pressed="true"] {
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 600;
+}
+.twin-views button:focus-visible,
+.objects-list button:focus-visible,
+.objects-list input:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+.twin-objects {
+  position: absolute;
+  top: 52px;
+  left: 10px;
+  bottom: 52px;
+  z-index: 22;
+  width: 280px;
+  max-width: calc(100% - 20px);
+}
+.objects-list {
+  height: 100%;
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 14px;
+  font-size: var(--t-sm);
+}
+.objects-head {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.objects-head input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.objects-group h4 {
+  margin: 8px 4px 2px;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.objects-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.objects-group button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.objects-group button:hover,
+.objects-group button[aria-current="true"] {
+  background: var(--brand-soft);
+}
+.objects-group .name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.objects-group .sub {
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+}
+.twin-inspector {
+  position: absolute;
+  top: 52px;
+  right: 10px;
+  bottom: 10px;
+  z-index: 24;
+  width: 380px;
+  max-width: calc(100% - 20px);
+  overflow-y: auto;
+  pointer-events: none;
+}
+.inspector {
+  pointer-events: auto;
+  padding: 14px 16px;
+  border-radius: 20px;
+  font-size: var(--t-sm);
+}
+.inspector-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.inspector h3 {
+  margin: 2px 0 0;
+}
+.inspector p {
+  margin: 8px 0;
+}
+.inspector-fields {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0;
+}
+.inspector-fields div {
+  display: grid;
+  grid-template-columns: 9em 1fr;
+  gap: 8px;
+}
+.inspector-fields dt {
+  color: var(--ink-2);
+}
+.inspector-fields dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.inspector-timeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  list-style: none;
+  margin: 10px 0;
+  padding: 0;
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+}
+.inspector-timeline .done {
+  color: var(--paid);
+}
+.inspector-timeline .now {
+  color: var(--brand);
+  font-weight: 600;
+}
+.inspector-timeline .failed {
+  color: var(--refused);
+  font-weight: 600;
+}
+.inspector-chain {
+  margin-top: 10px;
+  padding: 10px;
+}
+.inspector-chain h4 {
+  margin: 0 0 6px;
+  font-size: var(--t-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.twin-help {
+  position: absolute;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 26;
+  width: min(380px, calc(100% - 20px));
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: var(--t-sm);
+}
+.twin-help h3 {
+  margin: 0 0 8px;
+}
+.twin-help dl {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 8px;
+}
+.twin-help dl div {
+  display: grid;
+  grid-template-columns: 11em 1fr;
+  gap: 8px;
+}
+.twin-help dd {
+  margin: 0;
+}
+.twin-help kbd {
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+}
+@media (max-width: 767px) {
+  .twin-inspector {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-width: none;
+    max-height: 60%;
+  }
+  .inspector {
+    border-radius: 20px 20px 0 0;
+  }
+  .twin-objects {
+    bottom: 10px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .inspector {
+    animation: inspector-in 0.2s ease-out;
+  }
+}
+@keyframes inspector-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}

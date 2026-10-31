@@ -9,6 +9,7 @@ import {
   type Check,
   type RunData,
   shortAccount,
+  type Transaction,
   transactionsThrough,
 } from "./run.ts";
 
@@ -95,6 +96,43 @@ function Attested({ result }: { result: Attestation }) {
   );
 }
 
+/** One transaction: method, signer, gas payer, events, the contract's words on a refusal, the explorer. */
+export function TxItem({ tx, fresh = false }: { tx: Transaction; fresh?: boolean }) {
+  return (
+    <li
+      className={`tx ${tx.status}${fresh ? " fresh" : ""}`}
+      aria-current={fresh ? "step" : undefined}
+    >
+      <div className="head">
+        <code>{tx.method}</code>
+        <span className="st">{tx.status === "refused" ? "✗ refused" : "✓"}</span>
+      </div>
+      <dl>
+        <dt>signed by</dt>
+        <dd>{shortAccount(tx.signer)}</dd>
+        {tx.paidBy !== tx.signer && (
+          <>
+            <dt>gas paid by</dt>
+            <dd>{tx.paidBy}</dd>
+          </>
+        )}
+        {tx.events.length > 0 && (
+          <>
+            <dt>events</dt>
+            <dd>{tx.events.join(", ")}</dd>
+          </>
+        )}
+      </dl>
+      {tx.error && <p className="why">“{tx.error}”</p>}
+      {tx.url && (
+        <a href={tx.url} target="_blank" rel="noreferrer">
+          {tx.tx.slice(0, 10)}… on the explorer ↗
+        </a>
+      )}
+    </li>
+  );
+}
+
 export function Curtain({ data, upTo }: { data: RunData; upTo: number }) {
   const pane = useRef<HTMLElement>(null);
   const txs = transactionsThrough(data, upTo);
@@ -144,38 +182,7 @@ export function Curtain({ data, upTo }: { data: RunData; upTo: number }) {
       {data.attestation && <Attested result={data.attestation} />}
       <ol className="txs">
         {txs.map(({ stepIndex, tx }) => (
-          <li
-            key={tx.tx}
-            className={`tx ${tx.status}${stepIndex === upTo ? " fresh" : ""}`}
-            aria-current={stepIndex === upTo ? "step" : undefined}
-          >
-            <div className="head">
-              <code>{tx.method}</code>
-              <span className="st">{tx.status === "refused" ? "✗ refused" : "✓"}</span>
-            </div>
-            <dl>
-              <dt>signed by</dt>
-              <dd>{shortAccount(tx.signer)}</dd>
-              {tx.paidBy !== tx.signer && (
-                <>
-                  <dt>gas paid by</dt>
-                  <dd>{tx.paidBy}</dd>
-                </>
-              )}
-              {tx.events.length > 0 && (
-                <>
-                  <dt>events</dt>
-                  <dd>{tx.events.join(", ")}</dd>
-                </>
-              )}
-            </dl>
-            {tx.error && <p className="why">“{tx.error}”</p>}
-            {tx.url && (
-              <a href={tx.url} target="_blank" rel="noreferrer">
-                {tx.tx.slice(0, 10)}… on the explorer ↗
-              </a>
-            )}
-          </li>
+          <TxItem key={tx.tx} tx={tx} fresh={stepIndex === upTo} />
         ))}
       </ol>
       {txs.length === 0 && <p className="dim">No transactions yet.</p>}

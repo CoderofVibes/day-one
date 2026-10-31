@@ -11,6 +11,7 @@ import {
   FLOOR_Z,
   PAD_Z,
   PADS,
+  siteScale,
   zoneOf,
 } from "../twin/layout.ts";
 import type {
@@ -23,7 +24,9 @@ import type {
   TwinQuote,
   TwinState,
 } from "../twin/model.ts";
-import { siteTop, topHeight } from "./buildings.ts";
+import type { Focus } from "../twin/objects.ts";
+import type { Pallet } from "../twin/pallets.ts";
+import { BUILDING_HEIGHT, siteTop, topHeight } from "./buildings.ts";
 
 export type V3 = [number, number, number];
 
@@ -713,6 +716,225 @@ export function cameraPosition(f: Framing): V3 {
     f.target[1] + f.distance * Math.sin(f.elevation),
     f.target[2] + r * Math.cos(f.azimuth),
   ];
+}
+
+// ------------------------------------------------------------------ views, fly-to and limits
+
+/** A fly-to's length: long enough to follow, short enough not to wait for (brief §4.6: 1.2–1.8 s). */
+export const FLY_MS = 1500;
+
+/**
+ * What the camera may do under the user's hands: no lower than 10° above the ground nor
+ * steeper than 75° (15°–80° from vertical), no nearer or farther than the distances, and the
+ * point it looks at kept over the campus.
+ */
+export const CAMERA_LIMITS = {
+  minPolar: (15 * Math.PI) / 180,
+  maxPolar: (80 * Math.PI) / 180,
+  minDistance: 12,
+  maxDistance: 600,
+  /** How far past the outermost floor or pad the camera's target may wander. */
+  margin: 40,
+} as const;
+
+/** The box the camera's target stays in: the campus and a margin, from the ground to 40 up. */
+export function targetBounds(): { min: V3; max: V3 } {
+  const { min, max } = siteBounds();
+  const m = CAMERA_LIMITS.margin;
+  return { min: [min[0] - m, 0, min[1] - m], max: [max[0] + m, 40, max[1] + m] };
+}
+
+/** A framing kept within the limits, so a preset or fly-to lands where the user could also go. */
+export function clampFraming(f: Framing): Framing {
+  const minElev = Math.PI / 2 - CAMERA_LIMITS.maxPolar;
+  const maxElev = Math.PI / 2 - CAMERA_LIMITS.minPolar;
+  const { min, max } = targetBounds();
+  return {
+    target: [0, 1, 2].map((i) =>
+      Math.min(max[i] as number, Math.max(min[i] as number, f.target[i] as number)),
+    ) as V3,
+    distance: Math.min(CAMERA_LIMITS.maxDistance, Math.max(CAMERA_LIMITS.minDistance, f.distance)),
+    azimuth: f.azimuth,
+    elevation: Math.min(maxElev, Math.max(minElev, f.elevation)),
+  };
+}
+
+const deptsShot = (codes: DeptCode[], azimuth: number, elevation: number): Shot => ({
+  subjects: codes.flatMap((c) => deptSubjects("B", c)),
+  azimuth,
+  elevation,
+  minDistance: 45,
+});
+
+/** The camera presets: the "Views" pill and keys 1–8, named as the scene names its places. */
+export const VIEWS: { key: string; id: string; label: string; shot: Shot }[] = [
+  { key: "1", id: "campus", label: "Campus", shot: SITE },
+  { key: "2", id: "plant-b", label: "Hollow Pine", shot: PLANT_B },
+  {
+    key: "3",
+    id: "receiving",
+    label: "Receiving & Warehouse",
+    shot: deptsShot(["receiving", "warehouse"], ISO - 0.2, 0.6),
+  },
+  {
+    key: "4",
+    id: "production",
+    label: "Production",
+    shot: deptsShot(["weigh_dispense", "blending", "compression"], ISO + 0.15, 0.62),
+  },
+  { key: "5", id: "qc", label: "QC Lab", shot: deptsShot(["qc_lab"], ISO - 0.1, 0.6) },
+  { key: "6", id: "money", label: "HQ & Escrow", shot: MONEY },
+  { key: "7", id: "suppliers", label: "Suppliers", shot: QUOTES },
+  {
+    key: "8",
+    id: "plants",
+    label: "Riverside & Lakeview",
+    shot: {
+      subjects: [...plantSubjects("A"), ...plantSubjects("C")],
+      azimuth: ISO,
+      elevation: 0.6,
+    },
+  },
+];
+
+export function viewFraming(
+  id: string,
+  viewport: Viewport = DEFAULT_VIEWPORT,
+): Framing | undefined {
+  const view = VIEWS.find((v) => v.id === id);
+  return view ? clampFraming(frameShot(view.shot, viewport)) : undefined;
+}
+
+/** What the camera frames when an object is picked (src/twin/objects.ts). */
+export function objectShot(focus: Focus): Shot {
+  switch (focus.kind) {
+    case "plant":
+      return { subjects: plantSubjects(focus.facility), azimuth: ISO - 0.15, elevation: 0.58 };
+    case "dept":
+      return {
+        subjects: deptSubjects(focus.facility, focus.dept),
+        azimuth: ISO - 0.1,
+        elevation: 0.6,
+        minDistance: 40,
+      };
+    case "pad":
+      return focus.pad === "escrow"
+        ? { subjects: ESCROW(), azimuth: ISO + 0.3, elevation: 0.5, minDistance: 50 }
+        : focus.pad === "hq"
+          ? { subjects: HQ(), azimuth: ISO + 0.3, elevation: 0.5, minDistance: 50 }
+          : QUOTES;
+    case "depot": {
+      const p = depotPositions()[focus.index] ?? depotPositions()[0] ?? world(0, 0);
+      return {
+        subjects: [{ point: p, padPx: DEPOT_LABEL_PX }, { point: [p[0], p[1] + 4, p[2]] }],
+        azimuth: ISO - 0.3,
+        elevation: 0.55,
+        minDistance: 40,
+      };
+    }
+    case "lot": {
+      const box = zoneOf(focus.facility, focus.area)?.box;
+      return {
+        subjects: box ? boxSubjects(box, FLOOR_Z + 14) : plantSubjects(focus.facility),
+        azimuth: ISO - 0.2,
+        elevation: 0.6,
+        minDistance: 40,
+      };
+    }
+    case "flow": {
+      const a = anchor3(focus.from);
+      const b = anchor3(focus.to);
+      return {
+        subjects: [
+          { point: a, padPx: COIN_LABEL_PX },
+          { point: b, padPx: COIN_LABEL_PX },
+          { point: [(a[0] + b[0]) / 2, Math.max(a[1], b[1]) + 10, (a[2] + b[2]) / 2] },
+        ],
+        azimuth: ISO + 0.1,
+        elevation: 0.58,
+        minDistance: 50,
+      };
+    }
+  }
+}
+
+/**
+ * An object's framing in the part of the stage a panel on the right leaves free: fitted to the
+ * narrower width, then the target moved right by half the panel so the object sits mid-left.
+ */
+export function objectFraming(
+  focus: Focus,
+  viewport: Viewport = DEFAULT_VIEWPORT,
+  rightPanelPx = 0,
+): Framing {
+  const free = { width: Math.max(200, viewport.width - rightPanelPx), height: viewport.height };
+  const f = frameShot(objectShot(focus), free);
+  const shift =
+    ((rightPanelPx / 2) * 2 * f.distance * Math.tan((FOV / 2) * (Math.PI / 180))) / viewport.height;
+  return clampFraming({
+    ...f,
+    target: [
+      f.target[0] + Math.cos(f.azimuth) * shift,
+      f.target[1],
+      f.target[2] - Math.sin(f.azimuth) * shift,
+    ],
+  });
+}
+
+// ------------------------------------------------------------------ pallets
+
+/** A pallet's footprint and height, and the grid it stands on, in plant units. */
+export const PALLET = { w: 1.3, h: 0.9, cell: 1.9, inset: 1 } as const;
+
+/** A run's own lot stands this much larger, in the middle of the quarantine cage it is caged in. */
+export const HERO_SCALE = 2;
+
+export interface PalletPlace {
+  position: V3;
+  /** 1 for a stock pallet, HERO_SCALE for the run's lot. */
+  scale: number;
+}
+
+/**
+ * Where each pallet stands: in rows on the roof over its area, the way the run's lot stands over
+ * the quarantine cage, stacked a level higher when an area's roof is full. The run's lots stand
+ * larger in the middle of the cage, and stock pallets leave the middle of the quarantine roof to them.
+ */
+export function palletPlaces(pallets: Pallet[]): PalletPlace[] {
+  const used = new Map<string, number>();
+  return pallets.map((p) => {
+    const zone = zoneOf(p.facility, p.area);
+    if (!zone) return { position: world(0, 0, -10), scale: 1 };
+    const { x, y, w, d } = zone.box;
+    const [cx, cy] = centerOf(zone.box);
+    const roof = FLOOR_Z + BUILDING_HEIGHT[zone.building] * siteScale(p.facility);
+    if (p.run)
+      return { position: world(cx, cy, roof + (PALLET.h * HERO_SCALE) / 2), scale: HERO_SCALE };
+    const cols = Math.max(1, Math.floor((w - 2 * PALLET.inset) / PALLET.cell));
+    const rows = Math.max(1, Math.floor((d - 2 * PALLET.inset) / PALLET.cell));
+    const slotAt = (n: number): [number, number, number] => {
+      const level = Math.floor(n / (cols * rows));
+      const slot = n % (cols * rows);
+      return [
+        x + (w - cols * PALLET.cell) / 2 + ((slot % cols) + 0.5) * PALLET.cell,
+        y + (d - rows * PALLET.cell) / 2 + (Math.floor(slot / cols) + 0.5) * PALLET.cell,
+        level,
+      ];
+    };
+    const key = `${p.facility}:${p.area}`;
+    let n = used.get(key) ?? 0;
+    let [x0, y0, level] = slotAt(n);
+    // The cage's middle is the run's lot's: a stock pallet there moves on to the next place.
+    while (
+      p.area === "quarantine" &&
+      level === 0 &&
+      Math.hypot(x0 - cx, y0 - cy) < PALLET.cell * 1.6 &&
+      n < cols * rows
+    )
+      [x0, y0, level] = slotAt(++n);
+    used.set(key, n + 1);
+    return { position: world(x0, y0, roof + PALLET.h / 2 + level * (PALLET.h + 0.1)), scale: 1 };
+  });
 }
 
 /** The pads' and floors' world boxes, for the ground plane and the tests. */

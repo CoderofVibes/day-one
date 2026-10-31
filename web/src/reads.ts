@@ -241,6 +241,15 @@ async function get<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+/**
+ * Every plant's lots as the recorded run left them, from the bundled snapshot: the plant map's
+ * pallets. Loaded with the pages' snapshot, so the map's first paint does not wait for it.
+ */
+export async function readSnapshotLots(): Promise<LotView[]> {
+  const s = await loadSnapshot();
+  return Object.values(s.plant).flatMap((p) => p.lots);
+}
+
 export function readPlant(source: Source, plant: string): Promise<PlantTables> {
   return source.live
     ? get<PlantTables>(`api/plant?plant=${plant}`)
