@@ -110,7 +110,8 @@ function ChainLinks({ step }: { step: JudgeStep }) {
   );
 }
 
-function UsdcCard() {
+/** PO-1047 in USDC: the order and its five recorded calls (judge mode and the tour). */
+export function UsdcCard() {
   return (
     <section className="judge-card" aria-label={`${usdc.po} in USDC`}>
       <h3>

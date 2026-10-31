@@ -12,7 +12,11 @@ export type Panel =
   | "invoice"
   | "plants"
   | "curtain"
-  | "close";
+  | "close"
+  | "phone"
+  | "group"
+  | "usdc"
+  | "attacks";
 
 export interface Beat {
   id: string;
@@ -27,6 +31,10 @@ export interface Beat {
   curtain?: boolean;
   /** A photo shown beside the plant-floor cards. */
   photo?: "batch-record" | "packing-slip";
+  /** The tour: a camera keyframe, one of the twin's Views presets (twin3d/scene.ts VIEWS). */
+  camera?: string;
+  /** The shots are steps of the recorded group purchase (src/groupBuy.ts), not of this run. */
+  run?: "group";
 }
 
 /**
@@ -199,6 +207,77 @@ export const BEATS: Beat[] = [
     ],
   },
 ];
+
+/**
+ * The tour (brief §4.10, ?video=1&tour=1, T in judge mode): the take's beats with the curtain
+ * lifted where the chain makes the point (the red shield at the refusal, Linda's signature, the
+ * payout), Linda's phone on screen for her approval, a camera keyframe where the story's own
+ * framing is not the shot, and three beats the take has no room for under its 2:20 export limit:
+ * the group purchase, PO-1047 in USDC and the attack montage. The take itself (BEATS) is unchanged.
+ */
+const TOUR_CHANGES: Record<string, Partial<Beat>> = {
+  refusal: { curtain: true },
+  approve: { panel: "phone", curtain: true, camera: "money" },
+  delivery: { camera: "receiving" },
+  paid: { curtain: true },
+};
+
+const TOUR_EXTRA: Beat[] = [
+  {
+    id: "group-buy",
+    title: "Group buy",
+    panel: "group",
+    run: "group",
+    curtain: true,
+    camera: "plants",
+    shots: [
+      { step: 4, ms: 3_000 },
+      { step: 7, ms: 3_000 },
+      { step: 10, ms: 3_000 },
+    ],
+    captions: [
+      "Plants that need the same material buy it together: one order, PO-G-2001, $9,490.00.",
+      "Each plant's director approves its own $4,745.00 share; Lakeview sat this one out.",
+    ],
+  },
+  {
+    id: "usdc",
+    title: "Real USDC",
+    panel: "usdc",
+    curtain: true,
+    camera: "money",
+    shots: [{ step: 14, ms: 7_000 }],
+    captions: ["Same contract, real stablecoin: PO-1047 paid $19.00 in Circle's testnet USDC."],
+  },
+  {
+    id: "attacks",
+    title: "15 of 15 refused",
+    panel: "attacks",
+    curtain: true,
+    camera: "money",
+    shots: [{ step: 14, ms: 10_000 }],
+    captions: [
+      "Then we attacked it: lookalike vendors, fake invoices, new bank details, peeks at sealed bids.",
+      "Fifteen attacks, fifteen refusals, by Kevin or by the contract.",
+    ],
+  },
+];
+
+export const TOUR_BEATS: Beat[] = BEATS.flatMap((b) => {
+  const beat = { ...b, ...TOUR_CHANGES[b.id] };
+  return b.id === "close" ? [...TOUR_EXTRA, beat] : [beat];
+});
+
+/** The take or the tour, as the address asks (?tour=1). */
+export function beatsFor(search: string): Beat[] {
+  return new URLSearchParams(search).get("tour") === "1" ? TOUR_BEATS : BEATS;
+}
+
+/** The start of the beat after (or before) the one at clock time `t`: where → and ← jump. */
+export function skipTo(t: number, by: 1 | -1, beats: Beat[] = BEATS): number {
+  const i = frameAt(t, beats).beatIndex;
+  return beatStarts(beats)[Math.max(0, Math.min(beats.length - 1, i + by))] ?? 0;
+}
 
 /** One rendered frame at 60 fps: the clock steps by exactly this much per frame. */
 export const FRAME_MS = 1000 / 60;

@@ -98,6 +98,8 @@ export function PlantView({
   onCurtain,
   onOpen,
   page,
+  camera,
+  groupAt: groupStep,
 }: {
   run: RunData;
   at: number;
@@ -113,6 +115,10 @@ export function PlantView({
   onOpen?: (page: PageId) => void;
   /** The Plant twin page: the stage fills the content area and the Objects list starts open on a wide screen. */
   page?: boolean;
+  /** The tour's camera keyframe (src/video.ts): a Views preset, flown to on the demo clock. */
+  camera?: CameraRequest | null;
+  /** The tour shows the recorded group purchase at this step instead of this run. */
+  groupAt?: number;
 }) {
   // The video page (?video=1) drives the steps itself; the twin keeps its fixed-step clock.
   const record = useMemo(() => params().get("record") === "1" || params().get("video") === "1", []);
@@ -136,9 +142,10 @@ export function PlantView({
     return () => clearTimeout(timer);
   }, [group, playing, groupAt, groupLast, goGroup]);
 
-  const shown = group ? groupRun : run;
-  const shownAt = group ? groupAt : at;
-  const options = group ? GROUP_TWIN : undefined;
+  const grouped = group || groupStep !== undefined;
+  const shown = grouped ? groupRun : run;
+  const shownAt = groupStep ?? (group ? groupAt : at);
+  const options = grouped ? GROUP_TWIN : undefined;
   const state = useMemo(() => deriveTwinState(shown, shownAt, options), [shown, shownAt, options]);
   // The sheet gets the area's department status at this step with the pick.
   const choose = onPick
@@ -420,7 +427,7 @@ export function PlantView({
             {...(choose && !full
               ? { onPick: choose, picked: picked ?? deptPick }
               : { picked: deptPick })}
-            {...(record ? {} : { onSelect: select, camera: request })}
+            {...(record ? { camera: camera ?? null } : { onSelect: select, camera: request })}
           >
             {overlay}
           </Twin3D>

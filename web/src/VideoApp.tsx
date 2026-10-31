@@ -3,19 +3,41 @@
 // No mouse: Space starts and pauses, R goes back to the start, ?from=<beat id> starts at a beat
 // for a retake, ?autostart=1 starts on load. Always the recorded
 // run, even when the API serves the page, so every take is the same.
+//
+// ?tour=1 plays the tour (brief §4.10, video.ts TOUR_BEATS): the same beats with camera
+// keyframes, the curtain where the chain makes the point, Linda's phone, and the group buy, USDC
+// and attack-montage beats; T starts it, → and ← skip a beat, and buttons do the same for a
+// mouse. ?capture=1 hides everything but the frame and the captions and draws a 16:9 safe frame;
+// ?speed=<n> runs the clock n times faster (npm run web:tour checks every caption at 10).
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import batchRecordPhoto from "../../data/batch-records/BR-B-1045.jpg?url";
 import packingSlipPhoto from "../../data/packing-slips/NG-PS-60417.jpg?url";
 import { Curtain } from "./Curtain.tsx";
+import arena from "./data/arena.json";
 import { Pill, StepCard } from "./feed.tsx";
+import { UsdcCard } from "./JudgeMode.tsx";
+import { groupPurchase, usd } from "./judge.ts";
 import { reviewSnapshot } from "./mail.ts";
+import { LindaPhone } from "./Phone.tsx";
 import { fundingOf, HeldInvoiceCard, MassBalanceBlock } from "./panes.tsx";
 import { plantsSnapshot } from "./plants.ts";
 import { ReviewPane } from "./ReviewPane.tsx";
 import { audienceOf, type RunData, run as recorded } from "./run.ts";
 import { PlantView } from "./twin3d/PlantView.tsx";
-import { type Beat, clockLabel, FRAME_MS, frameAt, startOf, totalMs } from "./video.ts";
+import type { CameraRequest } from "./twin3d/Twin3D.tsx";
+import {
+  BEATS as BEATS_TAKE,
+  type Beat,
+  beatsFor,
+  clockLabel,
+  FRAME_MS,
+  frameAt,
+  skipTo,
+  startOf,
+  totalMs,
+  type VideoFrame,
+} from "./video.ts";
 import "./video.css";
 
 const PHOTOS = { "batch-record": batchRecordPhoto, "packing-slip": packingSlipPhoto };
@@ -23,12 +45,41 @@ const PHOTOS = { "batch-record": batchRecordPhoto, "packing-slip": packingSlipPh
 export default function VideoApp() {
   const data = recorded;
   const query = useMemo(() => new URLSearchParams(location.search), []);
-  const from = useMemo(() => startOf(query.get("from")), [query]);
+  const beats = useMemo(() => beatsFor(location.search), []);
+  const tour = beats !== BEATS_TAKE;
+  const capture = query.get("capture") === "1";
+  const speed = Math.max(1, Number(query.get("speed")) || 1);
+  const from = useMemo(() => startOf(query.get("from"), beats), [query, beats]);
   const clock = useRef(from);
   const [running, setRunning] = useState(query.get("autostart") === "1");
   const [started, setStarted] = useState(running);
-  const [frame, setFrame] = useState(() => frameAt(from));
+  const [frame, setFrame] = useState(() => frameAt(from, beats));
   const panel = useRef<HTMLDivElement>(null);
+
+  const restart = () => {
+    setRunning(false);
+    setStarted(false);
+    clock.current = from;
+    setFrame(frameAt(from, beats));
+    if (panel.current) panel.current.scrollTop = 0;
+  };
+  const toggle = () => {
+    setStarted(true);
+    setRunning((r) => !r);
+  };
+  const skip = (by: 1 | -1) => {
+    clock.current = skipTo(clock.current, by, beats);
+    setFrame(frameAt(clock.current, beats));
+  };
+  // The tour's camera keyframe: asked again at every shot, so the story's framing of a new step
+  // does not take the beat's camera back.
+  const camera = useMemo<CameraRequest | null>(
+    () =>
+      frame.beat.camera
+        ? { seq: frame.beatIndex * 1000 + frame.step + 1, view: frame.beat.camera }
+        : null,
+    [frame.beat.camera, frame.beatIndex, frame.step],
+  );
 
   // The clock: a fixed step per rendered frame. React redraws only when the beat, the step or
   // the caption changes; the curtain panel's slow scroll is set here directly.
@@ -43,16 +94,9 @@ export default function VideoApp() {
         return;
       }
       last = now;
-      clock.current += FRAME_MS;
-      const next = frameAt(clock.current);
-      setFrame((was) =>
-        was.beatIndex === next.beatIndex &&
-        was.step === next.step &&
-        was.caption === next.caption &&
-        was.done === next.done
-          ? was
-          : next,
-      );
+      clock.current += FRAME_MS * speed;
+      const next = frameAt(clock.current, beats);
+      setFrame((was) => (same(was, next) ? was : next));
       const el = panel.current;
       if (el && next.beat.panel === "curtain") {
         // Hold the top for a fifth of the beat, then scroll to the end by four fifths.
@@ -63,32 +107,40 @@ export default function VideoApp() {
       else id = requestAnimationFrame(tick);
     });
     return () => cancelAnimationFrame(id);
-  }, [running]);
+  }, [running, beats, speed]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === " ") {
         e.preventDefault();
-        setStarted(true);
-        setRunning((r) => !r);
+        toggle();
       } else if (e.key === "r" || e.key === "R") {
-        setRunning(false);
-        setStarted(false);
-        clock.current = from;
-        setFrame(frameAt(from));
-        if (panel.current) panel.current.scrollTop = 0;
+        restart();
+      } else if ((e.key === "t" || e.key === "T") && !running) {
+        setStarted(true);
+        setRunning(true);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        skip(e.key === "ArrowRight" ? 1 : -1);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [from]);
+  });
 
   const { beat, step } = frame;
+  const shownStep = beat.run === "group" ? 14 : step;
   const card = beat.panel === "before" || beat.panel === "title" || beat.panel === "close";
   const curtain = Boolean(beat.curtain);
 
   return (
-    <div className={curtain ? "video curtain-on" : "video"} data-beat={beat.id} data-step={step}>
+    <div
+      className={["video", curtain && "curtain-on", tour && "tour", capture && "capture"]
+        .filter(Boolean)
+        .join(" ")}
+      data-beat={beat.id}
+      data-step={step}
+      data-done={frame.done ? "1" : undefined}
+    >
       <header className="video-top">
         <span className="video-beat">{beat.title}</span>
         <span className="video-brand">
@@ -101,7 +153,13 @@ export default function VideoApp() {
 
       <main className="video-main">
         <div className="video-map" style={card ? { visibility: "hidden" } : undefined}>
-          <PlantView run={data} at={step} curtain={curtain} />
+          <PlantView
+            run={data}
+            at={shownStep}
+            curtain={curtain}
+            camera={camera}
+            {...(beat.run === "group" ? { groupAt: step } : {})}
+          />
         </div>
         <div className="video-panel" ref={panel}>
           {beat.panel === "review" && <Review curtain={curtain} />}
@@ -118,6 +176,14 @@ export default function VideoApp() {
             </section>
           )}
           {beat.panel === "curtain" && <Curtain data={data} upTo={step} />}
+          {beat.panel === "phone" && (
+            <div className="video-phone">
+              <LindaPhone curtain={curtain} replied />
+            </div>
+          )}
+          {beat.panel === "group" && <GroupPanel curtain={curtain} />}
+          {beat.panel === "usdc" && <UsdcCard />}
+          {beat.panel === "attacks" && <Montage u={frame.beatU} />}
         </div>
         {card && <Card beat={beat} />}
       </main>
@@ -128,11 +194,105 @@ export default function VideoApp() {
 
       {!started && (
         <p className="video-hint">
-          Space to start · R to go back · {clockLabel(totalMs())} in all
+          {tour ? "T or Space to start the tour" : "Space to start"} · R to go back ·{" "}
+          {clockLabel(totalMs(beats))} in all
           {from ? ` · starting at ${clockLabel(from)}` : ""}
         </p>
       )}
+      {tour && (
+        <div className="video-controls" role="toolbar" aria-label="Tour">
+          <button type="button" onClick={restart}>
+            Restart
+          </button>
+          <button type="button" onClick={() => skip(-1)}>
+            ← Beat
+          </button>
+          <button type="button" onClick={toggle}>
+            {running ? "Pause" : started ? "Resume" : "Play"}
+          </button>
+          <button type="button" onClick={() => skip(1)}>
+            Beat →
+          </button>
+          <span className="video-clock">
+            Beat {frame.beatIndex + 1} of {beats.length} · {clockLabel(totalMs(beats))} in all
+          </span>
+        </div>
+      )}
+      {capture && <div className="video-safe" aria-hidden="true" />}
     </div>
+  );
+}
+
+/** The attack montage lights one shield per sixteenth of its beat: one more redraw each. */
+const ticks = (f: VideoFrame) => (f.beat.panel === "attacks" ? Math.floor(f.beatU * 16) : 0);
+
+/** React redraws only when something on screen changes. */
+function same(was: VideoFrame, next: VideoFrame): boolean {
+  return (
+    was.beatIndex === next.beatIndex &&
+    was.step === next.step &&
+    was.caption === next.caption &&
+    was.done === next.done &&
+    ticks(was) === ticks(next)
+  );
+}
+
+/** The recorded group purchase: one order, each plant's share and who approved it. */
+function GroupPanel({ curtain }: { curtain: boolean }) {
+  const g = groupPurchase();
+  return (
+    <section className="feed">
+      <article className="card current video-group">
+        <div className="head">
+          <b>{g.po}</b>
+          <span className="muted">· {usd(g.total)} · one order</span>
+          <Pill tone="paid">paid on QC release</Pill>
+        </div>
+        <ul className="review">
+          {g.shares.map((s) => (
+            <li key={s.plant}>
+              <b>{s.plant}</b> pays {usd(s.amount)}, approved by {s.approvedBy}
+            </li>
+          ))}
+          {g.declined.map((p) => (
+            <li key={p} className="muted">
+              {p} declined this pool
+            </li>
+          ))}
+        </ul>
+        {curtain && g.released?.url && (
+          <p className="small muted">
+            qc_release{" "}
+            <a href={g.released.url} target="_blank" rel="noreferrer">
+              {g.released.tx.slice(0, 8)}… ↗
+            </a>
+          </p>
+        )}
+      </article>
+    </section>
+  );
+}
+
+/** Fifteen recorded attacks, one shield turning red per tick, and the count. */
+function Montage({ u }: { u: number }) {
+  const cases = arena.cases;
+  const lit = Math.min(cases.length, Math.floor(u * (cases.length + 1)));
+  return (
+    <section className="video-montage" aria-label="Attack montage">
+      <p className="video-montage-count">
+        {lit} of {cases.length} refused
+      </p>
+      <ol>
+        {cases.map((c, i) => (
+          <li key={c.n} className={i < lit ? "hit" : undefined}>
+            <svg viewBox="0 0 18 18" aria-hidden="true">
+              <path d="M9 2l6 2.2v4.3c0 3.6-2.5 6-6 7.5-3.5-1.5-6-3.9-6-7.5V4.2z" />
+            </svg>
+            {c.attack}
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 
