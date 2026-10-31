@@ -45,8 +45,13 @@ import {
   topHeight,
 } from "./buildings.ts";
 import { ChainCurtain } from "./ChainLayer.tsx";
-import { type Box, KEEPOUT_SELECTOR, measureKeepout, underControl } from "./keepout.ts";
 import { chainLayout, chainSubjects } from "./chain.ts";
+import {
+  type Box as ControlBox,
+  KEEPOUT_SELECTOR,
+  measureKeepout,
+  underControl,
+} from "./keepout.ts";
 import {
   anchor3,
   arc3,
@@ -285,7 +290,7 @@ interface LabelSlot {
 
 const SlotsContext = createContext<React.RefObject<Map<string, LabelSlot>> | null>(null);
 /** The overlay controls' boxes in canvas pixels (keepout.ts), kept current off the frame loop. */
-const KeepoutContext = createContext<React.RefObject<Box[]> | null>(null);
+const KeepoutContext = createContext<React.RefObject<ControlBox[]> | null>(null);
 
 export const RANK = {
   callout: 10,
@@ -628,7 +633,7 @@ export function Label({
  * Keeps the overlay controls' boxes current: measured when the stage or a control changes size or
  * a control mounts, never per frame, so the labels' check forces no layout.
  */
-function KeepoutWatch({ boxes }: { boxes: React.RefObject<Box[]> }) {
+function KeepoutWatch({ boxes }: { boxes: React.RefObject<ControlBox[]> }) {
   const gl = useThree((s) => s.gl);
   useEffect(() => {
     const canvas = gl.domElement;
@@ -1708,7 +1713,7 @@ function Scene({
     .map((f) => f.id);
   const stackIndex = (id: string) => Math.max(held.indexOf(id), refused.indexOf(id));
   const slots = useRef(new Map<string, LabelSlot>());
-  const keepout = useRef<Box[]>([]);
+  const keepout = useRef<ControlBox[]>([]);
   const ghost = useRef<THREE.Group>(null);
 
   return (
