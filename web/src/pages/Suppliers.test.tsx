@@ -70,6 +70,27 @@ describe("the detail view", () => {
     expect(text(detail("NGI", "2026-11-01"))).not.toContain("RFQ-2611-01");
   });
 
+  it("keeps the chain behind the curtain: recorded transactions linked, generated ones simulated", () => {
+    const off = detail("PEC", data.asOf);
+    expect(off).not.toContain("nearblocks");
+    expect(text(off)).not.toContain(".testnet");
+    const on = detail("PEC", data.asOf, true);
+    for (const t of data.recorded.credentialTxs.filter(
+      (x) => x.supplier === "pacific-excipient.testnet",
+    ))
+      expect(on).toContain(`href="${t.url}"`);
+    expect(text(on)).toContain("QC rejected PO-T9311");
+    // After the recorded run, Northgate's QC results would update its credential: no hash.
+    const later = detail("NGI", "2026-12-28", true);
+    expect(text(later)).toContain("Simulated · would update credential");
+    const simulatedRows = later.split('class="simulated"').slice(1);
+    expect(simulatedRows.length).toBeGreaterThan(0);
+    for (const row of simulatedRows)
+      expect(row.slice(0, row.indexOf("</li>"))).not.toMatch(/nearblocks|[1-9A-HJ-NP-Za-km-z]{43}/);
+    // QuickChem holds no credential, so nothing would update one.
+    expect(text(detail("QCD", "2026-12-28", true))).not.toContain("would update credential");
+  });
+
   it("shows the price hike in Northgate's ascorbic acid", () => {
     const html = text(detail("NGI", data.asOf));
     expect(html).toContain("Ascorbic acid price hike");

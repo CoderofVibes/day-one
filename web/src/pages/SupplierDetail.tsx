@@ -97,6 +97,7 @@ export function SupplierDetail({
   vendor,
   date,
   standing,
+  curtain,
   onClose,
 }: {
   data: SuppliersData;
@@ -123,6 +124,14 @@ export function SupplierDetail({
   };
   const recordedRfqs = new Set(data.recorded.rfqs.map((r) => r.rfqNo));
   const rfqs = rfqsFor(data, vendor, date);
+  const account = standing?.supplier ?? names[vendor]?.account ?? null;
+  const txs = data.recorded.credentialTxs.filter((t) => account !== null && t.supplier === account);
+  // After the recorded run each QC result would update the credential's record on testnet; the
+  // generated ones are simulated and carry no hash. A supplier with no credential has none to update.
+  const simulated =
+    credential === "active" || credential === "suspended"
+      ? rec.lots.filter((l) => l[4] !== null && (l[5] ?? "") > data.asOf).slice(-4)
+      : [];
   const yearAgo = new Date(Date.parse(`${date}T00:00:00Z`) - 364 * DAY_MS)
     .toISOString()
     .slice(0, 10);
@@ -394,6 +403,49 @@ export function SupplierDetail({
               {standing.credential.reputation.rejected} rejected
             </dd>
           </dl>
+        )}
+        {curtain && (
+          <div className="credential-chain">
+            <h5 className="small muted">
+              Behind the curtain · NEAR testnet{account ? ` · ${account}` : ""}
+            </h5>
+            {txs.length === 0 && simulated.length === 0 ? (
+              <p className="small muted">
+                No credential transactions recorded for {name}
+                {account ? "" : ": it has no account on testnet"}.
+              </p>
+            ) : (
+              <ul className="credential-txs small">
+                {txs.map((t) => (
+                  <li key={t.hash} className={t.ok ? undefined : "refused"}>
+                    <span aria-hidden="true">{t.ok ? "✓" : "✗"}</span>
+                    <code>{t.method}</code>
+                    <span>
+                      {t.what} <span className="muted">signed by {t.signer}</span>
+                    </span>
+                    <a href={t.url} target="_blank" rel="noreferrer" title={t.hash}>
+                      {t.hash.slice(0, 10)}… on the explorer ↗
+                    </a>
+                  </li>
+                ))}
+                {simulated.map((l) => (
+                  <li key={`${l[3]}-${l[0]}`} className="simulated">
+                    <span aria-hidden="true">○</span>
+                    <code>{l[4] === "released" ? "qc_release" : "qc_reject"}</code>
+                    <span>
+                      QC {l[4]} {l[0]}, {shortDay(l[5] ?? l[1])}
+                    </span>
+                    <StatusChip status="Simulated · would update credential" tone="neutral" />
+                  </li>
+                ))}
+              </ul>
+            )}
+            {txs.length > 0 && (
+              <p className="small muted">
+                Recorded by npm run record:credentials on {day(txs[0]?.recordedAt)}.
+              </p>
+            )}
+          </div>
         )}
       </section>
     </section>
