@@ -91,6 +91,34 @@ export interface SegmentInput {
   committedUsdc?: Readonly<Record<string, number>>;
   /** Kevin: anchor lots still in quarantine at the start, released on the first working day. */
   quarantined?: readonly string[];
+  /** Lakeview: packaging staged for the other plants' batches, sent out on the day. */
+  pulls?: readonly Pull[];
+  /** Lots sent over from a sister plant, usable the day after they arrive. */
+  incoming?: readonly Incoming[];
+}
+
+export interface Pull {
+  date: string;
+  to: string;
+  transferNo: string;
+  material: string;
+  qtyBase: number;
+}
+
+export interface Incoming {
+  transferNo: string;
+  at: string;
+  lot: string;
+  material: string;
+  vendor: string;
+  poNo: string | null;
+  qtyBase: number;
+}
+
+/** One lot's part of a transfer out of the plant. */
+export interface TransferOut extends Incoming {
+  from: string;
+  to: string;
 }
 
 export interface QcRecord {
@@ -117,6 +145,12 @@ export interface SegmentOutput {
   shortages: { batchNo: string; date: string; materials: string[] }[];
   /** Bills keyed in twice: [the original, the copy]. */
   duplicates: [string, string][];
+  /** Stock sent to the sister plants, lot by lot. */
+  transfers: TransferOut[];
+  /** Packaging the plant could not stage in full: what was short, per transfer. */
+  pullShort: { transferNo: string; material: string; shortBase: number }[];
+  /** Records an incident shaped, by incident id. */
+  tagged: { incident: string; kind: "po" | "lot"; id: string }[];
   /** Lots left at the end, for the next segment or the cutover count. */
   stock: SimLot[];
 }
@@ -130,6 +164,7 @@ interface Shipment {
   rush: boolean;
   /** A replacement for a rejected lot: billed with the rest of the PO. */
   replacement: boolean;
+  received?: boolean;
 }
 
 /** Every material a product draws per batch: formula lines, components and packaging. */
@@ -168,6 +203,9 @@ export function runSegment(input: SegmentInput): SegmentOutput {
     escrow: [],
     shortages: [],
     duplicates: [],
+    transfers: [],
+    pullShort: [],
+    tagged: [],
     stock: input.lots,
   };
   const lots = input.lots;
@@ -180,18 +218,32 @@ export function runSegment(input: SegmentInput): SegmentOutput {
   const posByNo = new Map<string, WorldPo>();
   const billedFreight = new Set<string>();
   const committed = new Map<string, number>(Object.entries(input.committedUsdc ?? {}));
+  const pulls = input.pulls ?? [];
   const materialsInUse = [
-    ...new Set(
-      input.runs.flatMap((r) =>
+    ...new Set([
+      ...input.runs.flatMap((r) =>
         stdDraws(r.product, productSpec(r.product).batchTablets).map(([c]) => c),
       ),
-    ),
+      ...pulls.map((p) => p.material),
+    ]),
   ].sort();
   const lateApplied = new Set<string>();
+  const rejectApplied = new Set<string>();
+  const cancelled = new Set<string>();
   let duplicateApplied = false;
   const surcharge = config.incidents.find((i) => i.type === "freight_surcharge");
   const stockout = config.incidents.find((i) => i.type === "stockout");
   const duplicate = config.incidents.find((i) => i.type === "duplicate_invoice");
+  const lateDeliveries = config.incidents.filter((i) => i.type === "late_delivery");
+  const qcRejects = config.incidents.filter((i) => i.type === "qc_reject");
+  const trials = config.incidents.filter((i) => i.type === "supplier_trial");
+  const bulk = config.incidents.filter(
+    (i) => i.type === "recall_candidate" && i.transfer.from === plant.facility,
+  );
+  /** POs placed for an incident: the incident id, by PO number. */
+  const incidentPo = new Map<string, string>();
+  const tag = (incident: string, kind: "po" | "lot", id: string) =>
+    out.tagged.push({ incident, kind, id });
 
   const priceOf = (code: string, vendor: string, date: string) => {
     if (mode === "kevin") return LIST_PRICE[code] ?? 0;
@@ -247,7 +299,10 @@ export function runSegment(input: SegmentInput): SegmentOutput {
   ) => {
     const params = config.suppliers[vendor];
     if (!params) throw new Error(`world: no supplier params for ${vendor}`);
-    const poNo = mode === "legacy" ? `${plant.legacyPrefix}-PO-${pad(ids.po++)}` : `PO-${ids.po++}`;
+    const poNo =
+      mode === "legacy"
+        ? `${plant.legacyPrefix}-PO-${pad(ids.po++)}`
+        : `${plant.kevin.poPrefix}${ids.po++}`;
     const category = lines.every((l) => material(l.material).category === "packaging")
       ? "packaging"
       : "raw_material";
@@ -286,9 +341,9 @@ export function runSegment(input: SegmentInput): SegmentOutput {
     if (mode === "legacy") {
       approval = {
         path: "legacy_paper",
-        approver: "Ray Delgado",
+        approver: plant.legacy.approver,
         at: orderedAt,
-        rule: "paper PO book",
+        rule: plant.legacy.rule,
       };
     } else {
       const conditional = VENDORS.find((v) => v.code === vendor)?.qualification === "conditional";
@@ -353,12 +408,29 @@ export function runSegment(input: SegmentInput): SegmentOutput {
       late = stockout.lateOrder.extraDays;
       po.incidents.push(stockout.id);
     }
+    for (const inc of lateDeliveries) {
+      if (
+        inc.type !== "late_delivery" ||
+        mode !== "legacy" ||
+        lateApplied.has(inc.id) ||
+        vendor !== inc.vendor ||
+        !lines.some((l) => l.material === inc.material) ||
+        date < inc.date ||
+        date > inc.orderedBy
+      )
+        continue;
+      lateApplied.add(inc.id);
+      late = inc.extraDays;
+      po.incidents.push(inc.id);
+    }
     const promised = cal.onOrAfter(addDays(date, lead));
     let arrives = late > 0 ? cal.onOrAfter(addDays(promised, late)) : promised;
     let partial = !opts.rush && r.chance(params.partialRate);
     // The legacy books close at the splice: a delivery that would land after it lands whole and
     // on time (the anchored seed opens with the plant's stock already counted).
     if (input.until && arrives >= input.until) arrives = promised;
+    // Still past the splice (a rush on the last day): it lands the day it was ordered.
+    if (input.until && arrives >= input.until) arrives = date;
     if (input.until && partial && cal.onOrAfter(addDays(arrives, 4)) >= input.until)
       partial = false;
     const qtys = lines.map((l) => ({ material: l.material, qtyBase: l.qtyBase }));
@@ -463,7 +535,7 @@ export function runSegment(input: SegmentInput): SegmentOutput {
         paymentNo:
           mode === "legacy"
             ? `${plant.legacyPrefix}-PAY-${pad(ids.payment++)}`
-            : `PAY-S-${pad(ids.payment++)}`,
+            : `PAY-S-${plant.kevin.docTag}${pad(ids.payment++)}`,
         era,
         bills: [b.billNo],
         amountUsdc: b.amountUsdc,
@@ -562,10 +634,11 @@ export function runSegment(input: SegmentInput): SegmentOutput {
   };
 
   const receive = (s: Shipment, day: string) => {
+    s.received = true;
     const receiptNo =
       mode === "legacy"
         ? `${plant.legacyPrefix}-IR-${pad(ids.receipt++)}`
-        : `IR-S-${pad(ids.receipt++)}`;
+        : `IR-S-${plant.kevin.docTag}${pad(ids.receipt++)}`;
     const po = posByNo.get(s.poNo);
     if (!po) throw new Error(`world: shipment for unknown ${s.poNo}`);
     const receipt: WorldReceipt = {
@@ -583,8 +656,28 @@ export function runSegment(input: SegmentInput): SegmentOutput {
       const code = newLot(line.material, day);
       receipt.lines.push({ material: line.material, qtyBase: line.qtyBase, lot: code });
       const params = config.suppliers[po.vendor];
+      const forced = qcRejects.find(
+        (i) =>
+          i.type === "qc_reject" &&
+          mode === "legacy" &&
+          !rejectApplied.has(i.id) &&
+          i.vendor === po.vendor &&
+          i.material === line.material &&
+          day >= i.date,
+      );
+      if (forced) {
+        rejectApplied.add(forced.id);
+        tag(forced.id, "lot", code);
+        tag(forced.id, "po", po.poNo);
+        po.incidents.push(forced.id);
+      }
+      const owner = incidentPo.get(po.poNo);
+      if (owner) tag(owner, "lot", code);
+      const isTrial = owner !== undefined && trials.some((i) => i.id === owner);
       const pass =
-        s.rush || stream(config.seed, "quality", po.vendor, code).chance(params?.qcPassRate ?? 1);
+        !forced &&
+        !isTrial &&
+        (s.rush || stream(config.seed, "quality", po.vendor, code).chance(params?.qcPassRate ?? 1));
       const releasedOn = s.rush ? day : cal.onOrAfter(addDays(day, PRODUCTION.releaseDays));
       const decidedAt = pass
         ? at(releasedOn, s.rush ? "12:00" : "16:00")
@@ -623,10 +716,22 @@ export function runSegment(input: SegmentInput): SegmentOutput {
         releaseAt = decidedAt > releaseAt ? decidedAt : releaseAt;
       } else {
         // Rejected: returned to the supplier, and a replacement follows on the same PO.
-        const back = at(addDays(day, 1 + PRODUCTION.returnDays), "11:00");
+        // Returned within the days the world covers.
+        const due = addDays(day, 1 + PRODUCTION.returnDays);
+        const back =
+          due <= config.calendar.end ? at(due, "11:00") : at(config.calendar.end, "17:00");
         out.movements.push([back, code, "wasted", -line.qtyBase, `return:${receiptNo}`]);
         lot.onHand = 0;
-        const arrives = cal.onOrAfter(addDays(day, PRODUCTION.replacementDays));
+        if (isTrial) {
+          cancelled.add(po.poNo);
+          continue;
+        }
+        let arrives = cal.onOrAfter(addDays(day, PRODUCTION.replacementDays));
+        // The legacy books close at the splice: a replacement comes sooner, or not at all.
+        if (input.until && arrives >= input.until) {
+          arrives = cal.after(day);
+          if (arrives >= input.until) continue;
+        }
         shipments.push({
           poNo: po.poNo,
           arrives,
@@ -654,7 +759,11 @@ export function runSegment(input: SegmentInput): SegmentOutput {
         const units = productSpec(p.run.product).batchTablets;
         const draw = stdDraws(p.run.product, units * 0.92).find(([c]) => c === code);
         return s + (draw?.[1] ?? 0);
-      }, 0);
+      }, 0) +
+    pulls
+      .filter((p) => p.material === code && p.date >= fromDay && p.date <= toDay)
+      .reduce((s, p) => s + p.qtyBase, 0);
+  // Stock on its way counts: deliveries, and what a sister plant is sending over.
   const onOrder = (code: string, afterDay: string) =>
     shipments
       .filter((s) => s.arrives >= afterDay)
@@ -662,7 +771,10 @@ export function runSegment(input: SegmentInput): SegmentOutput {
         (sum, s) =>
           sum + s.lines.filter((l) => l.material === code).reduce((a, l) => a + l.qtyBase, 0),
         0,
-      );
+      ) +
+    (input.incoming ?? [])
+      .filter((i) => i.material === code && i.at.slice(0, 10) >= afterDay)
+      .reduce((sum, i) => sum + i.qtyBase, 0);
   const onHandAll = (code: string) =>
     lots.filter((l) => l.material === code && !l.rejected).reduce((s, l) => s + l.onHand, 0);
 
@@ -725,7 +837,14 @@ export function runSegment(input: SegmentInput): SegmentOutput {
         qty = Math.min(qty, Math.max(need, 0));
       }
       if (qty <= 0) continue;
-      orders.push({ material: code, vendor: m.vendor, qtyBase: packUp(code, qty) });
+      const override = plant.legacy.vendorOverride?.find(
+        (o) => mode === "legacy" && o.material === code && d >= o.from && d <= o.to,
+      );
+      orders.push({
+        material: code,
+        vendor: override?.vendor ?? m.vendor,
+        qtyBase: packUp(code, qty),
+      });
     }
     if (mode === "kevin") {
       for (const o of orders) {
@@ -762,7 +881,7 @@ export function runSegment(input: SegmentInput): SegmentOutput {
     const yymm = `${d.slice(2, 4)}${d.slice(5, 7)}`;
     const n = (ids.rfq.get(yymm) ?? 0) + 1;
     ids.rfq.set(yymm, n);
-    const rfqNo = `RFQ-${yymm}-${String(n).padStart(2, "0")}`;
+    const rfqNo = `${plant.kevin.rfqPrefix}${yymm}-${String(n).padStart(2, "0")}`;
     const r = stream(config.seed, "quotes", rfqNo);
     const quotes: WorldRfq["quotes"] = VENDORS.filter((v) => v.supplies.includes(code)).map((v) => {
       const params = config.suppliers[v.code];
@@ -846,6 +965,77 @@ export function runSegment(input: SegmentInput): SegmentOutput {
     return [];
   };
 
+  /** Stages one transfer's packaging for a sister plant, first lot first; short when it must be. */
+  const sendPull = (p: Pull, d: string) => {
+    let left = p.qtyBase;
+    const when = at(d, "07:00");
+    for (const lot of usable(p.material, d)) {
+      if (left === 0) break;
+      const take = Math.min(left, lot.onHand);
+      lot.onHand -= take;
+      left -= take;
+      out.movements.push([when, lot.lot, "transfer_out", -take, `transfer:${p.transferNo}`]);
+      out.transfers.push({
+        transferNo: p.transferNo,
+        at: when,
+        lot: lot.lot,
+        material: p.material,
+        vendor: lot.vendor,
+        poNo: lot.poNo,
+        qtyBase: take,
+        from: plant.facility,
+        to: p.to,
+      });
+    }
+    if (left > 0)
+      out.pullShort.push({ transferNo: p.transferNo, material: p.material, shortBase: left });
+  };
+
+  /** The legacy incidents placed by date: trial orders, and the bulk lot and its transfer. */
+  const incidentOrders = (d: string) => {
+    for (const inc of trials) {
+      if (inc.type !== "supplier_trial") continue;
+      for (const o of inc.orders) {
+        if (o.date !== d) continue;
+        const po = placePo(d, inc.vendor, [
+          { material: inc.material, qtyBase: kg(o.kg), unitPriceUsdc: usdc(inc.priceUsd) },
+        ]);
+        po.incidents.push(inc.id);
+        incidentPo.set(po.poNo, inc.id);
+        tag(inc.id, "po", po.poNo);
+      }
+    }
+    for (const inc of bulk) {
+      if (inc.type !== "recall_candidate") continue;
+      if (inc.date === d) {
+        const po = placePo(d, inc.vendor, [{ material: inc.material, qtyBase: kg(inc.kg) }]);
+        po.incidents.push(inc.id);
+        incidentPo.set(po.poNo, inc.id);
+        tag(inc.id, "po", po.poNo);
+      }
+      if (inc.transfer.date !== d) continue;
+      const poNo = out.tagged.find((t) => t.incident === inc.id && t.kind === "po")?.id;
+      const lot = lots.find((l) => l.poNo === poNo && !l.rejected && l.onHand > 0);
+      if (!lot) throw new Error(`world: ${inc.id} has no lot to send on ${d}`);
+      const take = Math.min(lot.onHand, kg(inc.transfer.kg));
+      lot.onHand -= take;
+      const when = at(d, "07:00");
+      const ref = `transfer:${inc.transfer.transferNo}`;
+      out.movements.push([when, lot.lot, "transfer_out", -take, ref]);
+      out.transfers.push({
+        transferNo: inc.transfer.transferNo,
+        at: when,
+        lot: lot.lot,
+        material: lot.material,
+        vendor: lot.vendor,
+        poNo: lot.poNo,
+        qtyBase: take,
+        from: plant.facility,
+        to: inc.transfer.to,
+      });
+    }
+  };
+
   // Kevin's era opens with what the recorded run left: quarantined lots and open POs.
   for (const code of input.quarantined ?? []) {
     const lot = lots.find((l) => l.lot === code);
@@ -870,7 +1060,24 @@ export function runSegment(input: SegmentInput): SegmentOutput {
 
   for (let d = from; d <= to; d = addDays(d, 1)) {
     if (!cal.isWorkingDay(d)) continue;
-    for (const s of shipments.filter((x) => x.arrives === d)) receive(s, d);
+    for (const s of shipments.filter((x) => x.arrives === d && !x.received)) receive(s, d);
+    for (const inc of input.incoming ?? []) {
+      if (inc.at.slice(0, 10) !== d) continue;
+      lots.push({
+        lot: inc.lot,
+        material: inc.material,
+        vendor: inc.vendor,
+        poNo: inc.poNo,
+        era,
+        onHand: inc.qtyBase,
+        releasedOn: d,
+        rejected: false,
+      });
+      const ref = `transfer:${inc.transferNo}`;
+      out.movements.push([inc.at, inc.lot, "transfer_in", inc.qtyBase, ref]);
+    }
+    for (const p of pulls) if (p.date === d) sendPull(p, d);
+    if (mode === "legacy") incidentOrders(d);
     for (const p of pending.filter((x) => x.date === d)) {
       const short = runBatch(p, d);
       if (short.length === 0) continue;
@@ -896,8 +1103,12 @@ export function runSegment(input: SegmentInput): SegmentOutput {
       }
       p.slipped = true;
       p.date = cal.after(d);
-      if (p.date > to) throw new Error(`world: ${p.run.batchNo} slipped past ${to}`);
+      // A legacy batch that cannot run before the books close is not run.
+      if (p.date > to && mode !== "legacy")
+        throw new Error(`world: ${p.run.batchNo} slipped past ${to}`);
     }
+    // What landed today after the morning (a rush ordered on the last day) is received tonight.
+    for (const s of shipments.filter((x) => x.arrives === d && !x.received)) receive(s, d);
     if (
       mode === "kevin" ||
       new Date(`${d}T00:00:00.000Z`).getUTCDay() === plant.legacy.reviewWeekday
@@ -905,7 +1116,8 @@ export function runSegment(input: SegmentInput): SegmentOutput {
       review(d);
   }
   if (shipments.some((s) => s.arrives > to && mode === "legacy")) {
-    throw new Error("world: a legacy delivery arrives after the splice");
+    const after = shipments.filter((s) => s.arrives > to).map((s) => `${s.poNo} on ${s.arrives}`);
+    throw new Error(`world: a legacy delivery at ${plant.name} arrives after the splice: ${after}`);
   }
   for (const po of out.pos) {
     const bills = out.bills.filter((b) => b.poNo === po.poNo);
@@ -913,8 +1125,9 @@ export function runSegment(input: SegmentInput): SegmentOutput {
     const paid = bills
       .filter((b) => b.status === "paid" && b.match !== "duplicate")
       .reduce((s, b) => s + b.amountUsdc, 0);
-    po.status =
-      paid >= ordered
+    po.status = cancelled.has(po.poNo)
+      ? "cancelled"
+      : paid >= ordered
         ? "paid"
         : bills.length > 0
           ? "billed"

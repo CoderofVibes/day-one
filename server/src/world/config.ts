@@ -15,6 +15,15 @@ import type { ProductCode } from "./types.ts";
 /** Change it and the whole world changes; the invariants still hold (world.test.ts). */
 export const WORLD_SEED = "hollow-pine/2026-v1";
 
+export interface CalendarParams {
+  start: string;
+  spliceIn: string;
+  t0: string;
+  recordedEnd: string;
+  end: string;
+  holidays: readonly string[];
+}
+
 export const CALENDAR = {
   /** Twelve full months to Nov 30, 2026, the month the recorded run sits in. */
   start: "2025-12-01",
@@ -39,7 +48,7 @@ export const CALENDAR = {
     "2026-12-24",
     "2026-12-25",
   ],
-} as const;
+} as const satisfies CalendarParams;
 
 /**
  * Monthly demand multipliers, January first (§2.1.6). "winter" peaks ×1.45 in January against
@@ -51,6 +60,11 @@ export const PROFILES = {
   newYear: [1.3, 1.12, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
   summer: [0.85, 0.85, 0.92, 1.0, 1.1, 1.22, 1.3, 1.25, 1.08, 0.95, 0.9, 0.85],
   flat: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  /**
+   * Riverside's Vitamin C: Acme moves Vitamin C batches there only in the late-winter peak, to
+   * balance load (as it moves BR-A-2210 in November, FICTIONAL_DATA.md §16).
+   */
+  lateWinterOnly: [0, 0, 1.5, 0.5, 0, 0, 0, 0, 0, 0, 0, 0],
 } as const;
 export type ProfileName = keyof typeof PROFILES;
 
@@ -67,11 +81,13 @@ export interface ProductParams {
   profile: ProfileName;
   /** Compound growth per month, e.g. 0.01 for the probiotic's +1%/month. */
   trendPerMonth: number;
+  /** The day the product's line started at the plant: no demand before it. */
+  startsOn?: string;
 }
 
 export interface PlantParams {
   /** The facility code in the ledger. */
-  facility: "B";
+  facility: "A" | "B" | "C";
   name: string;
   /** Legacy document prefixes: the paper PO book and the receiving log before Day One. */
   legacyPrefix: string;
@@ -83,9 +99,14 @@ export interface PlantParams {
   buildAheadDays: number;
   /** A product is not run again within this many days of its last batch. */
   minGapDays: number;
-  /** Legacy buying: Ray reviewed stock on Mondays and ordered what looked short. */
+  /** Legacy buying: a weekly stock review that ordered what looked short. */
   legacy: {
     reviewWeekday: number;
+    /** Who signed legacy POs, and on what. */
+    approver: string;
+    rule: string;
+    /** The stock count that hands the legacy books over to the anchors. */
+    countLabel: string;
     /** Legacy orders were rounded up generously: over-ordering (§2.1.2). */
     overOrderFactor: number;
     /** Reorder point multipliers per material; ascorbic acid's was set for summer (INC-01). */
@@ -95,19 +116,31 @@ export interface PlantParams {
      * January), not over the lead time: fine in summer, short in winter.
      */
     weekAheadOnly: { materials: readonly string[]; months: readonly number[] };
+    /** Orders for a material went to another supplier in these days (both included). */
+    vendorOverride?: readonly { material: string; vendor: string; from: string; to: string }[];
   };
   /** Kevin's buying from T0: reviews every working day against the seed's reorder points. */
   kevin: {
     perPoLimitUsd: number;
     monthlyLimitUsd: number;
     approver: string;
+    /** Kevin-era numbering: POs, receipts and payments ("IR-S-" + tag), RFQs. */
+    poPrefix: string;
+    firstPo: number;
+    docTag: string;
+    rfqPrefix: string;
+  };
+  /**
+   * A packaging plant (Lakeview): it makes nothing and stages these materials for the batches of
+   * the products listed at the other plants, two working days before each batch, as transfers.
+   */
+  packs?: {
+    serves: Readonly<Partial<Record<ProductCode, readonly string[]>>>;
+    leadDays: number;
   };
 }
 
-/**
- * Hollow Pine, Plant B. Riverside and Lakeview are added in M3 with their own PlantParams; the
- * engine takes any of them.
- */
+/** Hollow Pine, Plant B. */
 export const HOLLOW_PINE: PlantParams = {
   facility: "B",
   name: "Hollow Pine Tablet Co.",
@@ -127,14 +160,117 @@ export const HOLLOW_PINE: PlantParams = {
   minGapDays: 4,
   legacy: {
     reviewWeekday: 1,
+    approver: "Ray Delgado",
+    rule: "paper PO book",
+    countLabel: "cutover count",
     overOrderFactor: 1.15,
     // INC-01: "a reorder point set 9 days too low for winter". The paper sheet kept ascorbic
     // acid's summer reorder point, about nine days of January use short.
     reorderPointFactor: { ASC: 0.3 },
     weekAheadOnly: { materials: ["ASC"], months: [12, 1, 2] },
+    // After Northgate's New Year truck ran late (INC-01), Ray bought ascorbic acid from
+    // Ridgeway until spring; one of those lots is the mock recall notice's (INC-08).
+    vendorOverride: [{ material: "ASC", vendor: "RWA", from: "2026-01-19", to: "2026-03-31" }],
   },
   // FICTIONAL_DATA.md §9: the policy Acme set for Kevin at Plant B.
-  kevin: { perPoLimitUsd: 2_500, monthlyLimitUsd: 60_000, approver: "Linda Park" },
+  kevin: {
+    perPoLimitUsd: 2_500,
+    monthlyLimitUsd: 60_000,
+    approver: "Linda Park",
+    poPrefix: "PO-",
+    firstPo: 1048,
+    docTag: "",
+    rfqPrefix: "RFQ-",
+  },
+};
+
+/**
+ * Acme Riverside, Plant A: a tablet plant on Acme's systems since Jan 1 (seed/index.ts
+ * ONLINE_SINCE), two thirds of Hollow Pine's size. The seed runs magnesium weekly, D3 and
+ * B-complex every two weeks and Cal-Mag from October (production.ts); Vitamin C runs there only
+ * at the late-winter peak. Its Kevin starts with Hollow Pine's (FICTIONAL_DATA.md §16: one Kevin
+ * per plant, $2,500 per PO, approved by the plant's director, Dana Whitfield).
+ */
+export const RIVERSIDE: PlantParams = {
+  facility: "A",
+  name: "Acme Riverside",
+  legacyPrefix: "RV",
+  products: [
+    { product: "P-MG100", batchesPerMonth: 4.3, profile: "flat", trendPerMonth: 0 },
+    { product: "P-D3K", batchesPerMonth: 2.2, profile: "winter", trendPerMonth: 0 },
+    { product: "P-BCX", batchesPerMonth: 2.2, profile: "flat", trendPerMonth: 0.005 },
+    { product: "P-VC500", batchesPerMonth: 1.5, profile: "lateWinterOnly", trendPerMonth: 0 },
+    {
+      product: "P-CMD",
+      batchesPerMonth: 2.0,
+      profile: "flat",
+      trendPerMonth: 0,
+      startsOn: "2026-10-01",
+    },
+  ],
+  buildAheadDays: 14,
+  minGapDays: 4,
+  legacy: {
+    reviewWeekday: 2,
+    approver: "Acme purchasing",
+    rule: "Acme ERP approval",
+    countLabel: "opening count for Day One",
+    overOrderFactor: 1.05,
+    // Riverside keeps no ascorbic acid of its own: its Vitamin C runs on stock sent over for them.
+    reorderPointFactor: { ASC: 0 },
+    weekAheadOnly: { materials: [], months: [] },
+  },
+  kevin: {
+    perPoLimitUsd: 2_500,
+    monthlyLimitUsd: 60_000,
+    approver: "Dana Whitfield",
+    poPrefix: "PO-R-",
+    firstPo: 1001,
+    docTag: "R-",
+    rfqPrefix: "RFQ-R-",
+  },
+};
+
+/**
+ * Acme Lakeview, Plant C: packaging and distribution (FICTIONAL_DATA.md §1: "holds bulk
+ * packaging stock for A and B"). No processing and no lab, so it makes nothing: it buys the
+ * bottles, caps, desiccants, tubes, labels and shippers the seed stocks there and stages them
+ * for the batches at Hollow Pine and Riverside whose packaging the other plants do not stock.
+ * Its Kevin buys packaging only, approved by Omar Haddad (FICTIONAL_DATA.md §16).
+ */
+export const LAKEVIEW: PlantParams = {
+  facility: "C",
+  name: "Acme Lakeview",
+  legacyPrefix: "LV",
+  products: [],
+  buildAheadDays: 0,
+  minGapDays: 0,
+  legacy: {
+    reviewWeekday: 3,
+    approver: "Acme purchasing",
+    rule: "Acme ERP approval",
+    countLabel: "opening count for Day One",
+    overOrderFactor: 1.1,
+    reorderPointFactor: {},
+    weekAheadOnly: { materials: [], months: [] },
+  },
+  kevin: {
+    perPoLimitUsd: 2_500,
+    monthlyLimitUsd: 60_000,
+    approver: "Omar Haddad",
+    poPrefix: "PO-L-",
+    firstPo: 1001,
+    docTag: "L-",
+    rfqPrefix: "RFQ-L-",
+  },
+  packs: {
+    serves: {
+      "P-VC500": ["BTL", "CAP", "DES", "LVC", "SHC"],
+      "P-CMD": ["BTL", "CAP", "LCM", "SHC"],
+      "P-ELX": ["TUB", "TDC", "LEX", "SHC"],
+    },
+    leadDays: 2,
+  },
 };
 
 export interface SupplierParams {
@@ -176,6 +312,8 @@ export const SUPPLIERS: Readonly<Record<string, SupplierParams>> = {
   PFM: s(9, 1.5, 0.9, 0.98, 0.1, 260, "PFM-", 5_500),
   NFC: s(8, 1.5, 0.93, 0.995, 0.05, 70, "NFC-", 2_200),
   CNP: s(8, 1.5, 0.93, 0.99, 0.0, 60, "CNP-", 700),
+  // QuickChem only ever shipped two trial lots (INC-05).
+  QCD: s(4, 0.5, 0.9, 0.5, 0.0, 0, "QC-", 1_001),
 };
 
 function s(
@@ -251,6 +389,27 @@ export const RUSH = {
 };
 
 /** Accounts payable: legacy bills arrive by mail, Kevin-era bills with the receipt. */
+/**
+ * Supplier scorecards (§2.2), computed by scorecard.ts from every plant's records:
+ *   score = 100 × Σ weight·component / Σ weight, over the components the window has data for,
+ * each component in 0–1: QC pass rate (released lots / tested lots), on-time rate (on-time
+ * receipts / receipts), invoice accuracy (matched bills / bills), price competitiveness (the best
+ * qualified supplier's average unit price for the material / this supplier's) and responsiveness
+ * (quotes returned / RFQs invited). Two QC rejects in a row override the score: suspended.
+ */
+export const SCORECARD = {
+  weights: {
+    qc: 35,
+    onTime: 30,
+    invoiceAccuracy: 15,
+    priceCompetitiveness: 10,
+    responsiveness: 10,
+  },
+  trailingDays: 90,
+  yearDays: 365,
+  suspendAfterRejects: 2,
+} as const;
+
 export const AP = {
   /** Days from receipt to the supplier's bill (legacy, uniform). */
   billLagDays: { lo: 1, hi: 5 },
@@ -277,40 +436,72 @@ export const CUSTOMERS: readonly {
     code: "CMT",
     name: "Cardinal Mart",
     termsDays: 30,
-    share: { "P-VC500": 0.405, "P-CMD": 0.3, "P-ZN50": 0.3, "P-MEL5": 0.35 },
+    share: {
+      "P-VC500": 0.405,
+      "P-CMD": 0.3,
+      "P-ZN50": 0.3,
+      "P-MEL5": 0.35,
+      "P-MG100": 0.3,
+      "P-D3K": 0.35,
+    },
   },
   {
     code: "PBX",
     name: "PillBox Pharmacy",
     termsDays: 30,
-    share: { "P-VC500": 0.244, "P-CMD": 0.25, "P-PRO": 0.3, "P-MEL5": 0.25 },
+    share: {
+      "P-VC500": 0.244,
+      "P-CMD": 0.25,
+      "P-PRO": 0.3,
+      "P-MEL5": 0.25,
+      "P-MG100": 0.25,
+      "P-D3K": 0.25,
+      "P-BCX": 0.3,
+    },
   },
   {
     code: "BWG",
     name: "Brightway Grocers",
     termsDays: 30,
-    share: { "P-VC500": 0.086, "P-ELX": 0.35, "P-FBR": 0.4 },
+    share: { "P-VC500": 0.086, "P-ELX": 0.35, "P-FBR": 0.4, "P-BCX": 0.25 },
   },
   {
     code: "WEB",
     name: "Online store",
     termsDays: 0,
-    share: { "P-VC500": 0.185, "P-PRO": 0.3, "P-FBR": 0.2, "P-ZN50": 0.2 },
+    share: { "P-VC500": 0.185, "P-PRO": 0.3, "P-FBR": 0.2, "P-ZN50": 0.2, "P-D3K": 0.2 },
   },
-  { code: "EUD", name: "EU distributor", termsDays: 45, share: { "P-VC500": 0.08, "P-ZN50": 0.2 } },
+  {
+    code: "EUD",
+    name: "EU distributor",
+    termsDays: 45,
+    share: { "P-VC500": 0.08, "P-ZN50": 0.2, "P-D3K": 0.2 },
+  },
   {
     code: "CLC",
     name: "Cedar Lane Pharmacy Co-op",
     termsDays: 30,
-    share: { "P-CMD": 0.25, "P-PRO": 0.4, "P-MEL5": 0.4, "P-ZN50": 0.3 },
+    share: {
+      "P-CMD": 0.25,
+      "P-PRO": 0.4,
+      "P-MEL5": 0.4,
+      "P-ZN50": 0.3,
+      "P-MG100": 0.25,
+      "P-BCX": 0.25,
+    },
   },
   {
     code: "SHD",
     name: "Summit Health Distributors",
     termsDays: 45,
-    share: { "P-CMD": 0.2, "P-ELX": 0.4, "P-FBR": 0.4 },
+    share: { "P-CMD": 0.2, "P-ELX": 0.4, "P-FBR": 0.4, "P-MG100": 0.2 },
   },
-  { code: "HNF", name: "Harborview Natural Foods", termsDays: 30, share: { "P-ELX": 0.25 } },
+  {
+    code: "HNF",
+    name: "Harborview Natural Foods",
+    termsDays: 30,
+    share: { "P-ELX": 0.25, "P-BCX": 0.2 },
+  },
 ];
 
 export const SALES = {
@@ -377,47 +568,93 @@ export type Incident =
       date: string;
       endsAt: string;
       narrative: string;
+    }
+  | {
+      id: string;
+      type: "late_delivery";
+      title: string;
+      /** The first PO for the material from the vendor ordered from `date` to `orderedBy` runs late. */
+      date: string;
+      orderedBy: string;
+      vendor: string;
+      material: string;
+      extraDays: number;
+      narrative: string;
+    }
+  | {
+      id: string;
+      type: "qc_reject";
+      title: string;
+      /** The first lot of the material from the vendor received on or after this day fails QC. */
+      date: string;
+      vendor: string;
+      material: string;
+      reason: string;
+      narrative: string;
+    }
+  | {
+      id: string;
+      type: "supplier_trial";
+      title: string;
+      date: string;
+      endsAt: string;
+      vendor: string;
+      material: string;
+      /** Trial orders, kg, at the price quoted; every trial lot fails QC and goes back, unreplaced. */
+      priceUsd: number;
+      orders: readonly { date: string; kg: number }[];
+      reason: string;
+      narrative: string;
+    }
+  | {
+      id: string;
+      type: "price_change";
+      title: string;
+      date: string;
+      material: string;
+      vendors: readonly string[];
+      fromUsd: number;
+      toUsd: number;
+      /** The anchored records that carry the new price. */
+      evidence: readonly string[];
+      narrative: string;
+    }
+  | {
+      id: string;
+      type: "mass_balance";
+      title: string;
+      date: string;
+      endsAt: string;
+      /** The anchored batches the gap is in, and the gap in mg (agents/kevin massBalance.ts on the seed). */
+      batches: readonly string[];
+      unaccountedBase: number;
+      narrative: string;
+    }
+  | {
+      id: string;
+      type: "recall_candidate";
+      title: string;
+      /** A bulk order that becomes one lot, part of which goes to a sister plant. */
+      date: string;
+      vendor: string;
+      material: string;
+      kg: number;
+      transfer: { transferNo: string; date: string; from: "B"; to: "A"; kg: number };
+      narrative: string;
     };
 
-/**
- * Hollow Pine's named incidents in the generated months (§2.1.7 #1, #3, #9, #10). The others
- * sit in the anchor window (the price hike, QuickChem's suspension), belong to Riverside or
- * Lakeview (M3) or are on demand (the mock recall notice).
- */
-export const INCIDENTS: readonly Incident[] = [
-  {
-    id: "INC-01",
-    type: "stockout",
-    title: "January ascorbic acid stockout",
-    date: "2026-01-15",
-    material: "ASC",
-    lateOrder: { from: "2025-12-21", to: "2026-01-02", vendor: "NGI", extraDays: 10 },
-    narrative:
-      "Winter Vitamin C demand outran a reorder point set for summer, and Northgate's New Year " +
-      "truck ran ten days late. A Vitamin C batch waited two days for a rush order from " +
-      "Ridgeway Ascorbics with $1,180 of next-day freight.",
-  },
-  {
-    id: "INC-03",
-    type: "duplicate_invoice",
-    title: "Duplicate invoice paid",
-    date: "2026-04-13",
-    vendor: "PEC",
-    reKeyedAs: (no) => `${no.replace("-", " ")}.`,
-    narrative:
-      "A Pacific Excipient invoice was keyed in twice from paper, the second time with a space " +
-      "and a stray full stop, and both copies were paid. The amount is recoverable.",
-  },
-  {
-    id: "INC-09",
-    type: "freight_surcharge",
-    title: "Packaging freight surcharge",
-    date: "2026-05-01",
-    endsAt: "2026-07-31",
-    category: "packaging",
-    surchargeUsd: 85,
-    narrative: "Packaging carriers added a fuel surcharge of $85 a delivery from May through July.",
-  },
+const SURCHARGE: Incident = {
+  id: "INC-09",
+  type: "freight_surcharge",
+  title: "Packaging freight surcharge",
+  date: "2026-05-01",
+  endsAt: "2026-07-31",
+  category: "packaging",
+  surchargeUsd: 85,
+  narrative: "Packaging carriers added a fuel surcharge of $85 a delivery from May through July.",
+};
+
+const SHUTDOWNS: readonly Incident[] = [
   {
     id: "INC-10",
     type: "shutdown",
@@ -436,9 +673,145 @@ export const INCIDENTS: readonly Incident[] = [
   },
 ];
 
+/**
+ * The mock recall notice's lot (§2.1.7 #8): a winter bulk buy of Ridgeway ascorbic acid at
+ * Hollow Pine, part of which went to Riverside for its late-winter Vitamin C. The Lots & recall
+ * page drills the bought-in ascorbic acid lot used in the most batches (web/src/genealogy.ts
+ * drillLot): this one, never ASC-261116-01. Listed at both plants.
+ */
+const RECALL: Incident = {
+  id: "INC-08",
+  type: "recall_candidate",
+  title: "Mock supplier recall candidate",
+  date: "2026-02-02",
+  vendor: "RWA",
+  material: "ASC",
+  kg: 2_500,
+  transfer: { transferNo: "TR-B-A-260223", date: "2026-02-23", from: "B", to: "A", kg: 1_000 },
+  narrative:
+    "Hollow Pine bought 2,500 kg of ascorbic acid from Ridgeway in one winter order and sent " +
+    "1,000 kg of the lot to Riverside for its late-winter Vitamin C. The lot went into Vitamin C " +
+    "batches at both plants, so it is the one a mock supplier recall notice traces.",
+};
+
+/**
+ * Hollow Pine's named incidents (§2.1.7). INC-06 sits in the anchor window: it names the
+ * anchored records that carry the new price and changes nothing. INC-07 is Riverside's.
+ */
+export const INCIDENTS: readonly Incident[] = [
+  {
+    id: "INC-01",
+    type: "stockout",
+    title: "January ascorbic acid stockout",
+    date: "2026-01-15",
+    material: "ASC",
+    lateOrder: { from: "2025-12-21", to: "2026-01-02", vendor: "NGI", extraDays: 10 },
+    narrative:
+      "Winter Vitamin C demand outran a reorder point set for summer, and Northgate's New Year " +
+      "truck ran ten days late. A Vitamin C batch waited two days for a rush order from " +
+      "Ridgeway Ascorbics with $1,180 of next-day freight.",
+  },
+  {
+    id: "INC-02",
+    type: "late_delivery",
+    title: "Sierra Mineral Supply ships calcium carbonate late",
+    date: "2026-02-16",
+    orderedBy: "2026-03-20",
+    vendor: "SMS",
+    material: "CAC",
+    extraDays: 9,
+    narrative:
+      "Sierra Mineral Supply's March calcium carbonate arrived nine days after its promised " +
+      "day; the Cal-Mag schedule moved around it and Sierra's on-time rate fell.",
+  },
+  {
+    id: "INC-03",
+    type: "duplicate_invoice",
+    title: "Duplicate invoice paid",
+    date: "2026-04-13",
+    vendor: "PEC",
+    reKeyedAs: (no) => `${no.replace("-", " ")}.`,
+    narrative:
+      "A Pacific Excipient invoice was keyed in twice from paper, the second time with a space " +
+      "and a stray full stop, and both copies were paid. The amount is recoverable.",
+  },
+  {
+    id: "INC-04",
+    type: "qc_reject",
+    title: "Fennimore Polyols sorbitol fails QC",
+    date: "2026-06-01",
+    vendor: "FPO",
+    material: "SOR",
+    reason: "Moisture above specification",
+    narrative:
+      "A Fennimore Polyols sorbitol lot failed the moisture specification. QC rejected it, it " +
+      "went back to Fennimore and a replacement followed a week later; Fennimore's QC pass " +
+      "rate fell.",
+  },
+  {
+    id: "INC-05",
+    type: "supplier_trial",
+    title: "QuickChem Direct fails two trial lots in a row",
+    date: "2026-06-08",
+    endsAt: "2026-06-26",
+    vendor: "QCD",
+    material: "ASC",
+    // FICTIONAL_DATA.md (suppliers): QuickChem quotes ascorbic acid at $5.90/kg, the cheapest.
+    priceUsd: 5.9,
+    orders: [
+      { date: "2026-06-08", kg: 100 },
+      { date: "2026-06-22", kg: 100 },
+    ],
+    reason: "Assay below specification",
+    narrative:
+      "Hollow Pine trialled QuickChem Direct, the cheapest ascorbic acid on offer. Both trial " +
+      "lots failed assay and went back: two QC rejects in a row, so QuickChem was never " +
+      "qualified. It holds no supplier credential, and RFQ-2611-01 lists it as excluded, " +
+      "vendor not qualified.",
+  },
+  {
+    id: "INC-06",
+    type: "price_change",
+    title: "Ascorbic acid price hike",
+    date: "2026-08-24",
+    material: "ASC",
+    vendors: ["NGI", "RWA"],
+    fromUsd: 6.4,
+    toUsd: 7.1,
+    evidence: ["PO-1042", "RFQ-2611-01"],
+    narrative:
+      "Northgate and Ridgeway both moved ascorbic acid from $6.40 to $7.10/kg in late August: " +
+      "the list price every order pays from Aug 24, and PO-1042's $7.10/kg.",
+  },
+  RECALL,
+  SURCHARGE,
+  ...SHUTDOWNS,
+];
+
+/** Riverside's incidents: the seed's mass-balance gap, and the recall lot's arrival. */
+export const RIVERSIDE_INCIDENTS: readonly Incident[] = [
+  {
+    id: "INC-07",
+    type: "mass_balance",
+    title: "Mass-balance gap at Acme Riverside",
+    date: "2026-10-13",
+    endsAt: "2026-10-27",
+    batches: ["BR-A-2201", "BR-A-2204"],
+    unaccountedBase: 115_199_028,
+    narrative:
+      "Riverside writes 1,857.4 lb issued and 55.8 lb waste on every Cal-Mag batch, so 115.199 " +
+      "kg over BR-A-2201 and BR-A-2204 is in neither the tablets nor the recorded waste.",
+  },
+  RECALL,
+  SURCHARGE,
+  ...SHUTDOWNS,
+];
+
+export const LAKEVIEW_INCIDENTS: readonly Incident[] = [SURCHARGE, ...SHUTDOWNS];
+
 export interface WorldConfig {
   seed: string;
-  calendar: typeof CALENDAR;
+  calendar: CalendarParams;
   plant: PlantParams;
   suppliers: typeof SUPPLIERS;
   incidents: readonly Incident[];
@@ -451,3 +824,20 @@ export const WORLD: WorldConfig = {
   suppliers: SUPPLIERS,
   incidents: INCIDENTS,
 };
+
+export const RIVERSIDE_WORLD: WorldConfig = {
+  ...WORLD,
+  plant: RIVERSIDE,
+  incidents: RIVERSIDE_INCIDENTS,
+};
+
+/** Lakeview's records in the seed start with its packaging stock on Sep 5 (seed/lots.ts). */
+export const LAKEVIEW_WORLD: WorldConfig = {
+  ...WORLD,
+  calendar: { ...CALENDAR, spliceIn: "2026-09-05" },
+  plant: LAKEVIEW,
+  incidents: LAKEVIEW_INCIDENTS,
+};
+
+/** The three plants, in the order they are generated: Lakeview stages packaging for the other two. */
+export const WORLDS: readonly WorldConfig[] = [WORLD, RIVERSIDE_WORLD, LAKEVIEW_WORLD];

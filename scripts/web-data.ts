@@ -9,7 +9,10 @@
 // Ray's mailbox, unsigned) and, beside the built page, web/public/brief.html
 // (Kevin's 5am brief) and web/public/books.csv (the bookkeeper export). web/src/data/series.json
 // holds the charts' series, every plant's forecast and its four-week schedule at the same clock;
-// web/src/data/genealogy.json every lot's batches and what they made (Lots & recall). HQ's live read of the
+// web/src/data/genealogy.json every lot's batches and what they made (Lots & recall), with the
+// twelve-month worlds' lots, finished goods and shipments (data/world/); web/src/data/suppliers.json
+// the supplier scorecards; web/src/data/world/ the worlds' events for the sim clock, one file a
+// month and an index. HQ's live read of the
 // contract is not in the snapshot: it changes with the chain (npm run escrow reads it).
 //   --check   exit 1 if a committed file differs from a fresh export
 
@@ -33,7 +36,7 @@ import { readAttestationFixture, recordedReceipts } from "../server/src/attestat
 import { verifyAttestation } from "../server/src/attestation/verify.ts";
 import { areaViews } from "../server/src/ledger/areas.ts";
 import { books, booksCsv } from "../server/src/ledger/books.ts";
-import { genealogy } from "../server/src/ledger/genealogy.ts";
+import { buildGenealogy, genealogyTables } from "../server/src/ledger/genealogy.ts";
 import { plantInventory } from "../server/src/ledger/inventory.ts";
 import { historySeries, stockedMaterials, stockSeries } from "../server/src/ledger/series.ts";
 import {
@@ -44,6 +47,11 @@ import {
 } from "../server/src/ledger/views.ts";
 import { ReplayLlm } from "../server/src/llm/client.ts";
 import { INVENTORY_FILE, INVENTORY_WORKBOOK } from "../server/src/seed/inventorySheet.ts";
+import { WORLD } from "../server/src/world/config.ts";
+import { worldEventFiles } from "../server/src/world/events.ts";
+import { readWorlds } from "../server/src/world/files.ts";
+import { mergeGenealogyTables, worldGenealogyTables } from "../server/src/world/genealogy.ts";
+import { scorecards } from "../server/src/world/scorecard.ts";
 import { buildArena, readRecordings } from "./lib/arena.ts";
 import { PLANT_AGENTS } from "./lib/dayone-sandbox.ts";
 
@@ -57,6 +65,8 @@ const REVIEW = join(root, "web/src/data/review.json");
 const ARENA = join(root, "web/src/data/arena.json");
 const GENEALOGY = join(root, "web/src/data/genealogy.json");
 const ASK = join(root, "web/src/data/ask.json");
+const SUPPLIERS = join(root, "web/src/data/suppliers.json");
+const WORLD_EVENTS = join(root, "web/src/data/world");
 const BRIEF = join(root, "web/public/brief.html");
 const CSV = join(root, "web/public/books.csv");
 const RELAYER = "dayone-relayer.testnet";
@@ -329,7 +339,16 @@ async function recordedJourney() {
 }
 
 // The lot genealogy at the same clock, every plant (server/src/ledger/genealogy.ts).
-const lineage = { at: now, genealogy: genealogy(env.db) };
+// With the twelve-month worlds: their lots, batches, finished goods and shipments.
+const worlds = readWorlds(root);
+const lineage = {
+  at: now,
+  genealogy: buildGenealogy(
+    mergeGenealogyTables(genealogyTables(env.db), worldGenealogyTables(worlds, now)),
+  ),
+};
+// The supplier scorecards at the end of the recorded run (server/src/world/scorecard.ts).
+const suppliers = scorecards(worlds, WORLD.calendar.recordedEnd);
 // Talk to Kevin's suggested questions, answered from data/replay/ask-llm.json when it is
 // recorded (npm run ask -- --live --record), over the cards built from the snapshot above; no
 // answers before that, and the page says they arrive with the recording.
@@ -355,6 +374,10 @@ const files: [string, string][] = [
   [ARENA, `${JSON.stringify(arena, null, 2)}\n`],
   [GENEALOGY, `${JSON.stringify(lineage)}\n`],
   [ASK, `${JSON.stringify(ask, null, 2)}\n`],
+  [SUPPLIERS, `${JSON.stringify(suppliers)}\n`],
+  ...worldEventFiles(worlds).map(
+    ([name, body]) => [join(WORLD_EVENTS, name), `${JSON.stringify(body)}\n`] as [string, string],
+  ),
   [BRIEF, briefHtml(morningBrief(env.db, { now }))],
   [CSV, booksCsv(env.db)],
 ];
@@ -375,6 +398,7 @@ if (process.argv.includes("--check")) {
   console.log("web/src/data/demo-run.json and the three-plant snapshot match the recorded run.");
 } else {
   mkdirSync(join(root, "web/public"), { recursive: true });
+  mkdirSync(WORLD_EVENTS, { recursive: true });
   for (const [file, body] of files) writeFileSync(file, body);
   console.log(
     `Wrote web/src/data/demo-run.json: ${data.steps.length} steps, ${data.transactions.length} transactions, ` +

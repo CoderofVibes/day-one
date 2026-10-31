@@ -1,9 +1,11 @@
 // The event engine under the simulation clock (docs/UPGRADE_BRIEF.md §1.1): every change to the
 // world is an event at a sim timestamp, and the world at any instant is a pure fold of the events
 // up to it, `state' = reduce(state, event)`. A daily snapshot keeps a seek to at most one day of
-// events. Today's events come from the data the app ships: the seed's history (batches made,
+// events. The events come from the data the app ships: the seed's history (batches made,
 // purchase orders received and paid, from src/data/plants.json), the recorded run's steps at the
-// demo clock's times, and the actions people take in this session.
+// demo clock's times, the three plants' twelve-month worlds around them (src/data/world/, one
+// file a month: batches, receipts, QC, payments, shipments, transfers and incidents before the
+// seed's window and after the run), and the actions people take in this session.
 
 import type { Step } from "./run.ts";
 
@@ -66,10 +68,38 @@ export function stepTimes(steps: Pick<Step, "title">[]): number[] {
 
 export type SimEvent =
   | { kind: "batch"; at: number; id: string; facility: string; units: number }
-  | { kind: "received"; at: number; id: string; usdc: number }
-  | { kind: "paid"; at: number; id: string; usdc: number }
+  | { kind: "received"; at: number; id: string; usdc: number; facility?: string }
+  | { kind: "paid"; at: number; id: string; usdc: number; facility?: string }
   | { kind: "step"; at: number; id: string; step: number; title: string; txs: string[] }
-  | { kind: "action"; at: number; id: string; label: string };
+  | { kind: "action"; at: number; id: string; label: string }
+  | WorldOnlyEvent;
+
+/**
+ * Kinds only the twelve-month worlds carry (server/src/world/events.ts writes them): a lot's QC
+ * result, a shipment to a customer, a packaging transfer between plants, a named incident.
+ */
+export type WorldOnlyEvent =
+  | {
+      kind: "qc";
+      at: number;
+      id: string;
+      facility: string;
+      lot: string;
+      material: string;
+      vendor: string;
+      released: boolean;
+    }
+  | { kind: "shipment"; at: number; id: string; facility: string; customer: string; units: number }
+  | { kind: "transfer"; at: number; id: string; facility: string; to: string; lines: number }
+  | {
+      kind: "incident";
+      at: number;
+      id: string;
+      facility: string;
+      type: string;
+      title: string;
+      records: string[];
+    };
 
 /** A person's action in this session, kept in the session log and replayed as an event. */
 export interface SessionAction {
@@ -125,6 +155,8 @@ export function reduce(w: World, e: SimEvent): World {
       return { ...w, step: e.step, txs: [...w.txs, ...e.txs], last: e.id };
     case "action":
       return { ...w, actions: w.actions + 1, last: e.id };
+    default:
+      return { ...w, last: e.id };
   }
 }
 

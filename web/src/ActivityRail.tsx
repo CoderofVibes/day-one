@@ -101,8 +101,8 @@ function useWide(): boolean {
 /** The feed at the clock's time; folded again only when an event is crossed or the log changes. */
 export function useFeed(clock: Clock, context: FeedContext): { items: FeedItem[]; now: number } {
   const now = useClock(clock, (s) => s.simNow);
-  const logged = useClock(clock, (s) => s.log.length);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: the clock rebuilds its events when the log changes
+  const logged = useClock(clock, (s) => s.log.length + s.loaded);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the clock rebuilds its events when the log changes or a month of the world loads
   const events = useMemo(() => clock.events(), [clock, logged]);
   const count = countThrough(events, now);
   const items = useMemo(

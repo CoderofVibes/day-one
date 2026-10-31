@@ -7,7 +7,8 @@
 // What the ledger holds today: raw lots with their receipts and POs, and batch_inputs linking
 // them to batches. batch_outputs is empty and there is no shipments table (DATA_MODEL), so the
 // index says it has no finished-goods lots or shipments and traces stop at the batch. Shipment
-// rows are part of the build so a ledger that records them is traced to its customers.
+// rows are part of the build so a ledger that records them is traced to its customers; the
+// twelve-month worlds add their finished goods and shipments (server/src/world/genealogy.ts).
 
 import { asc, eq, isNotNull } from "drizzle-orm";
 import type { LedgerDb } from "./events.ts";

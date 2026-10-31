@@ -47,6 +47,10 @@
     "./ledger/series": "./src/ledger/series.ts",
     "./ledger/catalog": "./src/ledger/catalog.ts",
     "./ledger/genealogy": "./src/ledger/genealogy.ts",
+    "./world/config": "./src/world/config.ts",
+    "./world/files": "./src/world/files.ts",
+    "./world/genealogy": "./src/world/genealogy.ts",
+    "./world/scorecard": "./src/world/scorecard.ts",
     "./ledger/views": "./src/ledger/views.ts",
     "./ledger/areas": "./src/ledger/areas.ts"
   },
