@@ -2,6 +2,7 @@
 // brief, for the plant chosen in the sidebar. Every number is read from the ledger (live from the
 // API, or the recorded run's snapshot on a static host); charts carry their numbers as a table.
 
+import "./redesign.css";
 import { useState } from "react";
 import type { InboxState, PlantInventory } from "../api.ts";
 import {
@@ -18,8 +19,23 @@ import {
   shortDay,
 } from "../charts.tsx";
 import { Pill } from "../feed.tsx";
-import { readBrief } from "../reads.ts";
 import {
+  type Column,
+  compactDollars,
+  DataTable,
+  EmptyState,
+  Gauge,
+  MiniBar,
+  RecordLink,
+  Ring,
+  Sparkline,
+  StatTile,
+  usePageFilter,
+} from "../kit.tsx";
+import { type BatchRecordView, readBrief } from "../reads.ts";
+import {
+  type MaterialForecast,
+  type PlantSchedule,
   readForecast,
   readSchedule,
   readStock,
@@ -55,7 +71,8 @@ export function BatchRecordsPage({
   queue: React.ReactNode;
 }) {
   const { value: tables, error } = usePlant(source, plant);
-  if (!tables) return <Loading error={error} what="the batch records" />;
+  const filter = usePageFilter("batches");
+  if (!tables) return <Loading error={error} what="the batch records" shape="tiles" />;
   const batches = tables.batches;
   const latest = batches[0]?.completedAt?.slice(0, 7) ?? "";
   const thisMonth = batches.filter((b) => b.completedAt?.startsWith(latest));
@@ -66,92 +83,155 @@ export function BatchRecordsPage({
   const wasteMonth = thisMonth.reduce((s, b) => s + (b.wasteBase ?? 0), 0);
   const waiting = inbox?.items.filter((i) => i.status === "waiting").length ?? 0;
   const recent = [...batches].slice(0, 20).reverse();
+  const columns: Column<BatchRecordView>[] = [
+    {
+      key: "batch",
+      label: "Batch",
+      text: (b) => `${b.batchNo} ${b.completedAt?.slice(0, 7) ?? ""}`,
+      render: (b) => (
+        <>
+          <RecordLink
+            id={b.batchNo}
+            page="batches"
+            preview={[
+              { label: "Product", value: b.productName },
+              { label: "Completed", value: day(b.completedAt) },
+              { label: "Yield", value: b.yieldBp === null ? "—" : percent(b.yieldBp) },
+              { label: "Status", value: b.status },
+            ]}
+          />
+          {b.fromScan && <small className="sub">read from a scan</small>}
+        </>
+      ),
+    },
+    { key: "product", label: "Product", text: (b) => b.productName, render: (b) => b.productName },
+    { key: "done", label: "Completed", render: (b) => day(b.completedAt) },
+    {
+      key: "units",
+      label: "Units",
+      numeric: true,
+      render: (b) => b.units?.toLocaleString("en-US") ?? "—",
+    },
+    {
+      key: "yield",
+      label: "Yield",
+      numeric: true,
+      render: (b) => {
+        if (b.yieldBp === null) return "—";
+        const low = b.yieldBp < b.expectedYieldBp - 300;
+        return (
+          <span className="yield-cell">
+            <MiniBar
+              value={b.yieldBp / 100 - 80}
+              max={20}
+              tick={b.expectedYieldBp / 100 - 80}
+              tone={low ? "waiting" : "ok"}
+              label={`Yield ${percent(b.yieldBp)}, expected ${percent(b.expectedYieldBp, 0)}`}
+            />
+            {percent(b.yieldBp)}
+            {low && <small className="sub">under {percent(b.expectedYieldBp, 0)}</small>}
+          </span>
+        );
+      },
+    },
+    {
+      key: "waste",
+      label: "Waste",
+      numeric: true,
+      render: (b) => (b.wasteBase === null ? "—" : qty(b.wasteBase, "mass")),
+    },
+    {
+      key: "status",
+      label: "Status",
+      text: (b) => b.status,
+      render: (b) => (
+        <>
+          <Pill
+            tone={
+              b.status === "confirmed" ? "paid" : b.status === "rejected" ? "refused" : "waiting"
+            }
+          >
+            {b.status}
+          </Pill>
+          {b.confirmedBy && <small className="sub">{b.confirmedBy}</small>}
+        </>
+      ),
+    },
+  ];
   return (
     <>
-      <div className="cards-4">
-        <NumberCard label="Confirmed this month" value={thisMonth.length}>
-          <small className="muted">{latest ? monthLong(latest) : ""}</small>
-        </NumberCard>
-        <NumberCard
-          label="Average yield, last 12 batches"
-          value={percent(avgYield)}
-          spark={recent.map((b) => (b.yieldBp ?? 0) / 100)}
-          sparkLabel="Yield by batch, last 20"
+      <div className="tiles-4">
+        <StatTile
+          label="Confirmed this month"
+          value={thisMonth.length}
+          context={latest ? monthLong(latest) : "no batches yet"}
+          why={`${thisMonth.length} batch records confirmed by a person in ${latest ? monthLong(latest) : "the latest month"}; ${batches.length} on record at ${plantName(plant)}.`}
+          open={{ id: latest, page: "batches", filter: latest }}
         />
-        <NumberCard label="Waste this month" value={qty(wasteMonth, "mass")} />
-        <NumberCard
+        <StatTile
+          label="Average yield, last 12"
+          value={avgYield ? percent(avgYield) : "—"}
+          visual={
+            avgYield ? (
+              <Gauge
+                value={avgYield / 100}
+                min={84}
+                max={100}
+                band={[89, 92]}
+                label="Average yield, last 12 batches"
+                format={(v) => `${v.toFixed(1)}%`}
+              />
+            ) : undefined
+          }
+          context="tablets 89–92% standard"
+          why="Units made over theoretical units, averaged over the last 12 batches of every form; capsules and powder run near 97%, the tablet line's standard is 89–92%."
+          spark={
+            <Sparkline
+              values={recent.map((b) => (b.yieldBp ?? 0) / 100)}
+              label="Yield by batch, last 20"
+              points={recent.map((b) => b.batchNo)}
+              format={(v) => `${v.toFixed(1)}%`}
+              band={[89, 92]}
+            />
+          }
+        />
+        <StatTile
+          label="Waste this month"
+          value={qty(wasteMonth, "mass")}
+          context="weighed out, not in product"
+          why={`Material weighed out for ${latest ? monthLong(latest) : "this month"}'s batches that is not in the product: ${qty(wasteMonth, "mass")} over ${thisMonth.length} batches.`}
+          spark={
+            <Sparkline
+              values={recent.slice(-12).map((b) => (b.wasteBase ?? 0) / 1_000_000)}
+              label="Waste by batch, last 12"
+              points={recent.slice(-12).map((b) => b.batchNo)}
+              format={(v) => `${v.toFixed(1)} kg`}
+            />
+          }
+        />
+        <StatTile
           label="Scans waiting"
           value={source.live && plant === "B" ? waiting : "—"}
-          {...(source.live && plant === "B"
-            ? waiting
-              ? { delta: { text: "waiting for Ray", tone: "attention" as const } }
-              : {}
-            : {})}
-        >
-          {!source.live && <small className="muted">the API reads the scan folder</small>}
-        </NumberCard>
+          tone={waiting ? "waiting" : undefined}
+          context={
+            source.live && plant === "B"
+              ? waiting
+                ? "waiting for Ray"
+                : "nothing to confirm"
+              : "the API reads scans"
+          }
+          why={
+            source.live
+              ? `${waiting} scanned batch records wait for Ray to confirm.`
+              : "With npm run api, Kevin watches the scan folder and the scans wait here for Ray."
+          }
+        />
       </div>
       <OnAcmeSystems
         plant={plant}
         what="its batch records are typed into Acme's system at the line, so there are no scans to read."
       />
       {plant === "B" && queue}
-      <section className="card-v2" aria-label="Batch records">
-        <div className="chart-head">
-          <h3>Batch records</h3>
-          <span className="right small muted">{batches.length} on record</span>
-        </div>
-        <div className="table-wrap tall">
-          <table className="data">
-            <thead>
-              <tr>
-                <th>Batch</th>
-                <th>Product</th>
-                <th>Completed</th>
-                <th className="n">Units</th>
-                <th className="n">Yield</th>
-                <th className="n">Waste</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {batches.map((b) => {
-                const low = b.yieldBp !== null && b.yieldBp < b.expectedYieldBp - 300;
-                return (
-                  <tr key={b.batchNo}>
-                    <td>
-                      <b>{b.batchNo}</b>
-                      {b.fromScan && <small className="sub">read from a scan</small>}
-                    </td>
-                    <td>{b.productName}</td>
-                    <td>{day(b.completedAt)}</td>
-                    <td className="n">{b.units?.toLocaleString("en-US") ?? "—"}</td>
-                    <td className="n">
-                      {b.yieldBp === null ? "—" : percent(b.yieldBp)}
-                      {low && <small className="sub">under {percent(b.expectedYieldBp, 0)}</small>}
-                    </td>
-                    <td className="n">{b.wasteBase === null ? "—" : qty(b.wasteBase, "mass")}</td>
-                    <td>
-                      <Pill
-                        tone={
-                          b.status === "confirmed"
-                            ? "paid"
-                            : b.status === "rejected"
-                              ? "refused"
-                              : "waiting"
-                        }
-                      >
-                        {b.status}
-                      </Pill>
-                      {b.confirmedBy && <small className="sub">{b.confirmedBy}</small>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
       <div className="charts-2">
         <ChartCard
           title="Yield by batch"
@@ -205,6 +285,30 @@ export function BatchRecordsPage({
           />
         </ChartCard>
       </div>
+      <section className="card-v2" aria-label="Batch records">
+        <div className="chart-head">
+          <h3>Batch records</h3>
+          <span className="right small muted">{batches.length} on record</span>
+        </div>
+        <DataTable
+          rows={batches}
+          columns={columns}
+          rowKey={(b) => b.batchNo}
+          label="Batch records"
+          query={filter}
+          filters={[
+            { key: "product", label: "Product", value: (b) => b.productName },
+            { key: "status", label: "Status", value: (b) => b.status },
+            { key: "form", label: "Line", value: (b) => formOf(b.batchNo) },
+          ]}
+          empty={
+            <EmptyState
+              title="No batch records here yet."
+              body="Kevin reads each scanned batch record; a person confirms it before it posts."
+            />
+          }
+        />
+      </section>
     </>
   );
 }
@@ -249,36 +353,70 @@ export function InventoryPage({
   for (const l of tables.lots) byState.set(l.state, (byState.get(l.state) ?? 0) + 1);
   return (
     <>
-      <div className="cards-4">
-        <NumberCard
+      <div className="tiles-4">
+        <StatTile
           label="Materials below reorder"
           value={low.length}
-          {...(low.length
-            ? { delta: { text: low.map((m) => m.code).join(", "), tone: "attention" as const } }
-            : {})}
+          tone={low.length ? "waiting" : undefined}
+          context={low.length ? low.map((m) => m.code).join(", ") : "all above reorder"}
+          why={
+            low.length
+              ? `Below the reorder point at ${plantName(plant)}: ${low.map((m) => m.name).join(", ")}.`
+              : `Every material stocked at ${plantName(plant)} is above its reorder point.`
+          }
+          visual={
+            <Ring
+              value={here.length - low.length}
+              total={here.length}
+              label="Materials above their reorder point"
+              rest="waiting"
+            />
+          }
         />
-        <NumberCard
+        <StatTile
           label="In quarantine"
           value={quarantined.length}
-          {...(quarantined.length
-            ? {
-                delta: {
-                  text: `oldest ${oldest} days`,
-                  tone: oldest > 7 ? ("problem" as const) : ("neutral" as const),
-                },
-              }
-            : {})}
+          unit={quarantined.length === 1 ? "lot" : "lots"}
+          tone={oldest > 7 ? "refused" : undefined}
+          context={quarantined.length ? `oldest ${oldest} days` : "nothing waiting on QC"}
+          why={
+            quarantined.length
+              ? `Lots waiting on a QC decision: ${quarantined.map((l) => `${l.lotCode} (${l.daysInState} days)`).join(", ")}.`
+              : "No lot is waiting on a QC decision."
+          }
+          open={{ id: "quarantine", page: "lots", filter: "quarantine" }}
         />
-        <NumberCard label="On order" value={dollars(onOrder.reduce((s, o) => s + o.totalUsdc, 0))}>
-          <small className="muted">{onOrder.length} purchase orders on their way</small>
-        </NumberCard>
-        <NumberCard
+        <StatTile
+          label="On order"
+          value={compactDollars(onOrder.reduce((s, o) => s + o.totalUsdc, 0))}
+          context={`${onOrder.length} ${onOrder.length === 1 ? "order" : "orders"} on the way`}
+          why={`${onOrder.length} purchase orders approved and on their way: ${onOrder.map((o) => `${o.poNo} ${dollars(o.totalUsdc)}`).join(", ") || "none"}.`}
+          open={{ id: "open", page: "purchasing", filter: "open" }}
+        />
+        <StatTile
           label={`${forecast?.horizonDays ?? 10}-day need covered`}
-          value={`${covered} of ${fm.length}`}
-        >
-          <small className="muted">materials the plan draws on</small>
-        </NumberCard>
+          value={`${covered}/${fm.length}`}
+          visual={
+            fm.length ? (
+              <Ring
+                value={covered}
+                total={fm.length}
+                label="Materials covered for the plan"
+                rest="waiting"
+              />
+            ) : undefined
+          }
+          context="materials the plan draws on"
+          why={
+            fm
+              .filter((m) => m.short)
+              .map((m) => m.sentence)
+              .join(" ") ||
+            "Every material the plan draws on is covered by stock and orders on the way."
+          }
+        />
       </div>
+      <StockLevels forecast={fm} horizon={forecast?.horizonDays ?? 10} onPick={setMaterial} />
       <div className="split-wide">
         <Tabs
           label="Stock, forecast and lots"
@@ -533,6 +671,94 @@ export function InventoryPage({
   );
 }
 
+/** Each material the plan draws on: on hand against its reorder point, and the cone of where
+ * stock ends the forecast's days: the plan's need taken off, with or without what is on order. */
+function StockLevels({
+  forecast,
+  horizon,
+  onPick,
+}: {
+  forecast: MaterialForecast[];
+  horizon: number;
+  onPick: (material: string) => void;
+}) {
+  const [all, setAll] = useState(false);
+  if (forecast.length === 0)
+    return (
+      <EmptyState
+        title="No batches planned in the forecast's days."
+        body="Kevin forecasts from the schedule; stock levels show here once a batch is planned."
+      />
+    );
+  const W = 150;
+  const H = 34;
+  const rank = (m: MaterialForecast) =>
+    (m.short ? 2 : 0) + (m.reorder ? 1 : 0) + m.needBase / Math.max(m.onHandBase, 1);
+  const sorted = [...forecast].sort((a, b) => rank(b) - rank(a));
+  const shown = all ? sorted : sorted.slice(0, 10);
+  return (
+    <section className="card-v2" aria-label="Stock levels and forecast">
+      <div className="chart-head">
+        <h3>Stock levels and the next {horizon} days</h3>
+        <span className="right small muted">
+          bar: on hand · tick: reorder · cone: after the plan
+        </span>
+      </div>
+      <ul className="stock-levels">
+        {shown.map((m) => {
+          const lo = m.onHandBase - m.needBase;
+          const hi = lo + m.onOrderBase;
+          const top = Math.max(m.onHandBase, hi, m.reorderPointBase, 1) * 1.1;
+          const bottom = Math.min(0, lo);
+          const y = (v: number) => H - 2 - ((v - bottom) / (top - bottom)) * (H - 4);
+          const tone = lo < 0 ? "bad" : lo < m.reorderPointBase ? "wait" : "ok";
+          const tip = `${m.name}: ${qty(m.onHandBase, m.dimension)} on hand, reorder at ${qty(m.reorderPointBase, m.dimension)}; the plan needs ${qty(m.needBase, m.dimension)} in ${horizon} days, ${qty(m.onOrderBase, m.dimension)} on order, so it ends between ${qty(lo, m.dimension)} and ${qty(hi, m.dimension)}.`;
+          return (
+            <li key={m.material}>
+              <button type="button" className="link-btn sl-name" onClick={() => onPick(m.material)}>
+                {m.name}
+              </button>
+              <MiniBar
+                value={m.onHandBase}
+                max={top}
+                tick={m.reorderPointBase}
+                tone={m.onHandBase < m.reorderPointBase ? "waiting" : "ok"}
+                label={`${m.name}: ${qty(m.onHandBase, m.dimension)} on hand, reorder at ${qty(m.reorderPointBase, m.dimension)}`}
+              />
+              <svg className={`cone ${tone}`} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={tip}>
+                <title>{tip}</title>
+                <line
+                  className="cone-rule"
+                  x1={0}
+                  x2={W}
+                  y1={y(m.reorderPointBase)}
+                  y2={y(m.reorderPointBase)}
+                />
+                {bottom < 0 && <line className="cone-zero" x1={0} x2={W} y1={y(0)} y2={y(0)} />}
+                <polygon points={`0,${y(m.onHandBase)} ${W},${y(hi)} ${W},${y(lo)}`} />
+              </svg>
+              <span className="small num sl-end">
+                {m.short ? (
+                  <Pill tone="waiting">short {qty(m.shortfallBase, m.dimension)}</Pill>
+                ) : m.reorder ? (
+                  <Pill tone="held">reorder</Pill>
+                ) : (
+                  <Pill tone="ok">covered</Pill>
+                )}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+      {sorted.length > 10 && (
+        <button type="button" className="link-btn" onClick={() => setAll(!all)}>
+          {all ? "Show the ten most drawn on" : `Show all ${sorted.length}`}
+        </button>
+      )}
+    </section>
+  );
+}
+
 // ------------------------------------------------------------------ Schedule
 
 export function SchedulePage({ plant, source }: PageProps) {
@@ -564,29 +790,44 @@ export function SchedulePage({ plant, source }: PageProps) {
   });
   return (
     <>
-      <div className="cards-4">
-        <NumberCard label="Batches, next 14 days" value={in14.length} />
-        <NumberCard
+      <div className="tiles-4">
+        <StatTile
+          label="Batches, next 14 days"
+          value={in14.length}
+          context={`${schedule.batches.length} in four weeks`}
+          why={schedule.sentence}
+        />
+        <StatTile
           label="Materials short for them"
           value={short.length}
-          {...(short.length
-            ? { delta: { text: short.join(", "), tone: "attention" as const } }
-            : {})}
+          tone={short.length ? "waiting" : undefined}
+          context={short.length ? short.join(", ") : "everything on hand"}
+          why={
+            short.length
+              ? `Short for the next 14 days' batches: ${short.join(", ")}.`
+              : "Stock and orders on the way cover every batch in the next 14 days."
+          }
+          open={{ id: "inventory", page: "inventory" }}
         />
-        <NumberCard label="Materials for them, at last price" value={dollars(cost14)}>
-          {schedule.unpriced.length > 0 && (
-            <small className="muted">{schedule.unpriced.join(", ")} not yet bought on a PO</small>
-          )}
-        </NumberCard>
-        <NumberCard label="Next batch" value={next ? next.batchNo : "—"}>
-          {next && (
-            <small className="muted">
-              {next.productName}, {shortDay(next.plannedFor)}
-            </small>
-          )}
-        </NumberCard>
+        <StatTile
+          label="Materials, at last price"
+          value={compactDollars(cost14)}
+          context="for the next 14 days"
+          why={`What the next 14 days' batches draw, at the last price paid: ${dollars(cost14)}.${schedule.unpriced.length ? ` ${schedule.unpriced.join(", ")} not yet bought on a PO.` : ""}`}
+        />
+        <StatTile
+          label="Next batch"
+          value={next ? next.batchNo : "—"}
+          context={next ? `${shortDay(next.plannedFor)} · ${next.productName}` : "none planned"}
+          why={
+            next
+              ? `${next.batchNo}, ${next.productName}, ${next.units.toLocaleString("en-US")} units, planned for ${shortDay(next.plannedFor)}.`
+              : undefined
+          }
+        />
       </div>
       <p className="kevin-sentence small">{schedule.sentence}</p>
+      <Gantt schedule={schedule} />
       <div className="split-wide">
         <section className="card-v2" aria-label="The next four weeks">
           <div className="chart-head">
@@ -671,6 +912,73 @@ export function SchedulePage({ plant, source }: PageProps) {
         </div>
       </div>
     </>
+  );
+}
+
+const LINES = [
+  { form: "Tablets", label: "Tablet line" },
+  { form: "Capsules", label: "Capsule room" },
+  { form: "Powder", label: "Powder room" },
+] as const;
+
+/** The four weeks as a Gantt by line: one row per line, one bar per planned batch. */
+function Gantt({ schedule }: { schedule: PlantSchedule }) {
+  const from = Date.parse(`${schedule.from}T00:00:00.000Z`);
+  const to = Date.parse(`${schedule.to}T00:00:00.000Z`);
+  const span = Math.max(1, Math.round((to - from) / 86_400_000) + 1);
+  const lines = LINES.filter((l) => schedule.batches.some((b) => formOf(b.batchNo) === l.form));
+  if (lines.length === 0) return null;
+  const pct = (date: string) =>
+    ((Date.parse(`${date}T00:00:00.000Z`) - from) / 86_400_000 / span) * 100;
+  const mondays = Array.from({ length: span }, (_, i) => from + i * 86_400_000).filter(
+    (t) => new Date(t).getUTCDay() === 1,
+  );
+  return (
+    <section className="card-v2" aria-label="Schedule by line">
+      <div className="chart-head">
+        <h3>By line</h3>
+        <span className="right small muted">
+          {shortDay(schedule.from)} to {shortDay(schedule.to)} · amber: a material is short
+        </span>
+      </div>
+      <div className="gantt">
+        <div className="gantt-axis" aria-hidden="true">
+          {mondays.map((t) => (
+            <span key={t} style={{ left: `${((t - from) / 86_400_000 / span) * 100}%` }}>
+              {shortDay(t)}
+            </span>
+          ))}
+        </div>
+        {lines.map((l) => (
+          <div key={l.form} className="gantt-row">
+            <span className="gantt-label small">{l.label}</span>
+            <div className="gantt-track">
+              {mondays.map((t) => (
+                <i
+                  key={t}
+                  className="gantt-week"
+                  style={{ left: `${((t - from) / 86_400_000 / span) * 100}%` }}
+                />
+              ))}
+              {schedule.batches
+                .filter((b) => formOf(b.batchNo) === l.form)
+                .map((b) => (
+                  <span
+                    key={b.batchNo}
+                    className={b.short.length ? "gantt-bar short" : "gantt-bar"}
+                    style={{ left: `${pct(b.plannedFor)}%`, width: `${100 / span}%` }}
+                    title={`${b.batchNo} · ${b.productName} · ${shortDay(b.plannedFor)} · ${b.units.toLocaleString("en-US")} units${b.short.length ? ` · short: ${b.short.join(", ")}` : ""}`}
+                  >
+                    <span className="sr-only">
+                      {b.batchNo} {b.productName} {shortDay(b.plannedFor)}
+                    </span>
+                  </span>
+                ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 

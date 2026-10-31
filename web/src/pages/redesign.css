@@ -694,3 +694,116 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ---------- Inventory: stock levels and cones ---------- */
+.stock-levels {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.stock-levels li {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.2fr) minmax(80px, 1fr) minmax(90px, 150px) auto;
+  align-items: center;
+  gap: 10px;
+}
+.stock-levels .minibar {
+  width: 100%;
+}
+.sl-name {
+  justify-self: start;
+  text-align: left;
+  font-size: var(--t-sm);
+}
+.cone {
+  display: block;
+  width: 100%;
+  height: 34px;
+}
+.cone polygon {
+  fill: color-mix(in srgb, var(--ok) 30%, transparent);
+  stroke: var(--ok);
+  stroke-width: 1;
+}
+.cone.wait polygon {
+  fill: color-mix(in srgb, var(--wait) 30%, transparent);
+  stroke: var(--wait);
+}
+.cone.bad polygon {
+  fill: color-mix(in srgb, var(--bad) 25%, transparent);
+  stroke: var(--bad);
+}
+.cone-rule {
+  stroke: var(--ink);
+  stroke-dasharray: 3 3;
+}
+.cone-zero {
+  stroke: var(--line-2);
+}
+@media (max-width: 560px) {
+  .stock-levels li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .stock-levels .minibar {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- Schedule: Gantt by line ---------- */
+.gantt {
+  display: grid;
+  gap: 8px;
+}
+.gantt-axis {
+  position: relative;
+  height: 16px;
+  margin-left: 110px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+.gantt-axis span {
+  position: absolute;
+  white-space: nowrap;
+}
+.gantt-row {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+.gantt-track {
+  position: relative;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--surface-2);
+}
+.gantt-week {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--line-2);
+}
+.gantt-bar {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  min-width: 6px;
+  border-radius: 4px;
+  background: var(--ok);
+  box-shadow: 0 0 0 1px var(--surface);
+}
+.gantt-bar.short {
+  background: var(--wait);
+}
+@media (max-width: 560px) {
+  .gantt-axis {
+    margin-left: 0;
+  }
+  .gantt-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+}
