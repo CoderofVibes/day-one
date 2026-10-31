@@ -118,11 +118,10 @@
   height: 100%;
 }
 .lineage-zoom {
-  position: absolute;
-  top: 8px;
-  right: 8px;
   display: flex;
+  justify-content: flex-end;
   gap: 4px;
+  margin-bottom: var(--s-2);
 }
 .lineage-zoom button {
   min-width: 32px;
@@ -229,6 +228,10 @@
   font-size: var(--t-md);
   font-family: var(--mono);
   overflow-wrap: anywhere;
+}
+
+.lineage-list .link-btn {
+  white-space: nowrap;
 }
 
 /* The recall drill */

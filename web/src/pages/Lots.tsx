@@ -136,8 +136,8 @@ export function LotsView({
     setStart(before ?? firstStart(g, plant));
     setPicked(null);
   };
-  const anchorTrace = async () => {
-    if (drill) setAnchor(await sha256Hex(traceReport(drill)));
+  const anchorTrace = () => {
+    if (drill) setAnchor(sha256Hex(traceReport(drill)));
   };
   const lookOf = (lot: string): LotStateLook =>
     held.has(lot) ? ON_HOLD : lotState(g.lots[lot]?.state);
@@ -411,6 +411,17 @@ function TraceGraph({
 
   return (
     <>
+      <div className="lineage-zoom">
+        <button type="button" aria-label="Zoom in" onClick={() => zoom(1.25)}>
+          +
+        </button>
+        <button type="button" aria-label="Zoom out" onClick={() => zoom(0.8)}>
+          −
+        </button>
+        <button type="button" aria-label="Fit the trace" onClick={fit}>
+          Fit
+        </button>
+      </div>
       <div
         ref={box}
         className={dragging ? "lineage-graph dragging" : "lineage-graph"}
@@ -515,17 +526,6 @@ function TraceGraph({
             })}
           </g>
         </svg>
-        <div className="lineage-zoom">
-          <button type="button" aria-label="Zoom in" onClick={() => zoom(1.25)}>
-            +
-          </button>
-          <button type="button" aria-label="Zoom out" onClick={() => zoom(0.8)}>
-            −
-          </button>
-          <button type="button" aria-label="Fit the trace" onClick={fit}>
-            Fit
-          </button>
-        </div>
       </div>
       <div className="lineage-legend">
         {(["quarantine", "released", "in_use", "consumed", "rejected"] as const).map((s) => (
@@ -578,7 +578,7 @@ function TraceList({
           ? g.shipments[n.id]?.shippedAt
           : null;
   return (
-    <div className="table-wrap tall">
+    <div className="table-wrap tall lineage-list">
       <table className="data">
         <caption className="sr-only">The trace, in order from raw lots to customers</caption>
         <thead>

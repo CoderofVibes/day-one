@@ -1,6 +1,7 @@
+import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { FIXTURE } from "./genealogy.fixture.ts";
-import { runDrill, search, trace } from "./genealogy.ts";
+import { runDrill, search, sha256Hex, trace, traceReport } from "./genealogy.ts";
 
 describe("trace", () => {
   it("walks a raw lot forward to batches, finished goods, shipments and customers", () => {
@@ -64,5 +65,38 @@ describe("runDrill", () => {
 
   it("returns nothing for a supplier lot the ledger does not hold", () => {
     expect(runDrill(FIXTURE, "RWA-NONE", (c) => c)).toBeNull();
+  });
+});
+
+describe("sha256Hex", () => {
+  it("matches Node's SHA-256 on empty, short, multi-block and non-ASCII text", () => {
+    const sha = (t: string) => createHash("sha256").update(t, "utf8").digest("hex");
+    for (const t of [
+      "",
+      "abc",
+      "x".repeat(55),
+      "y".repeat(56),
+      "z".repeat(200),
+      "lot · ü 1,648 kg",
+    ]) {
+      expect(sha256Hex(t)).toBe(sha(t));
+    }
+  });
+
+  it("hashes the drill's trace report, the same on every run", () => {
+    const a = runDrill(
+      FIXTURE,
+      "RWA-ASC-1",
+      (c) => c,
+      () => 1,
+    );
+    const b = runDrill(
+      FIXTURE,
+      "RWA-ASC-1",
+      (c) => c,
+      () => 99,
+    );
+    if (!a || !b) throw new Error("no drill");
+    expect(sha256Hex(traceReport(a))).toBe(sha256Hex(traceReport(b)));
   });
 });
