@@ -27,6 +27,7 @@ import {
 import { HeldInvoiceCard } from "../panes.tsx";
 import { readSchedule, type Source, useRead } from "../series.ts";
 import { PageHeader, type PageId } from "../shell.tsx";
+import { JourneyMap } from "./JourneyMap.tsx";
 
 export interface IntegrationActions {
   decide: (input: {
@@ -188,6 +189,7 @@ export function Integration({
           </>
         }
       />
+      <JourneyMap journey={journey} shown={shown} onPick={setOpen} />
       <div className="journey">
         <nav className="card-v2 stages" aria-label="Stages">
           <div className="chart-head">
