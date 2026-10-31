@@ -48,7 +48,7 @@ export const NAV: { group: string; items: NavItem[] }[] = [
     items: [
       { id: "integration", label: "Your integration", icon: "flag" },
       { id: "overview", label: "Overview", icon: "grid" },
-      { id: "map", label: "Plant map", icon: "cube" },
+      { id: "map", label: "Plant twin", icon: "cube" },
       { id: "brief", label: "5am brief", icon: "sun" },
       { id: "batches", label: "Batch records", icon: "doc" },
       { id: "inventory", label: "Inventory & forecast", icon: "box" },

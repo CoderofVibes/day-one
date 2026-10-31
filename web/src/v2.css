@@ -1540,6 +1540,31 @@ ul.plain {
 .map-hint {
   margin: 8px 0 0;
 }
+/* The Plant twin page (brief §5.6): the stage takes the height the header leaves, the Objects
+   list on its left and the inspector on its right, and the replay note is a small chip. */
+.twin-page .map-frame.twin-page-frame {
+  display: flex;
+  flex-direction: column;
+  height: max(420px, calc(100dvh - 230px));
+}
+.twin-page-frame .t3-stage {
+  flex: 1;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+.twin-page .foot {
+  justify-self: start;
+  display: inline-block;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+@media (max-width: 767px) {
+  .twin-page .map-frame.twin-page-frame {
+    height: max(380px, calc(100dvh - 190px));
+  }
+}
 .area-sheet {
   position: sticky;
   top: var(--s-4);

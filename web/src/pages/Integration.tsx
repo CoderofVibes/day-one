@@ -1246,7 +1246,7 @@ function Daily({ go }: { go: (page: PageId) => void }) {
             ],
             [
               "map",
-              "Plant map",
+              "Plant twin",
               "The three plants, the suppliers, the escrow and HQ, as orders move.",
             ],
             [

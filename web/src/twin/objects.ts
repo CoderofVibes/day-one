@@ -410,7 +410,7 @@ export function inspectObject(
                 status === "online" ? 3 : status === "onboarding" ? 1 : 0,
               )
             : [],
-        page: { id: "map", label: "Plant map" },
+        page: { id: "map", label: "Plant twin" },
         chain: re
           ? chainFor(
               run,

@@ -97,6 +97,7 @@ export function PlantView({
   picked,
   onCurtain,
   onOpen,
+  page,
 }: {
   run: RunData;
   at: number;
@@ -110,6 +111,8 @@ export function PlantView({
   onCurtain?: (on: boolean) => void;
   /** The inspector's "Open in …" link. */
   onOpen?: (page: PageId) => void;
+  /** The Plant twin page: the stage fills the content area and the Objects list starts open on a wide screen. */
+  page?: boolean;
 }) {
   // The video page (?video=1) drives the steps itself; the twin keeps its fixed-step clock.
   const record = useMemo(() => params().get("record") === "1" || params().get("video") === "1", []);
@@ -151,7 +154,12 @@ export function PlantView({
   // Full screen, the selection (deep-linked as ?inspect=<id>), the Objects list and the help.
   const [full, setFull] = useState(() => !record && params().get("full") === "1");
   const [selected, setSelected] = useState<string | null>(() => params().get("inspect"));
-  const [listOpen, setListOpen] = useState(false);
+  const [listOpen, setListOpen] = useState(
+    () =>
+      Boolean(page) &&
+      typeof matchMedia !== "undefined" &&
+      matchMedia("(min-width: 1440px)").matches,
+  );
   const [help, setHelp] = useState(false);
   const seq = useRef(0);
   const [request, setRequest] = useState<CameraRequest | null>(null);
@@ -317,11 +325,17 @@ export function PlantView({
 
   return (
     <section
-      className={full ? "panel map-frame twin-full" : "panel map-frame"}
-      aria-label="Plant map"
+      className={
+        full
+          ? "panel map-frame twin-full"
+          : page
+            ? "panel map-frame twin-page-frame"
+            : "panel map-frame"
+      }
+      aria-label="Plant twin"
     >
       <div className="panel-head twin-bar">
-        <h2>Plant map</h2>
+        <h2>Plant twin</h2>
         <div className="right">
           <div className="seg view-switch">
             <button type="button" aria-pressed={!group} onClick={() => setGroup(false)}>

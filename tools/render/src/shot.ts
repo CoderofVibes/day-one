@@ -5,7 +5,8 @@
 // primary action STEPS times, so the live screens get the same check; PLANTS=1 also opens the
 // Plants screen. FULL=1 captures the whole page instead of the first screen.
 // FEED=1 opens Kevin's activity (the drawer on a phone) and prints how many elements it holds.
-// Prints console errors and whether the page scrolls sideways. PAGE=arena also fires three
+// Prints console errors and whether the page scrolls sideways. QUERY= opens any address (Linda's
+// phone, judge mode at a step) and leaves the curtain to the page. PAGE=arena also fires three
 // attacks in the attack arena and checks each refusal shown against web/src/data/arena.json.
 
 import { existsSync, readFileSync } from "node:fs";
@@ -20,7 +21,10 @@ const steps = Number(process.env.STEPS ?? 8);
 // and its transitions to settle; VIEW=3d is still accepted.
 // The integration program is the home page; the run and its twin are on the Overview, so that
 // is where the shots open unless PAGE names another page (PAGE=integration).
-const query = `?page=${process.env.PAGE ?? "overview"}${process.env.VIEW === "3d" ? "&view=3d" : ""}`;
+// QUERY=<search> opens any other address as given (QUERY="?page=approve&po=1042", QUERY="?judge=3").
+const query =
+  process.env.QUERY ??
+  `?page=${process.env.PAGE ?? "overview"}${process.env.VIEW === "3d" ? "&view=3d" : ""}`;
 const types: Record<string, string> = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -55,7 +59,7 @@ for (const [name, width, scheme] of [
   }
   // The trust marker sits in the sidebar on a wide screen and in the top bar on a phone.
   // CURTAIN=0 leaves it off, for the screens staff see.
-  if (process.env.CURTAIN !== "0") {
+  if (process.env.CURTAIN !== "0" && !process.env.QUERY) {
     await page.getByText("Behind the curtain").filter({ visible: true }).first().click();
   }
   if (url) {

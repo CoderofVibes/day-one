@@ -156,16 +156,18 @@ function Page({
   crumb,
   title,
   sentence,
+  className,
   children,
 }: {
   label: string;
   crumb: string;
   title: string;
   sentence: string;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <main className="page v2" aria-label={label}>
+    <main className={className ? `page v2 ${className}` : "page v2"} aria-label={label}>
       <PageHeader crumb={crumb} title={title} sentence={sentence} />
       {children}
     </main>
@@ -185,7 +187,7 @@ const PAGE_TEXT: Record<
 > = {
   map: {
     group: "plant",
-    title: "Plant map",
+    title: "Plant twin",
     sentence: "The three plants, the suppliers, the escrow and HQ, as the run moves through them.",
   },
   brief: {
@@ -432,6 +434,7 @@ function Pages({
       crumb={headingOf(page, plant).crumb}
       title={text.title}
       sentence={text.sentence}
+      {...(page === "map" ? { className: "twin-page" } : {})}
     >
       {body}
       {foot}
