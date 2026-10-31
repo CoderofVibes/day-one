@@ -221,7 +221,7 @@ export function ArenaResult({ c }: { c: ArenaCase }) {
   return (
     <section className="arena-result" aria-label="Result">
       <span className="arena-chip">{chipLabel(c)}</span>
-      <p className="arena-reason">
+      <p className={c.refusedBy === "contract" ? "arena-reason" : "arena-reason long"}>
         <code>{c.reason}</code>
       </p>
       <dl className="arena-facts">

@@ -1811,6 +1811,10 @@ ul.plain {
   font-size: var(--t-sm);
   overflow-wrap: anywhere;
 }
+.arena-reason.long {
+  font-size: var(--t-xs);
+  line-height: 1.55;
+}
 .arena-log .head time {
   font-family: var(--mono);
 }
