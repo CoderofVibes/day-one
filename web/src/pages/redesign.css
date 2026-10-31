@@ -807,3 +807,52 @@
     gap: 2px;
   }
 }
+
+/* ---------- Reconciliation: check cards ---------- */
+.check-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.check-card {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--ok);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.check-card.bad {
+  border-top-color: var(--bad);
+}
+.check-card.skipped {
+  border-top-color: var(--line-2);
+}
+.check-card .pill {
+  justify-self: start;
+}
+.check-card ul {
+  margin: 0;
+  padding-left: 16px;
+}
+.check-tick {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--ok);
+  color: var(--surface);
+  font-weight: 800;
+}
+.check-card.bad .check-tick {
+  background: var(--bad);
+}
+.check-card.skipped .check-tick {
+  background: var(--line-2);
+}

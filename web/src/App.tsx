@@ -69,6 +69,7 @@ import { AskPage } from "./pages/Ask.tsx";
 import { InvoicesPage, PurchasingPage, SpreadsheetsPage } from "./pages/Buying.tsx";
 import { GroupPage, ReconciliationPage, SealedPage, SuppliersPage } from "./pages/Hq.tsx";
 import { Integration } from "./pages/Integration.tsx";
+import { BooksTiles, LimitTiles } from "./pages/Limits.tsx";
 import { LotsPage } from "./pages/Lots.tsx";
 import { MapPage, type MapPick } from "./pages/MapPage.tsx";
 import { Overview } from "./pages/Overview.tsx";
@@ -424,7 +425,12 @@ function Pages({
       case "erp":
         return <ErpPage source={source} curtain={curtain} />;
       case "hq":
-        return hq;
+        return (
+          <>
+            <LimitTiles source={source} />
+            {hq}
+          </>
+        );
       case "suppliers":
         return <SuppliersPage source={source} curtain={curtain} />;
       case "group":
@@ -432,7 +438,12 @@ function Pages({
       case "sealed":
         return <SealedPage source={source} curtain={curtain} />;
       case "export":
-        return exportPane;
+        return (
+          <>
+            <BooksTiles books={books} />
+            {exportPane}
+          </>
+        );
       case "reconciliation":
         return <ReconciliationPage source={source} curtain={curtain} />;
       case "arena":

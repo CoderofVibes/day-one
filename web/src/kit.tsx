@@ -714,7 +714,9 @@ export function StatTile({
       )}
       <div className="stat-label">{label}</div>
       <div className={`tile-body${visual ? " with-visual" : ""}`}>
-        <div className="stat-value num">
+        <div
+          className={`stat-value num${typeof value === "string" && value.length > 9 ? " long" : ""}`}
+        >
           {value}
           {unit && <small>{unit}</small>}
         </div>
