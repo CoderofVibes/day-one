@@ -4,6 +4,7 @@
 // With URL=http://localhost:8787/ it opens a running API instead (npm run api) and clicks the
 // primary action STEPS times, so the live screens get the same check; PLANTS=1 also opens the
 // Plants screen. FULL=1 captures the whole page instead of the first screen.
+// FEED=1 opens Kevin's activity (the drawer on a phone) and prints how many elements it holds.
 // Prints console errors and whether the page scrolls sideways. PAGE=arena also fires three
 // attacks in the attack arena and checks each refusal shown against web/src/data/arena.json.
 
@@ -90,6 +91,16 @@ for (const [name, width, scheme] of [
     for (let i = 0; i < steps; i++) await page.keyboard.press("ArrowRight");
   }
   if (process.env.PAGE === "arena") await fireThree(page, name);
+  if (process.env.FEED) {
+    // Kevin's activity: a rail beside the Overview from 1280 px, a drawer below it.
+    const open = page.getByRole("button", { name: /^Kevin's activity/ }).filter({ visible: true });
+    if (await open.count()) {
+      await open.first().click();
+      await page.waitForTimeout(300);
+    }
+    const nodes = await page.evaluate(() => document.querySelectorAll(".feed-rail *").length);
+    console.log(name, "feed nodes:", nodes);
+  }
   const threeD = process.env.VIEW === "3d" || (await page.locator(".map-frame").count()) > 0;
   if (threeD) await page.locator(".t3-stage canvas").waitFor();
   await page.waitForTimeout(threeD ? 2400 : 600);

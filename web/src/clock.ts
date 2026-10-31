@@ -89,6 +89,8 @@ export interface Clock {
   get(): ClockState;
   /** The world at the clock's time, folded from the nearest daily snapshot. */
   world(): World;
+  /** Every event on the clock, in order, the session's actions included: for views that fold them. */
+  events(): readonly SimEvent[];
   /** Every change, as often as the frame loop runs: for the 3D twin and other frame readers. */
   subscribe(listener: () => void): () => void;
   /** At most REACT_HZ times a second while running, at once on a seek, speed or log change. */
@@ -182,6 +184,7 @@ export function createClock(options: ClockOptions): Clock {
     range,
     get: () => state,
     world: () => timeline.stateAt(state.simNow),
+    events: () => timeline.events,
     subscribe(listener) {
       fast.add(listener);
       return () => fast.delete(listener);
