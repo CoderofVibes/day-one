@@ -62,7 +62,7 @@ export const FORMULA =
   "10·responsiveness) / (sum of the weights scored), each component 0–1; a component with no " +
   "records in the window drops out. Two QC rejects in a row: suspended.";
 
-interface Facts {
+export interface Facts {
   receipts: { vendor: string; material: string; day: string; daysLate: number }[];
   qc: { vendor: string; material: string; at: string; released: boolean }[];
   lines: { vendor: string; material: string; day: string; unitPriceUsdc: number }[];
@@ -229,7 +229,11 @@ function bestPrices(f: Facts, from: string, to: string) {
 }
 
 export function scorecards(worlds: readonly World[], asOf: string): Scorecards {
-  const f = facts(worlds);
+  return scorecardsOf(facts(worlds), asOf);
+}
+
+/** The cards from records already flattened, for a run of dates over the same worlds. */
+export function scorecardsOf(f: Facts, asOf: string): Scorecards {
   const trailing = { from: addDays(asOf, -(SCORECARD.trailingDays - 1)), to: asOf };
   const year = { from: addDays(asOf, -(SCORECARD.yearDays - 1)), to: asOf };
   const bestTrailing = bestPrices(f, trailing.from, trailing.to);

@@ -939,6 +939,8 @@ export interface Column<T> {
   /** The text filters and search match against. */
   text?: (row: T) => string;
   numeric?: boolean;
+  /** Makes the header a sort button: the value rows sort by, empty values last either way. */
+  sort?: (row: T) => number | string | null;
 }
 
 export interface Filter<T> {
@@ -985,11 +987,12 @@ export function DataTable<T>({
   const [picked, setPicked] = useState<Record<string, string>>({});
   const [density, setDensity] = useState<keyof typeof ROW_H>("cozy");
   const [opened, setOpened] = useState<string | null>(null);
+  const [order, setOrder] = useState<{ key: string; dir: 1 | -1 } | null>(null);
   const span = columns.length + (expand ? 1 : 0);
   const [scroll, setScroll] = useState(0);
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return rows.filter((r) => {
+    const kept = rows.filter((r) => {
       for (const f of filters) {
         const want = picked[f.key];
         if (want && f.value(r) !== want) return false;
@@ -997,7 +1000,17 @@ export function DataTable<T>({
       if (!needle) return true;
       return columns.some((c) => (c.text?.(r) ?? "").toLowerCase().includes(needle));
     });
-  }, [rows, filters, columns, picked, q]);
+    const by = order && columns.find((c) => c.key === order.key)?.sort;
+    if (!order || !by) return kept;
+    return [...kept].sort((a, b) => {
+      const x = by(a);
+      const y = by(b);
+      if (x === y) return 0;
+      if (x === null) return 1;
+      if (y === null) return -1;
+      return (x < y ? -1 : 1) * order.dir;
+    });
+  }, [rows, filters, columns, picked, q, order]);
   const options = (f: Filter<T>) => [...new Set(rows.map(f.value))].filter(Boolean).sort();
   const h = ROW_H[density];
   const windowed = shown.length > WINDOW_AT;
@@ -1077,11 +1090,33 @@ export function DataTable<T>({
                     <span className="sr-only">Details</span>
                   </th>
                 )}
-                {columns.map((c) => (
-                  <th key={c.key} className={c.numeric ? "n" : undefined} scope="col">
-                    {c.label}
-                  </th>
-                ))}
+                {columns.map((c) => {
+                  const on = order?.key === c.key ? order.dir : 0;
+                  return (
+                    <th
+                      key={c.key}
+                      className={c.numeric ? "n" : undefined}
+                      scope="col"
+                      aria-sort={on === 1 ? "ascending" : on === -1 ? "descending" : undefined}
+                    >
+                      {c.sort ? (
+                        <button
+                          type="button"
+                          className="th-sort"
+                          onClick={() =>
+                            // Numbers sort high first; a second press flips the order.
+                            setOrder({ key: c.key, dir: on ? (-on as 1 | -1) : c.numeric ? -1 : 1 })
+                          }
+                        >
+                          {c.label}
+                          <span aria-hidden="true">{on === 1 ? " ▲" : on === -1 ? " ▼" : ""}</span>
+                        </button>
+                      ) : (
+                        c.label
+                      )}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
