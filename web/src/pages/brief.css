@@ -1,0 +1,224 @@
+/* The 5am brief as a morning sheet (src/pages/BriefSheet.tsx): a paper page on the desk's
+   graphite (src/desk.css gives both their tokens), set like print: a serif from the system for
+   the greeting and the numbers, a label column beside each section, generous measure. */
+
+.brief-stage {
+  display: grid;
+  justify-items: center;
+  padding: 32px 22px;
+}
+.brief-sheet {
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  display: grid;
+  gap: 0;
+  width: 100%;
+  max-width: 860px;
+  padding: 44px 52px 32px;
+  border-radius: 6px;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.6) inset,
+    0 2px 4px rgb(0 0 0 / 0.2),
+    0 32px 64px -32px rgb(0 0 0 / 0.85);
+  animation: rise 360ms ease-out both;
+}
+.bs-head {
+  padding-bottom: 26px;
+  border-bottom: 2px solid var(--ink);
+}
+.bs-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+.bs-eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan-ink);
+}
+.bs-print {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  text-decoration: none;
+  padding: 4px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+}
+.bs-print:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.bs-greeting {
+  margin: 18px 0 0;
+  font-family: var(--serif);
+  font-size: 44px;
+  line-height: 1.05;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.bs-lede {
+  margin: 10px 0 0;
+  max-width: 34em;
+  font-family: var(--serif);
+  font-size: 21px;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+.bs-tally {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 26px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.bs-tally li {
+  display: grid;
+  gap: 2px;
+  padding: 0 16px;
+  border-left: 1px solid var(--line);
+}
+.bs-tally li:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.bs-tally b {
+  font-family: var(--serif);
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.bs-tally li:first-child b {
+  color: #8a5a00;
+}
+.bs-tally li.zero b {
+  color: var(--ink-3);
+}
+.bs-tally span {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.bs-section {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 28px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line);
+}
+.bs-label h3 {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.k-waiting .bs-label h3 {
+  color: #8a5a00;
+}
+.bs-label p {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--ink-3);
+}
+.bs-items {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bs-items p {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 24px;
+}
+.k-waiting .bs-items > li {
+  padding: 12px 16px;
+  border-left: 3px solid #e3a23b;
+  border-radius: 0 10px 10px 0;
+  background: #fff8e8;
+}
+.k-moved .bs-items p {
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--ink-2);
+}
+.bs-instead {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0 0 18px;
+  padding: 10px 14px;
+  border-left: 2px solid var(--cyan);
+  border-radius: 0 10px 10px 0;
+  background: #f1f9fb;
+}
+.bs-instead-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cyan-ink);
+}
+.bs-instead p {
+  font-size: 14.5px;
+  line-height: 22px;
+}
+.bs-empty {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-3);
+}
+.bs-foot {
+  padding-top: 18px;
+  font-family: var(--serif);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--ink-3);
+}
+
+@media (max-width: 760px) {
+  .brief-stage {
+    padding: 14px;
+  }
+  .brief-sheet {
+    padding: 28px 20px 22px;
+  }
+  .bs-greeting {
+    font-size: 34px;
+  }
+  .bs-lede {
+    font-size: 18px;
+  }
+  .bs-tally {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 16px;
+  }
+  .bs-tally li:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .bs-section {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+
+@media print {
+  .brief-stage {
+    padding: 0;
+    background: none;
+    border: 0;
+    box-shadow: none;
+  }
+  .brief-sheet {
+    box-shadow: none;
+    max-width: none;
+  }
+}

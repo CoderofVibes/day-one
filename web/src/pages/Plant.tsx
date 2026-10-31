@@ -43,6 +43,7 @@ import {
   type ScheduledBatch,
   useRead,
 } from "../series.ts";
+import { BriefSheet } from "./BriefSheet.tsx";
 import {
   CATEGORY_NAMES,
   day,
@@ -993,13 +994,6 @@ function weekday(date: string) {
 
 // ------------------------------------------------------------------ 5am brief
 
-const SECTION_TONE = {
-  moved: "neutral",
-  waiting: "waiting",
-  buying: "held",
-  watch: "neutral",
-} as const;
-
 export function BriefPage({
   plant,
   source,
@@ -1013,49 +1007,5 @@ export function BriefPage({
     `${source.live}-${source.version}-${plant}`,
   );
   if (!brief) return <Loading error={error} what="the brief" />;
-  const count = (key: string) => brief.sections.find((s) => s.key === key)?.lines.length ?? 0;
-  return (
-    <>
-      <div className="cards-4">
-        <NumberCard label="Waits on a person" value={count("waiting")} />
-        <NumberCard label="Buying" value={count("buying")} />
-        <NumberCard label="Worth a look" value={count("watch")} />
-        <NumberCard label="Moved since the last working day" value={count("moved")} />
-      </div>
-      <section className="card-v2 brief" aria-label="The brief">
-        <div className="chart-head">
-          <h3>{brief.headline}</h3>
-          <span className="right">
-            {printUrl && (
-              <a className="btn sm" href={printUrl} target="_blank" rel="noreferrer">
-                Print
-              </a>
-            )}
-          </span>
-        </div>
-        <p className="small muted">
-          For {brief.for ?? "the plant"} at {brief.facilityName}, {day(brief.at)}; since{" "}
-          {day(brief.since)}.
-        </p>
-        <div className="brief-sections">
-          {brief.sections.map((s) => (
-            <section key={s.key} aria-label={s.title}>
-              <h4>
-                {s.title} <Pill tone={SECTION_TONE[s.key]}>{s.lines.length}</Pill>
-              </h4>
-              {s.lines.length === 0 ? (
-                <p className="small muted">{s.empty}</p>
-              ) : (
-                <ul>
-                  {s.lines.map((l) => (
-                    <li key={l.text}>{l.text}</li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          ))}
-        </div>
-      </section>
-    </>
-  );
+  return <BriefSheet brief={brief} printUrl={printUrl} />;
 }

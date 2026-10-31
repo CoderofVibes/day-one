@@ -1228,8 +1228,7 @@ table.data .n {
 }
 .three-cols h4,
 .po-detail h4,
-.rfq h4,
-.brief-sections h4 {
+.rfq h4 {
   margin: 0 0 6px;
   font-size: var(--t-sm);
 }
@@ -1419,20 +1418,6 @@ ul.plain {
   margin-bottom: 8px;
 }
 
-/* The brief's four sections. */
-.brief-sections {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s-4);
-  margin-top: var(--s-3);
-}
-.brief-sections ul {
-  margin: 0;
-  padding-left: 1.1em;
-  display: grid;
-  gap: 6px;
-  font-size: var(--t-sm);
-}
 
 /* What crossed to the ERP, step by step. */
 .crossed {
@@ -1496,8 +1481,7 @@ ul.plain {
 }
 @container (max-width: 760px) {
   .charts-2,
-  .three-cols,
-  .brief-sections {
+  .three-cols {
     grid-template-columns: minmax(0, 1fr);
   }
   .strip > li {

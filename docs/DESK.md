@@ -44,6 +44,10 @@ The same desk opens the Purchasing page for Hollow Pine (`web/src/OrderDesk.tsx`
 - **"Show on the plant"** opens the Plant twin on the order (`?inspect=PO-1042`). The Inspector's "Open in Purchasing" leads back, so the record, the twin and the Inspector name the same object.
 - On a narrow screen, the selected order comes before the queue.
 
+## The 5am brief as a morning sheet
+
+The brief page (`web/src/pages/BriefSheet.tsx`, ordering in `web/src/briefSheet.ts`) sets the same brief Kevin writes (`npm run brief`, `GET /api/brief`) as one paper page on the graphite. It has a serif greeting from the system's fonts (no download), the day in four numbers, then the sections in reading order: what needs a person (amber), what to buy or move, what is worth a look, and what moved since the last working day. A "Before you buy" move from another plant sits under the material it would stand in for, as "Or move it instead". Record ids in a line open their records. The footer says what the sheet is: written from the ledger, nothing ordered, signed or sent. Print still opens the printable page.
+
 ## Look
 
 - **A graphite surface with paper-white cards, the same in both themes.** In the light theme it becomes the page's anchor. The paper card re-declares the light tokens and the graphite the dark ones, so the kit's links and pills inside follow without a second style.
