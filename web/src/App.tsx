@@ -73,7 +73,7 @@ import { Integration } from "./pages/Integration.tsx";
 import { BooksTiles, LimitTiles } from "./pages/Limits.tsx";
 import { LotsPage } from "./pages/Lots.tsx";
 import { MapPage, type MapPick } from "./pages/MapPage.tsx";
-import { MoneyPage } from "./pages/Money.tsx";
+import { MoneyPage, MoneyTile } from "./pages/Money.tsx";
 import { Overview } from "./pages/Overview.tsx";
 import { BatchRecordsPage, BriefPage, InventoryPage, SchedulePage } from "./pages/Plant.tsx";
 import { MaterialMatrix, PlantColumns } from "./pages/Plants.tsx";
@@ -399,6 +399,7 @@ function Pages({
           run={run}
           at={at}
           {...(onStep ? { onStep } : {})}
+          saved={<MoneyTile clock={clock} plant={plant} />}
         />
         <div className="page v2 foot-wrap">{foot}</div>
       </>
