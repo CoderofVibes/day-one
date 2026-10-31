@@ -570,7 +570,7 @@ function ReplayApp() {
       )}
       person={person}
     >
-      <WithRail curtain={curtain} rail={<Curtain data={data} upTo={at} />}>
+      <WithRail curtain={curtain} rail={<Curtain data={data} upTo={at} page={route.page} />}>
         <Pages
           page={route.page}
           plant={route.plant}
@@ -979,7 +979,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
       }}
       person={person}
     >
-      <WithRail curtain={curtain} rail={<Curtain data={state} upTo={last} />}>
+      <WithRail curtain={curtain} rail={<Curtain data={state} upTo={last} page={route.page} />}>
         <Pages
           page={route.page}
           plant={route.plant}

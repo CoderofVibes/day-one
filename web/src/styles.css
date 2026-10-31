@@ -1594,6 +1594,28 @@ tbody th:first-child {
   font-size: var(--t-xs);
 }
 
+/* A recorded attack's transaction: held by the contract, its words in red. */
+.tx.attack .head code {
+  font-family: var(--sans);
+}
+
+/* "Recent on testnet": the latest recorded, when the page has nothing on chain yet. */
+.curtain .recent {
+  margin: var(--s-3) 0 var(--s-2);
+  padding-left: var(--s-2);
+  border-left: 2px solid var(--curtain-ok);
+}
+.curtain .recent h3 {
+  margin: 0;
+  font-size: var(--fs-caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--curtain-ink);
+}
+.curtain .recent p {
+  margin: 2px 0 0;
+}
+
 /* ---------- The static replay's guide and the closing card ---------- */
 
 .guide {
