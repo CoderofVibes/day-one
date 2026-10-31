@@ -1,0 +1,691 @@
+{
+ "facility": "C",
+ "lots": [
+  {
+   "lot": "BTL-260905-01",
+   "material": "BTL",
+   "vendor": "LOW",
+   "vendorLot": "LOW-26090501",
+   "state": "released"
+  },
+  {
+   "lot": "BTL-261007-01",
+   "material": "BTL",
+   "vendor": "LOW",
+   "vendorLot": "LOW-26100701",
+   "state": "released"
+  },
+  {
+   "lot": "CAP-260905-01",
+   "material": "CAP",
+   "vendor": "LOW",
+   "vendorLot": "LOW-26090501",
+   "state": "released"
+  },
+  {
+   "lot": "DES-260905-01",
+   "material": "DES",
+   "vendor": "LOW",
+   "vendorLot": "LOW-26090501",
+   "state": "released"
+  },
+  {
+   "lot": "LCM-260907-01",
+   "material": "LCM",
+   "vendor": "CPL",
+   "vendorLot": "CPL-26090701",
+   "state": "released"
+  },
+  {
+   "lot": "LEX-260907-01",
+   "material": "LEX",
+   "vendor": "CPL",
+   "vendorLot": "CPL-26090701",
+   "state": "released"
+  },
+  {
+   "lot": "LVC-260907-01",
+   "material": "LVC",
+   "vendor": "CPL",
+   "vendorLot": "CPL-26090701",
+   "state": "released"
+  },
+  {
+   "lot": "SHC-260908-01",
+   "material": "SHC",
+   "vendor": "HBX",
+   "vendorLot": "HBX-26090801",
+   "state": "released"
+  },
+  {
+   "lot": "TDC-260905-01",
+   "material": "TDC",
+   "vendor": "LOW",
+   "vendorLot": "LOW-26090501",
+   "state": "released"
+  },
+  {
+   "lot": "TUB-260905-01",
+   "material": "TUB",
+   "vendor": "LOW",
+   "vendorLot": "LOW-26090501",
+   "state": "released"
+  }
+ ],
+ "events": [
+  {
+   "seq": 1536,
+   "lot": "BTL-260905-01",
+   "kind": "received",
+   "qtyBase": 60000,
+   "at": "2026-09-05T14:00:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1537,
+   "lot": "CAP-260905-01",
+   "kind": "received",
+   "qtyBase": 120000,
+   "at": "2026-09-05T14:00:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1538,
+   "lot": "DES-260905-01",
+   "kind": "received",
+   "qtyBase": 120000,
+   "at": "2026-09-05T14:00:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1539,
+   "lot": "TUB-260905-01",
+   "kind": "received",
+   "qtyBase": 45000,
+   "at": "2026-09-05T14:00:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1540,
+   "lot": "TDC-260905-01",
+   "kind": "received",
+   "qtyBase": 45000,
+   "at": "2026-09-05T14:00:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1541,
+   "lot": "BTL-260905-01",
+   "kind": "quarantined",
+   "qtyBase": 0,
+   "at": "2026-09-05T14:30:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1542,
+   "lot": "CAP-260905-01",
+   "kind": "quarantined",
+   "qtyBase": 0,
+   "at": "2026-09-05T14:30:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1543,
+   "lot": "DES-260905-01",
+   "kind": "quarantined",
+   "qtyBase": 0,
+   "at": "2026-09-05T14:30:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1544,
+   "lot": "TUB-260905-01",
+   "kind": "quarantined",
+   "qtyBase": 0,
+   "at": "2026-09-05T14:30:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1545,
+   "lot": "TDC-260905-01",
+   "kind": "quarantined",
+   "qtyBase": 0,
+   "at": "2026-09-05T14:30:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1546,
+   "lot": "LVC-260907-01",
+   "kind": "received",
+   "qtyBase": 60000,
+   "at": "2026-09-07T14:00:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1547,
+   "lot": "LCM-260907-01",
+   "kind": "received",
+   "qtyBase": 60000,
+   "at": "2026-09-07T14:00:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1548,
+   "lot": "LEX-260907-01",
+   "kind": "received",
+   "qtyBase": 45000,
+   "at": "2026-09-07T14:00:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1549,
+   "lot": "LVC-260907-01",
+   "kind": "quarantined",
+   "qtyBase": 0,
+   "at": "2026-09-07T14:30:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1550,
+   "lot": "LCM-260907-01",
+   "kind": "quarantined",
+   "qtyBase": 0,
+   "at": "2026-09-07T14:30:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1551,
+   "lot": "LEX-260907-01",
+   "kind": "quarantined",
+   "qtyBase": 0,
+   "at": "2026-09-07T14:30:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1552,
+   "lot": "BTL-260905-01",
+   "kind": "released",
+   "qtyBase": 0,
+   "at": "2026-09-07T16:00:00.000Z",
+   "ref": "qc:BTL-260905-01",
+   "reason": null
+  },
+  {
+   "seq": 1553,
+   "lot": "CAP-260905-01",
+   "kind": "released",
+   "qtyBase": 0,
+   "at": "2026-09-07T16:00:00.000Z",
+   "ref": "qc:CAP-260905-01",
+   "reason": null
+  },
+  {
+   "seq": 1554,
+   "lot": "DES-260905-01",
+   "kind": "released",
+   "qtyBase": 0,
+   "at": "2026-09-07T16:00:00.000Z",
+   "ref": "qc:DES-260905-01",
+   "reason": null
+  },
+  {
+   "seq": 1555,
+   "lot": "TUB-260905-01",
+   "kind": "released",
+   "qtyBase": 0,
+   "at": "2026-09-07T16:00:00.000Z",
+   "ref": "qc:TUB-260905-01",
+   "reason": null
+  },
+  {
+   "seq": 1556,
+   "lot": "TDC-260905-01",
+   "kind": "released",
+   "qtyBase": 0,
+   "at": "2026-09-07T16:00:00.000Z",
+   "ref": "qc:TDC-260905-01",
+   "reason": null
+  },
+  {
+   "seq": 1602,
+   "lot": "SHC-260908-01",
+   "kind": "received",
+   "qtyBase": 6000,
+   "at": "2026-09-08T14:00:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1603,
+   "lot": "SHC-260908-01",
+   "kind": "quarantined",
+   "qtyBase": 0,
+   "at": "2026-09-08T14:30:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 1634,
+   "lot": "LVC-260907-01",
+   "kind": "released",
+   "qtyBase": 0,
+   "at": "2026-09-09T16:00:00.000Z",
+   "ref": "qc:LVC-260907-01",
+   "reason": null
+  },
+  {
+   "seq": 1635,
+   "lot": "LCM-260907-01",
+   "kind": "released",
+   "qtyBase": 0,
+   "at": "2026-09-09T16:00:00.000Z",
+   "ref": "qc:LCM-260907-01",
+   "reason": null
+  },
+  {
+   "seq": 1636,
+   "lot": "LEX-260907-01",
+   "kind": "released",
+   "qtyBase": 0,
+   "at": "2026-09-09T16:00:00.000Z",
+   "ref": "qc:LEX-260907-01",
+   "reason": null
+  },
+  {
+   "seq": 1693,
+   "lot": "SHC-260908-01",
+   "kind": "released",
+   "qtyBase": 0,
+   "at": "2026-09-10T16:00:00.000Z",
+   "ref": "qc:SHC-260908-01",
+   "reason": null
+  },
+  {
+   "seq": 2385,
+   "lot": "BTL-261007-01",
+   "kind": "received",
+   "qtyBase": 100000,
+   "at": "2026-10-07T14:00:00.000Z",
+   "ref": "po:PO-1037",
+   "reason": null
+  },
+  {
+   "seq": 2386,
+   "lot": "BTL-261007-01",
+   "kind": "quarantined",
+   "qtyBase": 0,
+   "at": "2026-10-07T14:30:00.000Z",
+   "ref": "",
+   "reason": null
+  },
+  {
+   "seq": 2448,
+   "lot": "BTL-260905-01",
+   "kind": "transfer_out",
+   "qtyBase": -24000,
+   "at": "2026-10-09T07:00:00.000Z",
+   "ref": "transfer:TR-C-B-261009",
+   "reason": null
+  },
+  {
+   "seq": 2481,
+   "lot": "BTL-261007-01",
+   "kind": "released",
+   "qtyBase": 0,
+   "at": "2026-10-09T16:00:00.000Z",
+   "ref": "qc:BTL-261007-01",
+   "reason": null
+  },
+  {
+   "seq": 2482,
+   "lot": "CAP-260905-01",
+   "kind": "transfer_out",
+   "qtyBase": -24000,
+   "at": "2026-10-10T07:00:00.000Z",
+   "ref": "transfer:TR-C-B-261010",
+   "reason": null
+  },
+  {
+   "seq": 2507,
+   "lot": "LCM-260907-01",
+   "kind": "transfer_out",
+   "qtyBase": -15000,
+   "at": "2026-10-12T07:00:00.000Z",
+   "ref": "transfer:TR-C-A-261012",
+   "reason": null
+  },
+  {
+   "seq": 2591,
+   "lot": "LVC-260907-01",
+   "kind": "transfer_out",
+   "qtyBase": -20000,
+   "at": "2026-10-20T07:00:00.000Z",
+   "ref": "transfer:TR-C-B-261020",
+   "reason": null
+  }
+ ],
+ "balances": [
+  {
+   "lot": "BTL-260905-01",
+   "onHandBase": 36000
+  },
+  {
+   "lot": "BTL-261007-01",
+   "onHandBase": 100000
+  },
+  {
+   "lot": "CAP-260905-01",
+   "onHandBase": 96000
+  },
+  {
+   "lot": "DES-260905-01",
+   "onHandBase": 120000
+  },
+  {
+   "lot": "LCM-260907-01",
+   "onHandBase": 45000
+  },
+  {
+   "lot": "LEX-260907-01",
+   "onHandBase": 45000
+  },
+  {
+   "lot": "LVC-260907-01",
+   "onHandBase": 40000
+  },
+  {
+   "lot": "SHC-260908-01",
+   "onHandBase": 6000
+  },
+  {
+   "lot": "TDC-260905-01",
+   "onHandBase": 45000
+  },
+  {
+   "lot": "TUB-260905-01",
+   "onHandBase": 45000
+  }
+ ],
+ "pos": [
+  {
+   "poNo": "PO-1037",
+   "vendor": "LOW",
+   "category": "packaging",
+   "totalUsdc": 2100000000,
+   "freightUsdc": 0,
+   "status": "paid",
+   "createdBy": "staff",
+   "poHash": null,
+   "lines": [
+    {
+     "material": "BTL",
+     "qtyBase": 100000,
+     "unitPriceUsdc": 21000,
+     "extendedUsdc": 2100000000
+    }
+   ]
+  }
+ ],
+ "receipts": [
+  {
+   "poNo": "PO-1037",
+   "receivedAt": "2026-10-07T14:00:00.000Z",
+   "matchStatus": "matched"
+  }
+ ],
+ "batches": [],
+ "qc": [
+  {
+   "lot": "BTL-260905-01",
+   "decision": "released",
+   "decidedAt": "2026-09-07T16:00:00.000Z"
+  },
+  {
+   "lot": "CAP-260905-01",
+   "decision": "released",
+   "decidedAt": "2026-09-07T16:00:00.000Z"
+  },
+  {
+   "lot": "DES-260905-01",
+   "decision": "released",
+   "decidedAt": "2026-09-07T16:00:00.000Z"
+  },
+  {
+   "lot": "TDC-260905-01",
+   "decision": "released",
+   "decidedAt": "2026-09-07T16:00:00.000Z"
+  },
+  {
+   "lot": "TUB-260905-01",
+   "decision": "released",
+   "decidedAt": "2026-09-07T16:00:00.000Z"
+  },
+  {
+   "lot": "LCM-260907-01",
+   "decision": "released",
+   "decidedAt": "2026-09-09T16:00:00.000Z"
+  },
+  {
+   "lot": "LEX-260907-01",
+   "decision": "released",
+   "decidedAt": "2026-09-09T16:00:00.000Z"
+  },
+  {
+   "lot": "LVC-260907-01",
+   "decision": "released",
+   "decidedAt": "2026-09-09T16:00:00.000Z"
+  },
+  {
+   "lot": "SHC-260908-01",
+   "decision": "released",
+   "decidedAt": "2026-09-10T16:00:00.000Z"
+  },
+  {
+   "lot": "BTL-261007-01",
+   "decision": "released",
+   "decidedAt": "2026-10-09T16:00:00.000Z"
+  }
+ ],
+ "transfers": [
+  {
+   "transferNo": "TR-C-A-261012",
+   "lot": "LCM-260907-01",
+   "from": "C",
+   "to": "A",
+   "shippedBase": 15000,
+   "receivedBase": 15000,
+   "state": "received"
+  },
+  {
+   "transferNo": "TR-C-B-261009",
+   "lot": "BTL-260905-01",
+   "from": "C",
+   "to": "B",
+   "shippedBase": 24000,
+   "receivedBase": 24000,
+   "state": "received"
+  },
+  {
+   "transferNo": "TR-C-B-261010",
+   "lot": "CAP-260905-01",
+   "from": "C",
+   "to": "B",
+   "shippedBase": 24000,
+   "receivedBase": 24000,
+   "state": "received"
+  },
+  {
+   "transferNo": "TR-C-B-261020",
+   "lot": "LVC-260907-01",
+   "from": "C",
+   "to": "B",
+   "shippedBase": 20000,
+   "receivedBase": 20000,
+   "state": "received"
+  }
+ ],
+ "plan": [],
+ "rfqs": [],
+ "approvals": [],
+ "chain": [
+  {
+   "txHash": "GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS",
+   "method": "anchor_batch",
+   "signer": "kevin.plant-b.acme-holdings.testnet",
+   "receiver": "spend-policy.acme-holdings.testnet",
+   "status": "success",
+   "error": null,
+   "explorerUrl": "https://testnet.nearblocks.io/txns/GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS",
+   "at": "2026-11-09T13:05:00.000Z",
+   "poNo": null
+  },
+  {
+   "txHash": "6qNuBF16LW63gRCJ1QmLRY3RQ6k4RcX1NUN2V5scH3jJ",
+   "method": "anchor",
+   "signer": "quickchem-direct.testnet",
+   "receiver": "spend-policy.acme-holdings.testnet",
+   "status": "refused",
+   "error": "Only a registered purchasing agent or an approved supplier can anchor records.",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/6qNuBF16LW63gRCJ1QmLRY3RQ6k4RcX1NUN2V5scH3jJ",
+   "at": "2026-11-09T13:10:00.000Z",
+   "poNo": null
+  },
+  {
+   "txHash": "FMLQyTJ7yZvFW5qyqoNUHnKuc3JTvkv3dPfjcW9nkyC5",
+   "method": "anchor",
+   "signer": "northgate-ingredients.testnet",
+   "receiver": "spend-policy.acme-holdings.testnet",
+   "status": "success",
+   "error": null,
+   "explorerUrl": "https://testnet.nearblocks.io/txns/FMLQyTJ7yZvFW5qyqoNUHnKuc3JTvkv3dPfjcW9nkyC5",
+   "at": "2026-11-09T13:10:00.000Z",
+   "poNo": null
+  },
+  {
+   "txHash": "4mBN5CwJBrkdn3e6CmaWWEzY7MVgdah1jcCo1t9pKjo2",
+   "method": "anchor",
+   "signer": "ridgeway-ascorbics.testnet",
+   "receiver": "spend-policy.acme-holdings.testnet",
+   "status": "success",
+   "error": null,
+   "explorerUrl": "https://testnet.nearblocks.io/txns/4mBN5CwJBrkdn3e6CmaWWEzY7MVgdah1jcCo1t9pKjo2",
+   "at": "2026-11-09T13:10:00.000Z",
+   "poNo": null
+  },
+  {
+   "txHash": "D28BgcP34ruXdczobk6WhvrgJxBWEm73qjQK5uxmzH1A",
+   "method": "submit_po",
+   "signer": "kevin.plant-b.acme-holdings.testnet",
+   "receiver": "spend-policy.acme-holdings.testnet",
+   "status": "success",
+   "error": null,
+   "explorerUrl": "https://testnet.nearblocks.io/txns/D28BgcP34ruXdczobk6WhvrgJxBWEm73qjQK5uxmzH1A",
+   "at": "2026-11-09T13:10:00.000Z",
+   "poNo": "PO-1041"
+  },
+  {
+   "txHash": "FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af",
+   "method": "submit_po",
+   "signer": "kevin.plant-b.acme-holdings.testnet",
+   "receiver": "spend-policy.acme-holdings.testnet",
+   "status": "refused",
+   "error": "PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required.",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af",
+   "at": "2026-11-09T13:10:00.000Z",
+   "poNo": "PO-1042"
+  },
+  {
+   "txHash": "EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8",
+   "method": "approve_po",
+   "signer": "director.plant-b.acme-holdings.testnet",
+   "receiver": "spend-policy.acme-holdings.testnet",
+   "status": "success",
+   "error": null,
+   "explorerUrl": "https://testnet.nearblocks.io/txns/EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8",
+   "at": "2026-11-09T13:25:00.000Z",
+   "poNo": "PO-1042"
+  },
+  {
+   "txHash": "3sUEp63gHQFSr6FvrjTDvarFh2zM2i1Zp9bhzumfbpmQ",
+   "method": "submit_po",
+   "signer": "kevin.plant-b.acme-holdings.testnet",
+   "receiver": "spend-policy.acme-holdings.testnet",
+   "status": "success",
+   "error": null,
+   "explorerUrl": "https://testnet.nearblocks.io/txns/3sUEp63gHQFSr6FvrjTDvarFh2zM2i1Zp9bhzumfbpmQ",
+   "at": "2026-11-09T13:25:00.000Z",
+   "poNo": "PO-1042"
+  },
+  {
+   "txHash": "AsDTwnSwqeSLh3gNREJPgU5ckMeGhqsM2FMAWfTk1Ma7",
+   "method": "accept_po",
+   "signer": "northgate-ingredients.testnet",
+   "receiver": "spend-policy.acme-holdings.testnet",
+   "status": "success",
+   "error": null,
+   "explorerUrl": "https://testnet.nearblocks.io/txns/AsDTwnSwqeSLh3gNREJPgU5ckMeGhqsM2FMAWfTk1Ma7",
+   "at": "2026-11-13T09:00:00.000Z",
+   "poNo": "PO-1042"
+  },
+  {
+   "txHash": "BU6SLGGUxjkrXVdQQHv8c6G2iYFDQv8cyZ72q97MarBD",
+   "method": "mark_shipped",
+   "signer": "northgate-ingredients.testnet",
+   "receiver": "spend-policy.acme-holdings.testnet",
+   "status": "success",
+   "error": null,
+   "explorerUrl": "https://testnet.nearblocks.io/txns/BU6SLGGUxjkrXVdQQHv8c6G2iYFDQv8cyZ72q97MarBD",
+   "at": "2026-11-13T09:00:00.000Z",
+   "poNo": "PO-1042"
+  },
+  {
+   "txHash": "7pCauyEYJSMeCLW1gNCgZ6bze6dqQasNvq7Twf8yJozm",
+   "method": "confirm_receipt",
+   "signer": "receiving.plant-b.acme-holdings.testnet",
+   "receiver": "spend-policy.acme-holdings.testnet",
+   "status": "success",
+   "error": null,
+   "explorerUrl": "https://testnet.nearblocks.io/txns/7pCauyEYJSMeCLW1gNCgZ6bze6dqQasNvq7Twf8yJozm",
+   "at": "2026-11-16T14:20:00.000Z",
+   "poNo": "PO-1042"
+  },
+  {
+   "txHash": "2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn",
+   "method": "qc_release",
+   "signer": "qc.plant-b.acme-holdings.testnet",
+   "receiver": "spend-policy.acme-holdings.testnet",
+   "status": "success",
+   "error": null,
+   "explorerUrl": "https://testnet.nearblocks.io/txns/2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn",
+   "at": "2026-11-16T16:05:00.000Z",
+   "poNo": "PO-1042"
+  },
+  {
+   "txHash": "2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV",
+   "method": "anchor_batch",
+   "signer": "kevin.plant-b.acme-holdings.testnet",
+   "receiver": "spend-policy.acme-holdings.testnet",
+   "status": "success",
+   "error": null,
+   "explorerUrl": "https://testnet.nearblocks.io/txns/2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV",
+   "at": "2026-11-16T16:05:00.000Z",
+   "poNo": null
+  }
+ ]
+}

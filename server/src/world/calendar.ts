@@ -83,7 +83,8 @@ export function demand(config: WorldConfig, plant: PlantParams, from: string, to
       const perWeek = (p.batchesPerMonth * perBatch * 12) / 52;
       const units =
         perWeek * (PROFILES[p.profile][m] ?? 1) * (1 + p.trendPerMonth) ** months * noise;
-      out.push({ week, product: p.product, units: Math.round(units) });
+      const started = !p.startsOn || mid >= p.startsOn;
+      out.push({ week, product: p.product, units: started ? Math.round(units) : 0 });
     }
   }
   return out;

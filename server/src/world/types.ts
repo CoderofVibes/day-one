@@ -59,6 +59,8 @@ export interface WorldLot {
   receivedAt: string;
   qtyBase: number;
   qc: { result: "released" | "rejected"; at: string } | null;
+  /** Sent over from a sister plant on this transfer; the plant that bought it lists its QC. */
+  transferNo?: string;
 }
 
 /** One signed change to a lot's quantity at the plant. Its sum per lot is the lot's balance. */

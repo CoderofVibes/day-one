@@ -5,25 +5,43 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { QC_SAMPLE_MG } from "../seed/history.ts";
 import { VENDORS } from "../seed/reference.ts";
 import type { Anchors } from "./anchors.ts";
-import { addDays, calendar, dates, month } from "./calendar.ts";
-import { RUSH, WORLD, type WorldConfig } from "./config.ts";
-import { generateWorld, type World } from "./index.ts";
+import { addDays, calendar, dates, month, productSpec } from "./calendar.ts";
+import {
+  LAKEVIEW_WORLD,
+  RIVERSIDE_WORLD,
+  RUSH,
+  WORLD,
+  WORLDS,
+  type WorldConfig,
+} from "./config.ts";
+import { generateWorlds, type World } from "./index.ts";
 import { anchorRecords } from "./splice.ts";
 
-const anchors = JSON.parse(
-  readFileSync(new URL("../../../data/world/hollow-pine.anchors.json", import.meta.url), "utf8"),
-) as Anchors;
-const world = generateWorld(WORLD, anchors);
-const other: WorldConfig = { ...WORLD, seed: "another seed" };
-const otherWorld = generateWorld(other, anchors);
+const load = (slug: string) =>
+  JSON.parse(
+    readFileSync(new URL(`../../../data/world/${slug}.anchors.json`, import.meta.url), "utf8"),
+  ) as Anchors;
+const anchorsBy: Record<string, Anchors> = {
+  B: load("hollow-pine"),
+  A: load("riverside"),
+  C: load("lakeview"),
+};
+const anchors = anchorsBy.B as Anchors;
+const all = generateWorlds(WORLDS, anchorsBy);
+const world = all.B as World;
+const riverside = all.A as World;
+const lakeview = all.C as World;
+const otherConfigs: WorldConfig[] = WORLDS.map((c) => ({ ...c, seed: "another seed" }));
+const otherAll = generateWorlds(otherConfigs, anchorsBy);
 const hash = (w: World) => createHash("sha256").update(JSON.stringify(w)).digest("hex");
 const day = (iso: string) => iso.slice(0, 10);
 const usd = (n: number) => n * 1_000_000;
 
 /** The invariants every seed must keep. */
-function invariants(w: World, config: WorldConfig) {
+function invariants(w: World, config: WorldConfig, anchors: Anchors) {
   // Mass balance per lot: the running sum of its movements never goes below zero.
   const balance = new Map<string, number>();
   for (const m of w.movements) {
@@ -161,6 +179,16 @@ function invariants(w: World, config: WorldConfig) {
     fg.set(m[1], next);
   }
   for (const b of w.batches) expect(w.indexes.batchToFgLot[b.batchNo]).toBe(`FG-${b.batchNo}`);
+  // Transfers out are whole lot movements; nothing a plant stages runs it below zero (above).
+  for (const t of w.transfers) {
+    expect(w.movements).toContainEqual([
+      t.at,
+      t.lot,
+      "transfer_out",
+      -t.qtyBase,
+      `transfer:${t.transferNo}`,
+    ]);
+  }
   expect(w.invoices.map((i) => i.shipmentNo)).toEqual(w.shipments.map((x) => x.shipmentNo));
   for (const sh of w.shipments) {
     for (const l of sh.lines) expect(w.indexes.fgLotToShipments[l.fgLot]).toContain(sh.shipmentNo);
@@ -169,10 +197,14 @@ function invariants(w: World, config: WorldConfig) {
 
 describe("the world generator", () => {
   it("is deterministic, and another seed still keeps every invariant", () => {
-    expect(hash(generateWorld(WORLD, anchors))).toBe(hash(world));
-    expect(hash(otherWorld)).not.toBe(hash(world));
-    invariants(world, WORLD);
-    invariants(otherWorld, other);
+    const again = generateWorlds(WORLDS, anchorsBy);
+    WORLDS.forEach((config, i) => {
+      const f = config.plant.facility;
+      expect(hash(again[f] as World)).toBe(hash(all[f] as World));
+      expect(hash(otherAll[f] as World)).not.toBe(hash(all[f] as World));
+      invariants(all[f] as World, config, anchorsBy[f] as Anchors);
+      invariants(otherAll[f] as World, otherConfigs[i] as WorldConfig, anchorsBy[f] as Anchors);
+    });
   });
 
   it("covers twelve months and six weeks around the anchors, inside the size budget", () => {
@@ -183,6 +215,70 @@ describe("the world generator", () => {
       expect(world.pos.some((p) => p.era === era)).toBe(true);
     }
     expect(JSON.stringify(world).length).toBeLessThan(8_000_000);
+    expect(JSON.stringify(all).length).toBeLessThan(15_000_000);
+  });
+
+  it("generates Riverside and Lakeview with their own parameters around their own anchors", () => {
+    // Riverside: a tablet plant, two thirds of Hollow Pine's batches, no legacy Cal-Mag.
+    const perMonth = (w: World) => w.batches.length / w.monthly.length;
+    expect(perMonth(riverside)).toBeGreaterThan(6);
+    expect(perMonth(riverside)).toBeLessThan(perMonth(world));
+    expect(riverside.meta.plant).toBe("Acme Riverside");
+    expect(
+      riverside.pos.filter((p) => p.era === "legacy").every((p) => p.poNo.startsWith("RV-PO-")),
+    ).toBe(true);
+    expect(
+      riverside.pos.filter((p) => p.era === "simulated").every((p) => p.poNo.startsWith("PO-R-")),
+    ).toBe(true);
+    expect(riverside.batches.filter((b) => b.era === "legacy" && b.product === "P-CMD")).toEqual(
+      [],
+    );
+    expect(riverside.shipments.length).toBeGreaterThan(300);
+    for (const b of anchorRecords(anchorsBy.A as Anchors).batches)
+      expect(riverside.batches.find((x) => x.batchNo === b.batchNo)).toEqual(b);
+    // Riverside's simulated batches never take the numbers the group purchase and BR-A-2207 hold.
+    expect(riverside.batches.some((b) => ["BR-A-2207", "BR-A-2210"].includes(b.batchNo))).toBe(
+      false,
+    );
+
+    // The 115.199 kg gap: the anchored Cal-Mag batches issue more than their tablets and waste.
+    const gap = ["BR-A-2201", "BR-A-2204"].reduce((t, no) => {
+      const b = riverside.batches.find((x) => x.batchNo === no);
+      const issued = b?.consumption.reduce((s, c) => s + c.actualBase, 0) ?? 0;
+      const weight = productSpec("P-CMD").tabletWeightMg;
+      return t + issued - (b?.actualUnits ?? 0) * weight - (b?.wasteBase ?? 0) - QC_SAMPLE_MG;
+    }, 0);
+    expect(gap).toBe(115_199_028);
+    expect(riverside.incidents.find((i) => i.id === "INC-07")).toMatchObject({
+      unaccountedBase: gap,
+    });
+
+    // Lakeview: no batches; it stages the packaging of the other plants' batches.
+    expect(lakeview.batches).toEqual([]);
+    expect(lakeview.meta.calendar.start).toBe("2025-12-01");
+    expect(LAKEVIEW_WORLD.calendar.spliceIn).toBe("2026-09-05");
+    expect(lakeview.pos.every((p) => p.category === "packaging")).toBe(true);
+    expect(lakeview.pullShort).toEqual([]);
+    const sentTo = new Set(lakeview.transfers.map((t) => t.to));
+    expect([...sentTo].sort()).toEqual(["A", "B"]);
+    // Every Hollow Pine Vitamin C batch outside Lakeview's anchor window has its bottles staged.
+    for (const b of world.batches.filter(
+      (x) => x.product === "P-VC500" && x.era === "legacy" && x.date > "2025-12-05",
+    )) {
+      const bottles = lakeview.transfers.filter(
+        (t) => t.to === "B" && t.material === "BTL" && t.at.slice(0, 10) < b.date,
+      );
+      expect(bottles.length, b.batchNo).toBeGreaterThan(0);
+    }
+    // Generated lot codes never repeat across plants, except a lot sent from one to the other
+    // (the seed's own transfers list their lots at both plants).
+    const codes = [world, riverside, lakeview].flatMap((w) =>
+      w.lots.filter((l) => !l.transferNo && l.era !== "anchor").map((l) => l.lot),
+    );
+    expect(new Set(codes).size).toBe(codes.length);
+    const bills = [world, riverside, lakeview].flatMap((w) => w.bills.map((b) => b.billNo));
+    expect(new Set(bills).size).toBe(bills.length);
+    expect(RIVERSIDE_WORLD.plant.kevin.approver).toBe("Dana Whitfield");
   });
 
   it("keeps every anchor exactly as the seed and the recorded run left it", () => {
@@ -286,5 +382,81 @@ describe("the world generator", () => {
 
     // The look-back's price drift is the legacy steps of config.ts PRICES.legacySteps.
     expect(world.lookBack.priceDrift.map((d) => d.material).sort()).toEqual(["SIO", "SUC"]);
+  });
+
+  it("puts the M3 incidents on their dates and entities", () => {
+    const inc = (w: World, id: string) => {
+      const found = w.incidents.find((i) => i.id === id);
+      if (!found) throw new Error(`no ${id}`);
+      return found;
+    };
+    const poOf = (no: string) => world.pos.find((p) => p.poNo === no);
+
+    // INC-02: Sierra's March calcium carbonate, nine days past its promised day.
+    const late = inc(world, "INC-02");
+    expect(late.affected.suppliers).toEqual(["SMS"]);
+    const latePo = poOf(late.affected.pos[0] ?? "");
+    expect(latePo?.vendor).toBe("SMS");
+    expect(latePo?.lines.some((l) => l.material === "CAC")).toBe(true);
+    const lateReceipt = world.receipts.find((r) => r.poNo === latePo?.poNo);
+    expect(lateReceipt?.daysLate).toBeGreaterThanOrEqual(9);
+    expect(lateReceipt?.receivedAt.slice(0, 7)).toBe("2026-03");
+
+    // INC-04: Fennimore's sorbitol fails moisture in June, goes back, a replacement follows.
+    const fpo = inc(world, "INC-04");
+    const rejected = world.lots.find((l) => l.lot === fpo.affected.lots[0]);
+    expect(rejected).toMatchObject({ vendor: "FPO", material: "SOR", qc: { result: "rejected" } });
+    expect((rejected?.receivedAt ?? "") >= "2026-06-01").toBe(true);
+    const replaced = world.lots.filter(
+      (l) => l.poNo === rejected?.poNo && l.lot !== rejected?.lot && l.material === "SOR",
+    );
+    expect(replaced.some((l) => l.qc?.result === "released")).toBe(true);
+
+    // INC-05: QuickChem's two trial lots, both rejected, nothing billed or paid; never qualified,
+    // so Kevin's RFQs exclude it (RFQ-2611-01 in the anchors says the same).
+    const qcd = inc(world, "INC-05");
+    const trial = world.lots.filter((l) => l.vendor === "QCD");
+    expect(trial.map((l) => l.qc?.result)).toEqual(["rejected", "rejected"]);
+    expect(qcd.affected.lots).toEqual(trial.map((l) => l.lot));
+    for (const no of qcd.affected.pos) expect(poOf(no)?.status).toBe("cancelled");
+    expect(world.bills.some((b) => b.vendor === "QCD")).toBe(false);
+    const rfq2611 = anchors.rfqs.find((r) => r.rfqNo === "RFQ-2611-01");
+    expect(rfq2611?.quotes.find((q) => q.vendor === "QCD")?.reason).toBe("vendor not qualified");
+    for (const r of world.rfqs)
+      expect(r.quotes.find((q) => q.vendor === "QCD")?.status ?? "excluded").toBe("excluded");
+
+    // INC-06: $6.40 before, $7.10 on PO-1042 and every order after.
+    const hike = inc(world, "INC-06");
+    const ascPrices = world.pos
+      .filter((p) => p.vendor !== "QCD")
+      .flatMap((p) =>
+        p.lines
+          .filter((l) => l.material === "ASC")
+          .map((l) => [day(p.orderedAt), l.unitPriceUsdc] as const),
+      );
+    for (const [d, price] of ascPrices) expect(price, d).toBe(d < hike.date ? usd(6.4) : usd(7.1));
+    expect(poOf("PO-1042")?.lines[0]?.unitPriceUsdc).toBe(usd(7.1));
+
+    // INC-08: one Ridgeway lot, Vitamin C batches at both plants, received months before T0.
+    const recall = inc(world, "INC-08");
+    const lot = recall.affected.lots[0] ?? "";
+    expect(lot).not.toBe("ASC-261116-01");
+    expect(world.lots.find((l) => l.lot === lot)).toMatchObject({ vendor: "RWA", material: "ASC" });
+    expect(inc(riverside, "INC-08").affected.lots).toEqual([lot]);
+    const usedIn = [world, riverside].flatMap((w) =>
+      w.batches.filter((b) => b.consumption.some((c) => c.lot === lot)),
+    );
+    expect(new Set(usedIn.map((b) => b.batchNo.slice(0, 4)))).toEqual(new Set(["BR-B", "BR-A"]));
+    expect(usedIn.every((b) => b.product === "P-VC500")).toBe(true);
+    // It is the bought-in ascorbic acid lot in the most batches, at any plant.
+    const count = new Map<string, number>();
+    for (const w of [world, riverside])
+      for (const b of w.batches)
+        for (const c of new Set(
+          b.consumption.filter((x) => x.material === "ASC").map((x) => x.lot),
+        ))
+          count.set(c, (count.get(c) ?? 0) + 1);
+    const most = [...count.entries()].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))[0];
+    expect(most?.[0]).toBe(lot);
   });
 });

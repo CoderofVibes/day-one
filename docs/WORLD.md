@@ -1,8 +1,8 @@
 # The twelve-month world
 
-Hollow Pine's year as data: a deterministic generator (`server/src/world/`) builds twelve months of plant history around the records the seed and the recorded run already hold, plus six simulated weeks after the run. Brief: `docs/UPGRADE_BRIEF.md` §2.1. Everything in it is fictional.
+The three plants' year as data: a deterministic generator (`server/src/world/`) builds twelve months of plant history around the records the seed and the recorded run already hold, plus six simulated weeks after the run, for Hollow Pine (B), Acme Riverside (A) and Acme Lakeview (C). Brief: `docs/UPGRADE_BRIEF.md` §2.1. Everything in it is fictional.
 
-Regenerate with `npm run world` (no keys, no network). `npm run world -- --check` exits 1 when `data/world/hollow-pine.json` is stale. A test (`scripts/lib/world-run.test.ts`) regenerates it and compares the hash with the committed file.
+Regenerate with `npm run world` (no keys, no network). `npm run world -- --check` exits 1 when any of `data/world/hollow-pine.json`, `riverside.json` or `lakeview.json` is stale. A test (`scripts/lib/world-run.test.ts`) regenerates them and compares the hashes with the committed files.
 
 ## 1. Timeline
 
@@ -14,9 +14,11 @@ Regenerate with `npm run world` (no keys, no network). `npm run world -- --check
 
 T0, Kevin's first day, is 2026-11-09 (the demo clock starts at 13:00Z). The recorded run's last event is ASC-261116-01's QC release on 2026-11-16 at 16:05, so the anchor window runs to that day.
 
+Riverside's anchor window opens on Jul 6 too (the seed's `production.ts` history). Lakeview's opens on Sep 5, the day its packaging stock appears in the seed (`seed/lots.ts`), so its legacy era runs to Sep 4. Riverside and Lakeview were on Acme's systems before Day One, so their legacy POs are "Acme ERP approval" rather than Ray's paper book.
+
 ## 2. Anchors
 
-`data/world/hollow-pine.anchors.json` is the frozen copy of every Plant B record after a replay of the recorded run: lots, lot events, balances, POs and lines, receipts, batches and their draws, QC decisions, transfers, the production plan, RFQ-2611-01 and its quotes, Linda's approval and all 13 recorded transactions with their hashes and explorer links. `npm run world` reads them again from a replay and refuses to write when they differ from the frozen copy; `--freeze` rewrites the copy, only when an anchor changed on purpose.
+`data/world/hollow-pine.anchors.json` is the frozen copy of every Plant B record after a replay of the recorded run: lots, lot events, balances, POs and lines, receipts, batches and their draws, QC decisions, transfers, the production plan, RFQ-2611-01 and its quotes, Linda's approval and all 13 recorded transactions with their hashes and explorer links. `riverside.anchors.json` and `lakeview.anchors.json` hold the same for Plants A and C (Riverside's 33 batches, BR-A-2201 and BR-A-2204 among them; Lakeview's ten packaging lots, PO-1037 and its four transfers). `npm run world` reads them again from a replay and refuses to write when any differs from its frozen copy; `--freeze` rewrites the copies, only when an anchor changed on purpose.
 
 The generator never writes into the anchor window and never reuses an anchor's id. Two seams join the eras:
 
@@ -25,13 +27,14 @@ The generator never writes into the anchor window and never reuses an anchor's i
 
 ## 3. The file
 
-`data/world/hollow-pine.json`, about 1.8 MB. Quantities are base units (mg or each) and money is USDC base units (6 decimals), as in the ledger. Each record carries its `era`.
+`data/world/hollow-pine.json` (about 1.8 MB), `riverside.json` (1.2 MB) and `lakeview.json` (0.3 MB). Quantities are base units (mg or each) and money is USDC base units (6 decimals), as in the ledger. Each record carries its `era`.
 
 - `pos`, `receipts`, `lots`, `qc`, `batches`, `bills`, `payments`, `adjustments`, `rfqs`: ERP-shaped records (`server/src/world/types.ts`).
 - `movements`: `[at, lot, kind, qtyBase, ref]`, every signed change to a lot. The sum per lot is its balance.
 - `fgLots`, `shipments`, `invoices`, `fgMovements`, `customers`: finished goods and sales (`ar.ts`). The seed has no sales records, so these are generated for the whole year (legacy before T0, simulated from T0).
   Customers order their share of each week's demand; the dock ships what QC has released and records the rest as `shortUnits`. Most of the year's shortfall falls in October and November, where the anchored production runs under the winter demand curve.
 - `escrow`: funded (+) and released (−) per PO; the anchor entries come from the recorded `submit_po` and `qc_release` transactions.
+- `transfers`: stock sent to a sister plant, one line per lot (`TR-C-B-260112`, `TR-B-A-260223`); `pullShort`: packaging Lakeview could not stage in full (empty today). A lot that arrives on a transfer is listed at the receiving plant too, with its `transferNo`.
 - `simulatedChain`: what the simulated era would anchor. Never a hash.
 - `snapshots`: one value per day for `onHand` (per material), `openPoCount`, `openPoUsdc`, `apOpenUsdc`, `escrowUsdc`, `spendMtdUsdc`, `batchesMtd`.
 - `monthly`: batches, units, demand, spend by category, freight, shipments and revenue per month.
@@ -42,15 +45,27 @@ The generator never writes into the anchor window and never reuses an anchor's i
 
 | Id | Date | What happens |
 |---|---|---|
-| INC-01 | 2026-01-15 | Northgate's truck runs ten days late; BR-B-0966 finds ascorbic acid short and waits two working days for a rush order from Ridgeway with $1,180 of freight |
+| INC-01 | 2026-01-15 | Northgate's truck runs ten days late; a Vitamin C batch at Hollow Pine finds ascorbic acid short and waits two working days for a rush order from Ridgeway with $1,180 of freight |
+| INC-02 | ordered Feb 16 to Mar 20 | Sierra Mineral Supply's calcium carbonate PO arrives nine days past its promised day, in March; the batches that waited for anything on it are listed |
 | INC-03 | from 2026-04-13 | a Pacific Excipient invoice is keyed twice and paid twice; the ERP's duplicate rule (`erp/src/match.ts` `duplicateAmong`) finds it |
-| INC-09 | 2026-05-01 to 07-31 | an $85 freight surcharge on every packaging delivery |
+| INC-04 | from 2026-06-01 | the first Fennimore Polyols sorbitol lot received fails moisture, goes back and is replaced |
+| INC-05 | Jun 8 and Jun 22 | Hollow Pine trials QuickChem Direct at $5.90/kg; both lots fail assay (two QC rejects in a row), nothing is billed and the POs are cancelled. This is why QuickChem holds no credential and RFQ-2611-01 excludes it as "vendor not qualified". The brief dated it Aug–Sep, inside the anchor window, where the generator writes nothing |
+| INC-06 | 2026-08-24 | ascorbic acid moves from $6.40 to $7.10/kg at Northgate and Ridgeway; anchored, so the incident names PO-1042 and RFQ-2611-01 and changes nothing |
+| INC-07 | Oct 13–27 (Riverside) | the seed's 115.199 kg mass-balance gap on BR-A-2201 and BR-A-2204, anchored as it is |
+| INC-08 | Feb 2, transfer Feb 23 | Hollow Pine buys 2,500 kg of ascorbic acid from Ridgeway in one order and sends 1,000 kg of the lot to Riverside (`TR-B-A-260223`); the lot goes into Vitamin C batches at both plants, the most batches of any bought-in ascorbic acid lot, so the recall drill picks it (never ASC-261116-01) |
+| INC-09 | 2026-05-01 to 07-31 | an $85 freight surcharge on every packaging delivery, at all three plants |
 | INC-10 | Dec 24–25, 2025 and 2026 | the holiday shutdown: no batches, trucks or payments |
-
-The ascorbic acid price hike and QuickChem's suspension sit inside the anchor window; the Riverside and Lakeview incidents and the mock recall notice are not built.
 
 ## 5. Changing the world
 
 Every number comes from `server/src/world/config.ts`: the seed, the calendar, the demand profiles, the products' batch rates, the suppliers' lead times, on-time and QC rates, prices, the policy, the customers and the incidents. Randomness comes from `rng.ts`, one stream per stage and entity, so changing one parameter does not reshuffle another stage. `server/src/world/world.test.ts` holds the invariants for the committed seed and for another seed: mass balance per lot and per month, payments equal paid bills, PO totals, escrow never negative, three-way match on every simulated payment, Kevin's per-PO and monthly limits, no unqualified winner, the splice, seasonality and each incident.
 
-Only Hollow Pine is generated. The engine takes a `PlantParams`; Riverside and Lakeview need their own parameters and anchors.
+## 6. The three plants
+
+| Plant | Parameters (`config.ts`) | What it does in the world |
+|---|---|---|
+| Hollow Pine (B) | `HOLLOW_PINE` | seven products on the tablet line, capsule room and powder room; paper POs `HP-PO-…`; Kevin from T0 (`PO-1048`+) |
+| Acme Riverside (A) | `RIVERSIDE` | magnesium weekly, D3 and B-complex every two weeks, Cal-Mag from Oct 1 (`startsOn`), Vitamin C only in the late-winter peak on Hollow Pine's Ridgeway lot; Acme ERP POs `RV-PO-…`; Kevin from Nov 17 (`PO-R-1001`+, Dana Whitfield approves) |
+| Acme Lakeview (C) | `LAKEVIEW` | makes nothing: buys bottles, caps, desiccants, tubes, labels and shippers and stages them for every Vitamin C, Cal-Mag and electrolyte batch at A and B two working days ahead (`packs`), as transfers; Acme ERP POs `LV-PO-…`; Kevin from Nov 17 (`PO-L-1001`+, packaging only, Omar Haddad approves) |
+
+`generateWorlds` runs them in that order: lot codes and supplier invoice numbers are shared, so none repeats across plants; Riverside receives what Hollow Pine sent it; Lakeview's transfers are computed from the other two worlds' batches. Those products' packaging is not drawn at A or B (`ROUTES` gives them no `pack`), so the stock is counted once.

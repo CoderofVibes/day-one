@@ -58,7 +58,10 @@ export function sales(
       (w) => w.product === product && w.week <= start && addDays(w.week, 6) >= start,
     );
     const units = Math.round((weekly?.units ?? 0) * SALES.openingWeeks);
-    const fgLot = `FG-${product.slice(2)}-OPENING`;
+    if (units === 0) continue;
+    // Hollow Pine's opening lots came first and keep their names; the others carry the plant's.
+    const plant = config.plant.facility === "B" ? "" : `${config.plant.facility}-`;
+    const fgLot = `FG-${plant}${product.slice(2)}-OPENING`;
     lots.push({
       fgLot,
       era: "legacy",
