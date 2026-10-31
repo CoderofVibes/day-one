@@ -1,7 +1,7 @@
 // The global header (docs/UPGRADE_BRIEF.md §5.3): one sticky bar over every page of the replay
 // and the live UI. Left to right: the plant (the same state as the sidebar's
 // picker), the sim clock, Kevin's status, Behind the curtain (the same switch as the sidebar's
-// trust marker), whoever is up next with the other three people's turns, and a menu with the
+// trust marker), the money counter (1440 px and wider), whoever is up next with the other three people's turns, and a menu with the
 // theme. Under 1024 px it adds the page title and keeps the clock's time, the curtain and the menu, which
 // then also holds the plant, Kevin and the people.
 
@@ -193,6 +193,7 @@ export function GlobalHeader({
   setCurtain,
   people,
   upNext,
+  saved,
 }: {
   /** The page's short name, shown under 1024 px (wider, the page's own eyebrow says it). */
   title: string;
@@ -206,6 +207,8 @@ export function GlobalHeader({
   people: Person[];
   /** Whoever the run waits on, for the people menu's button. */
   upNext: { name: string; role: string | null };
+  /** The money counter (SavedCounter.tsx), shown 1440 px and wider. */
+  saved?: React.ReactNode;
 }) {
   const [theme, setTheme] = useThemeChoice();
   return (
@@ -220,6 +223,7 @@ export function GlobalHeader({
       <span className="gh-wide">
         <KevinChip status={kevin} onOpen={onKevin} />
       </span>
+      {saved && <span className="gh-wide gh-saved-wrap">{saved}</span>}
       <span className="gh-curtain-wrap">
         <CurtainSwitch on={curtain} set={setCurtain} />
       </span>

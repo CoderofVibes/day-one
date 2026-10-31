@@ -1,0 +1,570 @@
+/* The Money page (docs/UPGRADE_BRIEF.md §5.6): a calm finance console on the v2 glass cards.
+   Gold is money (the hero, escrow), the series colours are the v2 chart palette, and every
+   colour comes from tokens.css, so light and dark each read from their own steps. */
+
+.money {
+  --aging-0: color-mix(in srgb, var(--chart-3) 28%, var(--surface));
+  --aging-1: color-mix(in srgb, var(--chart-3) 50%, var(--surface));
+  --aging-2: color-mix(in srgb, var(--chart-3) 72%, var(--surface));
+  --aging-3: var(--chart-3);
+  --aging-4: color-mix(in srgb, var(--chart-3) 70%, var(--ink));
+  --era-legacy: var(--ink-3);
+  --era-anchor: var(--brand);
+  --era-simulated: var(--chart-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  /* The column narrows when the curtain rail opens: lay out by its width, not the window's. */
+  container: money / inline-size;
+}
+
+.money-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+/* ---------- ⓘ popovers ---------- */
+.money .info {
+  display: inline-block;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.money .info > summary {
+  list-style: none;
+  cursor: pointer;
+  color: var(--ink-3);
+  font-size: var(--t-sm);
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 6px;
+}
+.money .info > summary::-webkit-details-marker {
+  display: none;
+}
+.money .info > summary .chev {
+  display: none;
+}
+.money .info > summary:hover,
+.money .info[open] > summary {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+.money .info .pop-body {
+  width: min(340px, 80vw);
+  z-index: 30;
+}
+.info-body {
+  padding: var(--s-3);
+  font-size: var(--t-sm);
+  font-weight: 400;
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: normal;
+  text-align: left;
+}
+.info-body p {
+  margin: 6px 0 0;
+}
+.info-body ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+/* ---------- hero ---------- */
+.money-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(220px, 300px);
+  gap: var(--s-5);
+  align-items: center;
+  padding: var(--s-5);
+  border-color: var(--money-border);
+  background:
+    radial-gradient(120% 140% at 0% 0%, var(--money-tint), transparent 60%),
+    var(--glass);
+}
+.ring {
+  position: relative;
+  width: 132px;
+  height: 132px;
+}
+.ring svg {
+  width: 100%;
+  height: 100%;
+}
+.ring-track {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 10;
+}
+.ring-fill {
+  fill: none;
+  stroke: var(--money);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.6s ease;
+}
+.ring-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.ring-text b {
+  font-size: var(--t-xl);
+}
+.ring-text small {
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+}
+.hero-eyebrow {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--money);
+}
+.hero-number {
+  font-size: clamp(34px, 5vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 4px 0;
+}
+.hero-sub {
+  color: var(--ink-2);
+}
+.hero-identified {
+  margin-top: 4px;
+  color: var(--ink-3);
+  font-size: var(--t-sm);
+}
+.hero-toggle {
+  margin-top: var(--s-3);
+}
+.hero-cost {
+  margin: var(--s-3) 0 0;
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+.hero-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+.tl-axis {
+  position: relative;
+  height: 22px;
+  border-bottom: 2px solid var(--line-2);
+}
+.tl-dot {
+  position: absolute;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: var(--money);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.tl-ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+.protected {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s-3);
+  border-radius: var(--r-sm);
+  background: var(--chain-tint);
+  border: 1px solid var(--chain-border);
+}
+.protected-label {
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+.fictional {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--ink-3);
+}
+
+/* ---------- tiles ---------- */
+.money-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(156px, 1fr));
+  gap: var(--s-4);
+}
+.money-tile .stat-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.money-tile .tag {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.money-tile.escrow {
+  border-color: var(--money-border);
+}
+.money-tile.escrow .stat-value {
+  color: var(--money);
+}
+.lock {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: var(--money);
+  stroke-width: 1.6;
+}
+.gauge {
+  width: 96px;
+  margin-top: 4px;
+}
+.gauge-track,
+.gauge-fill {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+.gauge-track {
+  stroke: var(--line);
+}
+.gauge-fill {
+  stroke: var(--chart-1);
+}
+.gauge-dot {
+  fill: var(--ink);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+a.overview-money {
+  color: inherit;
+  text-decoration: none;
+  border-color: var(--money-border);
+}
+
+/* ---------- charts ---------- */
+.money-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-4);
+}
+.money-grid .wide {
+  grid-column: 1 / -1;
+}
+.money-chart {
+  position: relative;
+}
+.money-chart svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.money-chart .grid {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+}
+.money-chart .axis {
+  stroke: var(--line-2);
+  stroke-width: 1;
+}
+.money-chart .tick {
+  fill: var(--ink-2);
+  font-size: 11px;
+}
+.money-chart .net-line {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.money-chart .net-dot {
+  fill: var(--ink);
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+.money-chart .ahead path {
+  opacity: 0.45;
+}
+.money-chart .hatch-line {
+  stroke: var(--ink-3);
+  stroke-width: 1.5;
+  opacity: 0.55;
+}
+.money-chart .now-rule {
+  stroke: var(--ink-2);
+  stroke-dasharray: 3 3;
+}
+.money-chart .now-label {
+  font-weight: 600;
+}
+.money-chart .incident circle {
+  fill: var(--surface);
+  stroke: var(--attention, var(--chart-3));
+  stroke-width: 2;
+}
+.money-chart .stack-area {
+  stroke: var(--surface);
+  stroke-width: 1.5;
+}
+.money-chart .ahead-veil {
+  fill: var(--surface);
+  opacity: 0.45;
+}
+.money-chart .limit-rule {
+  stroke: var(--problem, var(--ink));
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+}
+.money-chart .limit-label {
+  fill: var(--ink);
+  font-weight: 600;
+}
+.era-band.legacy,
+.era-swatch.legacy {
+  fill: var(--era-legacy);
+  background: var(--era-legacy);
+}
+.era-band.anchor,
+.era-swatch.anchor {
+  fill: var(--era-anchor);
+  background: var(--era-anchor);
+}
+.era-band.simulated {
+  fill: var(--era-simulated);
+  opacity: 0.6;
+}
+.era-swatch.simulated {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--era-simulated) 0 2px,
+    transparent 2px 5px
+  );
+  outline: 1px solid var(--era-simulated);
+}
+.era-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-top: var(--s-2);
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+}
+.era-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.era-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 6px;
+  border-radius: 3px;
+}
+.incidents {
+  margin: var(--s-2) 0 0;
+  padding-left: 18px;
+  color: var(--ink-2);
+}
+.story {
+  margin: var(--s-2) 0 0;
+}
+
+/* ---------- AP aging ---------- */
+.aging-total {
+  font-size: var(--t-xl);
+  font-weight: 650;
+}
+.aging-bar {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  margin: var(--s-2) 0 var(--s-3);
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.aging-bar span {
+  min-width: 4px;
+}
+.aging-empty {
+  flex: 1;
+  font-size: 11px;
+  line-height: 14px;
+  padding-left: 8px;
+  color: var(--ink-2);
+}
+.aging-buckets {
+  display: grid;
+  gap: 4px;
+}
+.aging-bucket summary {
+  cursor: pointer;
+  font-size: var(--t-sm);
+}
+.aging-bucket summary i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+}
+.aging-bucket ul {
+  margin: 4px 0 6px;
+  padding-left: 22px;
+}
+
+/* ---------- spend heatmap ---------- */
+.heat {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 3px;
+  table-layout: fixed;
+}
+.heat thead th {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.heat thead td {
+  width: 22%;
+}
+.heat td {
+  padding: 0;
+}
+.heat-cat {
+  font-size: var(--t-xs);
+  font-weight: 500;
+  text-align: left;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}.heat-cell {
+  width: 100%;
+  height: 26px;
+  border: 0;
+  border-radius: 4px;
+  padding: 0;
+  font-size: 11px;
+  color: var(--surface);
+  background: color-mix(in srgb, var(--chart-2) calc(8% + var(--share) * 92%), var(--surface-2));
+  cursor: default;
+}
+.heat-cell.over {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+.heat-cell:focus-visible {
+  box-shadow: var(--focus);
+}
+.heat-tip {
+  margin: var(--s-2) 0 0;
+  color: var(--ink-2);
+  min-height: 1.4em;
+}
+.headroom {
+  margin: var(--s-4) 0 var(--s-2);
+}
+.headroom-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--ink-2);
+}
+.headroom-bar {
+  height: 10px;
+  margin-top: 6px;
+  border-radius: 5px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.headroom-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
+  background: var(--chart-1);
+}
+
+/* ---------- ledger ---------- */
+.money-ledger .evidence a {
+  display: inline-block;
+  margin: 0 6px 2px 0;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  font-size: var(--t-xs);
+  color: var(--ink);
+  text-decoration: none;
+}
+.money-ledger .evidence a:hover {
+  text-decoration: underline;
+}
+.type-ico {
+  display: inline-block;
+  width: 1.4em;
+  text-align: center;
+  color: var(--money);
+}
+.not-counted {
+  margin-top: var(--s-3);
+}
+.not-counted summary {
+  cursor: pointer;
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+.money-note,
+.money-missing {
+  color: var(--ink-2);
+}
+.money-note p,
+.money-missing p {
+  margin: 0;
+}
+
+@container money (max-width: 980px) {
+  .money-hero {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .hero-side {
+    grid-column: 1 / -1;
+  }
+}
+@container money (max-width: 760px) {
+  .money-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .money-hero {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+    padding: var(--s-4);
+  }
+  .heat-month {
+    display: none;
+  }
+  .money .ledger th:nth-child(5),
+  .money .ledger td:nth-child(5) {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ring-fill {
+    transition: none;
+  }
+}
+
+fieldset.seg {
+  margin: 0;
+  min-inline-size: 0;
+}

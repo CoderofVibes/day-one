@@ -26,7 +26,7 @@ export const OPENING_CASH_USD: Readonly<Record<string, number>> = { B: 120_000 }
  * there.
  */
 export const BUDGETS: Readonly<Record<string, BudgetTable>> = {
-  B: { active: 42_000, excipient: 30_000, packaging: 24_000, lab_chemical: 2_000, freight: 2_500 },
+  B: { active: 55_000, excipient: 24_000, packaging: 22_000, lab_chemical: 2_000, freight: 3_000 },
 };
 
 /** Kevin's cost (§2.4 item 8). The fee is an assumption; testnet gas is shown as ≈ $0. */

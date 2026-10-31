@@ -674,10 +674,13 @@ export function kevinHeadroom(book: MoneyBook, at: string, monthlyLimitUsd: numb
   };
 }
 
-/** PO totals in the window in `binUsd` bins; the per-PO limit marks which ones needed a director. */
+/**
+ * PO totals in the window in `binUsd` bins up to four times the per-PO limit; the last bin also
+ * holds every larger PO. The limit marks which ones needed a director.
+ */
 export function poSizeHistogram(book: MoneyBook, w: Window, binUsd: number, limitUsd: number) {
   const pos = book.pos.filter((p) => p.orderedAt >= w.from && p.orderedAt <= w.to);
-  const top = Math.max(limitUsd * 2, ...pos.map((p) => p.totalUsdc / USD));
+  const top = limitUsd * 4;
   const bins: { fromUsd: number; toUsd: number; legacy: number; kevin: number; pos: string[] }[] =
     [];
   for (let lo = 0; lo < top; lo += binUsd)

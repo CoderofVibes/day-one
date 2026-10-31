@@ -355,7 +355,8 @@ describe("spend vs budget, headroom and PO sizes", () => {
     );
     expect(h.overLimit).toEqual(["P3"]);
     expect(h.bins[1]).toMatchObject({ fromUsd: 500, legacy: 1, kevin: 1 });
-    expect(h.bins.at(-1)?.pos).toEqual(["P3"]);
+    expect(h.bins[10]?.pos).toEqual(["P3"]);
+    expect(h.bins).toHaveLength(20);
   });
 });
 

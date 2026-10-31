@@ -24,6 +24,7 @@ export type PageId =
   | "suppliers"
   | "group"
   | "sealed"
+  | "money"
   | "export"
   | "reconciliation"
   | "arena"
@@ -60,6 +61,13 @@ export const NAV: { group: string; items: NavItem[] }[] = [
     ],
   },
   {
+    group: "Money",
+    items: [
+      { id: "money", label: "Money", icon: "coin" },
+      { id: "export", label: "Bookkeeper export", icon: "download" },
+    ],
+  },
+  {
     group: "Across Acme",
     items: [
       { id: "plants", label: "Three plants", icon: "bars" },
@@ -73,7 +81,6 @@ export const NAV: { group: string; items: NavItem[] }[] = [
       { id: "suppliers", label: "Suppliers", icon: "truck" },
       { id: "group", label: "Group purchasing", icon: "group" },
       { id: "sealed", label: "Sealed bids", icon: "lock" },
-      { id: "export", label: "Bookkeeper export", icon: "download" },
       { id: "reconciliation", label: "Reconciliation", icon: "check" },
     ],
   },
@@ -291,6 +298,7 @@ export function PageHeader({
 const ICONS = {
   flag: "M4 16V2.5M4 3h9l-2 3 2 3H4",
   grid: "M2.5 2.5h5v5h-5zM10.5 2.5h5v5h-5zM2.5 10.5h5v5h-5zM10.5 10.5h5v5h-5z",
+  coin: "M9 2.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM11 6.6c-.4-.7-1.1-1-2-1-1.2 0-2 .6-2 1.4 0 1.9 4.1 1 4.1 3 0 .9-.9 1.5-2.1 1.5-.9 0-1.7-.4-2.1-1.1M9 4.5v1.1M9 11.5v1.1",
   cube: "M2 5.5l7-3.5 7 3.5-7 3.5zM2 5.5v7l7 3.5 7-3.5v-7M9 9v7",
   bars: "M2 15.5h14M3.5 15V9h3v6M7.5 15V4h3v11M11.5 15v-4h3v4",
   receipt: "M4 2h10v14l-2-1.2-2 1.2-2-1.2-2 1.2-2-1.2zM6.5 6h5M6.5 9h5",

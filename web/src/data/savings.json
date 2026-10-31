@@ -13,11 +13,11 @@
     },
     "budgets": {
       "B": {
-        "active": 42000,
-        "excipient": 30000,
-        "packaging": 24000,
+        "active": 55000,
+        "excipient": 24000,
+        "packaging": 22000,
         "lab_chemical": 2000,
-        "freight": 2500
+        "freight": 3000
       }
     },
     "kevinCost": {
