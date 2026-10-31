@@ -24,6 +24,7 @@ import {
   readJourney,
   readReconciliation,
 } from "../journey.ts";
+import { ErrorCard, Skeleton } from "../kit.tsx";
 import { HeldInvoiceCard } from "../panes.tsx";
 import { readSchedule, type Source, useRead } from "../series.ts";
 import { PageHeader, type PageId } from "../shell.tsx";
@@ -164,9 +165,13 @@ export function Integration({
         <PageHeader
           crumb="Hollow Pine Tablet Co. › Your integration"
           title="Your integration"
-          sentence="Loading…"
+          sentence="Seven stages after you meet Kevin."
         />
-        {error && <p className="error">{error}</p>}
+        {error ? (
+          <ErrorCard what="The integration program" error={error} retry={() => location.reload()} />
+        ) : (
+          <Skeleton shape="tiles" count={4} />
+        )}
       </main>
     );
   }
@@ -1213,7 +1218,7 @@ function BooksStage({
           ))}
         </ul>
       ) : (
-        <p className="small muted">Checking the recorded run against the ERP…</p>
+        <Skeleton shape="table" count={4} />
       )}
       <p className="small muted">
         {curtain

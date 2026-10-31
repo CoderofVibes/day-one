@@ -7,7 +7,7 @@ import { dollars, shortDay } from "../charts.tsx";
 import { readout, sharedClock } from "../clock.ts";
 import { Pill } from "../feed.tsx";
 import { readReconciliation } from "../journey.ts";
-import { RecordLink, Ring, Skeleton, StatTile, useSimMinute } from "../kit.tsx";
+import { EmptyState, jumpTo, RecordLink, Ring, Skeleton, StatTile, useSimMinute } from "../kit.tsx";
 import { readRecorded } from "../reads.ts";
 import type { Tone } from "../run.ts";
 import { readSchedule, type Source, useRead } from "../series.ts";
@@ -259,6 +259,16 @@ export function ErpPage({ source, curtain }: { source: Source; curtain: boolean 
           <h3>What crossed on the recorded run</h3>
           <span className="right small muted">Day One → ERP, step by step</span>
         </div>
+        {synced.length === 0 && crossed[0] && (
+          <EmptyState
+            title="Nothing has crossed yet at the clock's time."
+            body="The cutover records are in; the recorded run's records follow below."
+            action={{
+              label: `Jump to "${crossed[0].title}"`,
+              onClick: () => jumpTo(times[crossed[0]?.step ?? 0] ?? 0),
+            }}
+          />
+        )}
         <ol className="swimlanes" aria-label="Day One and ERP, step by step">
           <li className="lane-heads" aria-hidden="true">
             <span>Day One</span>
@@ -411,7 +421,7 @@ export function ThreeSchedules({ source }: { source: Source }) {
           <div key={["B", "A", "C"][i]}>
             <h4>{plantName(["B", "A", "C"][i] ?? "")}</h4>
             {!s ? (
-              <p className="small muted">Reading…</p>
+              <Skeleton shape="table" count={3} />
             ) : s.batches.length === 0 ? (
               <p className="small muted">No batches planned; this plant packs and ships.</p>
             ) : (

@@ -28,16 +28,22 @@ import {
   type Column,
   compactDollars,
   DataTable,
+  dayStartOf,
+  EmptyState,
+  ErrorCard,
   Gauge,
   inWindow,
+  jumpTo,
   MiniBar,
   RecordLink,
+  type RecordTarget,
   Ring,
   Skeleton,
   Sparkline,
   StatTile,
   Timeline,
   type TimelineItem,
+  useNav,
   useSimDate,
   WINDOWS,
   type WindowKey,
@@ -109,7 +115,9 @@ export function Overview({
           </>
         }
       />
-      {error && <p className="error">The history could not be read: {error}</p>}
+      {error && (
+        <ErrorCard what="The plant history" error={error} retry={() => location.reload()} />
+      )}
       <TodayStrip plant={plant} source={source} history={history} end={end} run={run} at={at} />
       <Tiles
         plant={plant}
@@ -129,7 +137,7 @@ export function Overview({
       </div>
       <div className="ov-row">
         <RunSoFar run={run} at={at} onStep={onStep} activity={activity} />
-        <RecentBatches plant={plant} history={history} />
+        <RecentBatches plant={plant} history={history} end={end} />
       </div>
       {history && <Charts plant={plant} history={history} />}
     </main>
@@ -209,7 +217,13 @@ function TodayStrip({
   const held = (history?.spend.committed ?? [])
     .filter((s) => s.facility === plant)
     .reduce((s, x) => s + x.totalUsdc, 0);
-  const items: { key: string; text: string; tone: "waiting" | "neutral" | "held" | "ok" }[] = [
+  const nav = useNav();
+  const items: {
+    key: string;
+    text: string;
+    tone: "waiting" | "neutral" | "held" | "ok";
+    open?: RecordTarget;
+  }[] = [
     waiting
       ? { key: "person", text: `${waiting} is up next`, tone: "waiting" }
       : { key: "person", text: "Nobody waiting", tone: "ok" },
@@ -217,6 +231,7 @@ function TodayStrip({
       key: "trucks",
       text: `${onTheWay.length} ${onTheWay.length === 1 ? "order" : "orders"} on the way`,
       tone: "neutral",
+      open: { id: "open", page: "purchasing", filter: "open" },
     },
     {
       key: "batches",
@@ -230,7 +245,13 @@ function TodayStrip({
       <li className="today-day">{shortDay(end)}</li>
       {items.map((i) => (
         <li key={i.key} className={`t-${i.tone}`}>
-          {i.text}
+          {i.open ? (
+            <button type="button" onClick={() => nav.open(i.open as RecordTarget)}>
+              {i.text}
+            </button>
+          ) : (
+            i.text
+          )}
         </li>
       ))}
     </ul>
@@ -575,7 +596,11 @@ function RunSoFar({
       {items.length ? (
         <Timeline items={items} label="The run so far, oldest first" />
       ) : (
-        <p className="small muted">Nothing has happened on the plant floor yet.</p>
+        <EmptyState
+          title="Nothing has happened on the plant floor yet."
+          body="The recorded run starts when Ray uploads the first batch record."
+          action={{ label: "Jump to the run's start", onClick: () => jumpTo(times?.[0] ?? 0) }}
+        />
       )}
       <details className="ov-full">
         <summary className="small">Every step in full</summary>
@@ -600,7 +625,15 @@ function usualWaste(batches: BatchPoint[]): Map<string, number> {
   return out;
 }
 
-function RecentBatches({ plant, history }: { plant: PlantCode; history: History | null }) {
+function RecentBatches({
+  plant,
+  history,
+  end,
+}: {
+  plant: PlantCode;
+  history: History | null;
+  end: string;
+}) {
   if (!history)
     return (
       <section className="card-v2" aria-label="Recent batches">
@@ -609,7 +642,11 @@ function RecentBatches({ plant, history }: { plant: PlantCode; history: History 
     );
   const mine = history.production.filter((b) => b.facility === plant);
   const usual = usualWaste(mine);
-  const rows = mine.slice(-8).reverse();
+  const rows = mine
+    .filter((b) => b.date <= end)
+    .slice(-8)
+    .reverse();
+  const first = mine[0];
   const over = (b: BatchPoint) =>
     b.issuedBase > 0 && b.wasteBase / b.issuedBase > (usual.get(formOf(b.batchNo)) ?? 1) * 1.2;
   const cols: Column<BatchPoint>[] = [
@@ -683,7 +720,19 @@ function RecentBatches({ plant, history }: { plant: PlantCode; history: History 
         rowKey={(b) => b.batchNo}
         label="Recent batches"
         search={false}
-        empty={<p className="muted small">No batches on record at this plant.</p>}
+        empty={
+          first ? (
+            <EmptyState
+              title={`No batches by ${shortDay(end)}.`}
+              action={{
+                label: `Jump to the first, ${shortDay(first.date)}`,
+                onClick: () => jumpTo(dayStartOf(first.date) + 12 * 3_600_000),
+              }}
+            />
+          ) : (
+            <EmptyState title="No batches on record at this plant." />
+          )
+        }
       />
     </section>
   );

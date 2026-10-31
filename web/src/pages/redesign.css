@@ -38,6 +38,17 @@
   font-size: var(--t-sm);
   font-weight: 600;
 }
+.today-strip button {
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.today-strip button:hover {
+  text-decoration: underline;
+}
 .today-strip .today-day {
   background: var(--ink);
   color: var(--bg);
