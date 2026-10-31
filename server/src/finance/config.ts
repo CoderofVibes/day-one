@@ -14,11 +14,11 @@ export const T0 = "2026-11-09";
  * against the generated customer receipts; Riverside's and Lakeview's wait for their world data.
  */
 export const OVERHEAD: Readonly<Record<string, Overhead>> = {
-  B: { laborUsd: 96_000, utilitiesUsd: 14_500, rentUsd: 18_000 },
+  B: { laborUsd: 148_000, utilitiesUsd: 19_500, rentUsd: 24_000 },
 };
 
 /** Cash in the bank on the world's first day, modeled: the page's "cash on hand" starts here. */
-export const OPENING_CASH_USD: Readonly<Record<string, number>> = { B: 180_000 };
+export const OPENING_CASH_USD: Readonly<Record<string, number>> = { B: 120_000 };
 
 /**
  * Monthly purchasing budgets per plant and category, dollars (fictional). The categories are the
