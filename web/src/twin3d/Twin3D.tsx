@@ -45,6 +45,7 @@ import {
   topHeight,
 } from "./buildings.ts";
 import { ChainCurtain } from "./ChainLayer.tsx";
+import { chainLayout, chainSubjects } from "./chain.ts";
 import {
   anchor3,
   arc3,
@@ -78,6 +79,7 @@ import {
   RECORD_FRAME_MS,
   road3,
   STEP_MS,
+  type Subject,
   targetBounds,
   type V3,
   viewFraming,
@@ -396,9 +398,12 @@ function StoryCamera({
   record,
   reduced,
   request,
+  chain,
 }: {
   title: string;
   at: number;
+  /** The chain layer's subjects for the step, with the curtain on (chain.ts chainSubjects). */
+  chain: Subject[];
   /** The run holds a pooled PO: the money steps frame both plants' purchasing and the vault. */
   pooled: boolean;
   record: boolean;
@@ -411,11 +416,12 @@ function StoryCamera({
   const controls = useRef<CameraControlsImpl>(null);
   /** story: the step's shot; fly: a preset or object, then free; free: the user's. */
   const mode = useRef<"story" | "fly" | "free">("story");
-  const from = useRef<Framing>(framingFor(title, size, pooled));
-  const to = useRef<Framing>(framingFor(title, size, pooled));
+  const from = useRef<Framing>(framingFor(title, size, pooled, chain));
+  const to = useRef<Framing>(framingFor(title, size, pooled, chain));
   const since = useRef(0);
   const length = useRef(CAMERA_MS);
   const seen = useRef(-1);
+  const seenChain = useRef(chain.length);
   const seenRequest = useRef(0);
   const sized = useRef(`${size.width}x${size.height}`);
   const command = useContext(CommandContext);
@@ -443,7 +449,7 @@ function StoryCamera({
     if (cmd?.fit) {
       // "Fit": the story takes the camera back, easing from where the user left it.
       cmd.fit = false;
-      move(framingFor(title, size, pooled), CAMERA_MS, "story");
+      move(framingFor(title, size, pooled, chain), CAMERA_MS, "story");
     }
     if (cmd && cmd.zoom !== 1 && !record) {
       // A zoom button: the camera dollies along its line to the target and stays where it lands.
@@ -458,15 +464,18 @@ function StoryCamera({
       mode.current = "free";
     }
     const sizeNow = `${size.width}x${size.height}`;
-    if (seen.current !== at) {
-      // A new step: the story takes the camera back from wherever the user left it.
+    const chainKey = chain.length;
+    if (seen.current !== at || seenChain.current !== chainKey) {
+      // A new step, or the curtain turned: the story takes the camera back from wherever the
+      // user left it.
       seen.current = at;
+      seenChain.current = chainKey;
       sized.current = sizeNow;
-      move(framingFor(title, size, pooled), CAMERA_MS, "story");
+      move(framingFor(title, size, pooled, chain), CAMERA_MS, "story");
     } else if (sized.current !== sizeNow && mode.current === "story") {
       // The stage changed size (a rotated phone, a resized window, full screen): refit the shot.
       sized.current = sizeNow;
-      move(framingFor(title, size, pooled), CAMERA_MS, "story");
+      move(framingFor(title, size, pooled, chain), CAMERA_MS, "story");
     }
     if (request && request.seq !== seenRequest.current && !record) {
       seenRequest.current = request.seq;
@@ -1641,6 +1650,8 @@ function Scene({
     since: 0,
   });
   const pooled = isPooled(next);
+  const chain = useMemo(() => chainLayout(run), [run]);
+  const chainFrame = useMemo(() => (curtain ? chainSubjects(chain, at) : []), [chain, curtain, at]);
   // Flows in either state are drawn; a flow that left fades out and unmounts itself.
   const flows = useMemo(() => {
     const ids = new Set(next.flows.map((f) => f.id));
@@ -1696,7 +1707,7 @@ function Scene({
         </group>
         <ChainCurtain
           ghost={ghost}
-          run={run}
+          layout={chain}
           at={at}
           curtain={curtain}
           reduced={reduced}
@@ -1723,6 +1734,7 @@ function Scene({
           title={title}
           at={at}
           pooled={pooled}
+          chain={chainFrame}
           record={record}
           reduced={reduced}
           request={camera}

@@ -15,7 +15,16 @@ import { FACILITY_LAYOUTS, FLOOR_Z, PAD_Z, PADS } from "../twin/layout.ts";
 import type { DeptCode, FacilityId } from "../twin/model.ts";
 import type { InspectorData } from "../twin/objects.ts";
 import { topHeight } from "./buildings.ts";
-import { centerOf, clamp01, depotPositions, deptBox, lerp3, type V3, world } from "./scene.ts";
+import {
+  centerOf,
+  clamp01,
+  depotPositions,
+  deptBox,
+  lerp3,
+  type Subject,
+  type V3,
+  world,
+} from "./scene.ts";
 
 /** Heights above the campus: the grid, the account orbs and the contract nodes. */
 export const GRID_Y = 26;
@@ -494,6 +503,30 @@ export function chainSnapshot(layout: ChainLayout, at: number, sinceMs: number):
   }
   if (layout.signedSteps.includes(at)) snap.enclave = 1 - clamp01(sinceMs / ENCLAVE_MS) * 0.6;
   return snap;
+}
+
+/**
+ * What the story camera keeps in frame at step `at` with the curtain on: the signers, nodes,
+ * shields and pins of the step's transactions, with room for the refusal's callout. Nothing
+ * for a step without one, so its shot stays the plant's.
+ */
+export function chainSubjects(layout: ChainLayout, at: number): Subject[] {
+  const out: Subject[] = [];
+  for (const e of layout.events) {
+    if (e.stepIndex !== at) continue;
+    const node = layout.nodes.find((n) => n.role === e.role);
+    for (const p of e.path) out.push({ point: p, padPx: [40, 16] });
+    if (node)
+      out.push({
+        point: [node.position[0], node.position[1] + 3.6, node.position[2]],
+        padPx: [60, 20],
+      });
+    if (e.shield)
+      out.push({ point: [e.shield[0], e.shield[1] - 2, e.shield[2]], padPx: [125, 130] });
+    if (e.money) out.push({ point: e.money.to });
+    if (e.pin) out.push({ point: e.pin.position });
+  }
+  return out;
 }
 
 // ------------------------------------------------------------------ the inspector

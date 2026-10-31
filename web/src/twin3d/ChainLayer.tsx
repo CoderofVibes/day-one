@@ -9,11 +9,9 @@
 import { useFrame } from "@react-three/fiber";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import type { RunData } from "../run.ts";
 import {
   type ChainEvent,
   type ChainLayout,
-  chainLayout,
   chainSnapshot,
   GHOST_MS,
   GHOST_REDUCED_MS,
@@ -32,6 +30,8 @@ const GOLD = "#f5c451";
 const SIMULATED = "#7f9fa8";
 
 const PIN_CAPACITY = 64;
+/** How far below its shield a refusal's callout card hangs, in pixels. */
+const CALLOUT_DROP_PX = 64;
 const SHOWN_PINS = 5;
 const Y_UP = new THREE.Vector3(0, 1, 0);
 const M = new THREE.Matrix4();
@@ -76,7 +76,7 @@ function finish(mesh: THREE.InstancedMesh | null, count: number) {
 /** The ghost pass and the chain layer, driven by the twin's frame: mounted with the scene. */
 export function ChainCurtain({
   ghost,
-  run,
+  layout,
   at,
   curtain,
   reduced,
@@ -84,7 +84,7 @@ export function ChainCurtain({
 }: {
   /** The plant's meshes that turn to glass. */
   ghost: React.RefObject<THREE.Group | null>;
-  run: RunData;
+  layout: ChainLayout;
   at: number;
   curtain: boolean;
   reduced: boolean;
@@ -95,7 +95,6 @@ export function ChainCurtain({
   const amount = useRef(curtain ? 1 : 0);
   const last = useRef<number | null>(null);
   const [up, setUp] = useState(curtain);
-  const layout = useMemo(() => chainLayout(run), [run]);
   useEffect(() => {
     const root = ghost.current;
     return () => {
@@ -564,8 +563,15 @@ function ChainLayer({
       {shown.callouts.map((e) => {
         const s = e.shield as V3;
         return (
-          <group key={`callout-${e.id}`} position={[s[0], s[1] + 5, s[2]]}>
-            <Label zIndexRange={[14, 0]} rank={RANK.callout} className="t3-label chain callout">
+          // Under the shield: the shield is the top of the step's shot, so a card above it would
+          // meet the frame's edge.
+          <group key={`callout-${e.id}`} position={[s[0], s[1] - 2, s[2]]}>
+            <Label
+              zIndexRange={[14, 0]}
+              rank={RANK.callout}
+              className="t3-label chain callout"
+              stackPx={-CALLOUT_DROP_PX}
+            >
               <strong>Refused · {e.tx.method}</strong>
               <span>“{e.tx.error ?? "refused by the contract"}”</span>
             </Label>
