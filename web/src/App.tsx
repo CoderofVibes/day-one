@@ -381,6 +381,7 @@ function Pages({
   hq,
   goMap,
   go,
+  moves,
   foot,
   run,
   at,
@@ -415,6 +416,8 @@ function Pages({
   goMap: () => void;
   /** Open another page (the order desk's "Show on the plant"). */
   go: (next: { page: PageId }) => void;
+  /** Kevin's proposed moves between plants, for Inventory's material desk. */
+  moves: TransferSuggestions | null;
   foot: React.ReactNode;
   /** The run on screen and its step, for the Overview's queue and timeline. */
   run: RunData;
@@ -468,7 +471,15 @@ function Pages({
       case "batches":
         return <BatchRecordsPage {...props} inbox={inbox} queue={queue} />;
       case "inventory":
-        return <InventoryPage {...props} inventory={inventory} />;
+        return (
+          <InventoryPage
+            {...props}
+            inventory={inventory}
+            moves={moves?.suggestions ?? []}
+            go={(page) => go({ page })}
+            onShow={(where) => openOnTwin(where, go)}
+          />
+        );
       case "lots":
         return <LotsPage {...props} />;
       case "schedule":
@@ -806,6 +817,7 @@ function ReplayApp() {
             wizard={null}
             goMap={() => openGroupOnMap(route.go)}
             go={route.go}
+            moves={plantsSnapshot.transfers}
             map={(pick) => (
               <PlantView
                 run={data}
@@ -1323,6 +1335,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
             }
             goMap={() => openGroupOnMap(route.go)}
             go={route.go}
+            moves={moves}
             map={(pick) => (
               <PlantView
                 run={state}

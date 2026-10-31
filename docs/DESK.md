@@ -48,6 +48,17 @@ The same desk opens the Purchasing page for Hollow Pine (`web/src/OrderDesk.tsx`
 
 The brief page (`web/src/pages/BriefSheet.tsx`, ordering in `web/src/briefSheet.ts`) sets the same brief Kevin writes (`npm run brief`, `GET /api/brief`) as one paper page on the graphite. It has a serif greeting from the system's fonts (no download), the day in four numbers, then the sections in reading order: what needs a person (amber), what to buy or move, what is worth a look, and what moved since the last working day. A "Before you buy" move from another plant sits under the material it would stand in for, as "Or move it instead". Record ids in a line open their records. The footer says what the sheet is: written from the ledger, nothing ordered, signed or sent. Print still opens the printable page.
 
+## Inventory's material desk
+
+Inventory opens on the next material decisions at the plant (`web/src/MaterialDesk.tsx`, ranked in `web/src/materialDecisions.ts`), read from Kevin's forecast, the lots in quarantine and his proposed moves between plants. Order of the list:
+
+1. Anything short of the plan.
+2. Reorders the planned batches draw on.
+3. Lots waiting on QC, longest first.
+4. Other reorders.
+
+The selected one is a paper card that names who decides (Ray for orders, Priya for QC at Hollow Pine; the role at the other plants). It shows a stock gauge (on hand, on order, the reorder point, and where the plan leaves stock), why now, what you decide and what happens next. When a move from another plant would save the order, it appears as "Or move it instead". The material's stock history sits in the card. The buttons open the page where the decision is made: Three plants for a move, Purchasing for an order, Lots for a lot. "Show on the plant" opens the twin on a lot in quarantine. Nothing on this desk orders or moves anything by itself.
+
 ## Look
 
 - **A graphite surface with paper-white cards, the same in both themes.** In the light theme it becomes the page's anchor. The paper card re-declares the light tokens and the graphite the dark ones, so the kit's links and pills inside follow without a second style.

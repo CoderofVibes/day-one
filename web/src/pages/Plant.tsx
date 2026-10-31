@@ -4,7 +4,7 @@
 
 import "./redesign.css";
 import { useState } from "react";
-import type { InboxState, PlantInventory } from "../api.ts";
+import type { InboxState, PlantInventory, TransferSuggestion } from "../api.ts";
 import {
   BarChart,
   ChartCard,
@@ -19,6 +19,7 @@ import {
   shortDay,
 } from "../charts.tsx";
 import { Pill } from "../feed.tsx";
+import type { Where } from "../KevinDesk.tsx";
 import {
   type Column,
   compactDollars,
@@ -32,6 +33,8 @@ import {
   StatTile,
   usePageFilter,
 } from "../kit.tsx";
+import { MaterialDesk } from "../MaterialDesk.tsx";
+import { materialDecisions } from "../materialDecisions.ts";
 import { type BatchRecordView, readBrief } from "../reads.ts";
 import {
   type MaterialForecast,
@@ -41,8 +44,10 @@ import {
   readStock,
   readStockedMaterials,
   type ScheduledBatch,
+  type StockSeries,
   useRead,
 } from "../series.ts";
+import type { PageId } from "../shell.tsx";
 import { BriefSheet } from "./BriefSheet.tsx";
 import {
   CATEGORY_NAMES,
@@ -328,14 +333,28 @@ export function InventoryPage({
   plant,
   source,
   inventory,
-}: PageProps & { inventory: PlantInventory | null }) {
+  moves,
+  go,
+  onShow,
+}: PageProps & {
+  inventory: PlantInventory | null;
+  /** Kevin's proposed moves between plants, for "or move it instead". */
+  moves: TransferSuggestion[];
+  go: (page: PageId) => void;
+  onShow: (where: Where) => void;
+}) {
   const key = `${source.live}-${source.version}-${plant}`;
   const { value: tables, error } = usePlant(source, plant);
   const { value: forecast } = useRead(() => readForecast(source, plant), key);
   const { value: stocked } = useRead(() => readStockedMaterials(source, plant), key);
   const [onlyLow, setOnlyLow] = useState(false);
   const [material, setMaterial] = useState<string | null>(null);
-  const shownMaterial = material ?? forecast?.materials[0]?.material ?? stocked?.[0] ?? "";
+  const decisions =
+    forecast && tables
+      ? materialDecisions(plant, forecast.materials, tables.lots, moves, forecast.horizonDays ?? 10)
+      : [];
+  const shownMaterial =
+    material ?? decisions[0]?.material ?? forecast?.materials[0]?.material ?? stocked?.[0] ?? "";
   const { value: stock } = useRead(
     () => (shownMaterial ? readStock(source, plant, shownMaterial) : Promise.resolve(null)),
     `${key}-${shownMaterial}`,
@@ -354,6 +373,15 @@ export function InventoryPage({
   for (const l of tables.lots) byState.set(l.state, (byState.get(l.state) ?? 0) + 1);
   return (
     <>
+      {decisions.length > 0 && (
+        <MaterialDesk
+          decisions={decisions}
+          history={stock ? <StockHistory stock={stock} height={150} /> : null}
+          onPick={setMaterial}
+          go={go}
+          onShow={onShow}
+        />
+      )}
       <div className="tiles-4">
         <StatTile
           label="Materials below reorder"
@@ -613,37 +641,7 @@ export function InventoryPage({
               : {})}
           >
             {stock ? (
-              <LineChart
-                label={`${stock.name} on hand over time`}
-                series={[
-                  {
-                    name: stock.name,
-                    color: SERIES[0] ?? "",
-                    step: true,
-                    points: stock.points.map((p) => ({
-                      x: Date.parse(p.at),
-                      y: p.onHandBase / (stock.dimension === "mass" ? 1_000_000 : 1),
-                    })),
-                  },
-                ]}
-                rules={
-                  stock.reorderPointBase === null
-                    ? []
-                    : [
-                        {
-                          y: stock.reorderPointBase / (stock.dimension === "mass" ? 1_000_000 : 1),
-                          label: "reorder point",
-                        },
-                      ]
-                }
-                yMin={0}
-                yFormat={(v) =>
-                  stock.dimension === "mass"
-                    ? `${Math.round(v).toLocaleString("en-US")} kg`
-                    : Math.round(v).toLocaleString("en-US")
-                }
-                xFormat={shortDay}
-              />
+              <StockHistory stock={stock} />
             ) : (
               <p className="small muted">Pick a material.</p>
             )}
@@ -669,6 +667,37 @@ export function InventoryPage({
         </div>
       </div>
     </>
+  );
+}
+
+/** A material's stock at the plant over time, with its reorder point as a rule. */
+function StockHistory({ stock, height }: { stock: StockSeries; height?: number }) {
+  const scale = stock.dimension === "mass" ? 1_000_000 : 1;
+  return (
+    <LineChart
+      label={`${stock.name} on hand over time`}
+      {...(height ? { height } : {})}
+      series={[
+        {
+          name: stock.name,
+          color: SERIES[0] ?? "",
+          step: true,
+          points: stock.points.map((p) => ({ x: Date.parse(p.at), y: p.onHandBase / scale })),
+        },
+      ]}
+      rules={
+        stock.reorderPointBase === null
+          ? []
+          : [{ y: stock.reorderPointBase / scale, label: "reorder point" }]
+      }
+      yMin={0}
+      yFormat={(v) =>
+        stock.dimension === "mass"
+          ? `${Math.round(v).toLocaleString("en-US")} kg`
+          : Math.round(v).toLocaleString("en-US")
+      }
+      xFormat={shortDay}
+    />
   );
 }
 

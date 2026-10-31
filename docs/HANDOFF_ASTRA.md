@@ -48,9 +48,9 @@ Run it: `npm run web:build`, then serve `web/dist/` statically (the replay), or 
 | Plant | Your integration (`integration`) | The eight-stage onboarding journey with each stage's artifact; a floor plan lighting up by department |
 | | Overview (`overview`) | Kevin's desk first (docs/DESK.md: the decision that needs a person with why, what and what next, the order's track and payment condition, "Before we buy", and what Kevin handled, done apart from drafts and suggestions; "Show on the plant" flies the twin), then the embedded twin, today strip, stat tiles over 7d/28d/90d/12m, the run so far as a timeline, recent batches; Kevin's activity rail |
 | | Plant twin (`map`) | The 3D site plan filling the page (§4) |
-| | 5am brief (`brief`) | Kevin's printable morning page |
+| | 5am brief (`brief`) | Kevin's brief as a morning sheet (docs/DESK.md): one paper page, what needs a person first; Print opens the printable page |
 | | Batch records (`batches`) | Records, yield, the watched-folder scan queue (live) |
-| | Inventory & forecast (`inventory`) | Stock bars with reorder ticks and a forecast cone |
+| | Inventory & forecast (`inventory`) | The material desk (docs/DESK.md: the next material decisions, each with a stock gauge, why now, what you decide and what happens next, a move from another plant and the stock history), then stock bars with reorder ticks and a forecast cone |
 | | Lots & recall (`lots`) | Lot genealogy graph (raw lot → batches → finished goods → shipments → customers), search, and the **mock recall drill** (traces Ridgeway lot ASC-260209-01 across two plants; never the PO-1042 lot) |
 | | Schedule, Purchasing, Invoices, Spreadsheets | Gantt by line; the order desk (docs/DESK.md: a queue of orders beside the selected one's decision or next step and track), pipeline lanes, PO-size histogram with the $2,500 line, quotes chart; held invoices; the spreadsheet import wizard |
 | Money | Money (`money`) | "Kevin paid for himself" (realized vs identified), cash, inventory value, turns, days on hand, escrow, cash flow, AP aging, spend vs budget, the savings ledger; every figure has a formula popover (`docs/MONEY.md`) |

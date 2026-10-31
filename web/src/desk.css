@@ -1086,3 +1086,99 @@
     order: -1;
   }
 }
+
+/* ---------- Inventory's material desk ---------- */
+.material-desk .od-pill {
+  grid-area: amt;
+}
+.material-desk .md-sub {
+  grid-column: 2 / 4;
+}
+.md-move {
+  margin: 0;
+}
+.stock-gauge {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f6f7f9;
+}
+.sg-bar {
+  position: relative;
+  height: 14px;
+  border-radius: 7px;
+  background: #e4e8ec;
+}
+.sg-hand,
+.sg-order {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform-origin: left;
+  animation: fill 600ms cubic-bezier(0.3, 0.6, 0.3, 1) both;
+}
+.sg-hand {
+  left: 0;
+  border-radius: 7px 0 0 7px;
+  background: #2b8a63;
+}
+.sg-order {
+  background: repeating-linear-gradient(-45deg, #4e7fd1 0 5px, #8fb0e6 5px 10px);
+  animation-delay: 300ms;
+}
+.sg-reorder,
+.sg-after {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 2px;
+  margin-left: -1px;
+}
+.sg-reorder {
+  background: #d08f1c;
+}
+.sg-after {
+  width: 0;
+  border-left: 2px dashed #11151a;
+  animation: rise 300ms ease-out 600ms both;
+}
+.sg-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.sg-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-radius: 2px;
+  vertical-align: -1px;
+}
+.sg-legend .k-hand {
+  background: #2b8a63;
+}
+.sg-legend .k-order {
+  background: #4e7fd1;
+}
+.sg-legend .k-reorder {
+  width: 3px;
+  background: #d08f1c;
+}
+.sg-legend .k-after {
+  width: 0;
+  border-left: 2px dashed #11151a;
+  border-radius: 0;
+}
+.md-history summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.md-history[open] summary {
+  margin-bottom: 6px;
+}
