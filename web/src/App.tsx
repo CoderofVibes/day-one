@@ -522,7 +522,17 @@ function ReplayApp() {
           queue={null}
           wizard={null}
           goMap={() => openGroupOnMap(route.go)}
-          map={(pick) => <PlantView run={data} at={at} curtain={curtain} onStep={go} {...pick} />}
+          map={(pick) => (
+            <PlantView
+              run={data}
+              at={at}
+              curtain={curtain}
+              onStep={go}
+              onCurtain={setCurtain}
+              onOpen={(page) => route.go({ page })}
+              {...pick}
+            />
+          )}
           kevin={
             <>
               <Guide data={data} />
@@ -890,7 +900,16 @@ function LiveApp({ initial }: { initial: LiveState }) {
             </section>
           }
           goMap={() => openGroupOnMap(route.go)}
-          map={(pick) => <PlantView run={state} at={last} curtain={curtain} {...pick} />}
+          map={(pick) => (
+            <PlantView
+              run={state}
+              at={last}
+              curtain={curtain}
+              onCurtain={setCurtain}
+              onOpen={(page) => route.go({ page })}
+              {...pick}
+            />
+          )}
           kevin={
             <>
               <UpNext

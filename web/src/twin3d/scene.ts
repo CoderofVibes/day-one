@@ -23,6 +23,7 @@ import type {
   TwinQuote,
   TwinState,
 } from "../twin/model.ts";
+import type { Focus } from "../twin/objects.ts";
 import { siteTop, topHeight } from "./buildings.ts";
 
 export type V3 = [number, number, number];
@@ -713,6 +714,169 @@ export function cameraPosition(f: Framing): V3 {
     f.target[1] + f.distance * Math.sin(f.elevation),
     f.target[2] + r * Math.cos(f.azimuth),
   ];
+}
+
+// ------------------------------------------------------------------ views, fly-to and limits
+
+/** A fly-to's length: long enough to follow, short enough not to wait for (brief §4.6: 1.2–1.8 s). */
+export const FLY_MS = 1500;
+
+/**
+ * What the camera may do under the user's hands: no lower than 10° above the ground nor
+ * steeper than 75° (15°–80° from vertical), no nearer or farther than the distances, and the
+ * point it looks at kept over the campus.
+ */
+export const CAMERA_LIMITS = {
+  minPolar: (15 * Math.PI) / 180,
+  maxPolar: (80 * Math.PI) / 180,
+  minDistance: 12,
+  maxDistance: 600,
+  /** How far past the outermost floor or pad the camera's target may wander. */
+  margin: 40,
+} as const;
+
+/** The box the camera's target stays in: the campus and a margin, from the ground to 40 up. */
+export function targetBounds(): { min: V3; max: V3 } {
+  const { min, max } = siteBounds();
+  const m = CAMERA_LIMITS.margin;
+  return { min: [min[0] - m, 0, min[1] - m], max: [max[0] + m, 40, max[1] + m] };
+}
+
+/** A framing kept within the limits, so a preset or fly-to lands where the user could also go. */
+export function clampFraming(f: Framing): Framing {
+  const minElev = Math.PI / 2 - CAMERA_LIMITS.maxPolar;
+  const maxElev = Math.PI / 2 - CAMERA_LIMITS.minPolar;
+  const { min, max } = targetBounds();
+  return {
+    target: [0, 1, 2].map((i) =>
+      Math.min(max[i] as number, Math.max(min[i] as number, f.target[i] as number)),
+    ) as V3,
+    distance: Math.min(CAMERA_LIMITS.maxDistance, Math.max(CAMERA_LIMITS.minDistance, f.distance)),
+    azimuth: f.azimuth,
+    elevation: Math.min(maxElev, Math.max(minElev, f.elevation)),
+  };
+}
+
+const deptsShot = (codes: DeptCode[], azimuth: number, elevation: number): Shot => ({
+  subjects: codes.flatMap((c) => deptSubjects("B", c)),
+  azimuth,
+  elevation,
+  minDistance: 45,
+});
+
+/** The camera presets: the "Views" pill and keys 1–8, named as the scene names its places. */
+export const VIEWS: { key: string; id: string; label: string; shot: Shot }[] = [
+  { key: "1", id: "campus", label: "Campus", shot: SITE },
+  { key: "2", id: "plant-b", label: "Hollow Pine", shot: PLANT_B },
+  {
+    key: "3",
+    id: "receiving",
+    label: "Receiving & Warehouse",
+    shot: deptsShot(["receiving", "warehouse"], ISO - 0.2, 0.6),
+  },
+  {
+    key: "4",
+    id: "production",
+    label: "Production",
+    shot: deptsShot(["weigh_dispense", "blending", "compression"], ISO + 0.15, 0.62),
+  },
+  { key: "5", id: "qc", label: "QC Lab", shot: deptsShot(["qc_lab"], ISO - 0.1, 0.6) },
+  { key: "6", id: "money", label: "HQ & Escrow", shot: MONEY },
+  { key: "7", id: "suppliers", label: "Suppliers", shot: QUOTES },
+  {
+    key: "8",
+    id: "plants",
+    label: "Riverside & Lakeview",
+    shot: {
+      subjects: [...plantSubjects("A"), ...plantSubjects("C")],
+      azimuth: ISO,
+      elevation: 0.6,
+    },
+  },
+];
+
+export function viewFraming(
+  id: string,
+  viewport: Viewport = DEFAULT_VIEWPORT,
+): Framing | undefined {
+  const view = VIEWS.find((v) => v.id === id);
+  return view ? clampFraming(frameShot(view.shot, viewport)) : undefined;
+}
+
+/** What the camera frames when an object is picked (src/twin/objects.ts). */
+export function objectShot(focus: Focus): Shot {
+  switch (focus.kind) {
+    case "plant":
+      return { subjects: plantSubjects(focus.facility), azimuth: ISO - 0.15, elevation: 0.58 };
+    case "dept":
+      return {
+        subjects: deptSubjects(focus.facility, focus.dept),
+        azimuth: ISO - 0.1,
+        elevation: 0.6,
+        minDistance: 40,
+      };
+    case "pad":
+      return focus.pad === "escrow"
+        ? { subjects: ESCROW(), azimuth: ISO + 0.3, elevation: 0.5, minDistance: 50 }
+        : focus.pad === "hq"
+          ? { subjects: HQ(), azimuth: ISO + 0.3, elevation: 0.5, minDistance: 50 }
+          : QUOTES;
+    case "depot": {
+      const p = depotPositions()[focus.index] ?? depotPositions()[0] ?? world(0, 0);
+      return {
+        subjects: [{ point: p, padPx: DEPOT_LABEL_PX }, { point: [p[0], p[1] + 4, p[2]] }],
+        azimuth: ISO - 0.3,
+        elevation: 0.55,
+        minDistance: 40,
+      };
+    }
+    case "lot": {
+      const box = zoneOf(focus.facility, "quarantine")?.box;
+      return {
+        subjects: box ? boxSubjects(box, FLOOR_Z + 14) : plantSubjects(focus.facility),
+        azimuth: ISO - 0.2,
+        elevation: 0.6,
+        minDistance: 40,
+      };
+    }
+    case "flow": {
+      const a = anchor3(focus.from);
+      const b = anchor3(focus.to);
+      return {
+        subjects: [
+          { point: a, padPx: COIN_LABEL_PX },
+          { point: b, padPx: COIN_LABEL_PX },
+          { point: [(a[0] + b[0]) / 2, Math.max(a[1], b[1]) + 10, (a[2] + b[2]) / 2] },
+        ],
+        azimuth: ISO + 0.1,
+        elevation: 0.58,
+        minDistance: 50,
+      };
+    }
+  }
+}
+
+/**
+ * An object's framing in the part of the stage a panel on the right leaves free: fitted to the
+ * narrower width, then the target moved right by half the panel so the object sits mid-left.
+ */
+export function objectFraming(
+  focus: Focus,
+  viewport: Viewport = DEFAULT_VIEWPORT,
+  rightPanelPx = 0,
+): Framing {
+  const free = { width: Math.max(200, viewport.width - rightPanelPx), height: viewport.height };
+  const f = frameShot(objectShot(focus), free);
+  const shift =
+    ((rightPanelPx / 2) * 2 * f.distance * Math.tan((FOV / 2) * (Math.PI / 180))) / viewport.height;
+  return clampFraming({
+    ...f,
+    target: [
+      f.target[0] + Math.cos(f.azimuth) * shift,
+      f.target[1],
+      f.target[2] - Math.sin(f.azimuth) * shift,
+    ],
+  });
 }
 
 /** The pads' and floors' world boxes, for the ground plane and the tests. */

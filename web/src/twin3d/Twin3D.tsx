@@ -5,13 +5,14 @@
 // one step every STEP_MS. Procedural geometry only; labels are DOM, so no font file. Staff see
 // dollars, POs, plants and names; hashes and accounts appear only behind the curtain.
 
-import { Edges, Html, Line, OrbitControls } from "@react-three/drei";
+import { CameraControls, type CameraControlsImpl, Edges, Html, Line } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import type { Line2, OrbitControls as OrbitControlsImpl } from "three-stdlib";
+import type { Line2 } from "three-stdlib";
 import type { RunData } from "../run.ts";
 import {
+  AREAS,
   type AreaCode,
   type Box,
   FACILITY_LAYOUTS,
@@ -31,6 +32,7 @@ import {
   type TwinOptions,
   type TwinState,
 } from "../twin/model.ts";
+import { type Focus, flowObjectId, supplierObjectId } from "../twin/objects.ts";
 import {
   BUILDING_HEIGHT,
   type PartKind,
@@ -47,6 +49,7 @@ import {
   blendEscrowCents,
   blendFlows,
   blendLots,
+  CAMERA_LIMITS,
   CAMERA_MS,
   cameraPosition,
   centerOf,
@@ -55,6 +58,7 @@ import {
   type DeptLook,
   depots,
   dock3,
+  FLY_MS,
   type FlowFrame,
   type Framing,
   framingFor,
@@ -63,10 +67,13 @@ import {
   type LotFrame,
   lerp,
   lerpFraming,
+  objectFraming,
   RECORD_FRAME_MS,
   road3,
   STEP_MS,
+  targetBounds,
   type V3,
+  viewFraming,
   world,
 } from "./scene.ts";
 import "./twin3d.css";
@@ -86,6 +93,13 @@ export interface Twin3DProps {
   onPick?: (pick: AreaPick) => void;
   /** The area whose sheet is open, outlined on the map. */
   picked?: AreaPick | null;
+  /**
+   * An object was clicked (src/twin/objects.ts ids): a plant, a pad, a depot, a coin, a truck, a
+   * lot, and a building's department when `onPick` is not set.
+   */
+  onSelect?: (id: string) => void;
+  /** A preset or object to fly to; each new `seq` starts one move. */
+  camera?: CameraRequest | null;
 }
 
 /** An area of a plant, as the maps hand it to the area sheet. */
@@ -202,6 +216,28 @@ interface CameraCommand {
 }
 const CommandContext = createContext<React.RefObject<CameraCommand> | null>(null);
 
+/** Selecting an object by its id (src/twin/objects.ts); null when the stage has no inspector. */
+const SelectContext = createContext<((id: string) => void) | null>(null);
+
+/** Pointer props that make a mesh select an object: a click selects it, hover shows the hand. */
+function useSelectable(id: string | undefined) {
+  const select = useContext(SelectContext);
+  if (!select || !id) return {};
+  return {
+    onClick: (e: { stopPropagation: () => void }) => {
+      e.stopPropagation();
+      select(id);
+    },
+    onPointerOver: (e: { stopPropagation: () => void }) => {
+      e.stopPropagation();
+      document.body.style.cursor = "pointer";
+    },
+    onPointerOut: () => {
+      document.body.style.cursor = "";
+    },
+  };
+}
+
 /** The stage's layers (docs/VISION.md §6.5.6): the buildings always, the rest switchable. */
 export interface Layers {
   equipment: boolean;
@@ -295,6 +331,17 @@ function Driver({
 
 // ------------------------------------------------------------------ camera
 
+/** A camera move asked for from outside the canvas: a preset view or an object; a new seq starts it. */
+export interface CameraRequest {
+  seq: number;
+  view?: string;
+  focus?: Focus;
+}
+
+const TARGET = new THREE.Vector3();
+/** The inspector's width and margin on a wide stage (twin3d.css .twin-inspector); a fly-to keeps clear of it. */
+const INSPECTOR_PX = 400;
+
 /** The current camera as a framing, so a handoff from free orbit eases from where it is. */
 function framingOf(camera: THREE.Camera, target: THREE.Vector3): Framing {
   const d = camera.position.clone().sub(target);
@@ -307,12 +354,20 @@ function framingOf(camera: THREE.Camera, target: THREE.Vector3): Framing {
   };
 }
 
+/**
+ * The camera rig: drei's CameraControls (camera-controls) under the user's hands, with damping
+ * and the limits of CAMERA_LIMITS, and three ways the camera is moved for them. The story takes
+ * it to each step's shot; a preset or a picked object flies it there over FLY_MS and leaves it
+ * with the user; the zoom buttons dolly it. Every move is an eased framing set each frame on the
+ * demo clock, so record mode stays frame-exact and reduced motion makes each move a cut.
+ */
 function StoryCamera({
   title,
   at,
   pooled,
   record,
   reduced,
+  request,
 }: {
   title: string;
   at: number;
@@ -320,82 +375,107 @@ function StoryCamera({
   pooled: boolean;
   record: boolean;
   reduced: boolean;
+  request: CameraRequest | null;
 }) {
   const frame = useFrameRef();
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
-  const controls = useRef<OrbitControlsImpl>(null);
-  const free = useRef(false);
+  const controls = useRef<CameraControlsImpl>(null);
+  /** story: the step's shot; fly: a preset or object, then free; free: the user's. */
+  const mode = useRef<"story" | "fly" | "free">("story");
   const from = useRef<Framing>(framingFor(title, size, pooled));
   const to = useRef<Framing>(framingFor(title, size, pooled));
   const since = useRef(0);
+  const length = useRef(CAMERA_MS);
   const seen = useRef(-1);
+  const seenRequest = useRef(0);
   const sized = useRef(`${size.width}x${size.height}`);
   const command = useContext(CommandContext);
+
+  useEffect(() => {
+    const c = controls.current;
+    if (!c) return;
+    const { min, max } = targetBounds();
+    c.setBoundary(new THREE.Box3(new THREE.Vector3(...min), new THREE.Vector3(...max)));
+  }, []);
 
   useFrame(() => {
     const f = frame.current;
     const c = controls.current;
     if (!c) return;
+    c.getTarget(TARGET, false);
+    const move = (target: Framing, ms: number, next: "story" | "fly") => {
+      from.current = framingOf(camera, TARGET);
+      to.current = target;
+      since.current = f.t;
+      length.current = ms;
+      mode.current = next;
+    };
     const cmd = command?.current;
     if (cmd?.fit) {
       // "Fit": the story takes the camera back, easing from where the user left it.
       cmd.fit = false;
-      from.current = framingOf(camera, c.target);
-      to.current = framingFor(title, size, pooled);
-      since.current = f.t;
-      free.current = false;
+      move(framingFor(title, size, pooled), CAMERA_MS, "story");
     }
     if (cmd && cmd.zoom !== 1 && !record) {
-      // A zoom button: the camera moves along its line to the target and stays where it lands.
-      const d = camera.position.clone().sub(c.target);
-      const next = Math.min(480, Math.max(25, d.length() * cmd.zoom));
-      camera.position.copy(c.target).add(d.setLength(next));
-      c.update();
+      // A zoom button: the camera dollies along its line to the target and stays where it lands.
+      c.dollyTo(
+        Math.min(
+          CAMERA_LIMITS.maxDistance,
+          Math.max(CAMERA_LIMITS.minDistance, c.distance * cmd.zoom),
+        ),
+        !reduced,
+      );
       cmd.zoom = 1;
-      free.current = true;
+      mode.current = "free";
     }
     const sizeNow = `${size.width}x${size.height}`;
     if (seen.current !== at) {
       // A new step: the story takes the camera back from wherever the user left it.
       seen.current = at;
       sized.current = sizeNow;
-      from.current = framingOf(camera, c.target);
-      to.current = framingFor(title, size, pooled);
-      since.current = f.t;
-      free.current = false;
-    } else if (sized.current !== sizeNow && !free.current) {
-      // The stage changed size (a rotated phone, a resized window): refit the same shot.
+      move(framingFor(title, size, pooled), CAMERA_MS, "story");
+    } else if (sized.current !== sizeNow && mode.current === "story") {
+      // The stage changed size (a rotated phone, a resized window, full screen): refit the shot.
       sized.current = sizeNow;
-      from.current = framingOf(camera, c.target);
-      to.current = framingFor(title, size, pooled);
-      since.current = f.t;
+      move(framingFor(title, size, pooled), CAMERA_MS, "story");
+    }
+    if (request && request.seq !== seenRequest.current && !record) {
+      seenRequest.current = request.seq;
+      const target = request.view
+        ? viewFraming(request.view, size)
+        : request.focus
+          ? objectFraming(request.focus, size, size.width >= 768 ? INSPECTOR_PX : 0)
+          : undefined;
+      if (target) move(target, FLY_MS, "fly");
     }
     if (window.dayOneTwin) window.dayOneTwin.camera = camera.position.toArray();
-    if (free.current && !record) {
-      f.cameraDistance = camera.position.distanceTo(c.target);
+    if (mode.current === "free" && !record) {
+      f.cameraDistance = camera.position.distanceTo(TARGET);
       return;
     }
-    const u = reduced ? 1 : clamp01((f.t - since.current) / CAMERA_MS);
+    const u = reduced ? 1 : clamp01((f.t - since.current) / length.current);
     const now = lerpFraming(from.current, to.current, u);
-    camera.position.set(...cameraPosition(now));
-    c.target.set(...now.target);
-    c.update();
-    f.cameraDistance = camera.position.distanceTo(c.target);
+    const p = cameraPosition(now);
+    c.setLookAt(p[0], p[1], p[2], now.target[0], now.target[1], now.target[2], false);
+    c.update(0);
+    if (mode.current === "fly" && u >= 1) mode.current = "free";
+    f.cameraDistance = camera.position.distanceTo(c.getTarget(TARGET));
   });
 
   return (
-    <OrbitControls
+    <CameraControls
       ref={controls}
-      enableDamping={false}
-      enablePan={!record}
-      enableZoom={!record}
-      enableRotate={!record}
-      minDistance={25}
-      maxDistance={480}
-      maxPolarAngle={Math.PI / 2 - 0.08}
+      makeDefault
+      enabled={!record}
+      minDistance={CAMERA_LIMITS.minDistance}
+      maxDistance={CAMERA_LIMITS.maxDistance}
+      minPolarAngle={CAMERA_LIMITS.minPolar}
+      maxPolarAngle={CAMERA_LIMITS.maxPolar}
+      smoothTime={0.25}
+      draggingSmoothTime={0.12}
       onStart={() => {
-        free.current = true;
+        mode.current = "free";
       }}
     />
   );
@@ -693,8 +773,13 @@ function Buildings({
     meshes.current[group] = el;
   };
   // A click on a building picks the area under it: the hit point, moved a little inward from the
-  // face it struck, decides which area's footprint it is in.
-  const pick = onPick
+  // face it struck, decides which area's footprint it is in. Without an area sheet, it selects
+  // the area's department for the inspector.
+  const select = useContext(SelectContext);
+  const onArea =
+    onPick ??
+    (select ? (hit: AreaPick) => select(`dept-${hit.facility}-${AREAS[hit.area].dept}`) : null);
+  const pick = onArea
     ? {
         onClick: (e: {
           stopPropagation: () => void;
@@ -704,7 +789,7 @@ function Buildings({
           e.stopPropagation();
           const n = e.face?.normal;
           const hit = areaAt(e.point.x - (n?.x ?? 0) * 0.2, e.point.z - (n?.z ?? 0) * 0.2);
-          if (hit) onPick(hit);
+          if (hit) onArea(hit);
         },
         onPointerOver: () => {
           document.body.style.cursor = "pointer";
@@ -948,17 +1033,21 @@ function Slab({
   z0,
   height,
   color,
+  select,
   children,
 }: {
   box: Box;
   z0: number;
   height: number;
   color: string;
+  /** The object a click on the slab selects. */
+  select?: string;
   children?: React.ReactNode;
 }) {
   const [cx, cy] = centerOf(box);
+  const selectable = useSelectable(select);
   return (
-    <mesh position={[cx, z0 + height / 2, cy]} castShadow receiveShadow>
+    <mesh position={[cx, z0 + height / 2, cy]} castShadow receiveShadow {...selectable}>
       <boxGeometry args={[box.w, height, box.d]} />
       <meshStandardMaterial color={color} roughness={0.9} />
       {children}
@@ -974,7 +1063,13 @@ function Floors({ theme, state }: { theme: Theme; state: TwinState }) {
         const [fx, fy] = [layout.floor.x + layout.floor.w, layout.floor.y + layout.floor.d];
         return (
           <group key={layout.id}>
-            <Slab box={layout.floor} z0={0} height={FLOOR_Z} color={theme.floor} />
+            <Slab
+              box={layout.floor}
+              z0={0}
+              height={FLOOR_Z}
+              color={theme.floor}
+              select={`plant-${layout.id}`}
+            />
             <group position={world(fx - layout.floor.w * 0.5, fy + 1.5, 0)}>
               <Label zIndexRange={[8, 0]} rank={RANK.plant} className="t3-label plant">
                 <strong>{facility?.name ?? layout.id}</strong>
@@ -1020,6 +1115,17 @@ function depotStackPx(curtain: boolean, narrow: boolean): number {
   return narrow ? 24 : curtain ? 64 : 52;
 }
 
+/** A supplier's depot on the pad; a click selects the supplier. */
+function Depot({ select, children }: { select: string; children: React.ReactNode }) {
+  const selectable = useSelectable(select);
+  return (
+    <mesh position={[0, 1.1, 0]} castShadow {...selectable}>
+      <boxGeometry args={[2.6, 2.2, 2.6]} />
+      {children}
+    </mesh>
+  );
+}
+
 function Pads({
   theme,
   state,
@@ -1037,13 +1143,15 @@ function Pads({
   };
   const [ex, ey] = centerOf(PADS.escrow);
   const [hx, hy] = centerOf(PADS.hq);
+  const escrow = useSelectable("escrow");
+  const hq = useSelectable("hq");
   return (
     <>
       {(Object.keys(PADS) as (keyof typeof PADS)[]).map((kind) => (
-        <Slab key={kind} box={PADS[kind]} z0={0} height={PAD_Z} color={theme.pad} />
+        <Slab key={kind} box={PADS[kind]} z0={0} height={PAD_Z} color={theme.pad} select={kind} />
       ))}
       {/* The vault: where a PO's money waits for QC. */}
-      <mesh position={[ex, PAD_Z + 2.6, ey]} castShadow>
+      <mesh position={[ex, PAD_Z + 2.6, ey]} castShadow {...escrow}>
         <boxGeometry args={[6.5, 5.2, 6.5]} />
         <meshStandardMaterial color={theme.muted} roughness={0.6} metalness={0.2} />
       </mesh>
@@ -1052,7 +1160,7 @@ function Pads({
         <meshStandardMaterial color={theme.money} roughness={0.4} metalness={0.4} />
       </mesh>
       {/* Acme HQ: the budget. */}
-      <mesh position={[hx, PAD_Z + 4.5, hy]} castShadow>
+      <mesh position={[hx, PAD_Z + 4.5, hy]} castShadow {...hq}>
         <boxGeometry args={[5.5, 9, 5.5]} />
         <meshStandardMaterial color={theme.steady} roughness={0.8} />
       </mesh>
@@ -1075,10 +1183,9 @@ function Pads({
         const refused = d.quote?.chainTx?.status === "refused";
         return (
           <group key={d.quote?.supplier ?? i} position={d.position}>
-            <mesh position={[0, 1.1, 0]} castShadow>
-              <boxGeometry args={[2.6, 2.2, 2.6]} />
+            <Depot select={d.quote ? supplierObjectId(d.quote.supplier) : "suppliers"}>
               <meshStandardMaterial color={standingColor(theme, standing)} roughness={0.85} />
-            </mesh>
+            </Depot>
             {d.quote && (
               <group position={[0, 3.4, 0]}>
                 <Label
@@ -1194,6 +1301,7 @@ function FlowView({
   const refused = flow.status === "refused";
   const disputed = flow.status === "disputed";
   const color = refused || disputed ? theme.warn : money ? theme.money : theme.ink;
+  const selectable = useSelectable(flowObjectId(flow));
 
   useFrame(() => {
     const f = frame.current.flows.find((x) => x.flow.id === flow.id);
@@ -1258,7 +1366,7 @@ function FlowView({
           />
         </mesh>
       )}
-      <group ref={mover}>
+      <group ref={mover} {...selectable}>
         {money ? (
           <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
             <cylinderGeometry args={[1.3, 1.3, 0.5, 24]} />
@@ -1332,9 +1440,10 @@ function LotView({ frameLot, theme }: { frameLot: LotFrame; theme: Theme }) {
     }
   });
   const mark = lot.state === "quarantine" ? "⚠" : lot.state === "released" ? "✓" : "✗";
+  const selectable = useSelectable(lot.code);
   return (
     <group>
-      <mesh ref={pallet} castShadow>
+      <mesh ref={pallet} castShadow {...selectable}>
         <boxGeometry args={[3.2, 1.8, 3.2]} />
         <meshStandardMaterial color={theme.quarantine} roughness={0.8} />
       </mesh>
@@ -1380,10 +1489,12 @@ function Scene({
   onPick,
   picked,
   layers,
+  camera,
 }: {
   onPick?: ((pick: AreaPick) => void) | undefined;
   picked?: AreaPick | null | undefined;
   layers: Layers;
+  camera: CameraRequest | null;
   theme: Theme;
   prev: TwinState;
   next: TwinState;
@@ -1473,7 +1584,14 @@ function Scene({
             />
           ))}
         {layers.money && lots.map((l) => <LotView key={l.lot.code} frameLot={l} theme={theme} />)}
-        <StoryCamera title={title} at={at} pooled={pooled} record={record} reduced={reduced} />
+        <StoryCamera
+          title={title}
+          at={at}
+          pooled={pooled}
+          record={record}
+          reduced={reduced}
+          request={camera}
+        />
         <LabelPass />
       </SlotsContext.Provider>
     </FrameContext.Provider>
@@ -1489,7 +1607,10 @@ export default function Twin3D({
   options,
   onPick,
   picked,
-}: Twin3DProps) {
+  onSelect,
+  camera,
+  children,
+}: Twin3DProps & { children?: React.ReactNode }) {
   const theme = useTheme();
   const reduced = useReducedMotion();
   const last = run.steps.length - 1;
@@ -1519,43 +1640,46 @@ export default function Twin3D({
       data-record={record ? "1" : undefined}
     >
       <CommandContext.Provider value={command}>
-        <Canvas
-          flat
-          shadows
-          dpr={record ? 1 : [1, 1.5]}
-          frameloop="always"
-          gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
-          camera={{
-            fov: 32,
-            near: 2,
-            far: 1200,
-            position: cameraPosition(framingFor(title, undefined, isPooled(next))),
-          }}
-          aria-label={`3D plant view. ${notes.join(" ")}`}
-          onCreated={({ gl }) => {
-            // For npm run web:shot:3d: the renderer's draw calls and triangles per frame.
-            window.dayOneTwin = {
-              info: () => ({ calls: gl.info.render.calls, triangles: gl.info.render.triangles }),
-            };
-          }}
-        >
-          <Scene
-            theme={theme}
-            prev={prev}
-            next={next}
-            at={at}
-            last={last}
-            title={title}
-            curtain={curtain}
-            record={record}
-            reduced={reduced}
-            hideLabels={narrow}
-            onStep={onStep}
-            onPick={onPick}
-            picked={picked}
-            layers={layers}
-          />
-        </Canvas>
+        <SelectContext.Provider value={onSelect ?? null}>
+          <Canvas
+            flat
+            shadows
+            dpr={record ? 1 : [1, 1.5]}
+            frameloop="always"
+            gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
+            camera={{
+              fov: 32,
+              near: 2,
+              far: 1200,
+              position: cameraPosition(framingFor(title, undefined, isPooled(next))),
+            }}
+            aria-label={`3D plant view. ${notes.join(" ")}`}
+            onCreated={({ gl }) => {
+              // For npm run web:shot:3d: the renderer's draw calls and triangles per frame.
+              window.dayOneTwin = {
+                info: () => ({ calls: gl.info.render.calls, triangles: gl.info.render.triangles }),
+              };
+            }}
+          >
+            <Scene
+              theme={theme}
+              prev={prev}
+              next={next}
+              at={at}
+              last={last}
+              title={title}
+              curtain={curtain}
+              record={record}
+              reduced={reduced}
+              hideLabels={narrow}
+              onStep={onStep}
+              onPick={onPick}
+              picked={picked}
+              layers={layers}
+              camera={camera ?? null}
+            />
+          </Canvas>
+        </SelectContext.Provider>
       </CommandContext.Provider>
       {!record && (
         <>
@@ -1595,6 +1719,7 @@ export default function Twin3D({
           </fieldset>
         </>
       )}
+      {children}
     </div>
   );
 }
