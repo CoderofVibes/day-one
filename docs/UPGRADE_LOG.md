@@ -2,6 +2,10 @@
 
 The running log of the "make it feel alive" upgrade (`docs/UPGRADE_BRIEF.md`). Newest milestone at the bottom; the recon (brief §6.2 M0, Oct 31) comes first because every later run builds on it.
 
+## Cut (Tony, Oct 31, in Claude's chat)
+
+Not built in this upgrade: the what-if planner (§3.4), the supplier disruption drill (§3.3), the dawn scene (§1.3; the 5am brief page stays as it is), and the receiving dock's mobile mode (§5.9 item 2). Linda's phone approval (§5.9 item 1) and Talk to Kevin (§3.2) stay in scope.
+
 ## M0 — recon (Oct 31, branch `upgrade/recon`)
 
 ### Repo map for the upgrade
