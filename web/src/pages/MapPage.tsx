@@ -1,4 +1,4 @@
-// The Plant map page (docs/VISION.md §6.5): the map fills the page, and a click on any area of any
+// The Plant twin page (docs/VISION.md §6.5, brief §5.6): the twin fills the page, and a click on any area of any
 // plant opens its sheet beside it: what the area is, whether it is on Day One yet, what it holds,
 // its equipment and what last happened there, all read from the ledger at the run's clock.
 
@@ -15,6 +15,8 @@ import { day, lotState, plantName } from "./common.tsx";
 export interface MapPick {
   onPick: (pick: PickedArea) => void;
   picked: PickedArea | null;
+  /** The twin fills the page (PlantView `page`). */
+  page: true;
 }
 
 export function MapPage({
@@ -30,7 +32,7 @@ export function MapPage({
   return (
     <div className={picked ? "map-page with-sheet" : "map-page"}>
       <div className="map-stage">
-        {map({ onPick: setPicked, picked })}
+        {map({ onPick: setPicked, picked, page: true })}
         {!picked && (
           <p className="small muted map-hint">
             Click any area of any plant for what it holds, its equipment and what last happened

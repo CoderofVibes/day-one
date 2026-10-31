@@ -31,6 +31,8 @@ If Tier 2 ships, the plant map in 0:28–0:36 and 1:34–1:42 is the 3D twin. No
 
 **Oct 30 change (research 24 §2, the morning review built Oct 30):** the "Morning review" beat (9 s) went in between the title and "Batch record in", so the take opens on what Kevin did overnight before Ray's first upload, and the two bank-details attempts land in order: the email refused by Kevin's reading, then the invoice held by Kevin and barred by the contract. Nothing was trimmed: 2:05 became 2:14, six seconds under the export limit. The next beat that grows trims "Behind the curtain", as above.
 
+**Oct 31: the tour (brief §4.10, branch `upgrade/judge`).** The take above is unchanged at 2:14. The tour (`?video=1&tour=1`, judge mode's last step, docs/RECORDING.md §7) plays the same beats with the curtain on at the refusal (the red shield), Linda's approval and the payout, Linda's phone in the panel for "Approve by text", camera keyframes on the "HQ & Escrow" and "Receiving & Warehouse" views, and three beats after "Behind the curtain" that the take has no room for under the export limit: **Group buy** (2:07–2:16, PO-G-2001, two plants at $4,745.00 each, Lakeview declined, the twin on the recorded pool), **Real USDC** (2:16–2:23, PO-1047, $19.00 in Circle testnet USDC with its five calls) and **15 of 15 refused** (2:23–2:33, fifteen shields lighting in turn), then the close (2:33–2:40). If the video should carry one of them, cut it from the tour into BEATS and trim "Behind the curtain" first, as above.
+
 If the privacy track is tagged, add a 3-second inset at 1:57: "Kevin's reasoning runs in an attested enclave on NEAR AI Cloud ✓ verified".
 
 ---

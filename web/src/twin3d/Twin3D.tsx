@@ -483,7 +483,9 @@ function StoryCamera({
       sized.current = sizeNow;
       move(framingFor(title, size, pooled, chain), CAMERA_MS, "story");
     }
-    if (request && request.seq !== seenRequest.current && !record) {
+    // A request in record mode is the tour's camera keyframe (src/video.ts), eased on the demo
+    // clock like the story's moves.
+    if (request && request.seq !== seenRequest.current) {
       seenRequest.current = request.seq;
       const target = request.view
         ? viewFraming(request.view, size)

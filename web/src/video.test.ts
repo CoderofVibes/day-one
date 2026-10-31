@@ -1,14 +1,19 @@
 import { describe, expect, it } from "vitest";
+import { groupRun } from "./groupBuy.ts";
 import { run } from "./run.ts";
+import { VIEWS } from "./twin3d/scene.ts";
 import {
   BEATS,
   beatMs,
   beatStarts,
+  beatsFor,
   captionAt,
   clockLabel,
   FRAME_MS,
   frameAt,
+  skipTo,
   startOf,
+  TOUR_BEATS,
   totalMs,
 } from "./video.ts";
 
@@ -86,5 +91,46 @@ describe("the video timeline", () => {
     expect(startOf("nope")).toBe(0);
     expect(startOf("approve")).toBe(beatStarts()[BEATS.findIndex((b) => b.id === "approve")]);
     expect(new Set(BEATS.map((b) => b.id)).size).toBe(BEATS.length);
+  });
+});
+
+describe("the tour", () => {
+  it("plays the take's beats in order, with the three extra beats before the close", () => {
+    const ids = TOUR_BEATS.map((b) => b.id);
+    expect(ids.filter((id) => BEATS.some((b) => b.id === id))).toEqual(BEATS.map((b) => b.id));
+    expect(ids.slice(-4)).toEqual(["group-buy", "usdc", "attacks", "close"]);
+    expect(totalMs(TOUR_BEATS) - totalMs()).toBe(26_000);
+    expect(clockLabel(totalMs(TOUR_BEATS))).toBe("2:40");
+  });
+
+  it("leaves the take as it was", () => {
+    expect(clockLabel(totalMs())).toBe("2:14");
+    expect(BEATS.some((b) => b.camera || b.run || b.panel === "phone")).toBe(false);
+    expect(BEATS.find((b) => b.id === "refusal")?.curtain).toBeUndefined();
+  });
+
+  it("lifts the curtain on the refusal and puts Linda's phone on screen", () => {
+    const beat = (id: string) => TOUR_BEATS.find((b) => b.id === id);
+    expect(beat("refusal")?.curtain).toBe(true);
+    expect(beat("approve")?.panel).toBe("phone");
+    expect(beat("approve")?.curtain).toBe(true);
+  });
+
+  it("names only the twin's views as cameras, and the group run's steps for the group beat", () => {
+    const views = new Set(VIEWS.map((v) => v.id));
+    for (const b of TOUR_BEATS) if (b.camera) expect(views.has(b.camera), b.id).toBe(true);
+    const group = TOUR_BEATS.find((b) => b.run === "group");
+    for (const s of group?.shots ?? []) expect(groupRun.steps[s.step]).toBeDefined();
+    expect(groupRun.steps[group?.shots.at(-1)?.step ?? 0]?.title).toBe("QC release");
+  });
+
+  it("chooses the tour from the address and skips a beat at a time", () => {
+    expect(beatsFor("?video=1")).toBe(BEATS);
+    expect(beatsFor("?video=1&tour=1")).toBe(TOUR_BEATS);
+    const starts = beatStarts(TOUR_BEATS);
+    expect(skipTo(0, 1, TOUR_BEATS)).toBe(starts[1]);
+    expect(skipTo((starts[3] ?? 0) + 500, -1, TOUR_BEATS)).toBe(starts[2]);
+    expect(skipTo(0, -1, TOUR_BEATS)).toBe(0);
+    expect(skipTo(totalMs(TOUR_BEATS) - 1, 1, TOUR_BEATS)).toBe(starts.at(-1));
   });
 });

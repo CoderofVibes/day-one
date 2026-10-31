@@ -1,0 +1,42 @@
+{
+  "network": "testnet",
+  "recordedAt": "2026-10-29T15:37:24.579Z",
+  "po": "PO-1047",
+  "contract": "spend-policy-usdc.acme-holdings.testnet",
+  "supplier": "bayfront-labsupply.testnet",
+  "amountUsdc": "19.00",
+  "status": "Released",
+  "staffLine": "PO-1047 (pH buffer ×2, $19.00) settled in Circle USDC.",
+  "calls": [
+    {
+      "call": "kevin submit_po PO-1047",
+      "status": "success",
+      "tx": "5x72zCmhZhtEoUGjqhxsxxfgS2grMzDjJroYztyUx6Er",
+      "url": "https://testnet.nearblocks.io/txns/5x72zCmhZhtEoUGjqhxsxxfgS2grMzDjJroYztyUx6Er"
+    },
+    {
+      "call": "supplier accept_po",
+      "status": "success",
+      "tx": "75YxNEFkJGGGH3CSPejQfA8iuM649VqSqeuFFUxQh5qH",
+      "url": "https://testnet.nearblocks.io/txns/75YxNEFkJGGGH3CSPejQfA8iuM649VqSqeuFFUxQh5qH"
+    },
+    {
+      "call": "supplier mark_shipped",
+      "status": "success",
+      "tx": "AvBA1We5nHg5JVbU4R2i135W1SMhoSig5BDSY7rEMd7y",
+      "url": "https://testnet.nearblocks.io/txns/AvBA1We5nHg5JVbU4R2i135W1SMhoSig5BDSY7rEMd7y"
+    },
+    {
+      "call": "confirm_receipt (relayed)",
+      "status": "success",
+      "tx": "7at1y7jYpF6ACMAe4QiTNEQLw1PnFG5XsLLzAH9qytJY",
+      "url": "https://testnet.nearblocks.io/txns/7at1y7jYpF6ACMAe4QiTNEQLw1PnFG5XsLLzAH9qytJY"
+    },
+    {
+      "call": "qc_release (relayed)",
+      "status": "success",
+      "tx": "5utQmP8fo5tmf3A1wQjTDZsfdXjWy861EXfp8KvXY9Xf",
+      "url": "https://testnet.nearblocks.io/txns/5utQmP8fo5tmf3A1wQjTDZsfdXjWy861EXfp8KvXY9Xf"
+    }
+  ]
+}

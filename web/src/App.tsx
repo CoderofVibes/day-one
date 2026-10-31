@@ -62,8 +62,10 @@ import { GlobalHeader, type Person } from "./Header.tsx";
 import { ImportPane } from "./ImportPane.tsx";
 import { InboxPane } from "./InboxPane.tsx";
 import { postDecision, postDropScans } from "./journey.ts";
+import { judgeStart } from "./judgeRoute.ts";
 import { type Action, actionsFor, actorOf, roleLabel } from "./live.ts";
 import { REVIEW_READ_ONLY, reviewSnapshot } from "./mail.ts";
+import ApproveApp from "./Phone.tsx";
 import { ErpPage, ThreeSchedules } from "./pages/Acme.tsx";
 import { ArenaPage } from "./pages/Arena.tsx";
 import { AskPage } from "./pages/Ask.tsx";
@@ -97,8 +99,13 @@ import { attachWorld, WORLD_SPAN } from "./worldEvents.ts";
 
 /** The video page (?video=1): the recorded run on the storyboard's clock (docs/RECORDING.md). */
 const VideoApp = lazy(() => import("./VideoApp.tsx"));
-const VIDEO =
-  typeof location !== "undefined" && new URLSearchParams(location.search).get("video") === "1";
+const QUERY = new URLSearchParams(typeof location === "undefined" ? "" : location.search);
+const VIDEO = QUERY.get("video") === "1";
+/** Linda's phone on its own (?page=approve&po=1042), for a judge's phone: src/Phone.tsx. */
+const APPROVE = QUERY.get("page") === "approve";
+/** Judge mode (?judge=1, src/JudgeMode.tsx): recorded data only, so it always opens the replay. */
+const JudgeMode = lazy(() => import("./JudgeMode.tsx"));
+const JUDGE_AT = judgeStart(QUERY.toString());
 
 export function App() {
   if (VIDEO) {
@@ -108,6 +115,7 @@ export function App() {
       </Suspense>
     );
   }
+  if (APPROVE) return <ApproveApp />;
   return <Screens />;
 }
 
@@ -116,6 +124,7 @@ function Screens() {
   useEffect(() => {
     probeApi().then(setLive);
   }, []);
+  if (JUDGE_AT !== null) return <ReplayApp />;
   if (live === undefined) return <div className="loading">Loading…</div>;
   return live ? <LiveApp initial={live} /> : <ReplayApp />;
 }
@@ -163,16 +172,18 @@ function Page({
   crumb,
   title,
   sentence,
+  className,
   children,
 }: {
   label: string;
   crumb: string;
   title: string;
   sentence: string;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <main className="page v2" aria-label={label}>
+    <main className={className ? `page v2 ${className}` : "page v2"} aria-label={label}>
       <PageHeader crumb={crumb} title={title} sentence={sentence} />
       {children}
     </main>
@@ -192,7 +203,7 @@ const PAGE_TEXT: Record<
 > = {
   map: {
     group: "plant",
-    title: "Plant map",
+    title: "Plant twin",
     sentence: "The three plants, the suppliers, the escrow and HQ, as the run moves through them.",
   },
   brief: {
@@ -475,6 +486,7 @@ function Pages({
       crumb={headingOf(page, plant).crumb}
       title={text.title}
       sentence={text.sentence}
+      {...(page === "map" ? { className: "twin-page" } : {})}
     >
       {body}
       {foot}
@@ -549,6 +561,7 @@ function ReplayApp() {
   const at = useClock(clock, (s) => stepAt(s.simNow, clock.range));
   const [curtain, setCurtain] = useState(false);
   const route = useRoute();
+  const [judge, setJudge] = useState<number | "summary" | null>(JUDGE_AT);
 
   const go = useCallback(
     (to: number) => clock.seek(clock.range.steps[Math.max(0, Math.min(last, to))] ?? 0),
@@ -652,6 +665,7 @@ function ReplayApp() {
           onOpen={() => route.go({ page: "money" })}
         />
       }
+      onJudge={() => setJudge(0)}
     />
   );
 
@@ -772,6 +786,19 @@ function ReplayApp() {
           />
         </RecordNav>
       </WithRail>
+      {judge !== null && (
+        <Suspense fallback={null}>
+          <JudgeMode
+            start={judge}
+            go={(page, step) => {
+              if (page !== route.page) route.go({ page, plant: "B" });
+              go(step);
+            }}
+            setCurtain={setCurtain}
+            onExit={() => setJudge(null)}
+          />
+        </Suspense>
+      )}
     </Shell>
   );
 }
@@ -1116,6 +1143,9 @@ function LiveApp({ initial }: { initial: LiveState }) {
           onOpen={() => route.go({ page: "money" })}
         />
       }
+      onJudge={() => {
+        location.search = "?judge=1";
+      }}
     />
   );
 

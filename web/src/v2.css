@@ -1540,6 +1540,31 @@ ul.plain {
 .map-hint {
   margin: 8px 0 0;
 }
+/* The Plant twin page (brief §5.6): the stage takes the height the header leaves, the Objects
+   list on its left and the inspector on its right, and the replay note is a small chip. */
+.twin-page .map-frame.twin-page-frame {
+  display: flex;
+  flex-direction: column;
+  height: max(420px, calc(100dvh - 230px));
+}
+.twin-page-frame .t3-stage {
+  flex: 1;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+.twin-page .foot {
+  justify-self: start;
+  display: inline-block;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+@media (max-width: 767px) {
+  .twin-page .map-frame.twin-page-frame {
+    height: max(380px, calc(100dvh - 190px));
+  }
+}
 .area-sheet {
   position: sticky;
   top: var(--s-4);
@@ -2162,6 +2187,36 @@ ul.plain {
   stroke: currentColor;
   stroke-width: 1.6;
 }
+/* Judge mode (src/JudgeMode.tsx): pine green, the one filled button in the header. */
+.gh-judge {
+  min-height: 32px;
+  padding: 2px 12px;
+  border: 1px solid var(--brand);
+  border-radius: var(--radius-full);
+  background: var(--brand);
+  color: var(--brand-ink);
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.gh-judge:hover {
+  filter: brightness(1.1);
+}
+/* Under 1440 px the header has no room for it beside Kevin's longest status: it moves into the menu. */
+.gh-judge-menu {
+  display: none;
+  width: 100%;
+  margin-bottom: 8px;
+}
+@media (max-width: 1439px) {
+  .gh > .gh-judge {
+    display: none;
+  }
+  .gh-judge-menu {
+    display: block;
+  }
+}
 .gh-curtain[aria-pressed="true"] {
   color: var(--chain);
   background: var(--chain-tint);
@@ -2224,8 +2279,8 @@ ul.plain {
   font-weight: 600;
 }
 
-/* Under 1440 px the speeds go into the clock's popover and the people button shows a face. */
-@media (max-width: 1439px) {
+/* Under 1600 px the speeds go into the clock's popover and the people button shows a face. */
+@media (max-width: 1599px) {
   .gh {
     gap: var(--s-2);
     padding: 8px var(--s-5);

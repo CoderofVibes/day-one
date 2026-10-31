@@ -71,6 +71,7 @@ const SUPPLIERS = join(root, "web/src/data/suppliers.json");
 const WORLD_EVENTS = join(root, "web/src/data/world");
 const MONEY = join(root, "web/src/data/money.json");
 const SAVINGS = join(root, "web/src/data/savings.json");
+const USDC = join(root, "web/src/data/usdc.json");
 const BRIEF = join(root, "web/public/brief.html");
 const CSV = join(root, "web/public/books.csv");
 const RELAYER = "dayone-relayer.testnet";
@@ -371,6 +372,40 @@ const ask = await recordedQuestions(
 // The Money page (server/src/finance/): each plant's money book from its world, loaded by the page
 // alone, and the savings ledger with Kevin's cost inputs, which the header's counter reads everywhere.
 const money = moneyData(root, { plants: JSON.parse(JSON.stringify(plants)) });
+// PO-1047 in Circle testnet USDC (data/usdc/, npm run usdc), for judge mode and the tour: the
+// replay's five calls with their explorer links, and the order as the recording made it.
+const usdcRun = recordedJson("scripts/usdc.ts") as {
+  ok: boolean;
+  staffLine: string;
+  amount: string;
+  poStatus: string;
+  steps: { step: string; status: string; txHash: string; explorerUrl: string }[];
+};
+const usdcChain = JSON.parse(readFileSync(join(root, "data/usdc/PO-1047-chain.json"), "utf8")) as {
+  network: string;
+  recordedAt: string;
+  entries: { type: string; request: { method?: string; receiverId?: string; args?: object } }[];
+};
+const usdcSubmit = usdcChain.entries.find(
+  (e) => e.type === "call" && e.request.method === "submit_po",
+);
+const usdcArgs = (usdcSubmit?.request.args ?? {}) as { po_id?: string; supplier?: string };
+const usdc = {
+  network: usdcChain.network,
+  recordedAt: usdcChain.recordedAt,
+  po: usdcArgs.po_id ?? "",
+  contract: usdcSubmit?.request.receiverId ?? "",
+  supplier: usdcArgs.supplier ?? "",
+  amountUsdc: (Number(usdcRun.amount) / 1e6).toFixed(2),
+  status: usdcRun.poStatus,
+  staffLine: usdcRun.staffLine,
+  calls: usdcRun.steps.map((s) => ({
+    call: s.step,
+    status: s.status,
+    tx: s.txHash,
+    url: s.explorerUrl,
+  })),
+};
 
 const files: [string, string][] = [
   [OUT, text],
@@ -388,6 +423,7 @@ const files: [string, string][] = [
   ),
   [MONEY, `${JSON.stringify(money.books)}\n`],
   [SAVINGS, `${JSON.stringify(savingsData(money), null, 2)}\n`],
+  [USDC, `${JSON.stringify(usdc, null, 2)}\n`],
   [BRIEF, briefHtml(morningBrief(env.db, { now }))],
   [CSV, booksCsv(env.db)],
 ];

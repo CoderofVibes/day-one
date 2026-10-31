@@ -161,3 +161,114 @@
   margin: 1vw 0 0;
   font-size: 1.2vw;
 }
+
+/* The tour (?tour=1): a mouse is welcome, and a small control bar sits bottom right. */
+.video.tour {
+  cursor: auto;
+}
+.video-controls {
+  position: fixed;
+  right: 2vw;
+  bottom: 1.2vw;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.3em;
+  border: 1px solid var(--line);
+  border-radius: 0.6em;
+  background: var(--surface);
+  font-size: 0.85em;
+}
+.video-controls button {
+  min-height: 2.2em;
+  padding: 0 0.8em;
+  border: 1px solid var(--line);
+  border-radius: 0.45em;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.video-clock {
+  padding: 0 0.5em;
+  color: var(--ink-2);
+}
+
+/* Clean capture (?capture=1): only the frame and the captions, and a 16:9 safe-frame guide. */
+.video.capture {
+  cursor: none;
+}
+.video.capture .video-top,
+.video.capture .video-hint,
+.video.capture .video-controls {
+  visibility: hidden;
+}
+.video-safe {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 6;
+  width: min(90vw, 160vh);
+  aspect-ratio: 16 / 9;
+  transform: translate(-50%, -50%);
+  border: 1px dashed rgb(255 255 255 / 0.35);
+  outline: 1px dashed rgb(0 0 0 / 0.25);
+  pointer-events: none;
+}
+
+/* Linda's phone in the panel, the group purchase card and the attack montage. */
+.video-phone {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+}
+.video-phone .phone-frame {
+  width: auto;
+  height: 100%;
+  aspect-ratio: 390 / 844;
+  font-size: 1.05vw;
+}
+.video-group .review li {
+  margin: 0.4em 0;
+}
+.video-montage {
+  height: 100%;
+  overflow: hidden;
+}
+.video-montage-count {
+  margin: 0 0 0.6vw;
+  font-size: 2vw;
+  font-weight: 700;
+  color: var(--refused);
+}
+.video-montage ol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35vw 1vw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9em;
+}
+.video-montage li {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  color: var(--ink-2);
+}
+.video-montage svg {
+  flex: none;
+  width: 1.4em;
+  height: 1.4em;
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1.6;
+}
+.video-montage li.hit {
+  color: var(--ink);
+}
+.video-montage li.hit svg {
+  fill: var(--refused);
+  stroke: var(--refused);
+}
