@@ -24,8 +24,8 @@ body {
 }
 .rail-v2 {
   position: sticky;
-  top: 0;
-  max-height: 100vh;
+  top: var(--gh-height);
+  max-height: calc(100vh - var(--gh-height));
   overflow-y: auto;
   padding: var(--s-4) var(--s-4) var(--s-4) 0;
 }
@@ -1858,5 +1858,423 @@ ul.plain {
   .arena-chip {
     animation: none;
     transition: none;
+  }
+}
+
+/* ---------- The global header (src/Header.tsx; docs/UPGRADE_BRIEF.md §5.3) ---------- */
+:root {
+  --gh-height: 56px;
+}
+.gh {
+  position: sticky;
+  top: 0;
+  z-index: 18;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: var(--gh-height);
+  padding: 8px var(--s-6);
+  background: var(--surface-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-line);
+  font-size: var(--fs-label);
+  font-variant-numeric: tabular-nums;
+}
+.gh > * {
+  flex: none;
+}
+.gh .gh-clock {
+  margin-right: auto;
+}
+.gh-title {
+  display: none;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.gh .gh-narrow,
+.gh .gh-sub-xl {
+  display: none;
+}
+.gh .avatar {
+  flex: none;
+}
+
+/* Plant pill: the sidebar picker's state, as a pill. */
+.gh-plant {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 3px 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface-1);
+  white-space: nowrap;
+}
+.gh-plant:focus-within {
+  box-shadow: var(--focus);
+}
+.gh-plant .picker-ico {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+}
+.gh-plant select {
+  appearance: none;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  max-width: 190px;
+  cursor: pointer;
+}
+.gh-plant .chev,
+.pop summary .chev {
+  color: var(--text-faint);
+  font-size: 10px;
+}
+
+/* Clock */
+.gh-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+  white-space: nowrap;
+}
+.gh-play {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--brand);
+  color: var(--brand-ink);
+  cursor: pointer;
+}
+.gh-play svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+.gh-play:focus-visible,
+.gh-curtain:focus-visible,
+.gh-kevin:focus-visible,
+.pop summary:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+.gh .clock-speed {
+  min-height: 28px;
+  padding: 1px 8px;
+}
+
+/* Popovers: a <details> with its panel under the button. */
+.pop {
+  position: relative;
+}
+.pop summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 2px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  background: var(--surface-1);
+  color: var(--text);
+  cursor: pointer;
+  list-style: none;
+  white-space: nowrap;
+}
+.pop summary::-webkit-details-marker {
+  display: none;
+}
+.pop[open] summary {
+  border-color: var(--brand);
+}
+.pop-body {
+  position: absolute;
+  top: calc(100% + 6px);
+  z-index: 30;
+  width: max-content;
+  max-width: min(360px, calc(100vw - 24px));
+  padding: var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-1);
+  box-shadow: var(--e3);
+  white-space: normal;
+}
+.pop-body.start {
+  left: 0;
+}
+.pop-body.end {
+  right: 0;
+}
+.gh-jump-body {
+  display: grid;
+  gap: var(--s-2);
+  width: min(340px, calc(100vw - 48px));
+}
+.gh-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.gh-menu button,
+.gh-person {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+.gh-menu button {
+  cursor: pointer;
+}
+.gh-menu button:hover,
+.gh-menu button:focus-visible {
+  background: var(--surface-2);
+  outline: none;
+}
+.gh-people b,
+.gh-upnext b {
+  display: block;
+  font-size: var(--fs-label);
+  line-height: 1.2;
+}
+.gh-people small,
+.gh-upnext small {
+  display: block;
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+}
+.gh-people li[aria-current] button,
+.gh-people li[aria-current] .gh-person {
+  background: var(--brand-tint);
+}
+.gh-upnext {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  text-align: left;
+}
+.gh-people-pop summary {
+  padding: 2px 8px 2px 3px;
+  border-radius: var(--radius-full);
+}
+
+/* Kevin's status: a dot that breathes while he works, still when idle or done. */
+.gh-kevin {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px 2px 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface-1);
+  color: var(--text);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.gh-kevin .avatar {
+  position: relative;
+  width: 26px;
+  height: 26px;
+}
+.gh-kevin .dot {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 2px solid var(--surface-1);
+  background: var(--neutral);
+}
+.gh-kevin.reading .dot,
+.gh-kevin.drafting .dot {
+  background: var(--info);
+  animation: gh-pulse 1.6s ease-in-out infinite;
+}
+.gh-kevin.waiting .dot {
+  background: var(--wait);
+}
+.gh-kevin.paying .dot {
+  background: var(--money);
+}
+.gh-kevin.signed .dot {
+  background: var(--ok);
+}
+@keyframes gh-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gh-kevin .dot {
+    animation: none !important;
+  }
+}
+
+/* Behind the curtain: cyan when on. */
+.gh-curtain {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 2px 12px 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface-1);
+  color: var(--text-muted);
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--dur-micro) var(--ease-enter),
+    color var(--dur-micro) var(--ease-enter);
+}
+.gh-curtain svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+.gh-curtain[aria-pressed="true"] {
+  color: var(--chain);
+  background: var(--chain-tint);
+  border-color: var(--chain-border);
+}
+.gh-curtain[aria-pressed="true"] svg {
+  fill: var(--chain-tint);
+}
+
+/* The menu: the theme, and under 1024 px the plant, Kevin and the people. */
+.gh-more summary {
+  padding: 2px 8px;
+}
+.gh-dots {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.gh-more-body {
+  display: grid;
+  gap: var(--s-3);
+  min-width: 220px;
+}
+.gh-more-row {
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.gh-theme {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  flex-wrap: wrap;
+}
+.gh-theme legend {
+  width: 100%;
+  margin-bottom: 4px;
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.gh-theme button {
+  flex: 1;
+  min-height: 30px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-full);
+  background: var(--surface-1);
+  color: var(--text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.gh-theme button[aria-pressed="true"] {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 600;
+}
+
+/* Under 1440 px the speeds go into the clock's popover and the people button shows a face. */
+@media (max-width: 1439px) {
+  .gh {
+    gap: var(--s-2);
+    padding: 8px var(--s-5);
+  }
+  .gh .gh-xl {
+    display: none;
+  }
+  .gh .gh-sub-xl {
+    display: flex;
+  }
+  .gh-upnext > span:last-child {
+    display: none;
+  }
+  .gh-plant select {
+    max-width: 150px;
+  }
+}
+@media (max-width: 1023px) {
+  .gh {
+    padding: 8px var(--s-4);
+    gap: var(--s-2);
+  }
+  .gh .gh-wide {
+    display: none;
+  }
+  .gh .gh-title {
+    display: block;
+    flex: 1 1 auto;
+  }
+  .gh .gh-narrow {
+    display: block;
+  }
+  .gh .gh-more-row.gh-narrow,
+  .gh .clock-row.gh-narrow {
+    display: flex;
+  }
+  .gh-curtain {
+    padding: 2px 8px;
+  }
+}
+/* Phone: the top bar above holds the menu and the curtain switch, and stays on top. */
+@media (max-width: 900px) {
+  .gh {
+    position: static;
+    padding: 6px var(--s-3);
+    min-height: 48px;
+  }
+  .gh-curtain-wrap,
+  .gh .gh-title {
+    display: none;
   }
 }

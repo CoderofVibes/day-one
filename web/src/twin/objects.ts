@@ -5,10 +5,10 @@
 // tests share one answer. Staff fields are plain language; transactions are only handed out for
 // the curtain.
 
+import { lotStyle } from "../lotStates.ts";
 import type { RunData, Tone, Transaction } from "../run.ts";
 import type { PageId } from "../shell.tsx";
 import { AREAS, type AreaCode, BUILDING_NAMES } from "./layout.ts";
-import { lotLook } from "./lotStates.ts";
 import {
   DEPARTMENTS,
   type DeptCode,
@@ -253,7 +253,7 @@ export function twinObjects(state: TwinState, pallets: Pallet[] = []): TwinObjec
       type: "Lot",
       name: lot.code,
       plant: lot.facility,
-      state: lotLook(lot.state),
+      state: lotStyle(lot.state),
       focus: { kind: "lot", facility: lot.facility, area: "quarantine" },
     });
   for (const p of pallets) {
@@ -264,7 +264,7 @@ export function twinObjects(state: TwinState, pallets: Pallet[] = []): TwinObjec
       type: "Lot",
       name: p.code,
       plant: p.facility,
-      state: lotLook(p.state),
+      state: lotStyle(p.state),
       focus: { kind: "lot", facility: p.facility, area: p.area },
     });
   }

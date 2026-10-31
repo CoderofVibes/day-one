@@ -2,11 +2,11 @@
 // words, and the line a page shows for a plant that is already on Acme's systems.
 
 import { useState } from "react";
+import { lotStyle } from "../lotStates.ts";
 import { readPlant } from "../reads.ts";
 import type { Tone } from "../run.ts";
 import { type Source, useRead } from "../series.ts";
 import { PLANTS, type PlantCode } from "../shell.tsx";
-import { lotLook } from "../twin/lotStates.ts";
 
 export interface PageProps {
   plant: PlantCode;
@@ -78,9 +78,9 @@ export function isOpen(status: string) {
   return !["paid", "cancelled", "rejected"].includes(status);
 }
 
-/** A lot state's pill, from the one lot-state map the maps also colour with. */
+/** A lot state in staff words with its pill tone, from the one lot-state map (src/lotStates.ts). */
 export function lotState(state: string): { label: string; tone: Tone } {
-  const { label, tone } = lotLook(state);
+  const { label, tone } = lotStyle(state);
   return { label, tone };
 }
 

@@ -143,7 +143,7 @@ a {
   margin-left: 6px;
   border-radius: 999px;
   background: var(--waiting);
-  color: #fff;
+  color: var(--surface);
   font-size: 11px;
   font-weight: 700;
   vertical-align: 1px;
@@ -593,8 +593,8 @@ a {
 }
 
 .clock-mode.recorded {
-  color: var(--recorded);
-  background: var(--recorded-bg);
+  color: var(--chain);
+  background: var(--chain-tint);
 }
 
 .clock-mode.simulated {
@@ -620,8 +620,8 @@ a {
   background: linear-gradient(
       to right,
       transparent var(--golden-from),
-      var(--recorded-bg) var(--golden-from),
-      var(--recorded-bg) var(--golden-to),
+      var(--chain-tint) var(--golden-from),
+      var(--chain-tint) var(--golden-to),
       transparent var(--golden-to)
     )
     center / 100% 10px no-repeat;
@@ -849,7 +849,7 @@ details.inbox[open] > summary {
 
 .note.alert .avatar {
   background: var(--waiting);
-  color: #fff;
+  color: var(--surface);
 }
 
 .tiles {
@@ -1282,16 +1282,17 @@ tbody th:first-child {
   font-weight: 600;
 }
 
+/* Lot colours from src/lotStates.ts (each state's `fill`). */
 .plant-map .lot.quarantine {
   fill: var(--quarantine);
 }
 
 .plant-map .lot.released {
-  fill: var(--paid);
+  fill: var(--ok);
 }
 
 .plant-map .lot.rejected {
-  fill: var(--refused);
+  fill: var(--bad);
 }
 
 .plant-map .flow path {
@@ -1591,6 +1592,28 @@ tbody th:first-child {
 .tx a {
   color: var(--curtain-ink);
   font-size: var(--t-xs);
+}
+
+/* A recorded attack's transaction: held by the contract, its words in red. */
+.tx.attack .head code {
+  font-family: var(--sans);
+}
+
+/* "Recent on testnet": the latest recorded, when the page has nothing on chain yet. */
+.curtain .recent {
+  margin: var(--s-3) 0 var(--s-2);
+  padding-left: var(--s-2);
+  border-left: 2px solid var(--curtain-ok);
+}
+.curtain .recent h3 {
+  margin: 0;
+  font-size: var(--fs-caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--curtain-ink);
+}
+.curtain .recent p {
+  margin: 2px 0 0;
 }
 
 /* ---------- The static replay's guide and the closing card ---------- */

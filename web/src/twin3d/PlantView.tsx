@@ -7,11 +7,11 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GROUP_TWIN, groupRun } from "../groupBuy.ts";
 import { Inspector } from "../Inspector.tsx";
+import { LOT_STATES } from "../lotStates.ts";
 import { type LotView, readSnapshotLots } from "../reads.ts";
 import type { RunData } from "../run.ts";
 import type { PageId } from "../shell.tsx";
 import { AREAS, mainArea } from "../twin/layout.ts";
-import { LOT_STATES } from "../twin/lotStates.ts";
 import type { DeptCode, DeptStatus, FacilityId } from "../twin/model.ts";
 import { deriveTwinState, formatQuotes, formatTwinState } from "../twin/model.ts";
 import { inspectObject, twinObjects } from "../twin/objects.ts";
@@ -82,8 +82,8 @@ const LEGEND: { token: string; label: string }[] = [
   { token: "--brand", label: "online" },
   { token: "--map-off", label: "not yet" },
   { token: "--money", label: "money" },
-  { token: LOT_STATES.quarantine.token, label: LOT_STATES.quarantine.label },
-  { token: LOT_STATES.released.token, label: LOT_STATES.released.label },
+  { token: LOT_STATES.quarantine.fill, label: LOT_STATES.quarantine.label },
+  { token: LOT_STATES.released.fill, label: LOT_STATES.released.label },
   { token: "--refused", label: "refused / disputed" },
 ];
 

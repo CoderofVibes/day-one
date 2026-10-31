@@ -123,6 +123,7 @@ export function Shell({
   setCurtain,
   badges,
   person,
+  header,
   children,
 }: {
   page: PageId;
@@ -134,6 +135,8 @@ export function Shell({
   badges: Partial<Record<PageId, { count: number; tone: "attention" | "problem" }>>;
   /** Whoever is up next in the run. */
   person: { name: string; role: string | null };
+  /** The global header over every page (src/Header.tsx). */
+  header?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const [menu, setMenu] = useState(false);
@@ -248,7 +251,10 @@ export function Shell({
           </div>
         </div>
       </aside>
-      <div className="main">{children}</div>
+      <div className="main">
+        {header}
+        {children}
+      </div>
     </div>
   );
 }

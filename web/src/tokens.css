@@ -48,9 +48,9 @@
   --waiting-bg: #fff3d6;
   --held: #1e5aa8;
   --held-bg: #e4eefb;
-  /* The recorded run on the sim clock: backed by testnet transactions. */
-  --recorded: #0b7285;
-  --recorded-bg: #dcf3f6;
+  /* Chain: the curtain, transactions, anchors, and the recorded run on the sim clock. */
+  --chain: #0b7285;
+  --chain-tint: #dcf3f6;
   --paid: #1b6b3a;
   --paid-bg: #e2f3e8;
   --neutral: #5c6370;
@@ -97,6 +97,74 @@
   --shadow: 0 1px 2px rgb(16 24 40 / 0.04), 0 8px 24px rgb(16 24 40 / 0.06);
   --focus: 0 0 0 3px color-mix(in srgb, var(--brand) 45%, transparent);
 
+  /* The brief's vocabulary (docs/UPGRADE_BRIEF.md §5.2), mapped onto the colours above so both
+     themes follow without a second copy: a name for what a colour means, not a new colour.
+     Green good, amber waiting, red refused, gold money, cyan chain, blue in progress. */
+  --ok: var(--paid);
+  --ok-tint: var(--paid-bg);
+  --wait: var(--waiting);
+  --wait-tint: var(--waiting-bg);
+  --bad: var(--refused);
+  --bad-tint: var(--refused-bg);
+  --money-tint: color-mix(in srgb, var(--money) 14%, transparent);
+  --info: var(--held);
+  --info-tint: var(--held-bg);
+  --neutral-tint: var(--neutral-bg);
+  --ok-border: color-mix(in srgb, var(--ok) 35%, transparent);
+  --wait-border: color-mix(in srgb, var(--wait) 35%, transparent);
+  --bad-border: color-mix(in srgb, var(--bad) 35%, transparent);
+  --money-border: color-mix(in srgb, var(--money) 35%, transparent);
+  --chain-border: color-mix(in srgb, var(--chain) 35%, transparent);
+  --info-border: color-mix(in srgb, var(--info) 35%, transparent);
+  --neutral-border: color-mix(in srgb, var(--neutral) 35%, transparent);
+
+  /* Surfaces and text under the brief's names. */
+  --surface-1: var(--surface);
+  --surface-glass: var(--glass-strong);
+  --border: var(--line);
+  --text: var(--ink);
+  --text-muted: var(--ink-2);
+  --text-faint: var(--ink-3);
+  --brand-500: var(--brand);
+  --brand-tint: var(--brand-soft);
+
+  /* Type scale (size / line height) and tabular figures for every number. */
+  --fs-caption: 12px;
+  --lh-caption: 16px;
+  --fs-label: 13px;
+  --lh-label: 18px;
+  --fs-body: 14px;
+  --lh-body: 20px;
+  --fs-body-lg: 16px;
+  --lh-body-lg: 24px;
+  --fs-h3: 20px;
+  --lh-h3: 28px;
+  --fs-h2: 24px;
+  --lh-h2: 32px;
+  --fs-h1: 32px;
+  --lh-h1: 40px;
+  --fs-stat: 44px;
+  --lh-stat: 48px;
+  --fs-hero: 64px;
+  --lh-hero: 64px;
+  --tnum: "tnum" 1;
+
+  /* Radii and elevation (light: soft shadows; dark: borders and a glow, below). */
+  --radius-chip: 6px;
+  --radius-btn: 10px;
+  --radius-card: 14px;
+  --radius-hero: 20px;
+  --radius-full: 999px;
+  --e1: 0 1px 2px rgb(15 23 42 / 0.06);
+  --e2: 0 4px 12px rgb(15 23 42 / 0.08);
+  --e3: 0 12px 32px rgb(15 23 42 / 0.12);
+
+  /* Motion (§5.10). */
+  --dur-micro: 140ms;
+  --dur-ui: 220ms;
+  --ease-enter: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
   color-scheme: light;
 }
 
@@ -134,8 +202,8 @@
     --waiting-bg: #3a2d12;
     --held: #8fb8f0;
     --held-bg: #16263d;
-    --recorded: #66d9e8;
-    --recorded-bg: #0c2a30;
+    --chain: #66d9e8;
+    --chain-tint: #0c2a30;
     --paid: #74c69d;
     --paid-bg: #15301f;
     --neutral: #9ba3ad;
@@ -151,6 +219,9 @@
     --money: #e0b23a;
     --quarantine: #f0a93b;
     --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px rgb(0 0 0 / 0.3);
+    --e1: 0 0 0 1px var(--line);
+    --e2: 0 0 0 1px var(--line), inset 0 0 0 1px rgb(255 255 255 / 0.02);
+    --e3: 0 0 24px rgb(46 158 120 / 0.18);
     color-scheme: dark;
   }
 }
@@ -188,8 +259,8 @@
   --waiting-bg: #3a2d12;
   --held: #8fb8f0;
   --held-bg: #16263d;
-  --recorded: #66d9e8;
-  --recorded-bg: #0c2a30;
+  --chain: #66d9e8;
+  --chain-tint: #0c2a30;
   --paid: #74c69d;
   --paid-bg: #15301f;
   --neutral: #9ba3ad;
@@ -205,5 +276,8 @@
   --money: #e0b23a;
   --quarantine: #f0a93b;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px rgb(0 0 0 / 0.3);
+  --e1: 0 0 0 1px var(--line);
+  --e2: 0 0 0 1px var(--line), inset 0 0 0 1px rgb(255 255 255 / 0.02);
+  --e3: 0 0 24px rgb(46 158 120 / 0.18);
   color-scheme: dark;
 }

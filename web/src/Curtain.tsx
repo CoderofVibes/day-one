@@ -4,6 +4,8 @@
 // Dark in both themes. Dollars never lead here; staff never see it.
 
 import { useEffect, useRef } from "react";
+import { type Card, type PageCards, pageCards } from "./curtainScope.ts";
+import { readRecorded } from "./reads.ts";
 import {
   type Attestation,
   type Check,
@@ -12,6 +14,8 @@ import {
   type Transaction,
   transactionsThrough,
 } from "./run.ts";
+import { useRead } from "./series.ts";
+import type { PageId } from "./shell.tsx";
 
 const MARK: Record<Check["status"], string> = { verified: "✓", unverified: "✗", skipped: "–" };
 
@@ -133,9 +137,62 @@ export function TxItem({ tx, fresh = false }: { tx: Transaction; fresh?: boolean
   );
 }
 
-export function Curtain({ data, upTo }: { data: RunData; upTo: number }) {
+/** A transaction a recorded attack sent: which attack, what the contract said, the link. */
+function AttackCard({ card }: { card: Extract<Card, { kind: "attack" }> }) {
+  return (
+    <li className="tx attack">
+      <div className="head">
+        <code>{card.attack}</code>
+        <span className="st">held</span>
+      </div>
+      {card.said && <p className="why">“{card.said}”</p>}
+      {card.url ? (
+        <a href={card.url} target="_blank" rel="noreferrer">
+          {card.hash.slice(0, 10)}… on the explorer ↗
+        </a>
+      ) : (
+        <code className="dim">{card.hash.slice(0, 10)}…</code>
+      )}
+    </li>
+  );
+}
+
+/**
+ * Behind the curtain beside a page: with `page`, the transactions that page cares about
+ * (src/curtainScope.ts), or the latest recorded when it has none yet; without, every
+ * transaction of the run up to the step (the video page).
+ */
+export function Curtain({ data, upTo, page }: { data: RunData; upTo: number; page?: PageId }) {
+  return page ? (
+    <PageCurtain data={data} upTo={upTo} page={page} />
+  ) : (
+    <CurtainBody data={data} upTo={upTo} view={null} />
+  );
+}
+
+function PageCurtain({ data, upTo, page }: { data: RunData; upTo: number; page: PageId }) {
+  const { value: recorded } = useRead(() => readRecorded(), "recorded");
+  return <CurtainBody data={data} upTo={upTo} view={pageCards(page, data, upTo, recorded)} />;
+}
+
+function CurtainBody({
+  data,
+  upTo,
+  view,
+}: {
+  data: RunData;
+  upTo: number;
+  view: PageCards | null;
+}) {
   const pane = useRef<HTMLElement>(null);
   const txs = transactionsThrough(data, upTo);
+  const cards: Card[] =
+    view?.cards ?? txs.map(({ stepIndex, tx }) => ({ kind: "tx", tx, stepIndex }));
+  const count = view
+    ? `${view.fallback ? 0 : view.cards.length} on this page · ${view.total} total recorded`
+    : txs.length === 1
+      ? "1 transaction"
+      : `${txs.length} transactions`;
   // Lines without a transaction: the opening budget (step 0) and the closing summary.
   const notes = (from: number, to: number) =>
     data.steps
@@ -173,19 +230,27 @@ export function Curtain({ data, upTo }: { data: RunData; upTo: number }) {
     <section ref={pane} className="curtain" aria-label="Behind the curtain">
       <div className="panel-head">
         <h2>Behind the curtain · NEAR {data.network}</h2>
-        <span className="right small dim">
-          {txs.length === 1 ? "1 transaction" : `${txs.length} transactions`}
-        </span>
+        <span className="right small dim">{count}</span>
       </div>
       <Accounts data={data} upTo={upTo} />
       {notes(0, 1)}
       {data.attestation && <Attested result={data.attestation} />}
+      {view?.fallback && (
+        <div className="recent">
+          <h3>Recent on testnet</h3>
+          <p className="dim small">Nothing on chain for this page yet. Here's the latest.</p>
+        </div>
+      )}
       <ol className="txs">
-        {txs.map(({ stepIndex, tx }) => (
-          <TxItem key={tx.tx} tx={tx} fresh={stepIndex === upTo} />
-        ))}
+        {cards.map((c) =>
+          c.kind === "tx" ? (
+            <TxItem key={c.tx.tx} tx={c.tx} fresh={c.stepIndex === upTo} />
+          ) : (
+            <AttackCard key={c.hash} card={c} />
+          ),
+        )}
       </ol>
-      {txs.length === 0 && <p className="dim">No transactions yet.</p>}
+      {cards.length === 0 && <p className="dim">No transactions yet.</p>}
       {notes(1, upTo + 1)}
     </section>
   );

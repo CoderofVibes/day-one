@@ -159,6 +159,8 @@ export interface AttackResult {
   held: boolean;
   evidence: string[];
   txHashes: string[];
+  /** Explorer links, one per hash, where the recording kept them. */
+  txUrls?: string[];
 }
 export interface SealedRecording {
   ok: boolean;

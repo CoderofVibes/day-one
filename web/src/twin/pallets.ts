@@ -5,10 +5,10 @@
 // decides. Pure: the 3D view, the inspector and the tests share it.
 
 import { qty } from "../charts.tsx";
+import { isLotState, LOT_STATES, type LotState } from "../lotStates.ts";
 import type { LotView } from "../reads.ts";
 import type { RunData } from "../run.ts";
 import type { AreaCode } from "./layout.ts";
-import { isLotState, LOT_STATES, type LotStateKey } from "./lotStates.ts";
 import { deriveTwinState, type FacilityId, type TwinOptions, type TwinState } from "./model.ts";
 
 export interface Pallet {
@@ -18,7 +18,7 @@ export interface Pallet {
   vendor: string | null;
   /** "700 kg", "61,319". */
   qty: string;
-  state: LotStateKey;
+  state: LotState;
   facility: FacilityId;
   /** The warehouse area it stands in. */
   area: AreaCode;
@@ -27,7 +27,7 @@ export interface Pallet {
 }
 
 /** Where a lot stands: quarantine until QC decides, then raw material or packaging storage. */
-export function stockArea(category: string, state: LotStateKey): AreaCode {
+export function stockArea(category: string, state: LotState): AreaCode {
   if (state === "quarantine" || state === "received" || state === "rejected") return "quarantine";
   return category === "packaging" ? "pkg_storage" : "rm_storage";
 }
@@ -75,10 +75,8 @@ export function palletsAt(stock: LotView[], state: TwinState, runLots: Set<strin
   return out;
 }
 
-export function countByState(
-  pallets: { state: LotStateKey }[],
-): Partial<Record<LotStateKey, number>> {
-  const out: Partial<Record<LotStateKey, number>> = {};
+export function countByState(pallets: { state: LotState }[]): Partial<Record<LotState, number>> {
+  const out: Partial<Record<LotState, number>> = {};
   for (const p of pallets) out[p.state] = (out[p.state] ?? 0) + 1;
   return out;
 }

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import pages from "../data/pages.json";
+import { LOT_STATES, lotStyle } from "../lotStates.ts";
 import { lotState } from "../pages/common.tsx";
 import type { LotView } from "../reads.ts";
 import { run } from "../run.ts";
 import { HERO_SCALE, PALLET, palletPlaces } from "../twin3d/scene.ts";
 import { FLOOR_Z } from "./layout.ts";
-import { LOT_STATES, lotLook } from "./lotStates.ts";
 import { deriveTwinState } from "./model.ts";
 import { inspectObject, twinObjects } from "./objects.ts";
 import { countByState, palletLine, palletsAt, runLotCodes } from "./pallets.ts";
@@ -106,7 +106,7 @@ describe("the lot-state map", () => {
 
   it("covers the brief's nine states with a colour token each", () => {
     expect(Object.keys(LOT_STATES)).toHaveLength(9);
-    for (const look of Object.values(LOT_STATES)) expect(look.token).toMatch(/^--/);
-    expect(lotLook("quarantine").token).toBe("--quarantine");
+    for (const look of Object.values(LOT_STATES)) expect(look.fill).toMatch(/^--/);
+    expect(lotStyle("quarantine").fill).toBe("--quarantine");
   });
 });

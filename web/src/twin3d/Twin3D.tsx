@@ -11,6 +11,7 @@ import { createContext, useContext, useEffect, useId, useMemo, useRef, useState 
 import * as THREE from "three";
 import type { Line2 } from "three-stdlib";
 import { sharedClock } from "../clock.ts";
+import { LOT_STATES, type LotState } from "../lotStates.ts";
 import type { RunData } from "../run.ts";
 import {
   AREAS,
@@ -22,7 +23,6 @@ import {
   PADS,
   siteScale,
 } from "../twin/layout.ts";
-import { LOT_STATES, type LotStateKey } from "../twin/lotStates.ts";
 import {
   deriveTwinState,
   type FacilityId,
@@ -167,9 +167,9 @@ const VARS: Record<keyof Theme, string> = {
   pad: "--map-pad",
   accent: "--brand",
   money: "--money",
-  quarantine: "--quarantine",
-  warn: "--refused",
-  ok: "--paid",
+  quarantine: LOT_STATES.quarantine.fill,
+  warn: LOT_STATES.rejected.fill,
+  ok: LOT_STATES.released.fill,
 };
 
 function readTheme(): Theme {
@@ -188,7 +188,13 @@ function useTheme(): Theme {
     const media = matchMedia("(prefers-color-scheme: dark)");
     const update = () => setTheme(readTheme());
     media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
+    // The header's theme switch sets data-theme on the page.
+    const watch = new MutationObserver(update);
+    watch.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => {
+      media.removeEventListener("change", update);
+      watch.disconnect();
+    };
   }, []);
   return theme;
 }
@@ -1480,14 +1486,14 @@ const PALLET_CAPACITY = 512;
 const NO_PALLETS: Pallet[] = [];
 
 /** The lot-state colours from the page's tokens, so the pallets match the legend and the pills. */
-function lotColors(): Record<LotStateKey, string> {
+function lotColors(): Record<LotState, string> {
   const style = getComputedStyle(document.documentElement);
   return Object.fromEntries(
-    (Object.keys(LOT_STATES) as LotStateKey[]).map((k) => [
+    (Object.keys(LOT_STATES) as LotState[]).map((k) => [
       k,
-      style.getPropertyValue(LOT_STATES[k].token).trim() || FALLBACK.off,
+      style.getPropertyValue(LOT_STATES[k].fill).trim() || FALLBACK.off,
     ]),
-  ) as Record<LotStateKey, string>;
+  ) as Record<LotState, string>;
 }
 
 /**
