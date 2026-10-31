@@ -533,6 +533,116 @@ a {
   flex: 1 1 100%;
 }
 
+/* The sim clock's controls (ClockBar.tsx), above the step player's transport. */
+.clock-bar {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-2);
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.clock-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.clock-speeds {
+  display: inline-flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.clock-speed {
+  border: 1px solid var(--line-2);
+  background: var(--surface);
+  color: var(--ink-2);
+  border-radius: 999px;
+  min-height: 32px;
+  padding: 2px 10px;
+  font: inherit;
+  font-size: var(--t-sm);
+  cursor: pointer;
+}
+
+.clock-speed[aria-pressed="true"] {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.clock-now {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.clock-mode {
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.clock-mode.recorded {
+  color: var(--recorded);
+  background: var(--recorded-bg);
+}
+
+.clock-mode.simulated {
+  color: var(--neutral);
+  background: var(--neutral-bg);
+}
+
+.clock-jump {
+  min-height: 32px;
+  max-width: 100%;
+  font: inherit;
+  font-size: var(--t-sm);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+}
+
+.clock-scrub {
+  flex: 1 1 140px;
+  min-width: 0;
+  accent-color: var(--brand);
+  background: linear-gradient(
+      to right,
+      transparent var(--golden-from),
+      var(--recorded-bg) var(--golden-from),
+      var(--recorded-bg) var(--golden-to),
+      transparent var(--golden-to)
+    )
+    center / 100% 10px no-repeat;
+}
+
+.clock-end,
+.clock-session {
+  font-size: var(--t-xs);
+  color: var(--ink-2);
+}
+
+.clock-session {
+  justify-content: flex-end;
+}
+
+.clock-line {
+  margin: 0 0 var(--s-2);
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+
 /* "Waiting for you": one row per scan Kevin read. */
 .queue {
   list-style: none;

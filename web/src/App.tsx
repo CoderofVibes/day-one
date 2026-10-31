@@ -40,7 +40,20 @@ import {
   type ReviewState,
   type TransferSuggestions,
 } from "./api.ts";
+import { ClockBar, ClockLine, jumpsFor } from "./ClockBar.tsx";
 import { Curtain } from "./Curtain.tsx";
+import {
+  type Clock,
+  createClock,
+  forgetClock,
+  persist,
+  readPersisted,
+  shareClock,
+  stepAt,
+  storedClock,
+  useClock,
+} from "./clock.ts";
+import { stepTimes } from "./engine.ts";
 import { initials, Pill, StaffFeed } from "./feed.tsx";
 import { ImportPane } from "./ImportPane.tsx";
 import { InboxPane } from "./InboxPane.tsx";
@@ -68,8 +81,6 @@ import {
 import type { Source } from "./series.ts";
 import { PageHeader, type PageId, type PlantCode, Shell, useRoute } from "./shell.tsx";
 import { PlantView } from "./twin3d/PlantView.tsx";
-
-const PLAY_MS = 2600;
 
 /** The video page (?video=1): the recorded run on the storyboard's clock (docs/RECORDING.md). */
 const VideoApp = lazy(() => import("./VideoApp.tsx"));
@@ -409,25 +420,52 @@ function badgesOf(
 
 // ------------------------------------------------------------------ replay (static)
 
+const JUMPS = jumpsFor(recorded.steps);
+
 function ReplayApp() {
   const data = recorded;
   const last = data.steps.length - 1;
-  const [at, setAt] = useState(0);
+  // The recorded run is a stretch of the sim clock: a step is on screen from its time until the
+  // next one's, and stepping seeks the clock to the step's time.
+  const [clock] = useState(() =>
+    createClock({
+      history: plantsSnapshot,
+      steps: data.steps,
+      initial: readPersisted(location.search, storedClock()),
+    }),
+  );
+  useEffect(() => {
+    shareClock(clock);
+    const stop = persist(clock);
+    return () => {
+      stop();
+      shareClock(null);
+    };
+  }, [clock]);
+  const at = useClock(clock, (s) => stepAt(s.simNow, clock.range));
   const [curtain, setCurtain] = useState(false);
   const route = useRoute();
-  const [playing, setPlaying] = useState(false);
 
-  const go = useCallback((to: number) => setAt(Math.max(0, Math.min(last, to))), [last]);
-
-  useEffect(() => {
-    if (!playing) return;
-    if (at >= last) {
-      setPlaying(false);
-      return;
-    }
-    const timer = setTimeout(() => go(at + 1), PLAY_MS);
-    return () => clearTimeout(timer);
-  }, [playing, at, last, go]);
+  const go = useCallback(
+    (to: number) => clock.seek(clock.range.steps[Math.max(0, Math.min(last, to))] ?? 0),
+    [clock, last],
+  );
+  const clockBar = (
+    <ClockBar
+      clock={clock}
+      jumps={JUMPS}
+      onPlay={() => {
+        if (at === last) go(0);
+        clock.play();
+      }}
+      onReset={() => {
+        forgetClock();
+        clock.pause();
+        clock.resetSession();
+        go(0);
+      }}
+    />
+  );
 
   useEffect(() => {
     if (route.page !== "overview" && route.page !== "map") return;
@@ -450,6 +488,7 @@ function ReplayApp() {
       <Closing
         data={data}
         curtain={curtain}
+        clockBar={clockBar}
         onReplay={() => go(0)}
         onPlants={() => route.go({ page: "plants" })}
       />
@@ -461,31 +500,14 @@ function ReplayApp() {
           </h2>
           <span className="right small muted">{current.title}</span>
         </div>
+        {clockBar}
         <div className="transport">
           <button type="button" className="btn" onClick={() => go(at - 1)} disabled={at === 0}>
             ← Back
           </button>
-          <button
-            type="button"
-            className="btn primary"
-            onClick={() => {
-              if (!playing && at === last) go(0);
-              setPlaying(!playing);
-            }}
-          >
-            {playing ? "Pause" : "Play"}
-          </button>
           <button type="button" className="btn" onClick={() => go(at + 1)} disabled={at === last}>
             Next →
           </button>
-          <input
-            type="range"
-            min={0}
-            max={last}
-            value={at}
-            onChange={(e) => go(Number(e.target.value))}
-            aria-label="Step"
-          />
           <span className="step-count">
             {at + 1} / {last + 1} · {current.title}
           </span>
@@ -630,11 +652,13 @@ function Guide({ data }: { data: DemoRun }) {
 function Closing({
   data,
   curtain,
+  clockBar,
   onReplay,
   onPlants,
 }: {
   data: RunData;
   curtain: boolean;
+  clockBar: React.ReactNode;
   onReplay: () => void;
   onPlants: () => void;
 }) {
@@ -654,6 +678,7 @@ function Closing({
           ? ` Switch on "Behind the curtain" for the ${s.transactions} testnet transactions behind it.`
           : ""}
       </p>
+      {clockBar}
       <div className="transport">
         <button type="button" className="btn primary" onClick={onReplay}>
           Replay
@@ -692,6 +717,27 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const [mail, setMail] = useState<ReviewState | null>(null);
   /** Bumped by every action, so the program's stages read again after a decision. */
   const [acted, setActed] = useState(0);
+  // The API moves the run and its clock; the sim clock follows the last step on the recorded
+  // run's times and keeps what people did this session.
+  const [clock] = useState(() =>
+    createClock({
+      history: plantsSnapshot,
+      steps: recorded.steps,
+      frames: null,
+      initial: { log: readPersisted(location.search, storedClock()).log ?? [] },
+    }),
+  );
+  useEffect(() => {
+    shareClock(clock);
+    const stop = persist(clock);
+    return () => {
+      stop();
+      shareClock(null);
+    };
+  }, [clock]);
+  useEffect(() => {
+    clock.seek(stepTimes(state.steps).at(-1) ?? clock.range.golden.start);
+  }, [clock, state.steps]);
 
   // The review is read once per run and kept by the API; read again after every action so a
   // signature shows at once. A failed read keeps what is on screen.
@@ -769,25 +815,29 @@ function LiveApp({ initial }: { initial: LiveState }) {
     if (window.scrollY > 40) window.scrollTo({ top: 0, behavior: "smooth" });
   }, [turn]);
 
-  const send = useCallback(async (label: string, call: () => Promise<unknown>) => {
-    setBusy(label);
-    setError(null);
-    try {
-      await call();
-      setState(await getState());
-    } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
-      setError(e instanceof ApiError && e.hint ? { message, hint: e.hint } : { message });
+  const send = useCallback(
+    async (label: string, call: () => Promise<unknown>) => {
+      setBusy(label);
+      setError(null);
       try {
+        await call();
+        if (label !== "Start over") clock.act(label);
         setState(await getState());
-      } catch {
-        // The state stays as it was; the error is already on screen.
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        setError(e instanceof ApiError && e.hint ? { message, hint: e.hint } : { message });
+        try {
+          setState(await getState());
+        } catch {
+          // The state stays as it was; the error is already on screen.
+        }
+      } finally {
+        setBusy(null);
+        setActed((n) => n + 1);
       }
-    } finally {
-      setBusy(null);
-      setActed((n) => n + 1);
-    }
-  }, []);
+    },
+    [clock],
+  );
 
   const act = (a: Action) => send(a.label, () => postJson(a.path, a.body));
   const signDraft = (messageId: string) =>
@@ -831,6 +881,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const reset = () => {
     setMoveNote([]);
     setRuns((n) => n + 1);
+    clock.resetSession();
     send("Start over", () => postJson("api/run/reset"));
   };
 
@@ -895,6 +946,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
             <>
               <UpNext
                 state={state}
+                clock={clock}
                 busy={busy}
                 error={error}
                 onAct={act}
@@ -1020,8 +1072,10 @@ function UpNext({
   onUpload,
   onReset,
   queue,
+  clock,
 }: {
   state: LiveState;
+  clock: Clock;
   busy: string | null;
   error: { message: string; hint?: string } | null;
   onAct: (a: Action) => void;
@@ -1064,6 +1118,7 @@ function UpNext({
           {next.phase === "reply" && <span className="muted"> · on her phone</span>}
         </span>
       </div>
+      <ClockLine clock={clock} />
       {queue ?? <p className="lead">{lead}</p>}
       {state.stopped && state.help && !busy && <p className="muted small help">{state.help}</p>}
 
