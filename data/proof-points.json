@@ -139,10 +139,10 @@
   },
   "attestation": {
     "enclaveChecks": 15,
-    "fetchedAt": "2026-10-30T09:36:16.260Z",
+    "fetchedAt": "2026-10-31T19:47:20.382Z",
     "model": "z-ai/glm-5.3-flash",
     "ok": true,
-    "signedAnswers": 24
+    "signedAnswers": 30
   },
   "groupBuy": {
     "network": "testnet",

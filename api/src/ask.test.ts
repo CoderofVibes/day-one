@@ -155,6 +155,13 @@ describe("the guard", () => {
     expect(a.rejected).toEqual([["RFQ-2611-09"]]);
   });
 
+  it("takes an id cited in brackets, as the prompt shows ids, as that id", async () => {
+    const bracketed = { ...good, cited: good.cited.map((id) => `[${id}]`) };
+    const a = await askKevin(scripted([bracketed]), cards, "Why was PO-1042 refused?");
+    expect(a.rejected).toEqual([]);
+    expect(a.citations.map((c) => c.id)).toEqual(expect.arrayContaining(good.cited));
+  });
+
   it("says it can't tell when the second answer is no better", async () => {
     const invented = { ...good, answer: "PO-1042 cost $6,000.00." };
     const a = await askKevin(scripted([invented, invented]), cards, "Why was PO-1042 refused?");

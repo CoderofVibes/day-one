@@ -202,7 +202,12 @@ function asReply(json: unknown): Reply {
   return {
     answer: typeof r.answer === "string" ? r.answer : "",
     answered: r.answered !== false,
-    cited: Array.isArray(r.cited) ? r.cited.filter((c) => typeof c === "string") : [],
+    // The prompt shows each card's id in brackets, and the model sometimes cites it that way.
+    cited: Array.isArray(r.cited)
+      ? r.cited
+          .filter((c) => typeof c === "string")
+          .map((c) => c.trim().replace(/^\[(.*)\]$/, "$1"))
+      : [],
     proposal: typeof r.proposal === "string" ? r.proposal : "",
     page: typeof r.page === "string" ? r.page : "",
   };

@@ -16,8 +16,8 @@
   "attestation": {
     "model": "z-ai/glm-5.3-flash",
     "tier": "Private TEE",
-    "fetchedAt": "2026-10-30T09:36:16.260Z",
-    "nonce": "564f47dea2955b3e31a70183d3c37afa02ddd6f0318a358cf0e7f8552dc38940",
+    "fetchedAt": "2026-10-31T19:47:20.382Z",
+    "nonce": "0ded0e4db1a851f6bc50ef64c29d2fee5af17adf4b71f2ea520135a003fa93c6",
     "enclave": [
       {
         "name": "model TDX quote",
@@ -27,7 +27,7 @@
       {
         "name": "model nonce",
         "status": "verified",
-        "detail": "our nonce 564f47de… echoed"
+        "detail": "our nonce 0ded0e4d… echoed"
       },
       {
         "name": "model report_data",
@@ -42,22 +42,22 @@
       {
         "name": "model compose hash",
         "status": "verified",
-        "detail": "app_compose hashes to MRCONFIGID 5f7ebd85…"
+        "detail": "app_compose hashes to MRCONFIGID a0e3c6f4…"
       },
       {
         "name": "model event log",
         "status": "verified",
-        "detail": "replays to RTMR3 e0f6c83e…"
+        "detail": "replays to RTMR3 463b2e18…"
       },
       {
         "name": "model Intel collateral",
         "status": "verified",
-        "detail": "TCB UpToDate (checked 2026-10-30 09:36Z)"
+        "detail": "TCB UpToDate (checked 2026-10-31 19:47Z)"
       },
       {
         "name": "model NVIDIA GPU",
         "status": "verified",
-        "detail": "NRAS overall attestation result true (checked 2026-10-30 09:36Z)"
+        "detail": "NRAS overall attestation result true (checked 2026-10-31 19:47Z)"
       },
       {
         "name": "gateway TDX quote",
@@ -67,7 +67,7 @@
       {
         "name": "gateway nonce",
         "status": "verified",
-        "detail": "our nonce 564f47de… echoed"
+        "detail": "our nonce 0ded0e4d… echoed"
       },
       {
         "name": "gateway report_data",
@@ -87,12 +87,12 @@
       {
         "name": "gateway event log",
         "status": "verified",
-        "detail": "replays to RTMR3 697010aa…"
+        "detail": "replays to RTMR3 12dcf609…"
       },
       {
         "name": "gateway Intel collateral",
         "status": "verified",
-        "detail": "TCB UpToDate (checked 2026-10-30 09:36Z)"
+        "detail": "TCB UpToDate (checked 2026-10-31 19:47Z)"
       }
     ],
     "answers": [

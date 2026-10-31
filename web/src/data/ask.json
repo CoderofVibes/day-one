@@ -1,9 +1,9 @@
 {
-  "recordedAt": null,
+  "recordedAt": "2026-10-31T19:47:13.420Z",
   "enclave": {
     "model": "z-ai/glm-5.3-flash",
     "tier": "Private TEE",
-    "fetchedAt": "2026-10-30T09:36:16.260Z",
+    "fetchedAt": "2026-10-31T19:47:20.382Z",
     "checks": [
       {
         "name": "model TDX quote",
@@ -13,7 +13,7 @@
       {
         "name": "model nonce",
         "status": "verified",
-        "detail": "our nonce 564f47de… echoed"
+        "detail": "our nonce 0ded0e4d… echoed"
       },
       {
         "name": "model report_data",
@@ -28,22 +28,22 @@
       {
         "name": "model compose hash",
         "status": "verified",
-        "detail": "app_compose hashes to MRCONFIGID 5f7ebd85…"
+        "detail": "app_compose hashes to MRCONFIGID a0e3c6f4…"
       },
       {
         "name": "model event log",
         "status": "verified",
-        "detail": "replays to RTMR3 e0f6c83e…"
+        "detail": "replays to RTMR3 463b2e18…"
       },
       {
         "name": "model Intel collateral",
         "status": "verified",
-        "detail": "TCB UpToDate (checked 2026-10-30 09:36Z)"
+        "detail": "TCB UpToDate (checked 2026-10-31 19:47Z)"
       },
       {
         "name": "model NVIDIA GPU",
         "status": "verified",
-        "detail": "NRAS overall attestation result true (checked 2026-10-30 09:36Z)"
+        "detail": "NRAS overall attestation result true (checked 2026-10-31 19:47Z)"
       },
       {
         "name": "gateway TDX quote",
@@ -53,7 +53,7 @@
       {
         "name": "gateway nonce",
         "status": "verified",
-        "detail": "our nonce 564f47de… echoed"
+        "detail": "our nonce 0ded0e4d… echoed"
       },
       {
         "name": "gateway report_data",
@@ -73,45 +73,338 @@
       {
         "name": "gateway event log",
         "status": "verified",
-        "detail": "replays to RTMR3 697010aa…"
+        "detail": "replays to RTMR3 12dcf609…"
       },
       {
         "name": "gateway Intel collateral",
         "status": "verified",
-        "detail": "TCB UpToDate (checked 2026-10-30 09:36Z)"
+        "detail": "TCB UpToDate (checked 2026-10-31 19:47Z)"
       }
     ]
   },
   "questions": [
     {
       "question": "Why did you order from Northgate instead of QuickChem?",
-      "answer": null,
-      "signature": null
+      "answer": {
+        "question": "Why did you order from Northgate instead of QuickChem?",
+        "model": {
+          "provider": "nearai",
+          "model": "z-ai/glm-5.3-flash",
+          "attested": true,
+          "chatId": "1d6941bb4dca4342903fd434da57fc59"
+        },
+        "cards": [
+          "RFQ-2611-01",
+          "PO-1042",
+          "PO-1029",
+          "PO-1015",
+          "PO-G-2001",
+          "Northgate Ingredients",
+          "QuickChem Direct",
+          "PO-1040",
+          "PO-1039",
+          "PO-1038"
+        ],
+        "rejected": [],
+        "answer": "QuickChem Direct was excluded from the RFQ because it is unqualified on Acme's supplier list [RFQ-2611-01][QuickChem Direct]; among the qualified vendors, Northgate Ingredients quoted the lowest landed cost at $5,150.00, so I accepted its quote [RFQ-2611-01].",
+        "answered": true,
+        "citations": [
+          {
+            "id": "RFQ-2611-01",
+            "kind": "rfq",
+            "title": "RFQ-2611-01 · Ascorbic acid",
+            "page": "purchasing"
+          },
+          {
+            "id": "Northgate Ingredients",
+            "kind": "supplier",
+            "title": "Northgate Ingredients",
+            "page": "suppliers"
+          },
+          {
+            "id": "QuickChem Direct",
+            "kind": "supplier",
+            "title": "QuickChem Direct",
+            "page": "suppliers"
+          }
+        ],
+        "proposal": null
+      },
+      "signature": {
+        "chatId": "1d6941bb4dca4342903fd434da57fc59",
+        "signer": "0x3b753b4406613c5e70ae640508632b600424fa0c",
+        "checks": [
+          {
+            "name": "signed text",
+            "status": "verified",
+            "detail": "model, request 7807a2e6…, response 52799fd0…"
+          },
+          {
+            "name": "signer",
+            "status": "verified",
+            "detail": "3b753b44… = the attested model signer"
+          }
+        ]
+      }
     },
     {
       "question": "Why was PO-1042 refused?",
-      "answer": null,
-      "signature": null
+      "answer": {
+        "question": "Why was PO-1042 refused?",
+        "model": {
+          "provider": "nearai",
+          "model": "z-ai/glm-5.3-flash",
+          "attested": true,
+          "chatId": "64a26cdaf0ba4e3c89470cd01173cfc8"
+        },
+        "cards": [
+          "PO-1042",
+          "Northgate Ingredients",
+          "ASC-261116-01",
+          "NG-INV-24190",
+          "RFQ-2611-01",
+          "Spending limits"
+        ],
+        "rejected": [],
+        "answer": "The spending policy refused PO-1042 at first submission because its total of $5,150.00 exceeded Kevin's per-PO limit of $2,500.00, so director approval was required; Linda Park then approved it by replying \"YES 1042.\"",
+        "answered": true,
+        "citations": [
+          {
+            "id": "PO-1042",
+            "kind": "po",
+            "title": "PO-1042 · Northgate Ingredients",
+            "page": "purchasing"
+          },
+          {
+            "id": "Spending limits",
+            "kind": "policy",
+            "title": "Kevin's spending limits",
+            "page": "hq"
+          }
+        ],
+        "proposal": null
+      },
+      "signature": {
+        "chatId": "64a26cdaf0ba4e3c89470cd01173cfc8",
+        "signer": "0x3b753b4406613c5e70ae640508632b600424fa0c",
+        "checks": [
+          {
+            "name": "signed text",
+            "status": "verified",
+            "detail": "model, request 7bfa8df1…, response 106f40e8…"
+          },
+          {
+            "name": "signer",
+            "status": "verified",
+            "detail": "3b753b44… = the attested model signer"
+          }
+        ]
+      }
     },
     {
       "question": "Where did lot ASC-261116-01 go?",
-      "answer": null,
-      "signature": null
+      "answer": {
+        "question": "Where did lot ASC-261116-01 go?",
+        "model": {
+          "provider": "nearai",
+          "model": "z-ai/glm-5.3-flash",
+          "attested": true,
+          "chatId": "c590a3a513404113b7542f4943245c7b"
+        },
+        "cards": [
+          "ASC-261116-01",
+          "PO-1042",
+          "ASC-260921-02",
+          "ASC-261009-01"
+        ],
+        "rejected": [],
+        "answer": "The records show lot ASC-261116-01 came in on PO-1042 from Northgate Ingredients, was received by Tommy Reyes on Nov 16, 2026, and QC was released the same day by Priya Natarajan. It shows 700 kg on hand in rm storage. The cards do not say it went anywhere beyond that.",
+        "answered": false,
+        "citations": [
+          {
+            "id": "ASC-261116-01",
+            "kind": "lot",
+            "title": "ASC-261116-01 · Ascorbic acid",
+            "page": "inventory"
+          },
+          {
+            "id": "PO-1042",
+            "kind": "po",
+            "title": "PO-1042 · Northgate Ingredients",
+            "page": "purchasing"
+          }
+        ],
+        "proposal": null
+      },
+      "signature": {
+        "chatId": "c590a3a513404113b7542f4943245c7b",
+        "signer": "0x3b753b4406613c5e70ae640508632b600424fa0c",
+        "checks": [
+          {
+            "name": "signed text",
+            "status": "verified",
+            "detail": "model, request ef96864e…, response cd86a453…"
+          },
+          {
+            "name": "signer",
+            "status": "verified",
+            "detail": "3b753b44… = the attested model signer"
+          }
+        ]
+      }
     },
     {
       "question": "What's below reorder point today?",
-      "answer": null,
-      "signature": null
+      "answer": {
+        "question": "What's below reorder point today?",
+        "model": {
+          "provider": "nearai",
+          "model": "z-ai/glm-5.3-flash",
+          "attested": true,
+          "chatId": "4f90c1c0dff84823a903edfbbad33bb6"
+        },
+        "cards": [
+          "Below reorder point"
+        ],
+        "rejected": [],
+        "answer": "As of Nov 16, 2026, six material balances are below their reorder points: Ascorbic acid at Acme Riverside (12.6 kg usable vs 500 kg), Calcium carbonate at Acme Riverside (250 kg usable vs 800 kg), Acetonitrile, HPLC grade, 4 L at Hollow Pine Tablet Co. (1 usable vs 2), 150 cc HDPE bottle at Hollow Pine Tablet Co. (24,000 usable vs 40,000), 38 mm CR cap with induction liner at Hollow Pine Tablet Co. (24,000 usable vs 40,000), and Label, CMD at Acme Riverside (15,000 usable vs 20,000).",
+        "answered": true,
+        "citations": [
+          {
+            "id": "Below reorder point",
+            "kind": "stock",
+            "title": "Below the reorder point",
+            "page": "inventory"
+          }
+        ],
+        "proposal": {
+          "text": "Open the stock page and review the below-reorder-point balances to prepare replenishment suggestions.",
+          "page": "inventory"
+        }
+      },
+      "signature": {
+        "chatId": "4f90c1c0dff84823a903edfbbad33bb6",
+        "signer": "0x3b753b4406613c5e70ae640508632b600424fa0c",
+        "checks": [
+          {
+            "name": "signed text",
+            "status": "verified",
+            "detail": "model, request 25daf945…, response 9cd1b3c8…"
+          },
+          {
+            "name": "signer",
+            "status": "verified",
+            "detail": "3b753b44… = the attested model signer"
+          }
+        ]
+      }
     },
     {
       "question": "Why is Pacific Excipient suspended?",
-      "answer": null,
-      "signature": null
+      "answer": {
+        "question": "Why is Pacific Excipient suspended?",
+        "model": {
+          "provider": "nearai",
+          "model": "z-ai/glm-5.3-flash",
+          "attested": true,
+          "chatId": "fa30743bb6094aefb7a64e26f62f5e26"
+        },
+        "cards": [
+          "Pacific Excipient Co.",
+          "PO-1040",
+          "PO-1035",
+          "PO-1031",
+          "PO-1017",
+          "CCS-260925-01",
+          "CCS-261026-01",
+          "MCC-260925-01",
+          "MCC-261026-01",
+          "MGS-260925-01"
+        ],
+        "rejected": [],
+        "answer": "The records do not say why Pacific Excipient Co.'s supplier credential was suspended; they only show the credential is Suspended so the escrow cannot pay it, with a QC record of 0 released and 2 rejected, including two rejects in a row with the last on PO-T9312.",
+        "answered": false,
+        "citations": [
+          {
+            "id": "Pacific Excipient Co.",
+            "kind": "supplier",
+            "title": "Pacific Excipient Co.",
+            "page": "suppliers"
+          }
+        ],
+        "proposal": {
+          "text": "A person could ask Acme's supplier-qualification or QC team for the suspension reason and review the PO-T9312 rejects.",
+          "page": "suppliers"
+        }
+      },
+      "signature": {
+        "chatId": "fa30743bb6094aefb7a64e26f62f5e26",
+        "signer": "0x3b753b4406613c5e70ae640508632b600424fa0c",
+        "checks": [
+          {
+            "name": "signed text",
+            "status": "verified",
+            "detail": "model, request 5786c7a1…, response b01c7aa0…"
+          },
+          {
+            "name": "signer",
+            "status": "verified",
+            "detail": "3b753b44… = the attested model signer"
+          }
+        ]
+      }
     },
     {
       "question": "What did the attack suite try?",
-      "answer": null,
-      "signature": null
+      "answer": {
+        "question": "What did the attack suite try?",
+        "model": {
+          "provider": "nearai",
+          "model": "z-ai/glm-5.3-flash",
+          "attested": true,
+          "chatId": "473c9a74c67645b09a5f521095be83e9"
+        },
+        "cards": [
+          "Attack suite",
+          "Lookalike vendor",
+          "Inflated invoice",
+          "Fake payment-failed message",
+          "Hidden instructions in an invoice",
+          "Duplicate invoice",
+          "Split purchase under the per-PO limit",
+          "Ghost vendor",
+          "Revoked supplier",
+          "Expired supplier credential"
+        ],
+        "rejected": [],
+        "answer": "The attack suite tried 15 attempted abuses, and all 15 were refused [Attack suite].",
+        "answered": true,
+        "citations": [
+          {
+            "id": "Attack suite",
+            "kind": "attack",
+            "title": "The attack suite",
+            "page": "arena"
+          }
+        ],
+        "proposal": null
+      },
+      "signature": {
+        "chatId": "473c9a74c67645b09a5f521095be83e9",
+        "signer": "0x3b753b4406613c5e70ae640508632b600424fa0c",
+        "checks": [
+          {
+            "name": "signed text",
+            "status": "verified",
+            "detail": "model, request e69e05b7…, response 8583de26…"
+          },
+          {
+            "name": "signer",
+            "status": "verified",
+            "detail": "3b753b44… = the attested model signer"
+          }
+        ]
+      }
     }
   ]
 }

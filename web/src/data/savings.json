@@ -487,6 +487,36 @@
   },
   "answers": [
     {
+      "file": "data/replay/ask-llm.json",
+      "inputTokens": 1721,
+      "outputTokens": 100
+    },
+    {
+      "file": "data/replay/ask-llm.json",
+      "inputTokens": 2061,
+      "outputTokens": 39
+    },
+    {
+      "file": "data/replay/ask-llm.json",
+      "inputTokens": 1000,
+      "outputTokens": 105
+    },
+    {
+      "file": "data/replay/ask-llm.json",
+      "inputTokens": 477,
+      "outputTokens": 187
+    },
+    {
+      "file": "data/replay/ask-llm.json",
+      "inputTokens": 794,
+      "outputTokens": 102
+    },
+    {
+      "file": "data/replay/ask-llm.json",
+      "inputTokens": 1569,
+      "outputTokens": 114
+    },
+    {
       "file": "data/replay/attacks-llm.json",
       "inputTokens": 284,
       "outputTokens": 115

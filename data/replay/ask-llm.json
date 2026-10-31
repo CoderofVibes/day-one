@@ -1,0 +1,177 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-31T19:47:13.420Z",
+  "entries": [
+    {
+      "key": "043d23d0c4118ceb2fd0aced392ebbf3d5551217715344794158783d3fc6a092",
+      "task": "reasoning",
+      "promptStart": "Answer the question between the <question> tags in two to four plain sentences, ",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\"answer\":\"QuickChem Direct was excluded from the RFQ because it is unqualified on Acme's supplier list [RFQ-2611-01][QuickChem Direct]; among the qualified vendors, Northgate Ingredients quoted the lowest landed cost at $5,150.00, so I accepted its quote [RFQ-2611-01].\",\"answered\":true,\"cited\":[\"RFQ-2611-01\",\"QuickChem Direct\"],\"proposal\":\"\",\"page\":\"\"}",
+        "json": {
+          "answer": "QuickChem Direct was excluded from the RFQ because it is unqualified on Acme's supplier list [RFQ-2611-01][QuickChem Direct]; among the qualified vendors, Northgate Ingredients quoted the lowest landed cost at $5,150.00, so I accepted its quote [RFQ-2611-01].",
+          "answered": true,
+          "cited": [
+            "RFQ-2611-01",
+            "QuickChem Direct"
+          ],
+          "proposal": "",
+          "page": ""
+        },
+        "usage": {
+          "inputTokens": 1721,
+          "outputTokens": 100
+        },
+        "receipt": {
+          "chatId": "1d6941bb4dca4342903fd434da57fc59",
+          "requestSha256": "7807a2e68de50af43aa367453f12d69d622d966e9288ddca96dafd809c56641f",
+          "responseSha256": "52799fd0b0664379b659f13e6697675a914f866374656903144cf5dc15452b63"
+        }
+      }
+    },
+    {
+      "key": "25b44ea8d169526c4c54ea4c632e4697cf68fc2303673e255b687fc1d2cefaa8",
+      "task": "reasoning",
+      "promptStart": "Answer the question between the <question> tags in two to four plain sentences, ",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\"answer\":\"The attack suite tried 15 attempted abuses, and all 15 were refused [Attack suite].\",\"answered\":true,\"cited\":[\"Attack suite\"],\"proposal\":\"\",\"page\":\"\"}",
+        "json": {
+          "answer": "The attack suite tried 15 attempted abuses, and all 15 were refused [Attack suite].",
+          "answered": true,
+          "cited": [
+            "Attack suite"
+          ],
+          "proposal": "",
+          "page": ""
+        },
+        "usage": {
+          "inputTokens": 2061,
+          "outputTokens": 39
+        },
+        "receipt": {
+          "chatId": "473c9a74c67645b09a5f521095be83e9",
+          "requestSha256": "e69e05b7acfa31f593d83d89608ca59cac29941a4606d4e03b17e39c42aebcc1",
+          "responseSha256": "8583de2608aa2ec24784ad4a9dc84ca2dfd6312d3abc8c43d8f4a5b3d4b53223"
+        }
+      }
+    },
+    {
+      "key": "5f0e837de35999273aa526d18859407868e48b6a982ab0ff9432113cc15f8b5f",
+      "task": "reasoning",
+      "promptStart": "Answer the question between the <question> tags in two to four plain sentences, ",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\"answer\":\"The spending policy refused PO-1042 at first submission because its total of $5,150.00 exceeded Kevin's per-PO limit of $2,500.00, so director approval was required; Linda Park then approved it by replying \\\"YES 1042.\\\"\",\"answered\":true,\"cited\":[\"PO-1042\",\"Spending limits\"],\"proposal\":\"No further action needed, but Linda Park could review the per-PO limit if large orders like this are routine.\",\"page\":\"\"}",
+        "json": {
+          "answer": "The spending policy refused PO-1042 at first submission because its total of $5,150.00 exceeded Kevin's per-PO limit of $2,500.00, so director approval was required; Linda Park then approved it by replying \"YES 1042.\"",
+          "answered": true,
+          "cited": [
+            "PO-1042",
+            "Spending limits"
+          ],
+          "proposal": "No further action needed, but Linda Park could review the per-PO limit if large orders like this are routine.",
+          "page": ""
+        },
+        "usage": {
+          "inputTokens": 1000,
+          "outputTokens": 105
+        },
+        "receipt": {
+          "chatId": "64a26cdaf0ba4e3c89470cd01173cfc8",
+          "requestSha256": "7bfa8df1e71f7094ef52eee4a297d365ebdb6360bcff305922c8d0acf4c22b03",
+          "responseSha256": "106f40e8e9903762001833b68660995f6b46d9a2a99e4db556948cf4a199f3f1"
+        }
+      }
+    },
+    {
+      "key": "830214e56c520335795796cde72be3b4580d2e8fc034398d7c2a9bb9478c4941",
+      "task": "reasoning",
+      "promptStart": "Answer the question between the <question> tags in two to four plain sentences, ",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\"answer\":\"As of Nov 16, 2026, six material balances are below their reorder points: Ascorbic acid at Acme Riverside (12.6 kg usable vs 500 kg), Calcium carbonate at Acme Riverside (250 kg usable vs 800 kg), Acetonitrile, HPLC grade, 4 L at Hollow Pine Tablet Co. (1 usable vs 2), 150 cc HDPE bottle at Hollow Pine Tablet Co. (24,000 usable vs 40,000), 38 mm CR cap with induction liner at Hollow Pine Tablet Co. (24,000 usable vs 40,000), and Label, CMD at Acme Riverside (15,000 usable vs 20,000).\",\"answered\":true,\"cited\":[\"[Below reorder point]\"],\"proposal\":\"Open the stock page and review the below-reorder-point balances to prepare replenishment suggestions.\",\"page\":\"inventory\"}",
+        "json": {
+          "answer": "As of Nov 16, 2026, six material balances are below their reorder points: Ascorbic acid at Acme Riverside (12.6 kg usable vs 500 kg), Calcium carbonate at Acme Riverside (250 kg usable vs 800 kg), Acetonitrile, HPLC grade, 4 L at Hollow Pine Tablet Co. (1 usable vs 2), 150 cc HDPE bottle at Hollow Pine Tablet Co. (24,000 usable vs 40,000), 38 mm CR cap with induction liner at Hollow Pine Tablet Co. (24,000 usable vs 40,000), and Label, CMD at Acme Riverside (15,000 usable vs 20,000).",
+          "answered": true,
+          "cited": [
+            "[Below reorder point]"
+          ],
+          "proposal": "Open the stock page and review the below-reorder-point balances to prepare replenishment suggestions.",
+          "page": "inventory"
+        },
+        "usage": {
+          "inputTokens": 477,
+          "outputTokens": 187
+        },
+        "receipt": {
+          "chatId": "4f90c1c0dff84823a903edfbbad33bb6",
+          "requestSha256": "25daf945596ab0b20b43f3bfbd2021ad5b7f150a7c68b7cdcf83a0b06f84c012",
+          "responseSha256": "9cd1b3c840bc16a6a135a575a8ebd0499c07dcd004e800290bbfadab080ba386"
+        }
+      }
+    },
+    {
+      "key": "8eb5d12c171b0f2be165881ed372fb3bf339e4848cd176ee4877dbdecfd28dde",
+      "task": "reasoning",
+      "promptStart": "Answer the question between the <question> tags in two to four plain sentences, ",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\"answer\":\"The records show lot ASC-261116-01 came in on PO-1042 from Northgate Ingredients, was received by Tommy Reyes on Nov 16, 2026, and QC was released the same day by Priya Natarajan. It shows 700 kg on hand in rm storage. The cards do not say it went anywhere beyond that.\",\"answered\":false,\"cited\":[\"ASC-261116-01\",\"PO-1042\"],\"proposal\":\"\",\"page\":\"\"}",
+        "json": {
+          "answer": "The records show lot ASC-261116-01 came in on PO-1042 from Northgate Ingredients, was received by Tommy Reyes on Nov 16, 2026, and QC was released the same day by Priya Natarajan. It shows 700 kg on hand in rm storage. The cards do not say it went anywhere beyond that.",
+          "answered": false,
+          "cited": [
+            "ASC-261116-01",
+            "PO-1042"
+          ],
+          "proposal": "",
+          "page": ""
+        },
+        "usage": {
+          "inputTokens": 794,
+          "outputTokens": 102
+        },
+        "receipt": {
+          "chatId": "c590a3a513404113b7542f4943245c7b",
+          "requestSha256": "ef96864e5b46d91d9746803709ebffa77d5ccd99deb62a07b76ca47a8ecee641",
+          "responseSha256": "cd86a4536a62afe2aa2dac4e228e293496ab3ca7ae0679653506ccee745689df"
+        }
+      }
+    },
+    {
+      "key": "d2d6f387a5b2cba98c720e20fbb3e6e6957e610615ba9e78298611c84e085554",
+      "task": "reasoning",
+      "promptStart": "Answer the question between the <question> tags in two to four plain sentences, ",
+      "result": {
+        "provider": "nearai",
+        "model": "z-ai/glm-5.3-flash",
+        "text": "{\"answer\":\"The records do not say why Pacific Excipient Co.'s supplier credential was suspended; they only show the credential is Suspended so the escrow cannot pay it, with a QC record of 0 released and 2 rejected, including two rejects in a row with the last on PO-T9312.\",\"answered\":false,\"cited\":[\"[Pacific Excipient Co.]\"],\"proposal\":\"A person could ask Acme's supplier-qualification or QC team for the suspension reason and review the PO-T9312 rejects.\",\"page\":\"suppliers\"}",
+        "json": {
+          "answer": "The records do not say why Pacific Excipient Co.'s supplier credential was suspended; they only show the credential is Suspended so the escrow cannot pay it, with a QC record of 0 released and 2 rejected, including two rejects in a row with the last on PO-T9312.",
+          "answered": false,
+          "cited": [
+            "[Pacific Excipient Co.]"
+          ],
+          "proposal": "A person could ask Acme's supplier-qualification or QC team for the suspension reason and review the PO-T9312 rejects.",
+          "page": "suppliers"
+        },
+        "usage": {
+          "inputTokens": 1569,
+          "outputTokens": 114
+        },
+        "receipt": {
+          "chatId": "fa30743bb6094aefb7a64e26f62f5e26",
+          "requestSha256": "5786c7a1caf645ac4aa6ef9b7853064d7d7dc8473bd66ec9fd74e8a70c8ce408",
+          "responseSha256": "b01c7aa010bcb1b4fce36c061f1e98a6fb765a4f2ff33cb473219c0acbdd1807"
+        }
+      }
+    }
+  ]
+}
