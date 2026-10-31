@@ -472,7 +472,8 @@ class Twin {
       from: { kind: "dept", facility: "A", dept: "warehouse" },
       to: { kind: "dept", facility: "B", dept: "warehouse" },
       label,
-      short: lot,
+      // An open review, not a rejected lot: the label says so (the Labels chip hides it).
+      short: `${lot} · under review`,
       status: "disputed",
       fromStep: i,
       toStep: i,
