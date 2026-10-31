@@ -151,6 +151,20 @@ function invariants(w: World, config: WorldConfig) {
     expect(left, lot.lot).toBe(0);
   }
   expect(before).toBeGreaterThan(0);
+
+  // Finished goods: every lot is made once and never ships more than it holds; every shipment is
+  // invoiced once; the genealogy reaches from a raw-material lot to the customers.
+  const fg = new Map<string, number>();
+  for (const m of w.fgMovements) {
+    const next = (fg.get(m[1]) ?? 0) + m[2];
+    expect(next, m[1]).toBeGreaterThanOrEqual(0);
+    fg.set(m[1], next);
+  }
+  for (const b of w.batches) expect(w.indexes.batchToFgLot[b.batchNo]).toBe(`FG-${b.batchNo}`);
+  expect(w.invoices.map((i) => i.shipmentNo)).toEqual(w.shipments.map((x) => x.shipmentNo));
+  for (const sh of w.shipments) {
+    for (const l of sh.lines) expect(w.indexes.fgLotToShipments[l.fgLot]).toContain(sh.shipmentNo);
+  }
 }
 
 describe("the world generator", () => {
@@ -198,6 +212,24 @@ describe("the world generator", () => {
     expect(escrowOn("2026-11-08")).toBe(0);
     expect(escrowOn("2026-11-09")).toBe(usd(5_762));
     expect(escrowOn("2026-11-16")).toBe(usd(612));
+  });
+
+  it("finds any day's state by index, fast enough to scrub a year", () => {
+    const s = world.snapshots;
+    const t = performance.now();
+    for (let i = 0; i < 1_000; i++) {
+      const d = s.days.indexOf(s.days[(i * 37) % s.days.length] ?? "");
+      expect(s.onHand[d]?.length).toBe(s.materials.length);
+    }
+    expect(performance.now() - t).toBeLessThan(150);
+    // A trace: a historical ascorbic acid lot to its batches, finished goods and customers.
+    const lot = world.lots.find((l) => l.era === "legacy" && l.material === "ASC" && l.poNo);
+    const batches = world.indexes.lotToBatches[lot?.lot ?? ""] ?? [];
+    const shipments = batches.flatMap(
+      (b) => world.indexes.fgLotToShipments[world.indexes.batchToFgLot[b] ?? ""] ?? [],
+    );
+    expect(batches.length).toBeGreaterThan(0);
+    expect(shipments.length).toBeGreaterThan(0);
   });
 
   it("builds Vitamin C ahead of winter: January runs at least 25% over July", () => {

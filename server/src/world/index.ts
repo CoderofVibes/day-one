@@ -4,7 +4,8 @@
 // quality, AP) → cutover count → anchors → the simulated segment → validation → derived views.
 
 import type { Anchors } from "./anchors.ts";
-import { addDays, at, calendar, demand, productSpec } from "./calendar.ts";
+import { sales } from "./ar.ts";
+import { addDays, at, calendar, demand, month, productSpec } from "./calendar.ts";
 import type { Incident, WorldConfig } from "./config.ts";
 import { indexes, lookBack, monthly, snapshots } from "./derive.ts";
 import { batchNo, type PlannedRun, prefixOf, schedule } from "./plan.ts";
@@ -248,6 +249,7 @@ export function generateWorld(config: WorldConfig, anchors: Anchors) {
   const bills = [...legacy.bills, ...simulated.bills];
   const payments = [...legacy.payments, ...simulated.payments];
   const escrow = [...anchor.escrow, ...simulated.escrow];
+  const ar = sales(config, cal, batches, weeks);
   const derived = {
     config,
     pos,
@@ -288,14 +290,42 @@ export function generateWorld(config: WorldConfig, anchors: Anchors) {
     escrow,
     shortages: [...legacy.shortages, ...simulated.shortages],
     demand: weeks,
-    monthly: monthly(derived),
+    monthly: monthly(derived).map((m) => {
+      const shipped = ar.shipments.filter((x) => month(x.shippedAt) === m.month);
+      const invoiced = ar.invoices.filter((x) => month(x.invoiceDate) === m.month);
+      return {
+        ...m,
+        shipments: shipped.length,
+        revenueUsdc: invoiced.reduce((t, x) => t + x.amountUsdc, 0),
+      };
+    }),
     snapshots: snapshots(derived),
-    indexes: indexes(derived),
+    customers: ar.customers,
+    fgLots: ar.fgLots,
+    shipments: ar.shipments,
+    invoices: ar.invoices,
+    fgMovements: ar.fgMovements,
+    indexes: { ...indexes(derived), ...genealogy(ar) },
     lookBack: lookBack(derived),
   };
 }
 
 export type World = ReturnType<typeof generateWorld>;
+
+/** Lot genealogy past the batch (§2.3): batch → finished-goods lot → shipments. */
+function genealogy(ar: ReturnType<typeof sales>) {
+  const batchToFgLot: Record<string, string> = {};
+  for (const l of ar.fgLots) if (l.batchNo) batchToFgLot[l.batchNo] = l.fgLot;
+  const fgLotToShipments: Record<string, string[]> = {};
+  for (const sh of ar.shipments) {
+    for (const line of sh.lines) {
+      const list = fgLotToShipments[line.fgLot] ?? [];
+      if (!list.includes(sh.shipmentNo)) list.push(sh.shipmentNo);
+      fgLotToShipments[line.fgLot] = list;
+    }
+  }
+  return { batchToFgLot, fgLotToShipments };
+}
 
 /** An incident with the records it touched, found in the generated segments. */
 function incidentView(

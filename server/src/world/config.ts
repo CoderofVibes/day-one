@@ -262,6 +262,81 @@ export const AP = {
   tolerances: { poQtyBp: 200, poAmtBp: 100, irQtyDifferenceBase: 0 },
 };
 
+/**
+ * Customers (§2.1.4). The first five are the ones on Ray's "Sales by customer" tab
+ * (FICTIONAL_DATA.md §14); the last three are new, generic and fictional. `share` splits each
+ * product's weekly demand; Vitamin C's shares are the tab's October tablets.
+ */
+export const CUSTOMERS: readonly {
+  code: string;
+  name: string;
+  termsDays: number;
+  share: Readonly<Partial<Record<ProductCode, number>>>;
+}[] = [
+  {
+    code: "CMT",
+    name: "Cardinal Mart",
+    termsDays: 30,
+    share: { "P-VC500": 0.405, "P-CMD": 0.3, "P-ZN50": 0.3, "P-MEL5": 0.35 },
+  },
+  {
+    code: "PBX",
+    name: "PillBox Pharmacy",
+    termsDays: 30,
+    share: { "P-VC500": 0.244, "P-CMD": 0.25, "P-PRO": 0.3, "P-MEL5": 0.25 },
+  },
+  {
+    code: "BWG",
+    name: "Brightway Grocers",
+    termsDays: 30,
+    share: { "P-VC500": 0.086, "P-ELX": 0.35, "P-FBR": 0.4 },
+  },
+  {
+    code: "WEB",
+    name: "Online store",
+    termsDays: 0,
+    share: { "P-VC500": 0.185, "P-PRO": 0.3, "P-FBR": 0.2, "P-ZN50": 0.2 },
+  },
+  { code: "EUD", name: "EU distributor", termsDays: 45, share: { "P-VC500": 0.08, "P-ZN50": 0.2 } },
+  {
+    code: "CLC",
+    name: "Cedar Lane Pharmacy Co-op",
+    termsDays: 30,
+    share: { "P-CMD": 0.25, "P-PRO": 0.4, "P-MEL5": 0.4, "P-ZN50": 0.3 },
+  },
+  {
+    code: "SHD",
+    name: "Summit Health Distributors",
+    termsDays: 45,
+    share: { "P-CMD": 0.2, "P-ELX": 0.4, "P-FBR": 0.4 },
+  },
+  { code: "HNF", name: "Harborview Natural Foods", termsDays: 30, share: { "P-ELX": 0.25 } },
+];
+
+export const SALES = {
+  /** Customers order weekly and the dock ships on this weekday (4 = Thursday). */
+  shipWeekday: 4,
+  /** Finished goods are released for shipping this many days after their batch. */
+  fgReleaseDays: 2,
+  /** Opening finished goods on the first day: this many weeks of demand per product. */
+  openingWeeks: 2,
+  /** Invoice price per thousand units (tablets, capsules or canisters), dollars; fictional. */
+  pricePerThousand: {
+    "P-VC500": 41,
+    "P-CMD": 36,
+    "P-ELX": 62,
+    "P-ZN50": 28,
+    "P-MEL5": 19,
+    "P-PRO": 118,
+    "P-FBR": 5_600,
+    "P-BCX": 44,
+    "P-MG100": 52,
+    "P-D3K": 17,
+  } as Readonly<Record<ProductCode, number>>,
+  /** Customers pay up to this many days after the due date (uniform). */
+  payLateDays: { lo: 0, hi: 9 },
+};
+
 export type Incident =
   | {
       id: string;
