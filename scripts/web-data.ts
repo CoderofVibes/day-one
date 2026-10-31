@@ -40,6 +40,7 @@ import {
 } from "../server/src/ledger/views.ts";
 import { ReplayLlm } from "../server/src/llm/client.ts";
 import { INVENTORY_FILE, INVENTORY_WORKBOOK } from "../server/src/seed/inventorySheet.ts";
+import { buildArena, readRecordings } from "./lib/arena.ts";
 import { PLANT_AGENTS } from "./lib/dayone-sandbox.ts";
 
 const root = resolve(import.meta.dirname, "..");
@@ -49,6 +50,7 @@ const SERIES = join(root, "web/src/data/series.json");
 const JOURNEY = join(root, "web/src/data/journey.json");
 const PAGES = join(root, "web/src/data/pages.json");
 const REVIEW = join(root, "web/src/data/review.json");
+const ARENA = join(root, "web/src/data/arena.json");
 const BRIEF = join(root, "web/public/brief.html");
 const CSV = join(root, "web/public/books.csv");
 const RELAYER = "dayone-relayer.testnet";
@@ -245,6 +247,9 @@ const pages = {
   },
 };
 
+// The attack arena's catalog: the fifteen cases above, each with its recorded transactions.
+const arena = buildArena(pages.recorded.attacks.attacks, readRecordings(root));
+
 // The integration program walked through on the recorded run (docs/VISION.md §6.12.3), for the
 // static host: each stage as the people at Hollow Pine answered it, with Kevin's recorded
 // reading. A session of its own, watching a throwaway folder, so nothing in data/ moves.
@@ -324,6 +329,7 @@ const files: [string, string][] = [
   [JOURNEY, `${JSON.stringify(journey)}\n`],
   [PAGES, `${JSON.stringify(pages)}\n`],
   [REVIEW, `${JSON.stringify(review, null, 2)}\n`],
+  [ARENA, `${JSON.stringify(arena, null, 2)}\n`],
   [BRIEF, briefHtml(morningBrief(env.db, { now }))],
   [CSV, booksCsv(env.db)],
 ];
