@@ -221,10 +221,13 @@
   text-decoration-color: currentColor;
 }
 .feed-actions {
-  display: flex;
-  flex-wrap: wrap;
   gap: var(--s-1);
   margin-top: var(--s-2);
+}
+.feed-actions.actions button {
+  min-height: 30px;
+  padding: 3px 10px;
+  font-size: var(--t-sm);
 }
 .feed-chain {
   list-style: none;

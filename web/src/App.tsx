@@ -572,7 +572,7 @@ function ReplayApp() {
                 go: route.go,
                 actions:
                   at < last ? (
-                    <button type="button" className="btn primary" onClick={() => go(at + 1)}>
+                    <button type="button" className="primary" onClick={() => go(at + 1)}>
                       Next: {(data.steps[at + 1] as Step).title} →
                     </button>
                   ) : null,

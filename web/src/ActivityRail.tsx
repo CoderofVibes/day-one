@@ -15,6 +15,7 @@ import {
   type FeedItem,
   type FeedRow,
   filterFeed,
+  type KevinStatus,
   kevinStatus,
   pageForRecord,
   TYPE_LOOK,
@@ -109,6 +110,12 @@ export function useFeed(clock: Clock, context: FeedContext): { items: FeedItem[]
     [events, count, context],
   );
   return { items, now };
+}
+
+/** Kevin's status at the clock's time, for the header's chip (activity.ts kevinStatus). */
+export function useKevinStatus(clock: Clock, context: FeedContext): KevinStatus {
+  const { items, now } = useFeed(clock, context);
+  return kevinStatus(items, now);
 }
 
 function countThrough(events: readonly SimEvent[], t: number): number {
@@ -446,7 +453,7 @@ function Item({
           <time className="feed-time">{timeLabel(item.at, now)}</time>{" "}
           <Linked text={item.text} records={item.records} onRecord={onRecord} />
         </p>
-        {item.needs && actions && <div className="feed-actions">{actions}</div>}
+        {item.needs && actions && <div className="feed-actions actions">{actions}</div>}
         {curtain && item.chain && (
           <ul className="feed-chain">
             {item.chain.map((c) => (
