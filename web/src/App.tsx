@@ -86,12 +86,15 @@ import {
 } from "./run.ts";
 import type { Source } from "./series.ts";
 import { PageHeader, type PageId, type PlantCode, Shell, useRoute } from "./shell.tsx";
+import ApproveApp from "./Phone.tsx";
 import { PlantView } from "./twin3d/PlantView.tsx";
 
 /** The video page (?video=1): the recorded run on the storyboard's clock (docs/RECORDING.md). */
 const VideoApp = lazy(() => import("./VideoApp.tsx"));
-const VIDEO =
-  typeof location !== "undefined" && new URLSearchParams(location.search).get("video") === "1";
+const QUERY = new URLSearchParams(typeof location === "undefined" ? "" : location.search);
+const VIDEO = QUERY.get("video") === "1";
+/** Linda's phone on its own (?page=approve&po=1042), for a judge's phone: src/Phone.tsx. */
+const APPROVE = QUERY.get("page") === "approve";
 
 export function App() {
   if (VIDEO) {
@@ -101,6 +104,7 @@ export function App() {
       </Suspense>
     );
   }
+  if (APPROVE) return <ApproveApp />;
   return <Screens />;
 }
 
