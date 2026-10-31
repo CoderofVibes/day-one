@@ -60,27 +60,67 @@ export function edgeTriangles(
 
 const NO_RAYCAST = () => undefined;
 
-function addEdges(mesh: THREE.Mesh): void {
-  let edge: THREE.Object3D;
-  if (mesh instanceof THREE.InstancedMesh) {
-    const im = new THREE.InstancedMesh(edgeTriangles(mesh.geometry), EDGE_MATERIAL, mesh.count);
-    im.instanceMatrix = mesh.instanceMatrix;
-    im.frustumCulled = false;
-    edge = im;
-  } else {
-    edge = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, 35), LINE_MATERIAL);
-  }
+// What the pass keeps, outside the objects' userData: React Three Fiber replaces a mesh's
+// userData whenever it re-renders one that sets it, which would lose them.
+const SAVED = new WeakMap<THREE.Material, Saved>();
+const SHADOW = new WeakMap<THREE.Object3D, boolean>();
+const EDGES = new WeakMap<THREE.Object3D, THREE.InstancedMesh>();
+const LINES = new WeakMap<THREE.Object3D, { lines: THREE.LineSegments; key: string }>();
+const OVERLAYS = new WeakSet<THREE.Object3D>();
+
+function overlay<T extends THREE.Object3D>(edge: T): T {
   edge.raycast = NO_RAYCAST;
   edge.renderOrder = GHOST_ORDER;
-  edge.userData.ghostEdge = true;
-  mesh.userData.ghostEdges = edge;
-  mesh.add(edge);
+  OVERLAYS.add(edge);
+  return edge;
 }
 
-/** Instanced meshes get edges when they ask (userData.edges); plain boxes always. */
-function wantsEdges(mesh: THREE.Mesh): boolean {
-  if (mesh instanceof THREE.InstancedMesh) return mesh.userData.edges === true;
-  return mesh.geometry instanceof THREE.BoxGeometry;
+/** An instanced mesh's edges: one more instanced call sharing its instance matrices. */
+function addEdges(mesh: THREE.InstancedMesh): void {
+  const im = new THREE.InstancedMesh(edgeTriangles(mesh.geometry), EDGE_MATERIAL, mesh.count);
+  im.instanceMatrix = mesh.instanceMatrix;
+  im.frustumCulled = false;
+  EDGES.set(mesh, overlay(im));
+  mesh.add(im);
+}
+
+const INVERSE = new THREE.Matrix4();
+const POINT = new THREE.Vector3();
+
+/**
+ * The plain boxes' edges (slabs, pads, the vault, HQ, depots), merged into one line set under
+ * `root` and rebuilt only when the set of boxes changes: one draw call for all of them.
+ */
+function syncLines(root: THREE.Object3D, boxes: THREE.Mesh[], on: boolean): void {
+  const kept = LINES.get(root);
+  let lines = kept?.lines;
+  const key = boxes.map((b) => b.uuid).join(",");
+  if (on && kept?.key !== key) {
+    INVERSE.copy(root.matrixWorld).invert();
+    const out: number[] = [];
+    for (const b of boxes) {
+      b.updateWorldMatrix(true, false);
+      const edges = new THREE.EdgesGeometry(b.geometry, 35);
+      const pos = edges.getAttribute("position");
+      for (let i = 0; i < pos.count; i++) {
+        POINT.fromBufferAttribute(pos, i).applyMatrix4(b.matrixWorld).applyMatrix4(INVERSE);
+        out.push(POINT.x, POINT.y, POINT.z);
+      }
+      edges.dispose();
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(out, 3));
+    if (lines) {
+      lines.geometry.dispose();
+      lines.geometry = g;
+    } else {
+      lines = overlay(new THREE.LineSegments(g, LINE_MATERIAL));
+      lines.frustumCulled = false;
+      root.add(lines);
+    }
+    LINES.set(root, { lines, key });
+  }
+  if (lines) lines.visible = on;
 }
 
 /**
@@ -92,15 +132,16 @@ export function applyGhost(root: THREE.Object3D, g: number): void {
   const on = g > 0.001;
   EDGE_MATERIAL.opacity = 0.5 * g;
   LINE_MATERIAL.opacity = 0.6 * g;
+  const boxes: THREE.Mesh[] = [];
   root.traverse((o) => {
-    if (o.userData.ghostEdge) return;
+    if (OVERLAYS.has(o)) return;
     const mesh = o as THREE.Mesh;
     if (!mesh.isMesh) return;
     const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
     for (const m of mats) {
       if (!(m instanceof THREE.MeshStandardMaterial || m instanceof THREE.MeshBasicMaterial))
         continue;
-      let s = m.userData.ghost as Saved | undefined;
+      let s = SAVED.get(m);
       if (!s && !on) continue;
       if (!s) {
         s = {
@@ -109,7 +150,7 @@ export function applyGhost(root: THREE.Object3D, g: number): void {
           depthWrite: m.depthWrite,
           white: m.color.getHex() === 0xffffff,
         };
-        m.userData.ghost = s;
+        SAVED.set(m, s);
       }
       const transparent = on || s.transparent;
       if (m.transparent !== transparent) {
@@ -119,32 +160,40 @@ export function applyGhost(root: THREE.Object3D, g: number): void {
       m.opacity = THREE.MathUtils.lerp(s.opacity, s.opacity * GHOST_OPACITY, g);
       m.depthWrite = on ? false : s.depthWrite;
       if (s.white) m.color.set(0xffffff).lerp(TINT, 0.5 * g);
-      if (!on) delete m.userData.ghost;
+      if (!on) SAVED.delete(m);
     }
-    if (mesh.userData.castShadow === undefined) mesh.userData.castShadow = mesh.castShadow;
-    mesh.castShadow = !on && mesh.userData.castShadow === true;
+    if (!SHADOW.has(mesh)) SHADOW.set(mesh, mesh.castShadow);
+    mesh.castShadow = !on && SHADOW.get(mesh) === true;
+    if (!on) SHADOW.delete(mesh);
     mesh.renderOrder = on ? GHOST_ORDER : 0;
-    if (on && !mesh.userData.ghostEdges && wantsEdges(mesh)) addEdges(mesh);
-    const edge = mesh.userData.ghostEdges as THREE.Object3D | undefined;
+    if (mesh instanceof THREE.InstancedMesh) {
+      // Instanced meshes get edges when they ask for them (userData.edges).
+      if (on && !EDGES.has(mesh) && mesh.userData.edges === true) addEdges(mesh);
+    } else if (mesh.geometry instanceof THREE.BoxGeometry) {
+      boxes.push(mesh);
+    }
+    const edge = EDGES.get(mesh);
     if (edge) {
       edge.visible = on;
       if (edge instanceof THREE.InstancedMesh && mesh instanceof THREE.InstancedMesh)
         edge.count = mesh.count;
     }
   });
+  syncLines(root, boxes, on);
 }
 
 /** Frees the edge overlays under `root` (their shared materials stay for the next twin). */
 export function disposeGhost(root: THREE.Object3D): void {
   const edges: THREE.Object3D[] = [];
   root.traverse((o) => {
-    if (o.userData.ghostEdge) edges.push(o);
+    if (OVERLAYS.has(o)) edges.push(o);
   });
   for (const e of edges) {
     (e as THREE.Mesh).geometry.dispose();
     e.removeFromParent();
   }
   root.traverse((o) => {
-    delete o.userData.ghostEdges;
+    EDGES.delete(o);
   });
+  LINES.delete(root);
 }

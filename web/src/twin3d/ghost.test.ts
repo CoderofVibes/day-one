@@ -27,15 +27,16 @@ describe("the ghost pass", () => {
     expect(material.opacity).toBeCloseTo(GHOST_OPACITY);
     expect(material.color.getHex()).not.toBe(0xffffff);
     expect(mesh.castShadow).toBe(false);
-    expect(mesh.children).toHaveLength(1);
+    // The plain boxes' edges: one merged line set under the root.
+    expect(root.children).toHaveLength(2);
     applyGhost(root, 0);
     expect(material.transparent).toBe(false);
     expect(material.depthWrite).toBe(true);
     expect(material.opacity).toBe(1);
     expect(material.color.getHex()).toBe(0xffffff);
     expect(mesh.castShadow).toBe(true);
-    expect(mesh.children[0]?.visible).toBe(false);
+    expect(root.children[1]?.visible).toBe(false);
     disposeGhost(root);
-    expect(mesh.children).toHaveLength(0);
+    expect(root.children).toHaveLength(1);
   });
 });
