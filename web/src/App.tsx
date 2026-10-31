@@ -9,7 +9,8 @@
 // advances the run; otherwise the recorded run replays with Play, Back and Next, as on a static
 // host (docs/HOSTING.md).
 
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ActivityFrame, FeedButton, type FeedProps } from "./ActivityRail.tsx";
 import {
   ApiError,
   BOOKS_EXPORT_URL,
@@ -58,7 +59,7 @@ import { initials, Pill, StaffFeed } from "./feed.tsx";
 import { ImportPane } from "./ImportPane.tsx";
 import { InboxPane } from "./InboxPane.tsx";
 import { postDecision, postDropScans } from "./journey.ts";
-import { type Action, actionsFor, actorOf } from "./live.ts";
+import { type Action, actionsFor, actorOf, roleLabel } from "./live.ts";
 import { REVIEW_READ_ONLY, reviewSnapshot } from "./mail.ts";
 import { ErpPage, ThreeSchedules } from "./pages/Acme.tsx";
 import { ArenaPage } from "./pages/Arena.tsx";
@@ -121,12 +122,22 @@ function Foot({ children }: { children: React.ReactNode }) {
 function WithRail({
   curtain,
   rail,
+  feed,
   children,
 }: {
   curtain: boolean;
   rail: React.ReactNode;
+  /** Kevin's activity feed, on the Overview: it shares the right column with the curtain. */
+  feed: FeedProps | null;
   children: React.ReactNode;
 }) {
+  if (feed) {
+    return (
+      <ActivityFrame curtain={curtain} rail={rail} feed={feed}>
+        {children}
+      </ActivityFrame>
+    );
+  }
   return (
     <div className={curtain ? "with-rail" : undefined}>
       <div className="page-wrap">{children}</div>
@@ -438,6 +449,8 @@ function badgesOf(
 // ------------------------------------------------------------------ replay (static)
 
 const JUMPS = jumpsFor(recorded.steps);
+/** What the feed reads the recorded steps' words from. */
+const REPLAY_FEED = { steps: recorded.steps, approvals: recorded.approvals };
 
 function ReplayApp() {
   const data = recorded;
@@ -525,6 +538,7 @@ function ReplayApp() {
           <button type="button" className="btn" onClick={() => go(at + 1)} disabled={at === last}>
             Next →
           </button>
+          <FeedButton />
           <span className="step-count">
             {at + 1} / {last + 1} · {current.title}
           </span>
@@ -550,6 +564,21 @@ function ReplayApp() {
       <WithRail
         curtain={curtain && route.page !== "arena"}
         rail={<Curtain data={data} upTo={at} />}
+        feed={
+          route.page === "overview"
+            ? {
+                clock,
+                context: REPLAY_FEED,
+                go: route.go,
+                actions:
+                  at < last ? (
+                    <button type="button" className="btn primary" onClick={() => go(at + 1)}>
+                      Next: {(data.steps[at + 1] as Step).title} →
+                    </button>
+                  ) : null,
+              }
+            : null
+        }
       >
         <Pages
           page={route.page}
@@ -913,6 +942,14 @@ function LiveApp({ initial }: { initial: LiveState }) {
       (i) => i.status === "waiting" && (i.waitingFor === null || i.waitingFor === "Ray Delgado"),
     ).length ?? 0;
   const actor = actorOf(state.next);
+  const feedContext = useMemo(
+    () => ({
+      steps: state.steps,
+      approvals: state.approvals,
+      next: state.next.who ? { who: state.next.who, role: roleLabel(state.next.role) } : null,
+    }),
+    [state],
+  );
   const foot = (
     <Foot>
       {state.mode === "live"
@@ -937,6 +974,18 @@ function LiveApp({ initial }: { initial: LiveState }) {
       <WithRail
         curtain={curtain && route.page !== "arena"}
         rail={<Curtain data={state} upTo={last} />}
+        feed={
+          route.page === "overview"
+            ? {
+                clock,
+                context: feedContext,
+                go: route.go,
+                actions: actionsFor(state.next).map((a) => (
+                  <ActionButton key={a.label} action={a} disabled={busy !== null} onAct={act} />
+                )),
+              }
+            : null
+        }
       >
         <Pages
           page={route.page}
@@ -1142,6 +1191,7 @@ function UpNext({
         </span>
       </div>
       <ClockLine clock={clock} />
+      <FeedButton />
       {queue ?? <p className="lead">{lead}</p>}
       {state.stopped && state.help && !busy && <p className="muted small help">{state.help}</p>}
 

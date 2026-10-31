@@ -99,6 +99,22 @@ export function recordIds(text: string): string[] {
   return [...new Set(text.match(RECORD_ID) ?? [])];
 }
 
+/**
+ * Where a record id opens until the shared inspector exists (§5.8): the page that lists it, and
+ * the plant its id names. Material codes and lots open stock; batches their records; the rest
+ * purchasing.
+ */
+export function pageForRecord(id: string): {
+  page: "batches" | "inventory" | "purchasing" | "invoices";
+  plant?: "A" | "B" | "C";
+} {
+  const plant = /^B[RPC]-([ABC])-/.exec(id)?.[1] as "A" | "B" | "C" | undefined;
+  if (plant) return { page: "batches", plant };
+  if (/^[A-Z]{3}(-\d{6}-\d{2})?$/.test(id)) return { page: "inventory" };
+  if (/-INV-/.test(id)) return { page: "invoices" };
+  return { page: "purchasing" };
+}
+
 /** USDC base units (6 decimals) as dollars: "$5,150.00". */
 export function dollars(usdc: number): string {
   return `$${(usdc / 1_000_000).toLocaleString("en-US", {
@@ -216,10 +232,10 @@ function stepDrafts(index: number, ctx: FeedContext): Draft[] {
       const reply = ask && /Reply (.+?)\.?$/.exec(ask.request)?.[1];
       const approver = /Sent to (\w+)/.exec(rest)?.[1];
       return [
-        { ...base, type: "po_drafted", text: `Drafted ${po}, ${amount} to ${vendor}` },
+        { type: "po_drafted", step: index, text: `Drafted ${po}, ${amount} to ${vendor}` },
         {
+          ...base,
           type: "po_refused",
-          step: index,
           text: `The spend policy refused ${po}: ${amount} is over my ${limit ?? "per-PO"} limit.${approver ? ` Texted ${approver}.` : ""}`,
           records: [po],
         },
@@ -285,7 +301,7 @@ function eventDrafts(e: SimEvent, ctx: FeedContext | undefined): Draft[] {
       return [
         {
           type: "inventory_update",
-          text: `Posted batch ${batch} at ${plant}: ${e.units.toLocaleString("en-US")} tablets made`,
+          text: `Batch ${batch} finished at ${plant}: ${e.units.toLocaleString("en-US")} tablets`,
           records: [batch],
           routine: true,
         },
@@ -374,8 +390,9 @@ export type FeedRow =
   | { kind: "routine"; id: string; items: FeedItem[] };
 
 /**
- * Newest first, with each run of `min` or more routine items in a row folded into one line
- * ("+14 routine updates"), unless its id is in `open`. Items that need a person never fold.
+ * Newest first, with each run of `min` or more routine items in a row on one plant day folded
+ * into one line ("+14 routine updates"), unless its id is in `open`. Items that need a person
+ * never fold.
  */
 export function coalesce(items: FeedItem[], min = 3, open: ReadonlySet<string> = new Set()) {
   const rows: FeedRow[] = [];
@@ -388,6 +405,8 @@ export function coalesce(items: FeedItem[], min = 3, open: ReadonlySet<string> =
   };
   for (let i = items.length - 1; i >= 0; i--) {
     const item = items[i] as FeedItem;
+    const head = run[0];
+    if (head && simDay(head.at) !== simDay(item.at)) flush();
     if (item.routine && !item.needs) run.push(item);
     else {
       flush();

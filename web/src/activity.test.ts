@@ -7,11 +7,12 @@ import {
   filterFeed,
   IDLE_AFTER_MS,
   kevinStatus,
+  pageForRecord,
   recordIds,
   timeLabel,
 } from "./activity.ts";
 import { createClock } from "./clock.ts";
-import { buildEvents, hashEvents, MINUTE_MS, stepTimes } from "./engine.ts";
+import { buildEvents, hashEvents, MINUTE_MS, simDay, stepTimes } from "./engine.ts";
 import { plantsSnapshot } from "./plants.ts";
 import { run } from "./run.ts";
 
@@ -124,6 +125,37 @@ describe("Kevin's activity feed", () => {
     expect(eventsToFeed(clock.events(), end, ctx)).toEqual(feed);
   });
 
+  it("picks up a longer history through the same function: a synthetic year of batches", () => {
+    const day = 86_400_000;
+    const start = Date.parse("2025-11-09T20:00:00.000Z");
+    const batches = Array.from({ length: 365 * 6 }, (_, i) => ({
+      batchNo: `BR-B-${String(10_000 + i)}`,
+      facility: "ABC"[i % 3] as string,
+      completedAt: new Date(start + Math.floor(i / 6) * day + (i % 6) * 3_600_000).toISOString(),
+      tablets: 500_000 + i,
+    }));
+    const year = buildEvents({ massBalance: { batches }, books: { settled: [] } }, run.steps);
+    const t0 = performance.now();
+    const items = eventsToFeed(year, end, ctx);
+    const rows = coalesce(items);
+    expect(performance.now() - t0).toBeLessThan(500);
+    expect(items.filter((i) => i.type === "inventory_update" && i.routine)).toHaveLength(
+      batches.length,
+    );
+    // Six batches a day fold to one row a day.
+    expect(rows.length).toBeLessThan(365 + runItems.length + 5);
+    expect(items.at(-1)?.text).toBe(feed.at(-1)?.text);
+  });
+
+  it("opens each record on the page that lists it", () => {
+    expect(pageForRecord("BR-B-1045")).toEqual({ page: "batches", plant: "B" });
+    expect(pageForRecord("ASC-261116-01")).toEqual({ page: "inventory" });
+    expect(pageForRecord("ASC")).toEqual({ page: "inventory" });
+    expect(pageForRecord("NG-INV-24190")).toEqual({ page: "invoices" });
+    expect(pageForRecord("PO-1042")).toEqual({ page: "purchasing" });
+    expect(pageForRecord("RFQ-2611-01")).toEqual({ page: "purchasing" });
+  });
+
   it("finds record ids in a line", () => {
     expect(
       recordIds("Matches PO-1042: lot ASC-261116-01, BR-B-1045, RFQ-2611-01, PO-G-2001"),
@@ -169,8 +201,13 @@ describe("coalescing routine items", () => {
     expect(coalesce(items.slice(12), 3)).toHaveLength(4);
   });
 
-  it("folds the seed's 100-odd history items into a handful of rows", () => {
-    expect(coalesce(feed).length).toBeLessThan(40);
+  it("folds the seed's history day by day", () => {
+    const rows = coalesce(feed);
+    const folded = rows.flatMap((r) => (r.kind === "routine" ? [r.items] : []));
+    expect(folded.length).toBeGreaterThan(0);
+    expect(rows.length).toBeLessThan(feed.length);
+    for (const run of folded)
+      expect(new Set(run.map((i) => simDay(i.at))).size, run[0]?.id).toBe(1);
   });
 });
 

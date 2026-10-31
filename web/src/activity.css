@@ -1,0 +1,360 @@
+/* Kevin's activity feed (ActivityRail.tsx): a 320 px column beside the Overview from 1280 px,
+   a 48 px strip when collapsed, a drawer below 1280 px. Colour carries meaning only (§5.1):
+   amber waiting, red refused, green released, gold money, blue in progress, cyan chain. */
+
+.with-feed {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  align-items: start;
+}
+.with-feed.collapsed {
+  grid-template-columns: minmax(0, 1fr) 48px;
+}
+
+.feed-col {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4) var(--s-4) var(--s-4) 0;
+  min-width: 0;
+}
+.with-feed.collapsed .feed-col {
+  padding: var(--s-4) var(--s-2) var(--s-4) 0;
+}
+.feed-col > .feed-rail {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+/* Curtain on: what Kevin is doing on top (40%), the chain below (60%). */
+.feed-col.curtain-on > .feed-rail {
+  flex: 0 0 40%;
+}
+.feed-curtain {
+  flex: 1 1 60%;
+  min-height: 0;
+  overflow-y: auto;
+  border-radius: var(--r-lg);
+}
+
+.feed-rail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--glass-strong);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--r-lg);
+  font-size: var(--t-sm);
+  overflow: hidden;
+}
+
+.feed-top {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-3) var(--s-2);
+}
+.feed-who {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.feed-state {
+  color: var(--ink-2);
+}
+.feed-state.waiting {
+  color: var(--waiting);
+  font-weight: 600;
+}
+.feed-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  flex: none;
+}
+.feed-dot.working {
+  background: var(--brand);
+  animation: feed-pulse 1.6s ease-in-out infinite;
+}
+@keyframes feed-pulse {
+  50% {
+    box-shadow: 0 0 0 4px var(--brand-soft);
+  }
+}
+.feed-icon-btn {
+  border: 0;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: var(--t-lg);
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.feed-icon-btn:hover {
+  background: var(--surface-2);
+}
+
+.feed-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  padding: 0 var(--s-3) var(--s-2);
+  border-bottom: 1px solid var(--line);
+}
+.feed-chip {
+  border: 1px solid var(--line-2);
+  background: transparent;
+  color: var(--ink-2);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: var(--t-xs);
+  cursor: pointer;
+  transition: background 140ms;
+}
+.feed-chip.on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--surface);
+}
+
+.feed-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--s-1) 0;
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.feed-empty {
+  padding: var(--s-3);
+}
+
+.feed-item {
+  --tone: var(--neutral);
+  display: flex;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border-left: 3px solid transparent;
+}
+.feed-item.amber {
+  --tone: var(--waiting);
+}
+.feed-item.red {
+  --tone: var(--refused);
+}
+.feed-item.green {
+  --tone: var(--paid);
+}
+.feed-item.gold {
+  --tone: var(--money);
+}
+.feed-item.blue {
+  --tone: var(--held);
+}
+.feed-item.cyan {
+  --tone: var(--recorded);
+}
+.feed-item.needs {
+  border-left-color: var(--waiting);
+  background: var(--waiting-bg);
+}
+.feed-item.fresh {
+  animation:
+    feed-in 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    feed-glow 1s ease-out;
+}
+@keyframes feed-in {
+  from {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+}
+@keyframes feed-glow {
+  from {
+    background: var(--brand-soft);
+  }
+}
+
+.feed-icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin-top: 2px;
+  fill: none;
+  stroke: var(--tone);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.feed-body {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.feed-body p {
+  margin: 0;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.feed-time {
+  color: var(--ink-3);
+  font-size: var(--t-xs);
+  font-variant-numeric: tabular-nums;
+  margin-right: 2px;
+}
+.feed-record {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--line-2);
+  text-underline-offset: 2px;
+}
+.feed-record:hover {
+  text-decoration-color: currentColor;
+}
+.feed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  margin-top: var(--s-2);
+}
+.feed-chain {
+  list-style: none;
+  margin: var(--s-1) 0 0;
+  padding: var(--s-1) var(--s-2);
+  background: var(--curtain);
+  color: var(--curtain-ink);
+  border-radius: var(--r-sm);
+  font-family: var(--mono);
+  font-size: 11px;
+  border-left: 2px solid var(--recorded);
+}
+.feed-chain li {
+  overflow-wrap: anywhere;
+}
+
+.feed-item.routine {
+  align-items: baseline;
+  padding-left: calc(var(--s-3) + 24px);
+}
+.feed-more {
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: var(--t-xs);
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
+
+.feed-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border-top: 1px solid var(--line);
+}
+
+.feed-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  width: 40px;
+  padding: var(--s-2) 0;
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  color: var(--ink-2);
+}
+.feed-strip-label {
+  writing-mode: vertical-rl;
+  font-size: var(--t-xs);
+}
+.feed-unread {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--waiting);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: var(--s-1);
+}
+.feed-strip .feed-unread {
+  margin-left: 0;
+}
+
+/* Below 1280 px: a drawer from the right, over the page. */
+.feed-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 40;
+  width: min(360px, 100vw);
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  padding: var(--s-2);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition:
+    transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s 240ms;
+}
+.feed-drawer.open {
+  transform: none;
+  visibility: visible;
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.feed-drawer > .feed-rail {
+  flex: 1 1 auto;
+  background: var(--surface);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.25);
+}
+.feed-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  border: 0;
+  background: rgb(0 0 0 / 0.25);
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-item.fresh {
+    animation: feed-fade 200ms linear;
+  }
+  @keyframes feed-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  .feed-drawer,
+  .feed-drawer.open {
+    transition: none;
+  }
+  .feed-dot.working {
+    animation: none;
+  }
+}
+
+.feed-chips {
+  margin: 0;
+  min-width: 0;
+  border-width: 0 0 1px;
+}
