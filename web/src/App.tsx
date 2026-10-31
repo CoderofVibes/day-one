@@ -73,6 +73,7 @@ import { LotsPage } from "./pages/Lots.tsx";
 import { MapPage, type MapPick } from "./pages/MapPage.tsx";
 import { Overview } from "./pages/Overview.tsx";
 import { BatchRecordsPage, BriefPage, InventoryPage, SchedulePage } from "./pages/Plant.tsx";
+import { MaterialMatrix, PlantColumns } from "./pages/Plants.tsx";
 import { BooksPane, HqPane, PlantsPane } from "./panes.tsx";
 import { plantsSnapshot, STATIC_BOOKS_URL, STATIC_BRIEF_URL } from "./plants.ts";
 import { RecordNav } from "./RecordNav.tsx";
@@ -414,7 +415,9 @@ function Pages({
       case "plants":
         return (
           <>
+            <PlantColumns source={source} run={run} at={at} inventory={inventory} />
             {plants}
+            <MaterialMatrix inventory={inventory} />
             <ThreeSchedules source={source} />
           </>
         );

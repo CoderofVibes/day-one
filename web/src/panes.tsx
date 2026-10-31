@@ -17,6 +17,7 @@ import { KevinNote, Pill } from "./feed.tsx";
 import { groupBuy } from "./groupBuy.ts";
 import { ImportPane } from "./ImportPane.tsx";
 import { quantity } from "./live.ts";
+import { TransferCard } from "./pages/Plants.tsx";
 import type { RunData, Transaction } from "./run.ts";
 
 const usd = (units: number | string) =>
@@ -191,7 +192,7 @@ export function PlantsPane({
           <li key={s.key}>
             <div className="cont">
               <Pill tone="held">before you buy</Pill>
-              <p>{s.sentence}</p>
+              <TransferCard move={s} inventory={inventory} />
             </div>
             {act && (
               <div className="actions">
