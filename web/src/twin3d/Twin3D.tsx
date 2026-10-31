@@ -10,6 +10,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { Line2, OrbitControls as OrbitControlsImpl } from "three-stdlib";
+import { sharedClock } from "../clock.ts";
 import type { RunData } from "../run.ts";
 import {
   type AreaCode,
@@ -272,7 +273,11 @@ function Driver({
   useFrame((_, delta) => {
     clock.current += record ? RECORD_FRAME_MS : Math.min(delta * 1000, 100);
     const t = clock.current;
-    if (window.dayOneTwin) window.dayOneTwin.clock = t;
+    if (window.dayOneTwin) {
+      window.dayOneTwin.clock = t;
+      // The sim clock, read from its store on this frame loop, never through React state.
+      window.dayOneTwin.simNow = sharedClock()?.get().simNow;
+    }
     if (record && onStep) {
       const due = Math.min(last, Math.floor(t / STEP_MS));
       if (due !== at) onStep(due);
@@ -1604,6 +1609,8 @@ declare global {
     dayOneTwin?: {
       info: () => { calls: number; triangles: number };
       clock?: number;
+      /** The sim clock's time (src/clock.ts) as of the last frame. */
+      simNow?: number | undefined;
       camera?: number[];
     };
   }

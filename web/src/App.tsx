@@ -40,7 +40,18 @@ import {
   type ReviewState,
   type TransferSuggestions,
 } from "./api.ts";
+import { ClockBar, jumpsFor } from "./ClockBar.tsx";
 import { Curtain } from "./Curtain.tsx";
+import {
+  createClock,
+  forgetClock,
+  persist,
+  readPersisted,
+  shareClock,
+  stepAt,
+  storedClock,
+  useClock,
+} from "./clock.ts";
 import { initials, Pill, StaffFeed } from "./feed.tsx";
 import { ImportPane } from "./ImportPane.tsx";
 import { InboxPane } from "./InboxPane.tsx";
@@ -68,8 +79,6 @@ import {
 import type { Source } from "./series.ts";
 import { PageHeader, type PageId, type PlantCode, Shell, useRoute } from "./shell.tsx";
 import { PlantView } from "./twin3d/PlantView.tsx";
-
-const PLAY_MS = 2600;
 
 /** The video page (?video=1): the recorded run on the storyboard's clock (docs/RECORDING.md). */
 const VideoApp = lazy(() => import("./VideoApp.tsx"));
@@ -409,25 +418,52 @@ function badgesOf(
 
 // ------------------------------------------------------------------ replay (static)
 
+const JUMPS = jumpsFor(recorded.steps);
+
 function ReplayApp() {
   const data = recorded;
   const last = data.steps.length - 1;
-  const [at, setAt] = useState(0);
+  // The recorded run is a stretch of the sim clock: a step is on screen from its time until the
+  // next one's, and stepping seeks the clock to the step's time.
+  const [clock] = useState(() =>
+    createClock({
+      history: plantsSnapshot,
+      steps: data.steps,
+      initial: readPersisted(location.search, storedClock()),
+    }),
+  );
+  useEffect(() => {
+    shareClock(clock);
+    const stop = persist(clock);
+    return () => {
+      stop();
+      shareClock(null);
+    };
+  }, [clock]);
+  const at = useClock(clock, (s) => stepAt(s.simNow, clock.range));
   const [curtain, setCurtain] = useState(false);
   const route = useRoute();
-  const [playing, setPlaying] = useState(false);
 
-  const go = useCallback((to: number) => setAt(Math.max(0, Math.min(last, to))), [last]);
-
-  useEffect(() => {
-    if (!playing) return;
-    if (at >= last) {
-      setPlaying(false);
-      return;
-    }
-    const timer = setTimeout(() => go(at + 1), PLAY_MS);
-    return () => clearTimeout(timer);
-  }, [playing, at, last, go]);
+  const go = useCallback(
+    (to: number) => clock.seek(clock.range.steps[Math.max(0, Math.min(last, to))] ?? 0),
+    [clock, last],
+  );
+  const clockBar = (
+    <ClockBar
+      clock={clock}
+      jumps={JUMPS}
+      onPlay={() => {
+        if (at === last) go(0);
+        clock.play();
+      }}
+      onReset={() => {
+        forgetClock();
+        clock.pause();
+        clock.resetSession();
+        go(0);
+      }}
+    />
+  );
 
   useEffect(() => {
     if (route.page !== "overview" && route.page !== "map") return;
@@ -450,6 +486,7 @@ function ReplayApp() {
       <Closing
         data={data}
         curtain={curtain}
+        clockBar={clockBar}
         onReplay={() => go(0)}
         onPlants={() => route.go({ page: "plants" })}
       />
@@ -461,31 +498,14 @@ function ReplayApp() {
           </h2>
           <span className="right small muted">{current.title}</span>
         </div>
+        {clockBar}
         <div className="transport">
           <button type="button" className="btn" onClick={() => go(at - 1)} disabled={at === 0}>
             ← Back
           </button>
-          <button
-            type="button"
-            className="btn primary"
-            onClick={() => {
-              if (!playing && at === last) go(0);
-              setPlaying(!playing);
-            }}
-          >
-            {playing ? "Pause" : "Play"}
-          </button>
           <button type="button" className="btn" onClick={() => go(at + 1)} disabled={at === last}>
             Next →
           </button>
-          <input
-            type="range"
-            min={0}
-            max={last}
-            value={at}
-            onChange={(e) => go(Number(e.target.value))}
-            aria-label="Step"
-          />
           <span className="step-count">
             {at + 1} / {last + 1} · {current.title}
           </span>
@@ -630,11 +650,13 @@ function Guide({ data }: { data: DemoRun }) {
 function Closing({
   data,
   curtain,
+  clockBar,
   onReplay,
   onPlants,
 }: {
   data: RunData;
   curtain: boolean;
+  clockBar: React.ReactNode;
   onReplay: () => void;
   onPlants: () => void;
 }) {
@@ -654,6 +676,7 @@ function Closing({
           ? ` Switch on "Behind the curtain" for the ${s.transactions} testnet transactions behind it.`
           : ""}
       </p>
+      {clockBar}
       <div className="transport">
         <button type="button" className="btn primary" onClick={onReplay}>
           Replay

@@ -48,6 +48,9 @@
   --waiting-bg: #fff3d6;
   --held: #1e5aa8;
   --held-bg: #e4eefb;
+  /* The recorded run on the sim clock: backed by testnet transactions. */
+  --recorded: #0b7285;
+  --recorded-bg: #dcf3f6;
   --paid: #1b6b3a;
   --paid-bg: #e2f3e8;
   --neutral: #5c6370;
@@ -131,6 +134,8 @@
     --waiting-bg: #3a2d12;
     --held: #8fb8f0;
     --held-bg: #16263d;
+    --recorded: #66d9e8;
+    --recorded-bg: #0c2a30;
     --paid: #74c69d;
     --paid-bg: #15301f;
     --neutral: #9ba3ad;
@@ -183,6 +188,8 @@
   --waiting-bg: #3a2d12;
   --held: #8fb8f0;
   --held-bg: #16263d;
+  --recorded: #66d9e8;
+  --recorded-bg: #0c2a30;
   --paid: #74c69d;
   --paid-bg: #15301f;
   --neutral: #9ba3ad;
