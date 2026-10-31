@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { jumpsFor } from "./ClockBar.tsx";
 import {
   type Clock,
   createClock,
@@ -109,6 +110,16 @@ describe("the sim clock", () => {
     clock.seek(clock.range.end);
     expect(clock.get().log).toEqual([]);
     expect(clock.world().actions).toBe(0);
+  });
+
+  it("offers the brief's Jump to presets that the recorded run holds, at their steps", () => {
+    const jumps = jumpsFor(run.steps);
+    expect(jumps.map((j) => [j.label, run.steps[j.step]?.title])).toEqual([
+      ["Recorded run start", "Load seed"],
+      ["PO-1042 refusal", "Big PO"],
+      ["Linda's approval", "Linda texts"],
+      ["QC release of ASC-261116-01", "QC release"],
+    ]);
   });
 
   it("restores the time, speed, seed and session from the URL before storage", () => {

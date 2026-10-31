@@ -33,6 +33,29 @@ export function jumpsFor(steps: Step[]): Jump[] {
   return out;
 }
 
+/**
+ * The live run's clock in one line: the API moves the run, so the clock follows its last step
+ * and there is nothing to play or seek; what people did this session is counted beside it.
+ */
+export function ClockLine({ clock }: { clock: Clock }) {
+  const minute = useClock(clock, (s) => Math.floor(s.simNow / 60_000));
+  const actions = useClock(clock, (s) => s.log.length);
+  const t = minute * 60_000;
+  return (
+    <p className="clock-line">
+      <time className="clock-now" dateTime={new Date(t).toISOString()}>
+        {readout(t)}
+      </time>
+      {actions > 0 && (
+        <span>
+          {" "}
+          · {actions} {actions === 1 ? "action" : "actions"} this session
+        </span>
+      )}
+    </p>
+  );
+}
+
 export function ClockBar({
   clock,
   jumps,

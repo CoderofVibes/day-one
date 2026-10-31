@@ -40,9 +40,10 @@ import {
   type ReviewState,
   type TransferSuggestions,
 } from "./api.ts";
-import { ClockBar, jumpsFor } from "./ClockBar.tsx";
+import { ClockBar, ClockLine, jumpsFor } from "./ClockBar.tsx";
 import { Curtain } from "./Curtain.tsx";
 import {
+  type Clock,
   createClock,
   forgetClock,
   persist,
@@ -52,6 +53,7 @@ import {
   storedClock,
   useClock,
 } from "./clock.ts";
+import { stepTimes } from "./engine.ts";
 import { initials, Pill, StaffFeed } from "./feed.tsx";
 import { ImportPane } from "./ImportPane.tsx";
 import { InboxPane } from "./InboxPane.tsx";
@@ -715,6 +717,27 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const [mail, setMail] = useState<ReviewState | null>(null);
   /** Bumped by every action, so the program's stages read again after a decision. */
   const [acted, setActed] = useState(0);
+  // The API moves the run and its clock; the sim clock follows the last step on the recorded
+  // run's times and keeps what people did this session.
+  const [clock] = useState(() =>
+    createClock({
+      history: plantsSnapshot,
+      steps: recorded.steps,
+      frames: null,
+      initial: { log: readPersisted(location.search, storedClock()).log ?? [] },
+    }),
+  );
+  useEffect(() => {
+    shareClock(clock);
+    const stop = persist(clock);
+    return () => {
+      stop();
+      shareClock(null);
+    };
+  }, [clock]);
+  useEffect(() => {
+    clock.seek(stepTimes(state.steps).at(-1) ?? clock.range.golden.start);
+  }, [clock, state.steps]);
 
   // The review is read once per run and kept by the API; read again after every action so a
   // signature shows at once. A failed read keeps what is on screen.
@@ -792,25 +815,29 @@ function LiveApp({ initial }: { initial: LiveState }) {
     if (window.scrollY > 40) window.scrollTo({ top: 0, behavior: "smooth" });
   }, [turn]);
 
-  const send = useCallback(async (label: string, call: () => Promise<unknown>) => {
-    setBusy(label);
-    setError(null);
-    try {
-      await call();
-      setState(await getState());
-    } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
-      setError(e instanceof ApiError && e.hint ? { message, hint: e.hint } : { message });
+  const send = useCallback(
+    async (label: string, call: () => Promise<unknown>) => {
+      setBusy(label);
+      setError(null);
       try {
+        await call();
+        if (label !== "Start over") clock.act(label);
         setState(await getState());
-      } catch {
-        // The state stays as it was; the error is already on screen.
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        setError(e instanceof ApiError && e.hint ? { message, hint: e.hint } : { message });
+        try {
+          setState(await getState());
+        } catch {
+          // The state stays as it was; the error is already on screen.
+        }
+      } finally {
+        setBusy(null);
+        setActed((n) => n + 1);
       }
-    } finally {
-      setBusy(null);
-      setActed((n) => n + 1);
-    }
-  }, []);
+    },
+    [clock],
+  );
 
   const act = (a: Action) => send(a.label, () => postJson(a.path, a.body));
   const signDraft = (messageId: string) =>
@@ -854,6 +881,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const reset = () => {
     setMoveNote([]);
     setRuns((n) => n + 1);
+    clock.resetSession();
     send("Start over", () => postJson("api/run/reset"));
   };
 
@@ -918,6 +946,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
             <>
               <UpNext
                 state={state}
+                clock={clock}
                 busy={busy}
                 error={error}
                 onAct={act}
@@ -1043,8 +1072,10 @@ function UpNext({
   onUpload,
   onReset,
   queue,
+  clock,
 }: {
   state: LiveState;
+  clock: Clock;
   busy: string | null;
   error: { message: string; hint?: string } | null;
   onAct: (a: Action) => void;
@@ -1087,6 +1118,7 @@ function UpNext({
           {next.phase === "reply" && <span className="muted"> · on her phone</span>}
         </span>
       </div>
+      <ClockLine clock={clock} />
       {queue ?? <p className="lead">{lead}</p>}
       {state.stopped && state.help && !busy && <p className="muted small help">{state.help}</p>}
 

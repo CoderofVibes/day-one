@@ -637,6 +637,12 @@ a {
   justify-content: flex-end;
 }
 
+.clock-line {
+  margin: 0 0 var(--s-2);
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+
 /* "Waiting for you": one row per scan Kevin read. */
 .queue {
   list-style: none;
