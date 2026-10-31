@@ -143,7 +143,7 @@ a {
   margin-left: 6px;
   border-radius: 999px;
   background: var(--waiting);
-  color: #fff;
+  color: var(--surface);
   font-size: 11px;
   font-weight: 700;
   vertical-align: 1px;
@@ -849,7 +849,7 @@ details.inbox[open] > summary {
 
 .note.alert .avatar {
   background: var(--waiting);
-  color: #fff;
+  color: var(--surface);
 }
 
 .tiles {
