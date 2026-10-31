@@ -344,7 +344,7 @@ const worlds = readWorlds(root);
 const lineage = {
   at: now,
   genealogy: buildGenealogy(
-    mergeGenealogyTables(genealogyTables(env.db), worldGenealogyTables(worlds)),
+    mergeGenealogyTables(genealogyTables(env.db), worldGenealogyTables(worlds, now)),
   ),
 };
 // The supplier scorecards at the end of the recorded run (server/src/world/scorecard.ts).

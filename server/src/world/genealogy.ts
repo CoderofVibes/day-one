@@ -12,7 +12,12 @@ import type { World } from "./index.ts";
 const MG_PER_KG = 1_000_000;
 
 /** Genealogy rows from the worlds: generated eras, plus finished goods and shipments for all. */
-export function worldGenealogyTables(worlds: readonly World[]): GenealogyTables {
+export function worldGenealogyTables(
+  worlds: readonly World[],
+  /** The clock: nothing after it, and stock as it stood then (ISO; the whole world by default). */
+  through = "9999-12-31T23:59:59.999Z",
+): GenealogyTables {
+  const by = (iso: string) => iso <= through;
   const t: GenealogyTables = {
     lots: [],
     received: [],
@@ -28,6 +33,7 @@ export function worldGenealogyTables(worlds: readonly World[]): GenealogyTables 
   const lastAt = new Map<string, string>();
   for (const w of worlds) {
     for (const m of w.movements) {
+      if (!by(m[0])) continue;
       balance.set(m[1], (balance.get(m[1]) ?? 0) + m[3]);
       // Where a lot is now: the plant of its last movement in (or the only plant it was at).
       if (m[3] > 0 || !lastAt.has(m[1])) lastAt.set(m[1], w.meta.facility);
@@ -38,7 +44,7 @@ export function worldGenealogyTables(worlds: readonly World[]): GenealogyTables 
     const facility = w.meta.facility;
     const customers = new Map(w.customers.map((c) => [c.code, c.name]));
     for (const l of w.lots) {
-      if (l.era === "anchor" || seen.has(l.lot)) continue;
+      if (l.era === "anchor" || seen.has(l.lot) || !by(l.receivedAt)) continue;
       seen.add(l.lot);
       const m = MATERIALS.find((x) => x.code === l.material);
       const onHand = balance.get(l.lot) ?? 0;
@@ -57,14 +63,15 @@ export function worldGenealogyTables(worlds: readonly World[]): GenealogyTables 
         producedBy: null,
       });
       t.received.push({ lot: l.lot, qtyBase: l.qtyBase, at: l.receivedAt, po: l.poNo });
-      if (l.qc) t.qc.push({ lot: l.lot, decision: l.qc.result, decidedAt: l.qc.at, by: null });
+      if (l.qc && by(l.qc.at))
+        t.qc.push({ lot: l.lot, decision: l.qc.result, decidedAt: l.qc.at, by: null });
     }
     for (const r of w.receipts) {
-      if (r.era === "anchor") continue;
+      if (r.era === "anchor" || !by(r.receivedAt)) continue;
       t.receipts.push({ po: r.poNo, receivedAt: r.receivedAt, by: null });
     }
     for (const p of w.pos) {
-      if (p.era === "anchor") continue;
+      if (p.era === "anchor" || !by(p.orderedAt)) continue;
       for (const l of p.lines) {
         const kg = MATERIALS.find((x) => x.code === l.material)?.uom === "kg";
         t.poLines.push({
@@ -76,7 +83,7 @@ export function worldGenealogyTables(worlds: readonly World[]): GenealogyTables 
       }
     }
     for (const b of w.batches) {
-      if (b.era === "anchor") continue;
+      if (b.era === "anchor" || !by(`${b.date}T18:00:00.000Z`)) continue;
       t.batches.push({
         batchNo: b.batchNo,
         facility,
@@ -89,8 +96,9 @@ export function worldGenealogyTables(worlds: readonly World[]): GenealogyTables 
         t.inputs.push({ batch: b.batchNo, lot: c.lot, qtyBase: c.actualBase });
     }
     const fgLeft = new Map<string, number>();
-    for (const m of w.fgMovements) fgLeft.set(m[1], (fgLeft.get(m[1]) ?? 0) + m[2]);
+    for (const m of w.fgMovements) if (by(m[0])) fgLeft.set(m[1], (fgLeft.get(m[1]) ?? 0) + m[2]);
     for (const f of w.fgLots) {
+      if (!by(`${f.madeOn}T18:00:00.000Z`)) continue;
       const left = fgLeft.get(f.fgLot) ?? 0;
       t.lots.push({
         code: f.fgLot,
@@ -115,6 +123,7 @@ export function worldGenealogyTables(worlds: readonly World[]): GenealogyTables 
       if (f.batchNo) t.outputs.push({ batch: f.batchNo, lot: f.fgLot });
     }
     for (const s of w.shipments) {
+      if (!by(s.shippedAt)) continue;
       for (const l of s.lines)
         t.shipments.push({
           shipmentNo: s.shipmentNo,

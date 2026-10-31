@@ -610,7 +610,7 @@ export class DemoSession {
    * shipments to customers.
    */
   genealogy() {
-    const world = worldGenealogyTables(readWorlds(REPO_ROOT));
+    const world = worldGenealogyTables(readWorlds(REPO_ROOT), this.env.clock());
     const tables = mergeGenealogyTables(genealogyTables(this.env.db), world);
     return { at: this.env.clock(), genealogy: buildGenealogy(tables) };
   }

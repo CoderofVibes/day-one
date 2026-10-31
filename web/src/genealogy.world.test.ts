@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import snapshot from "./data/genealogy.json";
 import { drillLot, type Genealogy, GOLDEN_LOT, runDrill, trace } from "./genealogy.ts";
 
-const g = (snapshot as unknown as { genealogy: Genealogy }).genealogy;
+const { at, genealogy: g } = snapshot as unknown as { at: string; genealogy: Genealogy };
 const PLANTS: Record<string, string> = {
   A: "Acme Riverside",
   B: "Hollow Pine",
@@ -20,6 +20,14 @@ describe("the recall drill over the twelve-month worlds", () => {
     expect(lot?.code).not.toBe(GOLDEN_LOT);
     expect(lot?.vendor).toBe("RWA");
     expect(g.has).toEqual({ fgLots: true, shipments: true });
+  });
+
+  it("holds nothing the snapshot's clock has not reached", () => {
+    for (const s of Object.values(g.shipments)) expect(s.shippedAt <= at, s.shipmentNo).toBe(true);
+    for (const b of Object.values(g.batches))
+      expect((b.completedAt ?? "") <= at, b.batchNo).toBe(true);
+    for (const l of Object.values(g.lots))
+      if (l.receivedAt) expect(l.receivedAt <= at, l.code).toBe(true);
   });
 
   it("traces it to batches at both plants, finished goods, shipments and customers", () => {
