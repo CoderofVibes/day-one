@@ -553,3 +553,67 @@ body .panel.map-frame.twin-full {
     transform: translateX(12px);
   }
 }
+
+/* The 3D curtain's chain layer (ChainLayer.tsx): dark glass pills with cyan type, like the 2D
+   curtain panel, in both themes. */
+.t3-label.chain {
+  padding: 2px 8px;
+  border-radius: var(--r-md);
+  background: rgb(10 22 32 / 0.82);
+  border: 1px solid rgb(56 211 232 / 0.55);
+  color: #bff4fb;
+  text-shadow: none;
+  font-size: 11px;
+}
+
+.t3-label.chain span {
+  color: #8fd9e6;
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.t3-label.chain .refusals {
+  color: #ff8a87;
+  font-weight: 600;
+}
+
+.t3-label.chain.orb {
+  padding: 0 6px;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.t3-label.chain.method code {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #e9fcff;
+}
+
+.t3-label.chain.method.refused {
+  border-color: #f0524f;
+}
+
+.t3-label.chain.method.simulated {
+  border-style: dashed;
+  opacity: 0.8;
+}
+
+.t3-label.chain.callout {
+  white-space: normal;
+  width: 230px;
+  border: 1px solid #f0524f;
+  background: rgb(40 10 12 / 0.9);
+  color: #ffd9d8;
+}
+
+.t3-label.chain.callout span {
+  color: #ffd9d8;
+  font-family: inherit;
+  font-size: 11px;
+}
+
+.t3-label.chain.badge {
+  border-radius: 999px;
+  font-family: var(--mono);
+}

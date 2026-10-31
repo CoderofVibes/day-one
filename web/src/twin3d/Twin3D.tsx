@@ -44,6 +44,7 @@ import {
   type Tint,
   topHeight,
 } from "./buildings.ts";
+import { ChainCurtain } from "./ChainLayer.tsx";
 import {
   anchor3,
   arc3,
@@ -119,7 +120,7 @@ export interface AreaPick {
 // ------------------------------------------------------------------ theme
 
 /** The flat map's palette, read from the page's CSS variables so light and dark match. */
-interface Theme {
+export interface Theme {
   bg: string;
   panel: string;
   ink: string;
@@ -211,6 +212,8 @@ interface Frame {
   parts: SitePart[];
   /** How far the camera is from what it looks at; department labels hide when far. */
   cameraDistance: number;
+  /** Milliseconds of the demo clock since the step shown began: the chain layer's pulses. */
+  since: number;
 }
 
 const FrameContext = createContext<React.RefObject<Frame> | null>(null);
@@ -225,10 +228,10 @@ interface CameraCommand {
 const CommandContext = createContext<React.RefObject<CameraCommand> | null>(null);
 
 /** Selecting an object by its id (src/twin/objects.ts); null when the stage has no inspector. */
-const SelectContext = createContext<((id: string) => void) | null>(null);
+export const SelectContext = createContext<((id: string) => void) | null>(null);
 
 /** Pointer props that make a mesh select an object: a click selects it, hover shows the hand. */
-function useSelectable(id: string | undefined) {
+export function useSelectable(id: string | undefined) {
   const select = useContext(SelectContext);
   if (!select || !id) return {};
   return {
@@ -273,9 +276,20 @@ interface LabelSlot {
 
 const SlotsContext = createContext<React.RefObject<Map<string, LabelSlot>> | null>(null);
 
-const RANK = { flow: 9, lot: 8, plant: 7, pad: 6, depot: 5, dept: 1 } as const;
+export const RANK = {
+  callout: 10,
+  flow: 9,
+  lot: 8,
+  plant: 7,
+  node: 6.5,
+  pad: 6,
+  depot: 5,
+  orb: 4,
+  method: 3,
+  dept: 1,
+} as const;
 
-function useFrameRef(): React.RefObject<Frame> {
+export function useFrameRef(): React.RefObject<Frame> {
   const ref = useContext(FrameContext);
   if (!ref) throw new Error("Twin3D parts must be inside the scene");
   return ref;
@@ -337,6 +351,7 @@ function Driver({
       escrowCents: blendEscrowCents(prev, next, u),
       parts: siteParts(departments),
       cameraDistance: frame.current.cameraDistance,
+      since: t - start.current,
     };
   }, -1);
   return null;
@@ -505,7 +520,7 @@ const SCREEN = new THREE.Vector3();
  * labels on coins stacked in the vault stay apart at every camera distance. Each label also
  * reports its box to the overprint pass and hides when a higher-ranked or nearer label covers it.
  */
-function Label({
+export function Label({
   className,
   zIndexRange,
   rank,
@@ -816,6 +831,7 @@ function Buildings({
     <>
       <instancedMesh
         ref={ref("box")}
+        userData={{ edges: true }}
         args={[undefined, undefined, GROUP_CAPACITY.box]}
         castShadow
         receiveShadow
@@ -845,6 +861,7 @@ function Buildings({
       </instancedMesh>
       <instancedMesh
         ref={ref("gable")}
+        userData={{ edges: true }}
         args={[gable, undefined, GROUP_CAPACITY.gable]}
         castShadow
         frustumCulled={false}
@@ -854,6 +871,7 @@ function Buildings({
       {/* The hall's sawtooth glass: smoother, so the status colour reads as lit panes. */}
       <instancedMesh
         ref={ref("saw")}
+        userData={{ edges: true }}
         args={[saw, undefined, GROUP_CAPACITY.saw]}
         castShadow
         frustumCulled={false}
@@ -1575,6 +1593,7 @@ function Pallets({ pallets, theme }: { pallets: Pallet[]; theme: Theme }) {
 // ------------------------------------------------------------------ the scene
 
 function Scene({
+  run,
   theme,
   prev,
   next,
@@ -1592,6 +1611,7 @@ function Scene({
   camera,
   pallets,
 }: {
+  run: RunData;
   onPick?: ((pick: AreaPick) => void) | undefined;
   picked?: AreaPick | null | undefined;
   layers: Layers;
@@ -1618,6 +1638,7 @@ function Scene({
     escrowCents: next.escrowHeldCents,
     parts: siteParts(blendDepartments(prev, next, 1)),
     cameraDistance: framingFor(title, undefined, isPooled(next)).distance,
+    since: 0,
   });
   const pooled = isPooled(next);
   // Flows in either state are drawn; a flow that left fades out and unmounts itself.
@@ -1633,6 +1654,7 @@ function Scene({
     .map((f) => f.id);
   const stackIndex = (id: string) => Math.max(held.indexOf(id), refused.indexOf(id));
   const slots = useRef(new Map<string, LabelSlot>());
+  const ghost = useRef<THREE.Group>(null);
 
   return (
     <FrameContext.Provider value={frame}>
@@ -1666,12 +1688,23 @@ function Scene({
           <planeGeometry args={[900, 900]} />
           <meshStandardMaterial color={theme.bg} roughness={1} />
         </mesh>
-        <Floors theme={theme} state={next} />
-        <Buildings theme={theme} onPick={onPick} equipment={layers.equipment} />
+        <group ref={ghost}>
+          <Floors theme={theme} state={next} />
+          <Buildings theme={theme} onPick={onPick} equipment={layers.equipment} />
+          <Pads theme={theme} state={next} curtain={curtain} narrow={hideLabels} />
+          {layers.stock && <Pallets pallets={pallets} theme={theme} />}
+        </group>
+        <ChainCurtain
+          ghost={ghost}
+          run={run}
+          at={at}
+          curtain={curtain}
+          reduced={reduced}
+          labels={!hideLabels && layers.labels}
+        />
         <Pings prev={prev} next={next} theme={theme} />
         {picked && <PickedOutline picked={picked} theme={theme} />}
         <DepartmentExtras theme={theme} hideLabels={hideLabels || !layers.labels} />
-        <Pads theme={theme} state={next} curtain={curtain} narrow={hideLabels} />
         <Road theme={theme} state={next} />
         {layers.money &&
           flows.map((flow) => (
@@ -1686,7 +1719,6 @@ function Scene({
             />
           ))}
         {layers.money && lots.map((l) => <LotView key={l.lot.code} frameLot={l} theme={theme} />)}
-        {layers.stock && <Pallets pallets={pallets} theme={theme} />}
         <StoryCamera
           title={title}
           at={at}
@@ -1771,6 +1803,7 @@ export default function Twin3D({
             }}
           >
             <Scene
+              run={run}
               theme={theme}
               prev={prev}
               next={next}

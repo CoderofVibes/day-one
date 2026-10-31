@@ -17,6 +17,7 @@ import { deriveTwinState, formatQuotes, formatTwinState } from "../twin/model.ts
 import { inspectObject, twinObjects } from "../twin/objects.ts";
 import { type AreaPick, PlantMap } from "../twin/PlantMap.tsx";
 import { palletsAt, runLotCodes } from "../twin/pallets.ts";
+import { chainLayout, inspectChain } from "./chain.ts";
 import { ObjectsList } from "./ObjectsList.tsx";
 
 /** A picked area with its department's status at the step shown. */
@@ -190,7 +191,12 @@ export function PlantView({
     const o = id ? objects.find((x) => x.id === id) : undefined;
     if (o) fly({ focus: o.focus });
   }, [objects, fly]);
-  const inspected = selected ? inspectObject(state, shown, shownAt, selected, pallets) : undefined;
+  // The chain layer's nodes, accounts and transactions (chain.ts) are inspected behind the curtain only.
+  const chain = useMemo(() => chainLayout(shown), [shown]);
+  const inspected = selected
+    ? (inspectObject(state, shown, shownAt, selected, pallets) ??
+      (curtain ? inspectChain(chain, shownAt, selected) : undefined))
+    : undefined;
   // A department in the inspector is outlined like a picked area.
   const deptPick: AreaPick | null = selected?.startsWith("dept-")
     ? (() => {
