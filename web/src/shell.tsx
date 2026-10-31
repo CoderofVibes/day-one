@@ -24,7 +24,8 @@ export type PageId =
   | "group"
   | "sealed"
   | "export"
-  | "reconciliation";
+  | "reconciliation"
+  | "arena";
 export type PlantCode = "A" | "B" | "C";
 
 export const PLANTS: { code: PlantCode; name: string; note: string }[] = [
@@ -72,6 +73,10 @@ export const NAV: { group: string; items: NavItem[] }[] = [
       { id: "export", label: "Bookkeeper export", icon: "download" },
       { id: "reconciliation", label: "Reconciliation", icon: "check" },
     ],
+  },
+  {
+    group: "Proof",
+    items: [{ id: "arena", label: "Attack arena", icon: "target" }],
   },
 ];
 
@@ -292,6 +297,8 @@ const ICONS = {
   lock: "M3.5 8h11v8h-11zM5.5 8V5.5a3.5 3.5 0 0 1 7 0V8",
   download: "M9 2v9M5.5 7.5L9 11l3.5-3.5M2.5 13v2.5h13V13",
   check: "M2.5 9.5l4 4 9-9",
+  target:
+    "M9 2.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 1 0 0-13zM9 6a3 3 0 1 0 0 6 3 3 0 1 0 0-6zM9 0.5v4M9 13.5v4M0.5 9h4M13.5 9h4",
 } as const;
 
 function Icon({ name }: { name: keyof typeof ICONS }) {
