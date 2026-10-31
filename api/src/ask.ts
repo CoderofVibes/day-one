@@ -56,6 +56,11 @@ export class AskLimitError extends Error {
   override name = "AskLimitError";
 }
 
+/** No model can answer this here: no key and no recording, or a question the replay lacks. */
+export class AskUnavailableError extends Error {
+  override name = "AskUnavailableError";
+}
+
 export class AskDesk {
   readonly mode: AskMode;
   private readonly hits = new Map<string, number[]>();
@@ -87,10 +92,11 @@ export class AskDesk {
   async ask(question: string, client: { session: string; address: string }): Promise<AskReply> {
     const llm = this.options.llm;
     if (!llm) {
-      throw new AskError(
+      throw new AskUnavailableError(
         "Kevin answers here once NEARAI_API_KEY is in .env, or after npm run ask -- --live --record.",
       );
     }
+    if (!question.trim()) throw new AskError("ask Kevin a question");
     this.limit(`s:${client.address}:${client.session}`, this.options.perMinute ?? 8);
     this.limit(`a:${client.address}`, this.options.perAddress ?? 30);
     try {
@@ -98,7 +104,7 @@ export class AskDesk {
       return { ...answer, recorded: this.mode === "recorded" };
     } catch (error) {
       if (this.mode === "recorded" && /no recorded/.test((error as Error).message)) {
-        throw new AskError(
+        throw new AskUnavailableError(
           "This API replays the recorded answers to the suggested questions; with NEARAI_API_KEY in .env Kevin answers any question live.",
         );
       }
