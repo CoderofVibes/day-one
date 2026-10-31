@@ -505,25 +505,26 @@ export function chainSnapshot(layout: ChainLayout, at: number, sinceMs: number):
   return snap;
 }
 
+/** Where a node's label hangs (ChainLayer.tsx), and half its size with a refusal count. */
+export function nodeLabelPoint(n: ChainNode): V3 {
+  return [n.position[0], n.position[1] + 3.6, n.position[2]];
+}
+const NODE_LABEL_PX: [number, number] = [90, 18];
+
 /**
  * What the story camera keeps in frame at step `at` with the curtain on: the signers, nodes,
- * shields and pins of the step's transactions, with room for the refusal's callout. Nothing
- * for a step without one, so its shot stays the plant's.
+ * shields and pins of the step's transactions, with room for the refusal's callout and the
+ * node labels; every node for a step without a transaction, so the whole network shows.
  */
 export function chainSubjects(layout: ChainLayout, at: number): Subject[] {
   const out: Subject[] = [];
-  // A step without a transaction shows the whole network.
   if (!layout.events.some((e) => e.stepIndex === at))
-    return layout.nodes.map((n) => ({ point: n.position, padPx: [60, 30] as [number, number] }));
+    return layout.nodes.map((n) => ({ point: nodeLabelPoint(n), padPx: NODE_LABEL_PX }));
   for (const e of layout.events) {
     if (e.stepIndex !== at) continue;
     const node = layout.nodes.find((n) => n.role === e.role);
     for (const p of e.path) out.push({ point: p, padPx: [40, 16] });
-    if (node)
-      out.push({
-        point: [node.position[0], node.position[1] + 3.6, node.position[2]],
-        padPx: [60, 20],
-      });
+    if (node) out.push({ point: nodeLabelPoint(node), padPx: NODE_LABEL_PX });
     if (e.shield)
       out.push({ point: [e.shield[0], e.shield[1] - 2, e.shield[2]], padPx: [125, 130] });
     if (e.money) out.push({ point: e.money.to });

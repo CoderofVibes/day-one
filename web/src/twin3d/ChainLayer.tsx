@@ -21,6 +21,7 @@ import {
   GHOST_REDUCED_MS,
   GRID_Y,
   MAX_PULSES,
+  nodeLabelPoint,
   SHRINK_MS,
 } from "./chain.ts";
 import { applyGhost, CHAIN_ORDER, disposeGhost, stepGhost } from "./ghost.ts";
@@ -551,10 +552,7 @@ function ChainLayer({
         layout.nodes.map((node) => {
           const refused = shown.refusals[node.role] ?? 0;
           return (
-            <group
-              key={node.id}
-              position={[node.position[0], node.position[1] + 3.6, node.position[2]]}
-            >
+            <group key={node.id} position={nodeLabelPoint(node)}>
               <Label zIndexRange={[12, 0]} rank={RANK.node} className="t3-label chain node">
                 <strong>{node.label}</strong>
                 <span>

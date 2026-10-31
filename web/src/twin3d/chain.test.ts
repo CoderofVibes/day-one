@@ -8,6 +8,7 @@ import {
   attackSnapshot,
   chainLayout,
   chainSnapshot,
+  chainSubjects,
   eventTimes,
   inspectChain,
   MAX_PULSES,
@@ -99,6 +100,16 @@ describe("the chain layer's table", () => {
     const g = chainLayout(groupBuy as unknown as RunData);
     expect(g.accounts.some((a) => a.account === "kevin.plant-a.acme-holdings.testnet")).toBe(true);
     expect(g.events.filter((e) => e.refused).length).toBe(2);
+  });
+});
+
+describe("the chain layer in the story camera's shot", () => {
+  it("keeps PO-1042's signer, node and shield in frame, and the whole network on a quiet step", () => {
+    const refused = layout.events.find((e) => e.refused && e.stepIndex === BIG_PO);
+    const points = chainSubjects(layout, BIG_PO).map((s) => s.point);
+    expect(points).toContainEqual(refused?.path[0]);
+    expect(points.some((p) => p[0] === refused?.shield?.[0])).toBe(true);
+    expect(chainSubjects(layout, step("Forecast"))).toHaveLength(layout.nodes.length);
   });
 });
 
