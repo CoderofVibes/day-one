@@ -44,6 +44,8 @@ import {
   type Tint,
   topHeight,
 } from "./buildings.ts";
+import { ChainCurtain } from "./ChainLayer.tsx";
+import { chainLayout, chainSubjects } from "./chain.ts";
 import {
   anchor3,
   arc3,
@@ -77,6 +79,7 @@ import {
   RECORD_FRAME_MS,
   road3,
   STEP_MS,
+  type Subject,
   targetBounds,
   type V3,
   viewFraming,
@@ -119,7 +122,7 @@ export interface AreaPick {
 // ------------------------------------------------------------------ theme
 
 /** The flat map's palette, read from the page's CSS variables so light and dark match. */
-interface Theme {
+export interface Theme {
   bg: string;
   panel: string;
   ink: string;
@@ -217,6 +220,8 @@ interface Frame {
   parts: SitePart[];
   /** How far the camera is from what it looks at; department labels hide when far. */
   cameraDistance: number;
+  /** Milliseconds of the demo clock since the step shown began: the chain layer's pulses. */
+  since: number;
 }
 
 const FrameContext = createContext<React.RefObject<Frame> | null>(null);
@@ -231,10 +236,10 @@ interface CameraCommand {
 const CommandContext = createContext<React.RefObject<CameraCommand> | null>(null);
 
 /** Selecting an object by its id (src/twin/objects.ts); null when the stage has no inspector. */
-const SelectContext = createContext<((id: string) => void) | null>(null);
+export const SelectContext = createContext<((id: string) => void) | null>(null);
 
 /** Pointer props that make a mesh select an object: a click selects it, hover shows the hand. */
-function useSelectable(id: string | undefined) {
+export function useSelectable(id: string | undefined) {
   const select = useContext(SelectContext);
   if (!select || !id) return {};
   return {
@@ -279,9 +284,20 @@ interface LabelSlot {
 
 const SlotsContext = createContext<React.RefObject<Map<string, LabelSlot>> | null>(null);
 
-const RANK = { flow: 9, lot: 8, plant: 7, pad: 6, depot: 5, dept: 1 } as const;
+export const RANK = {
+  callout: 10,
+  flow: 9,
+  lot: 8,
+  plant: 7,
+  node: 6.5,
+  pad: 6,
+  depot: 5,
+  orb: 4,
+  method: 3,
+  dept: 1,
+} as const;
 
-function useFrameRef(): React.RefObject<Frame> {
+export function useFrameRef(): React.RefObject<Frame> {
   const ref = useContext(FrameContext);
   if (!ref) throw new Error("Twin3D parts must be inside the scene");
   return ref;
@@ -343,6 +359,7 @@ function Driver({
       escrowCents: blendEscrowCents(prev, next, u),
       parts: siteParts(departments),
       cameraDistance: frame.current.cameraDistance,
+      since: t - start.current,
     };
   }, -1);
   return null;
@@ -387,9 +404,12 @@ function StoryCamera({
   record,
   reduced,
   request,
+  chain,
 }: {
   title: string;
   at: number;
+  /** The chain layer's subjects for the step, with the curtain on (chain.ts chainSubjects). */
+  chain: Subject[];
   /** The run holds a pooled PO: the money steps frame both plants' purchasing and the vault. */
   pooled: boolean;
   record: boolean;
@@ -402,11 +422,12 @@ function StoryCamera({
   const controls = useRef<CameraControlsImpl>(null);
   /** story: the step's shot; fly: a preset or object, then free; free: the user's. */
   const mode = useRef<"story" | "fly" | "free">("story");
-  const from = useRef<Framing>(framingFor(title, size, pooled));
-  const to = useRef<Framing>(framingFor(title, size, pooled));
+  const from = useRef<Framing>(framingFor(title, size, pooled, chain));
+  const to = useRef<Framing>(framingFor(title, size, pooled, chain));
   const since = useRef(0);
   const length = useRef(CAMERA_MS);
   const seen = useRef(-1);
+  const seenChain = useRef(chain.length);
   const seenRequest = useRef(0);
   const sized = useRef(`${size.width}x${size.height}`);
   const command = useContext(CommandContext);
@@ -434,7 +455,7 @@ function StoryCamera({
     if (cmd?.fit) {
       // "Fit": the story takes the camera back, easing from where the user left it.
       cmd.fit = false;
-      move(framingFor(title, size, pooled), CAMERA_MS, "story");
+      move(framingFor(title, size, pooled, chain), CAMERA_MS, "story");
     }
     if (cmd && cmd.zoom !== 1 && !record) {
       // A zoom button: the camera dollies along its line to the target and stays where it lands.
@@ -449,15 +470,18 @@ function StoryCamera({
       mode.current = "free";
     }
     const sizeNow = `${size.width}x${size.height}`;
-    if (seen.current !== at) {
-      // A new step: the story takes the camera back from wherever the user left it.
+    const chainKey = chain.length;
+    if (seen.current !== at || seenChain.current !== chainKey) {
+      // A new step, or the curtain turned: the story takes the camera back from wherever the
+      // user left it.
       seen.current = at;
+      seenChain.current = chainKey;
       sized.current = sizeNow;
-      move(framingFor(title, size, pooled), CAMERA_MS, "story");
+      move(framingFor(title, size, pooled, chain), CAMERA_MS, "story");
     } else if (sized.current !== sizeNow && mode.current === "story") {
       // The stage changed size (a rotated phone, a resized window, full screen): refit the shot.
       sized.current = sizeNow;
-      move(framingFor(title, size, pooled), CAMERA_MS, "story");
+      move(framingFor(title, size, pooled, chain), CAMERA_MS, "story");
     }
     if (request && request.seq !== seenRequest.current && !record) {
       seenRequest.current = request.seq;
@@ -511,7 +535,7 @@ const SCREEN = new THREE.Vector3();
  * labels on coins stacked in the vault stay apart at every camera distance. Each label also
  * reports its box to the overprint pass and hides when a higher-ranked or nearer label covers it.
  */
-function Label({
+export function Label({
   className,
   zIndexRange,
   rank,
@@ -822,6 +846,7 @@ function Buildings({
     <>
       <instancedMesh
         ref={ref("box")}
+        userData={{ edges: true }}
         args={[undefined, undefined, GROUP_CAPACITY.box]}
         castShadow
         receiveShadow
@@ -851,6 +876,7 @@ function Buildings({
       </instancedMesh>
       <instancedMesh
         ref={ref("gable")}
+        userData={{ edges: true }}
         args={[gable, undefined, GROUP_CAPACITY.gable]}
         castShadow
         frustumCulled={false}
@@ -860,6 +886,7 @@ function Buildings({
       {/* The hall's sawtooth glass: smoother, so the status colour reads as lit panes. */}
       <instancedMesh
         ref={ref("saw")}
+        userData={{ edges: true }}
         args={[saw, undefined, GROUP_CAPACITY.saw]}
         castShadow
         frustumCulled={false}
@@ -1581,6 +1608,7 @@ function Pallets({ pallets, theme }: { pallets: Pallet[]; theme: Theme }) {
 // ------------------------------------------------------------------ the scene
 
 function Scene({
+  run,
   theme,
   prev,
   next,
@@ -1598,6 +1626,7 @@ function Scene({
   camera,
   pallets,
 }: {
+  run: RunData;
   onPick?: ((pick: AreaPick) => void) | undefined;
   picked?: AreaPick | null | undefined;
   layers: Layers;
@@ -1624,8 +1653,11 @@ function Scene({
     escrowCents: next.escrowHeldCents,
     parts: siteParts(blendDepartments(prev, next, 1)),
     cameraDistance: framingFor(title, undefined, isPooled(next)).distance,
+    since: 0,
   });
   const pooled = isPooled(next);
+  const chain = useMemo(() => chainLayout(run), [run]);
+  const chainFrame = useMemo(() => (curtain ? chainSubjects(chain, at) : []), [chain, curtain, at]);
   // Flows in either state are drawn; a flow that left fades out and unmounts itself.
   const flows = useMemo(() => {
     const ids = new Set(next.flows.map((f) => f.id));
@@ -1639,6 +1671,7 @@ function Scene({
     .map((f) => f.id);
   const stackIndex = (id: string) => Math.max(held.indexOf(id), refused.indexOf(id));
   const slots = useRef(new Map<string, LabelSlot>());
+  const ghost = useRef<THREE.Group>(null);
 
   return (
     <FrameContext.Provider value={frame}>
@@ -1672,12 +1705,23 @@ function Scene({
           <planeGeometry args={[900, 900]} />
           <meshStandardMaterial color={theme.bg} roughness={1} />
         </mesh>
-        <Floors theme={theme} state={next} />
-        <Buildings theme={theme} onPick={onPick} equipment={layers.equipment} />
+        <group ref={ghost}>
+          <Floors theme={theme} state={next} />
+          <Buildings theme={theme} onPick={onPick} equipment={layers.equipment} />
+          <Pads theme={theme} state={next} curtain={curtain} narrow={hideLabels} />
+          {layers.stock && <Pallets pallets={pallets} theme={theme} />}
+        </group>
+        <ChainCurtain
+          ghost={ghost}
+          layout={chain}
+          at={at}
+          curtain={curtain}
+          reduced={reduced}
+          labels={!hideLabels && layers.labels}
+        />
         <Pings prev={prev} next={next} theme={theme} />
         {picked && <PickedOutline picked={picked} theme={theme} />}
         <DepartmentExtras theme={theme} hideLabels={hideLabels || !layers.labels} />
-        <Pads theme={theme} state={next} curtain={curtain} narrow={hideLabels} />
         <Road theme={theme} state={next} />
         {layers.money &&
           flows.map((flow) => (
@@ -1692,11 +1736,11 @@ function Scene({
             />
           ))}
         {layers.money && lots.map((l) => <LotView key={l.lot.code} frameLot={l} theme={theme} />)}
-        {layers.stock && <Pallets pallets={pallets} theme={theme} />}
         <StoryCamera
           title={title}
           at={at}
           pooled={pooled}
+          chain={chainFrame}
           record={record}
           reduced={reduced}
           request={camera}
@@ -1777,6 +1821,7 @@ export default function Twin3D({
             }}
           >
             <Scene
+              run={run}
               theme={theme}
               prev={prev}
               next={next}

@@ -669,8 +669,14 @@ export function framingFor(
   title: string,
   viewport: Viewport = DEFAULT_VIEWPORT,
   pooled = false,
+  /** More to keep in frame: the chain layer's part in the step when the curtain is on. */
+  extra: Subject[] = [],
 ): Framing {
-  return frameShot(shotFor(title, pooled), viewport);
+  const shot = shotFor(title, pooled);
+  return frameShot(
+    extra.length ? { ...shot, subjects: [...shot.subjects, ...extra] } : shot,
+    viewport,
+  );
 }
 
 /** True once the run has a pooled PO: its money moves as plant shares and the shots widen. */

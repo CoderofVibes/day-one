@@ -9,6 +9,7 @@ import {
   type Arena,
   type ArenaCase,
   type ArenaTx,
+  announceFired,
   CASE_MS,
   chipLabel,
   PHASES,
@@ -21,8 +22,9 @@ import {
   tallyLine,
   timeline,
 } from "../arena.ts";
-import { shortAccount } from "../run.ts";
+import { run, shortAccount } from "../run.ts";
 import { useRead } from "../series.ts";
+import { PlantView } from "../twin3d/PlantView.tsx";
 import { Loading } from "./common.tsx";
 
 export function ArenaPage() {
@@ -70,6 +72,7 @@ export function ArenaConsole({ arena }: { arena: Arena }) {
         setShown((s) => ({ ...s, [c.n]: i }));
         if (i !== RESULT_PHASE + 1) return;
         setTried((t) => new Set(t).add(c.n));
+        announceFired(c);
         const at = clock();
         const run = ++fired.current;
         const entries: LogEntry[] = c.txs.length
@@ -192,6 +195,15 @@ export function ArenaConsole({ arena }: { arena: Arena }) {
         </section>
         <ArenaLog entries={log} network={arena.network} day={day} />
       </div>
+      <section className="card-v2 arena-twin" aria-label="The attacks in 3D">
+        <h3>In 3D, behind the curtain</h3>
+        <p className="small muted">
+          The recorded run's end, with the chain layer up. An attack the contract refused flies into
+          a red shield in front of the part of spend-policy it called, with the contract's own
+          words; one Kevin or the ERP stopped never reaches the chain.
+        </p>
+        <PlantView run={run} at={run.steps.length - 1} curtain />
+      </section>
     </div>
   );
 }
