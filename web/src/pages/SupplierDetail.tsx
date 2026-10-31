@@ -16,8 +16,10 @@ import {
   pct,
   priceIndex,
   recordsAt,
+  rfqsFor,
   type SuppliersData,
   scoreTone,
+  whyLines,
 } from "../suppliers.ts";
 import type { InspectorData } from "../twin/objects.ts";
 import { CATEGORY_NAMES, day, plantName } from "./common.tsx";
@@ -112,6 +114,15 @@ export function SupplierDetail({
   const at = card ? cardAt(card, dates, i) : null;
   const credential = credentialOf(at?.status ?? names[vendor]?.qualification ?? "", standing);
   const rec = recordsAt(data, vendor, date);
+  const nameOf = (v: string) => names[v]?.name ?? v;
+  const scoreOf = (material: string) => (v: string) => {
+    const c =
+      cards.find((x) => x.vendor === v && x.material === material) ??
+      cards.find((x) => x.vendor === v && x.material === null);
+    return c ? (cardAt(c, dates, i)?.score ?? null) : null;
+  };
+  const recordedRfqs = new Set(data.recorded.rfqs.map((r) => r.rfqNo));
+  const rfqs = rfqsFor(data, vendor, date);
   const yearAgo = new Date(Date.parse(`${date}T00:00:00Z`) - 364 * DAY_MS)
     .toISOString()
     .slice(0, 10);
@@ -335,6 +346,35 @@ export function SupplierDetail({
           )}
         </section>
       </div>
+      <section className="why-picks" aria-label="Why Kevin picks them">
+        <h4>Why Kevin picks them</h4>
+        {rfqs.length === 0 ? (
+          <EmptyState title={`No requests for quotes to ${name} by this date.`} />
+        ) : (
+          <ul className="why-list">
+            {rfqs.map((r) => {
+              const [first, second] = whyLines(r, nameOf, scoreOf(r.material));
+              return (
+                <li key={r.rfqNo}>
+                  <span className="why-head">
+                    {recordedRfqs.has(r.rfqNo) ? (
+                      <RecordLink id={r.rfqNo} page="purchasing" />
+                    ) : (
+                      <span className="mono">{r.rfqNo}</span>
+                    )}
+                    <span className="small muted">
+                      {materialName(r.material)} · {shortDay(r.day)}
+                    </span>
+                    {recordedRfqs.has(r.rfqNo) && <StatusChip status="recorded" />}
+                  </span>
+                  <span>{first}</span>
+                  <span className="small muted">{second}</span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
       <section className="credential-card" aria-label="Supplier credential">
         <h4>
           Supplier credential <StatusChip status={credential} tone={CREDENTIAL_TONE[credential]} />

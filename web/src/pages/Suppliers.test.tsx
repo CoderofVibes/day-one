@@ -6,7 +6,8 @@ import { describe, expect, it } from "vitest";
 import pages from "../data/pages.json";
 import raw from "../data/suppliers.json";
 import type { SupplierStanding } from "../reads.ts";
-import { COMPONENTS, leaderboard, type SuppliersData } from "../suppliers.ts";
+import { COMPONENTS, leaderboard, type SuppliersData, standingOf } from "../suppliers.ts";
+import { SupplierDetail } from "./SupplierDetail.tsx";
 import { FormulaBody, Leaderboard } from "./Suppliers.tsx";
 
 const data = raw as unknown as SuppliersData;
@@ -40,6 +41,40 @@ describe("the leaderboard", () => {
     expect(html).toContain("2 QC rejects in a row");
     // Accounts stay behind the curtain.
     expect(html).not.toContain(".testnet");
+  });
+});
+
+describe("the detail view", () => {
+  const detail = (vendor: string, date: string, curtain = false) =>
+    renderToStaticMarkup(
+      <SupplierDetail
+        data={data}
+        vendor={vendor}
+        date={date}
+        standing={standingOf(vendor, data.view.names, standings)}
+        curtain={curtain}
+        onClose={() => {}}
+      />,
+    );
+
+  it("explains RFQ-2611-01 under Why Kevin picks them, naming the recorded winner", () => {
+    for (const vendor of ["NGI", "RWA", "QCD"]) {
+      const html = text(detail(vendor, data.asOf));
+      expect(html).toContain("Why Kevin picks them");
+      expect(html).toContain("RFQ-2611-01");
+      expect(html).toContain("Northgate Ingredients selected: lowest landed cost");
+      expect(html).toContain("Ridgeway Ascorbics runner-up");
+      expect(html).toContain("QuickChem Direct excluded at $5.90/kg: not qualified");
+    }
+    // Before the recorded run, the RFQ is not there yet.
+    expect(text(detail("NGI", "2026-11-01"))).not.toContain("RFQ-2611-01");
+  });
+
+  it("shows the price hike in Northgate's ascorbic acid", () => {
+    const html = text(detail("NGI", data.asOf));
+    expect(html).toContain("Ascorbic acid price hike");
+    expect(html).toContain("$6.40");
+    expect(html).toContain("$7.10");
   });
 });
 
