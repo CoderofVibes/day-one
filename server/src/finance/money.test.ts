@@ -16,6 +16,7 @@ import {
   inventoryValue,
   kevinCostAt,
   kevinHeadroom,
+  kevinTally,
   landedCosts,
   type MoneyBook,
   overheadFor,
@@ -457,5 +458,36 @@ describe("savings and Kevin's cost", () => {
       from: "2026-01-01",
       to: "2026-03-31T23:59:59.999Z",
     });
+  });
+});
+
+describe("the counter", () => {
+  const c = { feeUsdPerMonth: 365 / 12, inputUsdPerMTok: 1, outputUsdPerMTok: 0, usdPerAnswer: 0 };
+  const entries = [
+    entry({ id: "b1", plant: "B", evidence: ["x"], amountUsdc: $(40), realizedAt: "2026-04-03" }),
+    entry({ id: "a1", plant: "A", evidence: ["y"], amountUsdc: $(10), realizedAt: "2026-04-05" }),
+  ];
+  const t = {
+    t0: "2026-04-01",
+    entries,
+    answers: [{ file: "f", inputTokens: 1_000_000, outputTokens: 0 }],
+    kevinCost: c,
+    kevinPlants: ["A", "B"],
+    answersPlant: "B",
+  };
+
+  it("charges one plant's fee and its own answers", () => {
+    // Apr 1–10: $10 of fee + $1 of inference against $40 realized.
+    const b = kevinTally(t, "2026-04-10", "B");
+    expect(b.cost.totalUsdc).toBe($(11));
+    expect(b.paid).toMatchObject({ valueUsdc: $(40), ratio: 3.6 });
+    // Riverside: $10 of fee, no answers, $10 realized.
+    expect(kevinTally(t, "2026-04-10", "A").paid).toMatchObject({ costUsdc: $(10), ratio: 1 });
+  });
+
+  it("adds every plant up for all", () => {
+    const all = kevinTally(t, "2026-04-10", "all");
+    expect(all.cost.totalUsdc).toBe($(21));
+    expect(all.paid.valueUsdc).toBe($(50));
   });
 });

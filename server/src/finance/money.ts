@@ -874,3 +874,28 @@ export function paidForHimself(
     timeline,
   };
 }
+
+export interface TallyInputs {
+  t0: string;
+  entries: SavingEntry[];
+  answers: RecordedAnswer[];
+  kevinCost: KevinCostConfig;
+  /** The plants Kevin runs at: his fee is charged per plant. */
+  kevinPlants: string[];
+  /** The plant whose run the recorded answers belong to. */
+  answersPlant: string;
+}
+
+/**
+ * The counter for one plant, or "all": the ledger at `at`, Kevin's cost at the plants it covers
+ * and the ratio, realized only unless `includeIdentified`.
+ */
+export function kevinTally(t: TallyInputs, at: string, plant: string, includeIdentified = false) {
+  const plants =
+    plant === "all" ? [...new Set([...t.kevinPlants, ...t.entries.map((e) => e.plant)])] : [plant];
+  const savings = savingsAt(t.entries, at, plants, t.t0);
+  const charged = plants.filter((p) => t.kevinPlants.includes(p)).length;
+  const answers = plants.includes(t.answersPlant) ? t.answers : [];
+  const cost = kevinCostAt(at, t.t0, charged, answers, t.kevinCost);
+  return { savings, cost, paid: paidForHimself(savings, cost, t.t0, includeIdentified) };
+}
