@@ -617,3 +617,14 @@ body .panel.map-frame.twin-full {
   border-radius: 999px;
   font-family: var(--mono);
 }
+
+@media (max-width: 560px) {
+  .t3-label.chain.callout {
+    width: 160px;
+    padding: 2px 6px;
+  }
+
+  .t3-label.chain.callout span {
+    font-size: 10px;
+  }
+}
