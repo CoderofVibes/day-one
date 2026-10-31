@@ -93,6 +93,14 @@ export function useSimDate(): string | null {
   );
 }
 
+/** The clock's time to the minute; null without a clock. */
+export function useSimMinute(): number | null {
+  const clock = sharedClock();
+  return useSyncExternalStore(clock ? clock.subscribeThrottled : noClock, () =>
+    clock ? Math.floor(clock.get().simNow / 60_000) * 60_000 : null,
+  );
+}
+
 /** The plant-time calendar date of an instant. */
 export function isoDay(t: number): string {
   return new Date(simDay(t) * DAY_MS).toISOString().slice(0, 10);

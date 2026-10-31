@@ -273,3 +273,147 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ---------- ERP connection ---------- */
+.two-systems {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: var(--s-4);
+  align-items: center;
+}
+.two-systems .sys {
+  padding: var(--s-3);
+  border-radius: var(--r-sm);
+  background: var(--glass-strong);
+  border: 1px solid var(--glass-line);
+}
+.two-systems h3 {
+  margin: 0 0 6px;
+  font-size: var(--t-md);
+}
+.two-systems ul {
+  margin: 0;
+}
+.sys-link {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.sys-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--ok);
+}
+.sys-status i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ok);
+}
+.sys-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 0;
+  border-top: 2px dashed var(--line-2);
+  border-bottom: 2px dashed var(--line-2);
+}
+.sys-chip {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 11px;
+}
+.swimlanes {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.swimlanes .lane-heads,
+.swim {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+  gap: var(--s-4);
+}
+.lane-heads span {
+  font-size: var(--t-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.swim {
+  position: relative;
+}
+.swim.later {
+  opacity: 0.7;
+}
+.swim-left {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--brand);
+  border-radius: var(--r-sm);
+  background: var(--glass-strong);
+}
+.swim-right {
+  display: grid;
+  gap: 6px;
+}
+.swim-card {
+  display: grid;
+  gap: 3px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+.swim-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.swim-icon {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  font-size: 12px;
+}
+.lane-tag {
+  display: none;
+  justify-self: start;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+@media (max-width: 700px) {
+  .two-systems {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .swimlanes .lane-heads {
+    display: none;
+  }
+  .swim {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .lane-tag {
+    display: inline-block;
+  }
+}
