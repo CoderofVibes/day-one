@@ -34,7 +34,7 @@ export function NumberCard({
   children?: React.ReactNode;
 }) {
   return (
-    <section className="stat" aria-label={label}>
+    <section className="stat tile" aria-label={label}>
       <div className="stat-label">{label}</div>
       <div className="stat-value num">
         {value}

@@ -2,7 +2,7 @@
 // words, and the line a page shows for a plant that is already on Acme's systems.
 
 import { useState } from "react";
-import { lotStyle } from "../lotStates.ts";
+import { ErrorCard, Skeleton } from "../kit.tsx";
 import { readPlant } from "../reads.ts";
 import type { Tone } from "../run.ts";
 import { type Source, useRead } from "../series.ts";
@@ -120,14 +120,25 @@ export function staffErpLine(line: string, curtain: boolean) {
     .replace(/[a-z0-9.-]+\.testnet/g, "the supplier");
 }
 
-export function Loading({ error, what }: { error: string | null; what: string }) {
+/** A data view still loading (a skeleton shaped like it) or failed (§5.11). */
+export function Loading({
+  error,
+  what,
+  shape = "table",
+}: {
+  error: string | null;
+  what: string;
+  shape?: "tiles" | "table" | "chart";
+}) {
   return error ? (
-    <p className="error">
-      {what} could not be read: {error}
-    </p>
+    <ErrorCard
+      what={what.charAt(0).toUpperCase() + what.slice(1)}
+      error={error}
+      retry={() => location.reload()}
+    />
   ) : (
-    <p className="small muted" aria-busy="true">
-      Reading {what}…
-    </p>
+    <div role="status" aria-label={`Reading ${what}`}>
+      <Skeleton shape={shape} count={shape === "tiles" ? 4 : 3} />
+    </div>
   );
 }

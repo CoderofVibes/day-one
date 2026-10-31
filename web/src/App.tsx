@@ -75,6 +75,7 @@ import { Overview } from "./pages/Overview.tsx";
 import { BatchRecordsPage, BriefPage, InventoryPage, SchedulePage } from "./pages/Plant.tsx";
 import { BooksPane, HqPane, PlantsPane } from "./panes.tsx";
 import { plantsSnapshot, STATIC_BOOKS_URL, STATIC_BRIEF_URL } from "./plants.ts";
+import { RecordNav } from "./RecordNav.tsx";
 import { ReviewPane } from "./ReviewPane.tsx";
 import {
   audienceOf,
@@ -636,81 +637,83 @@ function ReplayApp() {
             : null
         }
       >
-        <Pages
-          page={route.page}
-          plant={route.plant}
-          source={{ live: false, version: 0 }}
-          curtain={curtain}
-          inventory={plantsSnapshot.inventory}
-          books={plantsSnapshot.books}
-          policy={null}
-          inbox={null}
-          links={links}
-          queue={null}
-          wizard={null}
-          goMap={() => openGroupOnMap(route.go)}
-          map={(pick) => (
-            <PlantView
-              run={data}
-              at={at}
-              curtain={curtain}
-              onStep={go}
-              onCurtain={setCurtain}
-              onOpen={(page) => route.go({ page })}
-              {...pick}
-            />
-          )}
-          kevin={
-            <>
-              <Guide data={data} />
-              {kevin}
-              <ReviewPane
-                review={reviewSnapshot}
-                busy={false}
+        <RecordNav run={data} at={at} page={route.page} curtain={curtain} go={route.go}>
+          <Pages
+            page={route.page}
+            plant={route.plant}
+            source={{ live: false, version: 0 }}
+            curtain={curtain}
+            inventory={plantsSnapshot.inventory}
+            books={plantsSnapshot.books}
+            policy={null}
+            inbox={null}
+            links={links}
+            queue={null}
+            wizard={null}
+            goMap={() => openGroupOnMap(route.go)}
+            map={(pick) => (
+              <PlantView
+                run={data}
+                at={at}
                 curtain={curtain}
-                viewer="Ray Delgado"
-                open={at < last && audienceOf(current).name === "Ray Delgado"}
-                onSign={null}
-                readOnly={REVIEW_READ_ONLY}
+                onStep={go}
+                onCurtain={setCurtain}
+                onOpen={(page) => route.go({ page })}
+                {...pick}
               />
-            </>
-          }
-          activity={<StaffFeed data={data} upTo={at} onPick={go} curtain={curtain} />}
-          integration={
-            <Integration
-              source={{ live: false, version: 0 }}
-              books={plantsSnapshot.books}
-              policy={null}
-              inbox={null}
-              busy={false}
-              go={(page) => route.go({ page })}
-              curtain={curtain}
-            />
-          }
-          plants={
-            <PlantsPane
-              error={null}
-              inventory={plantsSnapshot.inventory}
-              mass={plantsSnapshot.massBalance}
-              policy={null}
-              moves={plantsSnapshot.transfers}
-              moveNote={[]}
-              busy={false}
-              snapshotAt={plantsSnapshot.at}
-            />
-          }
-          exportPane={
-            <BooksPane
-              books={plantsSnapshot.books}
-              error={null}
-              links={links}
-              run={data}
-              curtain={curtain}
-            />
-          }
-          hq={<HqPane policy={null} live={false} />}
-          foot={foot}
-        />
+            )}
+            kevin={
+              <>
+                <Guide data={data} />
+                {kevin}
+                <ReviewPane
+                  review={reviewSnapshot}
+                  busy={false}
+                  curtain={curtain}
+                  viewer="Ray Delgado"
+                  open={at < last && audienceOf(current).name === "Ray Delgado"}
+                  onSign={null}
+                  readOnly={REVIEW_READ_ONLY}
+                />
+              </>
+            }
+            activity={<StaffFeed data={data} upTo={at} onPick={go} curtain={curtain} />}
+            integration={
+              <Integration
+                source={{ live: false, version: 0 }}
+                books={plantsSnapshot.books}
+                policy={null}
+                inbox={null}
+                busy={false}
+                go={(page) => route.go({ page })}
+                curtain={curtain}
+              />
+            }
+            plants={
+              <PlantsPane
+                error={null}
+                inventory={plantsSnapshot.inventory}
+                mass={plantsSnapshot.massBalance}
+                policy={null}
+                moves={plantsSnapshot.transfers}
+                moveNote={[]}
+                busy={false}
+                snapshotAt={plantsSnapshot.at}
+              />
+            }
+            exportPane={
+              <BooksPane
+                books={plantsSnapshot.books}
+                error={null}
+                links={links}
+                run={data}
+                curtain={curtain}
+              />
+            }
+            hq={<HqPane policy={null} live={false} />}
+            foot={foot}
+          />
+        </RecordNav>
       </WithRail>
     </Shell>
   );
@@ -1078,134 +1081,136 @@ function LiveApp({ initial }: { initial: LiveState }) {
             : null
         }
       >
-        <Pages
-          page={route.page}
-          plant={route.plant}
-          source={{ live: true, version: `${state.steps.length}-${acted}` }}
-          curtain={curtain}
-          inventory={inventory}
-          books={books}
-          policy={policy}
-          inbox={inbox}
-          links={{ brief: BRIEF_URL, books: BOOKS_EXPORT_URL }}
-          queue={
-            queue ? (
-              <InboxPane
-                inbox={queue}
-                busy={busy !== null}
-                viewer="Ray Delgado"
-                onConfirm={confirmScan}
-              />
-            ) : null
-          }
-          wizard={
-            <section className="card-v2">
-              <ImportPane key={runs} onPosted={() => setActed((n) => n + 1)} />
-            </section>
-          }
-          goMap={() => openGroupOnMap(route.go)}
-          map={(pick) => (
-            <PlantView
-              run={state}
-              at={last}
-              curtain={curtain}
-              onCurtain={setCurtain}
-              onOpen={(page) => route.go({ page })}
-              {...pick}
-            />
-          )}
-          kevin={
-            <>
-              <UpNext
-                state={state}
-                busy={busy}
-                error={error}
-                onAct={act}
-                onUpload={uploadFile}
-                onReset={reset}
-                queue={
-                  atUpload && queue ? (
-                    <InboxPane
-                      inbox={queue}
-                      busy={busy !== null}
-                      viewer="Ray Delgado"
-                      onConfirm={confirmScan}
-                      embedded
-                    />
-                  ) : null
-                }
-              />
-              {!atUpload && queue && (
+        <RecordNav run={state} at={last} page={route.page} curtain={curtain} go={route.go}>
+          <Pages
+            page={route.page}
+            plant={route.plant}
+            source={{ live: true, version: `${state.steps.length}-${acted}` }}
+            curtain={curtain}
+            inventory={inventory}
+            books={books}
+            policy={policy}
+            inbox={inbox}
+            links={{ brief: BRIEF_URL, books: BOOKS_EXPORT_URL }}
+            queue={
+              queue ? (
                 <InboxPane
                   inbox={queue}
                   busy={busy !== null}
                   viewer="Ray Delgado"
                   onConfirm={confirmScan}
                 />
-              )}
-              {mail && (
-                <ReviewPane
-                  review={mail}
-                  busy={busy !== null}
-                  curtain={curtain}
-                  viewer="Ray Delgado"
-                  open={state.next.who === "Ray Delgado"}
-                  onSign={signDraft}
+              ) : null
+            }
+            wizard={
+              <section className="card-v2">
+                <ImportPane key={runs} onPosted={() => setActed((n) => n + 1)} />
+              </section>
+            }
+            goMap={() => openGroupOnMap(route.go)}
+            map={(pick) => (
+              <PlantView
+                run={state}
+                at={last}
+                curtain={curtain}
+                onCurtain={setCurtain}
+                onOpen={(page) => route.go({ page })}
+                {...pick}
+              />
+            )}
+            kevin={
+              <>
+                <UpNext
+                  state={state}
+                  busy={busy}
+                  error={error}
+                  onAct={act}
+                  onUpload={uploadFile}
+                  onReset={reset}
+                  queue={
+                    atUpload && queue ? (
+                      <InboxPane
+                        inbox={queue}
+                        busy={busy !== null}
+                        viewer="Ray Delgado"
+                        onConfirm={confirmScan}
+                        embedded
+                      />
+                    ) : null
+                  }
                 />
-              )}
-            </>
-          }
-          activity={<StaffFeed data={state} upTo={last} curtain={curtain} />}
-          integration={
-            <Integration
-              source={{
-                live: true,
-                version: `${state.steps.length}-${acted}-${inbox?.items.map((i) => i.status).join("") ?? ""}`,
-              }}
-              books={books}
-              policy={policy}
-              inbox={inbox}
-              busy={busy !== null}
-              act={{
-                decide: (input) => send("Record the decision", () => postDecision(input)),
-                dropScans: (all) => send("Drop the scans", () => postDropScans(all)),
-                posted: () => setActed((n) => n + 1),
-                confirmScan,
-              }}
-              go={(page) => route.go({ page })}
-              curtain={curtain}
-              wizardKey={runs}
-            />
-          }
-          plants={
-            <PlantsPane
-              error={plantsError}
-              inventory={inventory}
-              mass={mass}
-              policy={policy}
-              moves={moves}
-              moveNote={moveNote}
-              busy={busy !== null}
-              act={{
-                onReview: review,
-                onProposeWaste: proposeWaste,
-                onDecideMove: decideMove,
-                onReceiveMove: receiveMove,
-              }}
-            />
-          }
-          exportPane={
-            <BooksPane
-              books={books}
-              error={plantsError}
-              links={{ brief: BRIEF_URL, books: BOOKS_EXPORT_URL }}
-              run={state}
-              curtain={curtain}
-            />
-          }
-          hq={<HqPane policy={policy} live />}
-          foot={foot}
-        />
+                {!atUpload && queue && (
+                  <InboxPane
+                    inbox={queue}
+                    busy={busy !== null}
+                    viewer="Ray Delgado"
+                    onConfirm={confirmScan}
+                  />
+                )}
+                {mail && (
+                  <ReviewPane
+                    review={mail}
+                    busy={busy !== null}
+                    curtain={curtain}
+                    viewer="Ray Delgado"
+                    open={state.next.who === "Ray Delgado"}
+                    onSign={signDraft}
+                  />
+                )}
+              </>
+            }
+            activity={<StaffFeed data={state} upTo={last} curtain={curtain} />}
+            integration={
+              <Integration
+                source={{
+                  live: true,
+                  version: `${state.steps.length}-${acted}-${inbox?.items.map((i) => i.status).join("") ?? ""}`,
+                }}
+                books={books}
+                policy={policy}
+                inbox={inbox}
+                busy={busy !== null}
+                act={{
+                  decide: (input) => send("Record the decision", () => postDecision(input)),
+                  dropScans: (all) => send("Drop the scans", () => postDropScans(all)),
+                  posted: () => setActed((n) => n + 1),
+                  confirmScan,
+                }}
+                go={(page) => route.go({ page })}
+                curtain={curtain}
+                wizardKey={runs}
+              />
+            }
+            plants={
+              <PlantsPane
+                error={plantsError}
+                inventory={inventory}
+                mass={mass}
+                policy={policy}
+                moves={moves}
+                moveNote={moveNote}
+                busy={busy !== null}
+                act={{
+                  onReview: review,
+                  onProposeWaste: proposeWaste,
+                  onDecideMove: decideMove,
+                  onReceiveMove: receiveMove,
+                }}
+              />
+            }
+            exportPane={
+              <BooksPane
+                books={books}
+                error={plantsError}
+                links={{ brief: BRIEF_URL, books: BOOKS_EXPORT_URL }}
+                run={state}
+                curtain={curtain}
+              />
+            }
+            hq={<HqPane policy={policy} live />}
+            foot={foot}
+          />
+        </RecordNav>
       </WithRail>
     </Shell>
   );

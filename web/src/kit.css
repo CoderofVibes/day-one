@@ -1,0 +1,745 @@
+/* The component kit (src/kit.tsx). Semantic tokens only (src/tokens.css); motion per §5.10. */
+
+/* ---------- StatTile ---------- */
+.stat.tile {
+  position: relative;
+  gap: 2px;
+  transition:
+    transform var(--dur-micro, 140ms) var(--ease-enter),
+    box-shadow var(--dur-micro, 140ms) var(--ease-enter);
+}
+.stat.tile.clickable:hover,
+.stat.tile.clickable:focus-within {
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 var(--glass-edge), var(--e2);
+}
+.stat.tile .stat-label {
+  font-size: var(--fs-label, 12px);
+  color: var(--text-muted);
+}
+.stat.tile .stat-value {
+  margin: 2px 0;
+  font-size: clamp(28px, 3.2vw, 40px);
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.stat.tile.edge-waiting {
+  border-left: 3px solid var(--wait);
+}
+.stat.tile.edge-refused {
+  border-left: 3px solid var(--bad);
+}
+.tile-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 0;
+  background: none;
+  border-radius: inherit;
+  cursor: pointer;
+}
+.tile-hit:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+.tile-body {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-width: 0;
+}
+.tile-body.with-visual .stat-value {
+  flex: 1 1 auto;
+}
+.tile-visual {
+  flex: 0 0 auto;
+  width: 84px;
+}
+.tile-visual .bullet,
+.tile-visual .histo {
+  width: 100%;
+}
+.stat.tile > .bullet,
+.stat.tile > .spark-wrap {
+  margin-top: 6px;
+}
+.tile-context {
+  margin-top: 4px;
+  font-size: var(--t-xs);
+  color: var(--text-muted);
+}
+.tile-foot {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  margin-top: 6px;
+  min-height: 18px;
+}
+.tile-view {
+  margin-left: auto;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  color: var(--brand);
+  opacity: 0;
+  transition: opacity var(--dur-micro, 140ms) var(--ease-enter);
+}
+.stat.tile.clickable:hover .tile-view,
+.stat.tile.clickable:focus-within .tile-view {
+  opacity: 1;
+}
+/* "Why?" sits above the tile's button so it opens on its own. */
+.why {
+  position: relative;
+  z-index: 2;
+  font-size: var(--t-xs);
+  color: var(--text-muted);
+}
+.why summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--brand);
+  list-style: none;
+}
+.why summary::-webkit-details-marker {
+  display: none;
+}
+.why p {
+  margin: 4px 0 0;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+/* ---------- delta chip ---------- */
+.delta {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 1px 7px;
+  border-radius: var(--radius-chip, 999px);
+  font-size: var(--t-xs);
+  font-weight: 600;
+  background: var(--neutral-tint);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.delta.ok {
+  background: var(--ok-tint);
+  color: var(--ok);
+}
+.delta.refused {
+  background: var(--bad-tint);
+  color: var(--bad);
+}
+.delta-vs {
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+/* ---------- sparkline, histogram ---------- */
+.spark-wrap {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+.kit-spark,
+.histo {
+  display: block;
+  width: 100%;
+  height: 32px;
+  overflow: visible;
+}
+.kit-spark {
+  padding-top: 6px;
+}
+.histo {
+  height: 44px;
+}
+.spark-band {
+  fill: color-mix(in srgb, var(--ok) 12%, transparent);
+}
+.spark-rule {
+  stroke: var(--ink-3);
+  stroke-dasharray: 3 3;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.spark-rule.strong {
+  stroke: var(--ink);
+  stroke-dasharray: none;
+  stroke-width: 1.5;
+}
+.spark-cross {
+  stroke: var(--ink-3);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.spark-dot {
+  vector-effect: non-scaling-stroke;
+}
+.spark-tip {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  transform: translateX(-50%);
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 3;
+}
+.histo-bar {
+  rx: 1;
+}
+
+/* ---------- gauge, ring, bullet ---------- */
+.gauge {
+  display: block;
+  width: 100%;
+  max-width: 96px;
+  height: auto;
+}
+.gauge-track,
+.gauge-fill,
+.gauge-band {
+  fill: none;
+  stroke-linecap: round;
+}
+.gauge-track {
+  stroke: var(--line-2);
+  stroke-width: 8;
+}
+.gauge-fill {
+  stroke-width: 8;
+  transition: d var(--dur-ui, 220ms) var(--ease-enter);
+}
+.gauge-band {
+  stroke: var(--ok);
+  stroke-width: 2.5;
+  stroke-linecap: butt;
+}
+.gauge-knob {
+  stroke: var(--surface);
+  stroke-width: 1.5;
+}
+.ring {
+  display: block;
+  width: 56px;
+  height: 56px;
+}
+.ring-track {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 6;
+}
+.ring-seg {
+  fill: none;
+  stroke-width: 6;
+}
+.ring-center {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.bullet {
+  min-width: 0;
+}
+.bullet-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--line);
+}
+.bullet-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  min-width: 3px;
+}
+.bullet-target,
+.bullet-marker {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ink);
+}
+.bullet-target {
+  background: var(--ink-3);
+}
+.bullet-legend {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.bullet-marker-label {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ---------- mini bar ---------- */
+.minibar {
+  position: relative;
+  display: inline-block;
+  width: 64px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+  vertical-align: middle;
+}
+.minibar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+}
+.minibar-tick {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ink);
+}
+
+/* ---------- money ---------- */
+.money.held {
+  color: var(--money);
+}
+.money.paid {
+  color: var(--ok);
+}
+
+/* ---------- record link ---------- */
+.record-link-wrap {
+  position: relative;
+  display: inline-block;
+}
+.record-link {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 0.95em;
+  font-weight: 600;
+  color: var(--brand);
+  cursor: pointer;
+  text-decoration: underline dotted color-mix(in srgb, var(--brand) 45%, transparent);
+  text-underline-offset: 3px;
+}
+.record-link:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+  border-radius: 4px;
+}
+.record-preview {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  z-index: 20;
+  display: grid;
+  gap: 2px;
+  min-width: 200px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--e2);
+  font-size: var(--t-xs);
+  white-space: nowrap;
+  animation: kit-fade var(--dur-micro, 140ms) var(--ease-enter);
+}
+.record-preview i {
+  font-style: normal;
+  color: var(--text-muted);
+}
+
+/* ---------- timeline ---------- */
+.htimeline {
+  display: flex;
+  gap: 0;
+  margin: 0;
+  padding: 6px 0 8px;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+}
+.htimeline li {
+  position: relative;
+  flex: 0 0 180px;
+  padding-top: 16px;
+  scroll-snap-align: end;
+}
+.htimeline li::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--line);
+}
+.ht-dot {
+  position: absolute;
+  top: 0;
+  left: 12px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--ink-3);
+}
+.htimeline li.t-ok .ht-dot,
+.htimeline li.t-paid .ht-dot {
+  border-color: var(--ok);
+  background: var(--ok);
+}
+.htimeline li.t-waiting .ht-dot {
+  border-color: var(--wait);
+  background: var(--wait);
+}
+.htimeline li.t-refused .ht-dot {
+  border-color: var(--bad);
+  background: var(--bad);
+}
+.htimeline li.t-held .ht-dot {
+  border-color: var(--money);
+  background: var(--money);
+}
+.ht-card {
+  display: grid;
+  gap: 4px;
+  width: calc(100% - 10px);
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--glass-line);
+  border-radius: var(--r-sm);
+  background: var(--glass-strong);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+button.ht-card {
+  cursor: pointer;
+}
+button.ht-card:hover {
+  border-color: var(--line-2);
+}
+.ht-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.avatar.sm {
+  width: 22px;
+  height: 22px;
+  font-size: 9.5px;
+}
+.ht-title {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.ht-card .pill {
+  justify-self: start;
+}
+
+/* ---------- stepper ---------- */
+.stepper {
+  display: flex;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+}
+.stepper li {
+  position: relative;
+  flex: 1 0 84px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 0 4px;
+  text-align: center;
+  font-size: var(--t-xs);
+}
+.stepper li::before {
+  content: "";
+  position: absolute;
+  top: 11px;
+  left: -50%;
+  right: 50%;
+  height: 2px;
+  background: var(--line);
+}
+.stepper li:first-child::before {
+  display: none;
+}
+.stepper li.done::before,
+.stepper li.now::before {
+  background: var(--ok);
+}
+.step-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--line-2);
+  background: var(--surface);
+  font-size: 11px;
+  font-weight: 700;
+}
+.stepper li.done .step-mark {
+  border-color: var(--ok);
+  background: var(--ok);
+  color: var(--surface);
+}
+.stepper li.now .step-mark {
+  border-color: var(--info);
+  color: var(--info);
+}
+.stepper li.failed .step-mark {
+  border-color: var(--bad);
+  color: var(--bad);
+}
+.step-label {
+  font-weight: 600;
+}
+
+/* ---------- states ---------- */
+.skeleton {
+  display: grid;
+  gap: 8px;
+}
+.sk {
+  display: block;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--line) 0%,
+    color-mix(in srgb, var(--line) 50%, transparent) 50%,
+    var(--line) 100%
+  );
+  background-size: 200% 100%;
+  animation: kit-shimmer 1.4s linear infinite;
+}
+.sk-tile {
+  min-height: 132px;
+  gap: 10px;
+}
+.sk-line {
+  height: 10px;
+  width: 60%;
+}
+.sk-line.short {
+  width: 40%;
+}
+.sk-value {
+  height: 30px;
+  width: 50%;
+}
+.sk-spark {
+  height: 22px;
+  margin-top: auto;
+}
+.sk-row {
+  height: 28px;
+}
+.sk-chart .sk {
+  height: 180px;
+}
+.empty-state {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  padding: 18px 16px;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r-sm);
+}
+.empty-state p {
+  margin: 0;
+}
+.error-card {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--bad-border);
+  border-left: 3px solid var(--bad);
+  border-radius: var(--r-sm);
+  background: var(--bad-tint);
+}
+.error-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+}
+.error-card code {
+  display: block;
+  margin-top: 4px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ---------- data table ---------- */
+.kit-table-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.kit-table-tools select,
+.kit-search {
+  min-width: 0;
+  max-width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--t-xs);
+}
+.kit-search {
+  flex: 1 1 140px;
+  max-width: 220px;
+}
+.kit-table-count {
+  margin-left: auto;
+}
+.kit-scroll {
+  overflow: auto;
+}
+.kit-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface);
+}
+.kit-table.compact td,
+.kit-table.compact th {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+.kit-table tr.spacer td {
+  padding: 0;
+}
+
+/* ---------- window picker ---------- */
+.seg button.on {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+@keyframes kit-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@keyframes kit-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sk {
+    animation: none;
+  }
+  .stat.tile,
+  .record-preview {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* ---------- the record drawer (src/RecordNav.tsx) ---------- */
+.record-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: flex-end;
+}
+.record-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: color-mix(in srgb, var(--ink) 18%, transparent);
+  cursor: default;
+}
+.record-drawer .inspector {
+  position: relative;
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  margin: 16px;
+  overflow: auto;
+  padding: 16px 18px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--e3);
+  font-size: var(--t-sm);
+  animation: kit-drawer var(--dur-ui, 220ms) var(--ease-enter);
+}
+.record-drawer .inspector-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.record-drawer .inspector h3 {
+  margin: 2px 0 0;
+}
+.record-drawer .inspector-fields {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0;
+}
+.record-drawer .inspector-fields div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.record-drawer .inspector-fields dt {
+  color: var(--text-muted);
+}
+.record-drawer .inspector-fields dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.record-drawer .inspector-timeline {
+  margin: 8px 0;
+  padding-left: 0;
+  list-style: none;
+}
+@keyframes kit-drawer {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .record-drawer .inspector {
+    animation: none;
+  }
+}
