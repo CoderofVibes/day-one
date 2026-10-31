@@ -7,7 +7,13 @@
 import { and, desc, eq, ne } from "drizzle-orm";
 import { type Decision, evaluateVendorBill } from "../approval.ts";
 import type { ErpDb } from "../db.ts";
-import { type MatchException, type MatchPo, normalizeInvoiceNo, threeWayMatch } from "../match.ts";
+import {
+  duplicateAmong,
+  type MatchException,
+  type MatchPo,
+  normalizeInvoiceNo,
+  threeWayMatch,
+} from "../match.ts";
 import { extend, formatUsd, quantity } from "../money.ts";
 import {
   type BillAlert,
@@ -119,10 +125,6 @@ export function billByTranId(db: ErpDb, vendorId: number, tranId: string) {
     .get();
 }
 
-function daysBetween(a: string, b: string) {
-  return Math.abs(Date.parse(a.slice(0, 10)) - Date.parse(b.slice(0, 10))) / 86_400_000;
-}
-
 /** The earlier bill this one duplicates, if any (docs/ERP.md §3.4). */
 export function findDuplicate(
   db: ErpDb,
@@ -134,30 +136,13 @@ export function findDuplicate(
     tranDate: string;
   },
 ) {
-  const normalized = normalizeInvoiceNo(input.tranId);
   const window = Number(setting(db, "duplicateWindowDays"));
   const candidates = db
     .select()
     .from(vendorBills)
     .where(and(eq(vendorBills.vendorId, input.vendorId), ne(vendorBills.matchStatus, "duplicate")))
     .all();
-  const byNumber = candidates.find((b) => b.normalizedTranId === normalized);
-  if (byNumber) return { bill: byNumber, why: `same invoice number as ${byNumber.tranId}` };
-  if (input.poId !== null) {
-    const byAmount = candidates.find(
-      (b) =>
-        b.poId === input.poId &&
-        b.totalUsdc === input.totalUsdc &&
-        daysBetween(b.tranDate, input.tranDate) <= window,
-    );
-    if (byAmount) {
-      return {
-        bill: byAmount,
-        why: `same purchase order and amount as ${byAmount.tranId} (${formatUsd(byAmount.totalUsdc)}) within ${window} days`,
-      };
-    }
-  }
-  return null;
+  return duplicateAmong(candidates, input, window, formatUsd);
 }
 
 function priceDriftOf(

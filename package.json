@@ -15,6 +15,7 @@
   },
   "scripts": {
     "seed": "tsx server/src/seed/cli.ts",
+    "world": "tsx scripts/world.ts",
     "test": "vitest run",
     "typecheck": "tsc -b",
     "lint": "biome check .",
