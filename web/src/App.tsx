@@ -40,13 +40,14 @@ import {
   type ReviewState,
   type TransferSuggestions,
 } from "./api.ts";
-import { ClockBar, ClockLine, jumpsFor } from "./ClockBar.tsx";
+import { HeaderClock, HeaderClockLine, jumpsFor } from "./ClockBar.tsx";
 import { Curtain } from "./Curtain.tsx";
+import { kevinStatus, nextTurn, PEOPLE } from "./chrome.ts";
 import {
-  type Clock,
   createClock,
   forgetClock,
   persist,
+  readout,
   readPersisted,
   shareClock,
   stepAt,
@@ -55,6 +56,7 @@ import {
 } from "./clock.ts";
 import { stepTimes } from "./engine.ts";
 import { initials, Pill, StaffFeed } from "./feed.tsx";
+import { GlobalHeader, type Person } from "./Header.tsx";
 import { ImportPane } from "./ImportPane.tsx";
 import { InboxPane } from "./InboxPane.tsx";
 import { postDecision, postDropScans } from "./journey.ts";
@@ -255,6 +257,17 @@ const PAGE_TEXT: Record<
   },
 };
 
+/** Where a page sits and its short name, for the global header. */
+function headingOf(page: PageId, plant: PlantCode): { crumb: string; title: string } {
+  if (page === "integration")
+    return { crumb: `${PLANT_NAMES.B} › Your integration`, title: "Your integration" };
+  if (page === "overview") return { crumb: `${PLANT_NAMES[plant]} › Overview`, title: "Overview" };
+  const text = PAGE_TEXT[page];
+  const where =
+    text.group === "plant" ? PLANT_NAMES[plant] : text.group === "acme" ? "Across Acme" : "Acme HQ";
+  return { crumb: `${where} › ${text.title}`, title: text.title };
+}
+
 /** The pages both sources share; each source hands in its own panes and reads. */
 function Pages({
   page,
@@ -325,8 +338,6 @@ function Pages({
       </>
     );
   const text = PAGE_TEXT[page];
-  const where =
-    text.group === "plant" ? PLANT_NAMES[plant] : text.group === "acme" ? "Across Acme" : "Acme HQ";
   const props = { plant, source, curtain };
   const body = (() => {
     switch (page) {
@@ -374,7 +385,7 @@ function Pages({
   return (
     <Page
       label={`${text.title} page`}
-      crumb={`${where} › ${text.title}`}
+      crumb={headingOf(page, plant).crumb}
       title={text.title}
       sentence={text.sentence}
     >
@@ -450,8 +461,8 @@ function ReplayApp() {
     (to: number) => clock.seek(clock.range.steps[Math.max(0, Math.min(last, to))] ?? 0),
     [clock, last],
   );
-  const clockBar = (
-    <ClockBar
+  const headerClock = (
+    <HeaderClock
       clock={clock}
       jumps={JUMPS}
       onPlay={() => {
@@ -488,7 +499,6 @@ function ReplayApp() {
       <Closing
         data={data}
         curtain={curtain}
-        clockBar={clockBar}
         onReplay={() => go(0)}
         onPlants={() => route.go({ page: "plants" })}
       />
@@ -500,7 +510,6 @@ function ReplayApp() {
           </h2>
           <span className="right small muted">{current.title}</span>
         </div>
-        {clockBar}
         <div className="transport">
           <button type="button" className="btn" onClick={() => go(at - 1)} disabled={at === 0}>
             ← Back
@@ -515,6 +524,36 @@ function ReplayApp() {
       </section>
     );
 
+  const person = upNext ?? { name: "Day One", role: "Run complete" };
+  const people: Person[] = PEOPLE.map((p) => {
+    const turn = nextTurn(data.steps, at, p.name);
+    const when = turn === null ? undefined : clock.range.steps[turn];
+    const title = turn === null ? null : (data.steps[turn] as Step).title;
+    return {
+      ...p,
+      line:
+        title === null
+          ? "nothing waiting"
+          : `next: ${title}${when === undefined ? "" : ` · ${readout(when)}`}`,
+      current: upNext?.name === p.name,
+      onPick: turn === null ? null : () => go(turn),
+    };
+  });
+  const header = (
+    <GlobalHeader
+      title={headingOf(route.page, route.plant).title}
+      plant={route.plant}
+      onPlant={(plant) => route.go({ plant })}
+      clock={headerClock}
+      kevin={kevinStatus(current, upNext?.name ?? null)}
+      onKevin={() => route.go({ page: "overview" })}
+      curtain={curtain}
+      setCurtain={setCurtain}
+      people={people}
+      upNext={person}
+    />
+  );
+
   return (
     <Shell
       page={route.page}
@@ -522,13 +561,14 @@ function ReplayApp() {
       go={route.go}
       curtain={curtain}
       setCurtain={setCurtain}
+      header={header}
       badges={badgesOf(
         plantsSnapshot.inventory,
         plantsSnapshot.transfers,
         plantsSnapshot.books,
         null,
       )}
-      person={upNext ?? { name: "Day One", role: "Run complete" }}
+      person={person}
     >
       <WithRail curtain={curtain} rail={<Curtain data={data} upTo={at} />}>
         <Pages
@@ -652,13 +692,11 @@ function Guide({ data }: { data: DemoRun }) {
 function Closing({
   data,
   curtain,
-  clockBar,
   onReplay,
   onPlants,
 }: {
   data: RunData;
   curtain: boolean;
-  clockBar: React.ReactNode;
   onReplay: () => void;
   onPlants: () => void;
 }) {
@@ -678,7 +716,6 @@ function Closing({
           ? ` Switch on "Behind the curtain" for the ${s.transactions} testnet transactions behind it.`
           : ""}
       </p>
-      {clockBar}
       <div className="transport">
         <button type="button" className="btn primary" onClick={onReplay}>
           Replay
@@ -901,6 +938,33 @@ function LiveApp({ initial }: { initial: LiveState }) {
     </Foot>
   );
 
+  const person = { name: actor.name, role: actor.role ?? null };
+  // The live run moves through the API: each person's turn is a line, not a seek.
+  const people: Person[] = PEOPLE.map((p) => ({
+    ...p,
+    line: state.next.who === p.name ? `up next: ${state.next.action}` : "nothing waiting",
+    current: state.next.who === p.name,
+    onPick: null,
+  }));
+  const header = (
+    <GlobalHeader
+      title={headingOf(route.page, route.plant).title}
+      plant={route.plant}
+      onPlant={(plant) => route.go({ plant })}
+      clock={<HeaderClockLine clock={clock} />}
+      kevin={
+        busy
+          ? { state: "drafting", label: "working…" }
+          : kevinStatus(state.steps[last], state.next.who)
+      }
+      onKevin={() => route.go({ page: "overview" })}
+      curtain={curtain}
+      setCurtain={setCurtain}
+      people={people}
+      upNext={person}
+    />
+  );
+
   return (
     <Shell
       page={route.page}
@@ -908,11 +972,12 @@ function LiveApp({ initial }: { initial: LiveState }) {
       go={route.go}
       curtain={curtain}
       setCurtain={setCurtain}
+      header={header}
       badges={{
         ...badgesOf(inventory, moves, books, inbox),
         overview: { count: waiting + (mail?.toSign ?? 0), tone: "attention" },
       }}
-      person={{ name: actor.name, role: actor.role ?? null }}
+      person={person}
     >
       <WithRail curtain={curtain} rail={<Curtain data={state} upTo={last} />}>
         <Pages
@@ -946,7 +1011,6 @@ function LiveApp({ initial }: { initial: LiveState }) {
             <>
               <UpNext
                 state={state}
-                clock={clock}
                 busy={busy}
                 error={error}
                 onAct={act}
@@ -1072,10 +1136,8 @@ function UpNext({
   onUpload,
   onReset,
   queue,
-  clock,
 }: {
   state: LiveState;
-  clock: Clock;
   busy: string | null;
   error: { message: string; hint?: string } | null;
   onAct: (a: Action) => void;
@@ -1118,7 +1180,6 @@ function UpNext({
           {next.phase === "reply" && <span className="muted"> · on her phone</span>}
         </span>
       </div>
-      <ClockLine clock={clock} />
       {queue ?? <p className="lead">{lead}</p>}
       {state.stopped && state.help && !busy && <p className="muted small help">{state.help}</p>}
 
