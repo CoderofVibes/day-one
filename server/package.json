@@ -45,6 +45,7 @@
     "./attestation/fixture": "./src/attestation/fixture.ts",
     "./ledger/series": "./src/ledger/series.ts",
     "./ledger/catalog": "./src/ledger/catalog.ts",
+    "./ledger/genealogy": "./src/ledger/genealogy.ts",
     "./ledger/views": "./src/ledger/views.ts",
     "./ledger/areas": "./src/ledger/areas.ts"
   },

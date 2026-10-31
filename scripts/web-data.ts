@@ -8,7 +8,8 @@
 // balance, books, Kevin's proposed moves), web/src/data/review.json (Kevin's morning review of
 // Ray's mailbox, unsigned) and, beside the built page, web/public/brief.html
 // (Kevin's 5am brief) and web/public/books.csv (the bookkeeper export). web/src/data/series.json
-// holds the charts' series, every plant's forecast and its four-week schedule at the same clock. HQ's live read of the
+// holds the charts' series, every plant's forecast and its four-week schedule at the same clock;
+// web/src/data/genealogy.json every lot's batches and what they made (Lots & recall). HQ's live read of the
 // contract is not in the snapshot: it changes with the chain (npm run escrow reads it).
 //   --check   exit 1 if a committed file differs from a fresh export
 
@@ -30,6 +31,7 @@ import { readAttestationFixture, recordedReceipts } from "../server/src/attestat
 import { verifyAttestation } from "../server/src/attestation/verify.ts";
 import { areaViews } from "../server/src/ledger/areas.ts";
 import { books, booksCsv } from "../server/src/ledger/books.ts";
+import { genealogy } from "../server/src/ledger/genealogy.ts";
 import { plantInventory } from "../server/src/ledger/inventory.ts";
 import { historySeries, stockedMaterials, stockSeries } from "../server/src/ledger/series.ts";
 import {
@@ -49,6 +51,7 @@ const SERIES = join(root, "web/src/data/series.json");
 const JOURNEY = join(root, "web/src/data/journey.json");
 const PAGES = join(root, "web/src/data/pages.json");
 const REVIEW = join(root, "web/src/data/review.json");
+const GENEALOGY = join(root, "web/src/data/genealogy.json");
 const BRIEF = join(root, "web/public/brief.html");
 const CSV = join(root, "web/public/books.csv");
 const RELAYER = "dayone-relayer.testnet";
@@ -317,6 +320,9 @@ async function recordedJourney() {
   }
 }
 
+// The lot genealogy at the same clock, every plant (server/src/ledger/genealogy.ts).
+const lineage = { at: now, genealogy: genealogy(env.db) };
+
 const files: [string, string][] = [
   [OUT, text],
   [PLANTS, `${JSON.stringify(plants, null, 2)}\n`],
@@ -324,6 +330,7 @@ const files: [string, string][] = [
   [JOURNEY, `${JSON.stringify(journey)}\n`],
   [PAGES, `${JSON.stringify(pages)}\n`],
   [REVIEW, `${JSON.stringify(review, null, 2)}\n`],
+  [GENEALOGY, `${JSON.stringify(lineage)}\n`],
   [BRIEF, briefHtml(morningBrief(env.db, { now }))],
   [CSV, booksCsv(env.db)],
 ];

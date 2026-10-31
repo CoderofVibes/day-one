@@ -30,6 +30,7 @@
 //   POST /api/journey/decisions                JSON {"stage": 3, "item": "plan", "decision"?: "confirmed", "staff"?: …, "note"?: …}
 //   POST /api/batch-records/inbox              JSON {"all"?: true}: drops the week's scans into the watched folder, as npm run inbox
 //   GET  /api/catalog                          products with formulas and plants, suppliers with what they supply
+//   GET  /api/genealogy                        every lot's batches and what they made, both ways (Lots & recall)
 //   POST /api/policy/draft                     JSON {"request": …}: Kevin's draft of HQ's owner call; nothing is signed
 //   GET  /api/erp/reconcile                    the recorded run's ERP reconciliation (npm run erp:reconcile -- --json)
 //   GET  /api/history                          the charts' series: batches, spend and QC per month
@@ -129,6 +130,7 @@ async function route(
   if (method === "GET" && path === "/api/policy") return reply(res, 200, await session.policy());
   if (method === "GET" && path === "/api/history") return reply(res, 200, session.history());
   if (method === "GET" && path === "/api/catalog") return reply(res, 200, session.catalog());
+  if (method === "GET" && path === "/api/genealogy") return reply(res, 200, session.genealogy());
   if (method === "GET" && path === "/api/areas")
     return reply(res, 200, session.areas(url.searchParams.get("plant") ?? undefined));
   if (method === "GET" && path === "/api/plant")
