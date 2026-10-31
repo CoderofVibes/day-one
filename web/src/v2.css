@@ -2203,13 +2203,13 @@ ul.plain {
 .gh-judge:hover {
   filter: brightness(1.1);
 }
-/* Under 1280 px the header has no room for it: it moves into the menu. */
+/* Under 1440 px the header has no room for it beside Kevin's longest status: it moves into the menu. */
 .gh-judge-menu {
   display: none;
   width: 100%;
   margin-bottom: 8px;
 }
-@media (max-width: 1279px) {
+@media (max-width: 1439px) {
   .gh > .gh-judge {
     display: none;
   }

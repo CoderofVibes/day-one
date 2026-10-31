@@ -59,7 +59,11 @@ function Spotlight({ selector }: { selector: string }) {
       if (!el) return setBox(null);
       if (!scrolled.current) {
         scrolled.current = true;
-        el.scrollIntoView({ block: "center" });
+        // A tall subject (the attack list) shows its top under the sticky header, not its middle.
+        const top = el.getBoundingClientRect().top + window.scrollY;
+        if (el.getBoundingClientRect().height > window.innerHeight * 0.5)
+          window.scrollTo({ top: Math.max(0, top - 80) });
+        else el.scrollIntoView({ block: "center" });
       }
       const r = el.getBoundingClientRect();
       setBox((was) =>

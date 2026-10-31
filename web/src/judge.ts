@@ -235,7 +235,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "tour",
     title: "Recall drill, and the tour",
-    body: "Run the recall drill to trace a mock supplier recall notice through every batch, or play the two-minute tour of the whole run in 3D.",
+    body: "Run the recall drill to trace a mock supplier recall notice through every batch, or play the tour: the whole run in 3D with captions.",
     page: "lots",
     at: last,
     spotlight: '[aria-label="Recall drill"]',
