@@ -231,3 +231,45 @@ export function normalizeInvoiceNo(invoiceNo: string): string {
   const stripped = core.replace(REISSUE_SUFFIX, "");
   return stripped.length >= 3 && /\d$/.test(stripped) ? stripped : core;
 }
+
+export interface DuplicateCandidate {
+  tranId: string;
+  normalizedTranId: string;
+  poId: number | null;
+  totalUsdc: number;
+  tranDate: string;
+}
+
+function daysApart(a: string, b: string) {
+  return Math.abs(Date.parse(a.slice(0, 10)) - Date.parse(b.slice(0, 10))) / 86_400_000;
+}
+
+/**
+ * The earlier bill among a vendor's bills that a new one duplicates (docs/ERP.md §3.4): the same
+ * invoice number once normalized, or the same PO and amount within `windowDays`.
+ */
+export function duplicateAmong<T extends DuplicateCandidate>(
+  candidates: readonly T[],
+  input: { tranId: string; poId: number | null; totalUsdc: number; tranDate: string },
+  windowDays: number,
+  usd: (units: number) => string,
+): { bill: T; why: string } | null {
+  const normalized = normalizeInvoiceNo(input.tranId);
+  const byNumber = candidates.find((b) => b.normalizedTranId === normalized);
+  if (byNumber) return { bill: byNumber, why: `same invoice number as ${byNumber.tranId}` };
+  if (input.poId !== null) {
+    const byAmount = candidates.find(
+      (b) =>
+        b.poId === input.poId &&
+        b.totalUsdc === input.totalUsdc &&
+        daysApart(b.tranDate, input.tranDate) <= windowDays,
+    );
+    if (byAmount) {
+      return {
+        bill: byAmount,
+        why: `same purchase order and amount as ${byAmount.tranId} (${usd(byAmount.totalUsdc)}) within ${windowDays} days`,
+      };
+    }
+  }
+  return null;
+}
