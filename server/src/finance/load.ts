@@ -136,7 +136,7 @@ interface GroupBuyJson {
   po: { poNo: string; totalUsdc: number; unitPriceUsdc: number };
   steps: { title: string }[];
 }
-interface PlantsJson {
+export interface PlantsJson {
   at: string;
   books: {
     alerts: {
@@ -180,11 +180,12 @@ const ACCOUNT_VENDOR: Record<string, string> = {
   "ridgeway-ascorbics.testnet": "RWA",
 };
 
-export function moneyData(root: string): MoneyData {
+/** plants is web/src/data/plants.json's content; npm run web:data passes the one it just built. */
+export function moneyData(root: string, given: { plants?: PlantsJson } = {}): MoneyData {
   const worlds = readWorlds(root);
   const books: Record<string, MoneyBook> = {};
   for (const w of worlds) books[w.meta.facility] = moneyBook(w);
-  const plantsJson = json<PlantsJson>(join(root, "web/src/data/plants.json"));
+  const plantsJson = given.plants ?? json<PlantsJson>(join(root, "web/src/data/plants.json"));
   const group = json<GroupBuyJson>(join(root, "web/src/data/group-buy.json"));
   const anchors = json<{
     rfqs: {

@@ -5,6 +5,7 @@
   "exports": {
     "./money": "./src/money.ts",
     "./finance/money": "./src/finance/money.ts",
+    "./finance/load": "./src/finance/load.ts",
     "./canonical": "./src/canonical.ts",
     "./quotes": "./src/quotes.ts",
     "./sealed": "./src/sealed.ts",

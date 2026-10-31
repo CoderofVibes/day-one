@@ -33,6 +33,7 @@
 //   POST /api/batch-records/inbox              JSON {"all"?: true}: drops the week's scans into the watched folder, as npm run inbox
 //   GET  /api/catalog                          products with formulas and plants, suppliers with what they supply
 //   GET  /api/genealogy                        every lot's batches and what they made, both ways (Lots & recall)
+//   GET  /api/money                            each plant's money book, the savings ledger and Kevin's cost inputs (Money)
 //   POST /api/policy/draft                     JSON {"request": …}: Kevin's draft of HQ's owner call; nothing is signed
 //   GET  /api/erp/reconcile                    the recorded run's ERP reconciliation (npm run erp:reconcile -- --json)
 //   GET  /api/history                          the charts' series: batches, spend and QC per month
@@ -58,6 +59,7 @@ import { extname, join, normalize, resolve, sep } from "node:path";
 import { DemoOrderError } from "@day-one/kevin/demo";
 import { ExtractionError } from "@day-one/kevin/extraction";
 import { explainFailure } from "@day-one/server/chain/explain";
+import { type MoneyData, moneyData } from "@day-one/server/finance/load";
 import { AskDesk, AskError, AskLimitError, AskUnavailableError } from "./ask.ts";
 import { DemoEnvError, REPO_ROOT } from "./env.ts";
 import { ImportDesk } from "./imports.ts";
@@ -144,6 +146,7 @@ async function route(
   if (method === "GET" && path === "/api/history") return reply(res, 200, session.history());
   if (method === "GET" && path === "/api/catalog") return reply(res, 200, session.catalog());
   if (method === "GET" && path === "/api/genealogy") return reply(res, 200, session.genealogy());
+  if (method === "GET" && path === "/api/money") return reply(res, 200, money());
   if (method === "GET" && path === "/api/areas")
     return reply(res, 200, session.areas(url.searchParams.get("plant") ?? undefined));
   if (method === "GET" && path === "/api/plant")
@@ -422,6 +425,13 @@ async function askRoute(ask: AskDesk, req: IncomingMessage, res: ServerResponse,
     if (error instanceof AskError) return reply(res, 400, { error: message });
     return reply(res, 502, { error: `Kevin's model did not answer: ${message}` });
   }
+}
+
+/** The Money page's data: the worlds and recordings in the repo, which the run does not change. */
+let moneyCache: MoneyData | undefined;
+function money(): MoneyData {
+  moneyCache ??= moneyData(REPO_ROOT);
+  return moneyCache;
 }
 
 function reply(res: ServerResponse, status: number, body: unknown) {

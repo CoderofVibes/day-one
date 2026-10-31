@@ -1,0 +1,522 @@
+{
+  "config": {
+    "t0": "2026-11-09",
+    "overhead": {
+      "B": {
+        "laborUsd": 148000,
+        "utilitiesUsd": 19500,
+        "rentUsd": 24000
+      }
+    },
+    "openingCashUsd": {
+      "B": 120000
+    },
+    "budgets": {
+      "B": {
+        "active": 42000,
+        "excipient": 30000,
+        "packaging": 24000,
+        "lab_chemical": 2000,
+        "freight": 2500
+      }
+    },
+    "kevinCost": {
+      "feeUsdPerMonth": 450,
+      "inputUsdPerMTok": 0.4,
+      "outputUsdPerMTok": 1.6,
+      "usdPerAnswer": 0.004
+    },
+    "kevinPolicy": {
+      "perPoLimitUsd": 2500,
+      "monthlyLimitUsd": 60000
+    },
+    "transferFreightUsd": 25,
+    "deadStockDays": 120
+  },
+  "kevinPlants": [
+    "A",
+    "B",
+    "C"
+  ],
+  "entries": [
+    {
+      "id": "sealed:RFQ-2611-02",
+      "type": "sealed_bid",
+      "plant": "B",
+      "title": "Sealed round RFQ-2611-02",
+      "amountUsdc": 160000000,
+      "status": "identified",
+      "identifiedAt": "2026-10-29T15:08:12.164Z",
+      "realizedAt": null,
+      "evidence": [
+        "RFQ-2611-02"
+      ],
+      "formula": "(median of the other qualified quotes − winning quote), each landed (qty × price + freight). Not against the incumbent's last price, which is the winner's here. Identified until a PO is placed from the round.",
+      "working": "RWA $5,310.00 (median $5,310.00) − NGI $5,150.00 = $160.00.",
+      "era": "anchor"
+    },
+    {
+      "id": "drift:HP-PO-0039:SUC",
+      "type": "price_drift",
+      "plant": "B",
+      "title": "Price drift on HP-PO-0039 (SUC)",
+      "amountUsdc": 183439998,
+      "status": "identified",
+      "identifiedAt": "2026-11-09",
+      "realizedAt": null,
+      "evidence": [
+        "HP-PO-0039"
+      ],
+      "formula": "(billed price − trailing price paid) × qty. Found in the look-back; worth a call to the supplier.",
+      "working": "($101.2974/kg − $91.1063/kg trailing on HP-PO-0008, HP-PO-0022, HP-PO-0029) × 18 kg = $183.44.",
+      "era": "legacy"
+    },
+    {
+      "id": "drift:HP-PO-0068:SIO",
+      "type": "price_drift",
+      "plant": "B",
+      "title": "Price drift on HP-PO-0068 (SIO)",
+      "amountUsdc": 29670300,
+      "status": "identified",
+      "identifiedAt": "2026-11-09",
+      "realizedAt": null,
+      "evidence": [
+        "HP-PO-0068"
+      ],
+      "formula": "(billed price − trailing price paid) × qty. Found in the look-back; worth a call to the supplier.",
+      "working": "($7.2437/kg − $6.4418/kg trailing on HP-PO-0009, HP-PO-0028, HP-PO-0047) × 37 kg = $29.67.",
+      "era": "legacy"
+    },
+    {
+      "id": "duplicate:PEC 54109.",
+      "type": "duplicate_invoice",
+      "plant": "B",
+      "title": "Duplicate invoice paid before cutover: PEC 54109.",
+      "amountUsdc": 363016900,
+      "status": "identified",
+      "identifiedAt": "2026-11-09",
+      "realizedAt": null,
+      "evidence": [
+        "PEC 54109."
+      ],
+      "formula": "the bill amount. Paid twice before Day One: identified · recoverable from the supplier.",
+      "working": "same invoice number as PEC-54109; $363.02 paid twice (first on 2026-04-14).",
+      "era": "legacy"
+    },
+    {
+      "id": "over:BR-B-0973:SBC",
+      "type": "over_consumption",
+      "plant": "B",
+      "title": "Over-consumption on BR-B-0973 (SBC)",
+      "amountUsdc": 5585757,
+      "status": "identified",
+      "identifiedAt": "2026-11-09",
+      "realizedAt": null,
+      "evidence": [
+        "BR-B-0973"
+      ],
+      "formula": "excess drawn over the formula × lot unit cost. Realized only when the cause is fixed and later batches return to standard in Kevin's era.",
+      "working": "185.225 kg drawn against 180 kg standard on lot SBC-260102-01: 5.225 kg × $1.069/kg = $5.59 (batch cost $2,512.96).",
+      "era": "legacy"
+    },
+    {
+      "id": "over:BR-B-0976:ASC",
+      "type": "over_consumption",
+      "plant": "B",
+      "title": "Over-consumption on BR-B-0976 (ASC)",
+      "amountUsdc": 157460580,
+      "status": "identified",
+      "identifiedAt": "2026-11-09",
+      "realizedAt": null,
+      "evidence": [
+        "BR-B-0976"
+      ],
+      "formula": "excess drawn over the formula × lot unit cost. Realized only when the cause is fixed and later batches return to standard in Kevin's era.",
+      "working": "434.787 kg drawn against 412 kg standard on lot ASC-260115-01 + ASC-260116-01 + ASC-260128-01: 22.787 kg × $6.9101/kg = $157.46 (batch cost $5,208.42).",
+      "era": "legacy"
+    },
+    {
+      "id": "over:BR-B-1000:MCC",
+      "type": "over_consumption",
+      "plant": "B",
+      "title": "Over-consumption on BR-B-1000 (MCC)",
+      "amountUsdc": 12305060,
+      "status": "identified",
+      "identifiedAt": "2026-11-09",
+      "realizedAt": null,
+      "evidence": [
+        "BR-B-1000"
+      ],
+      "formula": "excess drawn over the formula × lot unit cost. Realized only when the cause is fixed and later batches return to standard in Kevin's era.",
+      "working": "78.535 kg drawn against 75 kg standard on lot MCC-260327-01: 3.535 kg × $3.4809/kg = $12.31 (batch cost $2,359.80).",
+      "era": "legacy"
+    },
+    {
+      "id": "drift:PO-1040:MGS",
+      "type": "price_drift",
+      "plant": "B",
+      "title": "Price drift on PEC-55388 (MGS)",
+      "amountUsdc": 57500000,
+      "status": "identified",
+      "identifiedAt": "2026-11-09T12:00:00.000Z",
+      "realizedAt": null,
+      "evidence": [
+        "PEC-55388",
+        "PO-1040"
+      ],
+      "formula": "(billed price − trailing price paid) × qty. Paid before Day One; worth a call to the supplier.",
+      "working": "($9.35/kg − $8.20/kg trailing on PO-1017, PO-1031, PO-1035) × 50 kg = $57.50.",
+      "era": "anchor"
+    },
+    {
+      "id": "duplicate:OFH-3317-R",
+      "type": "duplicate_invoice",
+      "plant": "B",
+      "title": "Duplicate invoice held: OFH-3317-R",
+      "amountUsdc": 1150000000,
+      "status": "realized",
+      "identifiedAt": "2026-11-09T12:00:00.000Z",
+      "realizedAt": "2026-11-09T12:00:00.000Z",
+      "evidence": [
+        "OFH-3317-R"
+      ],
+      "formula": "the bill amount, held before payment.",
+      "working": "OFH-3317-R repeats OFH-3317 ($1,150.00); held at cutover, never paid.",
+      "era": "anchor"
+    },
+    {
+      "id": "transfer:BTL:C-B",
+      "type": "transfer",
+      "plant": "B",
+      "title": "Move 150 cc HDPE bottle from Plant C to Plant B",
+      "amountUsdc": 311000000,
+      "status": "identified",
+      "identifiedAt": "2026-11-16T16:05:00.000Z",
+      "realizedAt": null,
+      "evidence": [
+        "BTL-260905-01"
+      ],
+      "formula": "avoided purchase (qty × last price paid) − transfer freight (assumed). Realized when the move is approved and made.",
+      "working": "$336.00 of BTL at the last price paid − $25.00 freight = $311.00.",
+      "era": "anchor"
+    },
+    {
+      "id": "transfer:CAC:B-A",
+      "type": "transfer",
+      "plant": "A",
+      "title": "Move Calcium carbonate from Plant B to Plant A",
+      "amountUsdc": 21500000,
+      "status": "identified",
+      "identifiedAt": "2026-11-16T16:05:00.000Z",
+      "realizedAt": null,
+      "evidence": [
+        "CAC-261014-01"
+      ],
+      "formula": "avoided purchase (qty × last price paid) − transfer freight (assumed). Realized when the move is approved and made.",
+      "working": "$46.50 of CAC at the last price paid − $25.00 freight = $21.50.",
+      "era": "anchor"
+    },
+    {
+      "id": "group:PO-G-2001:B",
+      "type": "group_buy",
+      "plant": "B",
+      "title": "Group buy PO-G-2001: Hollow Pine Tablet Co.'s share",
+      "amountUsdc": 405000000,
+      "status": "realized",
+      "identifiedAt": "2026-11-17T15:00:00.000Z",
+      "realizedAt": "2026-11-17T15:00:00.000Z",
+      "evidence": [
+        "PO-G-2001 · Hollow Pine Tablet Co. share",
+        "RFQ-2611-01"
+      ],
+      "formula": "(best standalone quote, landed, for the plant's quantity) − (the plant's share of the pooled PO). Never the PO total.",
+      "working": "RFQ-2611-01 best: 700 kg × $7.10/kg + $180.00 freight = $5,150.00; share of PO-G-2001 at $6.65/kg pooled = $4,745.00; saving $405.00.",
+      "era": "simulated"
+    }
+  ],
+  "notCounted": [
+    {
+      "type": "group_buy",
+      "plant": "A",
+      "title": "PO-G-2001: Acme Riverside's share",
+      "reason": "No standalone quote for 700 kg is recorded for Acme Riverside; the pooled order's \"price on file\" is not a quote, so its share's saving is left out.",
+      "evidence": [
+        "PO-G-2001 · Acme Riverside share"
+      ]
+    },
+    {
+      "type": "transfer",
+      "plant": "B",
+      "title": "Move 38 mm CR cap with induction liner C → B",
+      "reason": "No price has been paid for this material at the receiving plant, so the avoided purchase has no value on record.",
+      "evidence": [
+        "CAP-260905-01"
+      ]
+    },
+    {
+      "type": "transfer",
+      "plant": "A",
+      "title": "Move Label, CMD C → A",
+      "reason": "No price has been paid for this material at the receiving plant, so the avoided purchase has no value on record.",
+      "evidence": [
+        "LCM-260907-01"
+      ]
+    },
+    {
+      "type": "rush_freight",
+      "plant": "B",
+      "title": "Rush freight avoided ($2,360.00 paid in the legacy months)",
+      "reason": "The simulated continuation has its own rush order (PO-1089, $1,180.00 freight), so no recurrence was prevented.",
+      "evidence": [
+        "HP-PO-0023",
+        "HP-PO-0024"
+      ]
+    }
+  ],
+  "protected": {
+    "totalUsdc": 17495000000,
+    "items": [
+      {
+        "attack": "PO-T9001 to northgate-lngredients.testnet",
+        "amountUsdc": 1000000000,
+        "what": "northgate-lngredients.testnet is not an approved supplier; no approval can override this.",
+        "source": "data/replay/attacks-chain.json · tx BKjdSJD4…"
+      },
+      {
+        "attack": "PO-1042 to northgate-ingredients.testnet",
+        "amountUsdc": 1000000000,
+        "what": "PO-1042 was already submitted.",
+        "source": "data/replay/attacks-chain.json · tx 8CdDArQX…"
+      },
+      {
+        "attack": "PO-T9201 to harrow-chemical.testnet",
+        "amountUsdc": 1000000000,
+        "what": "harrow-chemical.testnet is not an approved supplier; no approval can override this.",
+        "source": "data/replay/attacks-chain.json · tx 9FAzfv5K…"
+      },
+      {
+        "attack": "PO-T9301 to fennimore-polyols.testnet",
+        "amountUsdc": 640000000,
+        "what": "fennimore-polyols.testnet's supplier credential was revoked by HQ on 2026-10-29 (Acme quality withdrew approval after a supplier review); no approval can override this.",
+        "source": "data/attacks/credentials-testnet.json · tx G6yUpj7R…"
+      },
+      {
+        "attack": "PO-T9302 to sierra-mineral.testnet",
+        "amountUsdc": 820000000,
+        "what": "sierra-mineral.testnet's supplier credential expired on 2026-10-29; HQ must renew it, and no approval can override this.",
+        "source": "data/attacks/credentials-testnet.json · tx GU3WDK5b…"
+      },
+      {
+        "attack": "PO-T9303 to bayfront-labsupply.testnet",
+        "amountUsdc": 900000000,
+        "what": "PO-T9303: bayfront-labsupply.testnet is not credentialed to sell raw material; no approval can override this.",
+        "source": "data/attacks/credentials-testnet.json · tx 3riqFQbx…"
+      },
+      {
+        "attack": "PO-T9304 to pacific-excipient.testnet",
+        "amountUsdc": 1240000000,
+        "what": "pacific-excipient.testnet is suspended after 2 rejected deliveries in a row until HQ reinstates it; no approval can override this.",
+        "source": "data/attacks/credentials-testnet.json · tx 9GNMhMnz…"
+      },
+      {
+        "attack": "Inflated invoice",
+        "amountUsdc": 595000000,
+        "what": "billed over the PO price; held, and the PO pays only its escrow",
+        "source": "data/attacks/invoices.json"
+      },
+      {
+        "attack": "Hidden instructions in an invoice",
+        "amountUsdc": 5150000000,
+        "what": "asked for payment to another account; held",
+        "source": "data/attacks/invoices.json"
+      },
+      {
+        "attack": "Duplicate invoice",
+        "amountUsdc": 5150000000,
+        "what": "the same invoice again after release; the escrow paid once",
+        "source": "data/replay/attacks-chain.json"
+      }
+    ]
+  },
+  "answers": [
+    {
+      "file": "data/replay/attacks-llm.json",
+      "inputTokens": 284,
+      "outputTokens": 115
+    },
+    {
+      "file": "data/replay/attacks-llm.json",
+      "inputTokens": 285,
+      "outputTokens": 121
+    },
+    {
+      "file": "data/replay/attacks-llm.json",
+      "inputTokens": 322,
+      "outputTokens": 120
+    },
+    {
+      "file": "data/replay/attacks-llm.json",
+      "inputTokens": 284,
+      "outputTokens": 120
+    },
+    {
+      "file": "data/replay/demo-llm.json",
+      "inputTokens": 5028,
+      "outputTokens": 1606
+    },
+    {
+      "file": "data/replay/demo-llm.json",
+      "inputTokens": 284,
+      "outputTokens": 120
+    },
+    {
+      "file": "data/replay/inbox-llm.json",
+      "inputTokens": 5028,
+      "outputTokens": 1544
+    },
+    {
+      "file": "data/replay/inbox-llm.json",
+      "inputTokens": 5028,
+      "outputTokens": 264
+    },
+    {
+      "file": "data/replay/inbox-llm.json",
+      "inputTokens": 5028,
+      "outputTokens": 1752
+    },
+    {
+      "file": "data/replay/inbox-llm.json",
+      "inputTokens": 5028,
+      "outputTokens": 2585
+    },
+    {
+      "file": "data/replay/inbox-llm.json",
+      "inputTokens": 5028,
+      "outputTokens": 1803
+    },
+    {
+      "file": "data/replay/inbox-llm.json",
+      "inputTokens": 5028,
+      "outputTokens": 1452
+    },
+    {
+      "file": "data/replay/inbox-llm.json",
+      "inputTokens": 5028,
+      "outputTokens": 1333
+    },
+    {
+      "file": "data/replay/review-llm.json",
+      "inputTokens": 538,
+      "outputTokens": 136
+    },
+    {
+      "file": "data/replay/review-llm.json",
+      "inputTokens": 507,
+      "outputTokens": 132
+    },
+    {
+      "file": "data/replay/review-llm.json",
+      "inputTokens": 533,
+      "outputTokens": 140
+    },
+    {
+      "file": "data/replay/review-llm.json",
+      "inputTokens": 484,
+      "outputTokens": 89
+    },
+    {
+      "file": "data/replay/review-llm.json",
+      "inputTokens": 484,
+      "outputTokens": 68
+    },
+    {
+      "file": "data/replay/review-llm.json",
+      "inputTokens": 507,
+      "outputTokens": 106
+    },
+    {
+      "file": "data/replay/review-llm.json",
+      "inputTokens": 506,
+      "outputTokens": 77
+    },
+    {
+      "file": "data/replay/review-llm.json",
+      "inputTokens": 556,
+      "outputTokens": 132
+    },
+    {
+      "file": "data/replay/review-llm.json",
+      "inputTokens": 502,
+      "outputTokens": 128
+    },
+    {
+      "file": "data/replay/review-llm.json",
+      "inputTokens": 581,
+      "outputTokens": 121
+    },
+    {
+      "file": "data/replay/review-llm.json",
+      "inputTokens": 546,
+      "outputTokens": 124
+    }
+  ],
+  "incidents": [
+    {
+      "plant": "B",
+      "id": "INC-01",
+      "title": "January ascorbic acid stockout",
+      "date": "2026-01-15",
+      "endsAt": "2026-01-15",
+      "narrative": "Winter Vitamin C demand outran a reorder point set for summer, and Northgate's New Year truck ran ten days late. A Vitamin C batch waited two days for a rush order from Ridgeway Ascorbics with $1,180 of next-day freight."
+    },
+    {
+      "plant": "B",
+      "id": "INC-03",
+      "title": "Duplicate invoice paid",
+      "date": "2026-04-13",
+      "endsAt": "2026-04-13",
+      "narrative": "A Pacific Excipient invoice was keyed in twice from paper, the second time with a space and a stray full stop, and both copies were paid. The amount is recoverable."
+    },
+    {
+      "plant": "B",
+      "id": "INC-09",
+      "title": "Packaging freight surcharge",
+      "date": "2026-05-01",
+      "endsAt": "2026-07-31",
+      "narrative": "Packaging carriers added a fuel surcharge of $85 a delivery from May through July."
+    },
+    {
+      "plant": "B",
+      "id": "INC-10",
+      "title": "Holiday shutdown",
+      "date": "2025-12-24",
+      "endsAt": "2025-12-25",
+      "narrative": "The plant closes for two days at the end of December: no batches, no trucks."
+    },
+    {
+      "plant": "B",
+      "id": "INC-10-2026",
+      "title": "Holiday shutdown",
+      "date": "2026-12-24",
+      "endsAt": "2026-12-25",
+      "narrative": "The plant closes for two days at the end of December: no batches, no trucks."
+    }
+  ],
+  "plants": {
+    "B": {
+      "name": "Hollow Pine Tablet Co.",
+      "history": true,
+      "note": null
+    },
+    "A": {
+      "name": "Acme Riverside",
+      "history": false,
+      "note": "Acme Riverside has no twelve-month history yet (data/world/ holds Hollow Pine Tablet Co.): cash, inventory, AP and spend wait for it; its savings and the group buy show here."
+    },
+    "C": {
+      "name": "Acme Lakeview",
+      "history": false,
+      "note": "Acme Lakeview has no twelve-month history yet (data/world/ holds Hollow Pine Tablet Co.): cash, inventory, AP and spend wait for it; its savings and the group buy show here."
+    }
+  }
+}

@@ -9,7 +9,8 @@
 // Ray's mailbox, unsigned) and, beside the built page, web/public/brief.html
 // (Kevin's 5am brief) and web/public/books.csv (the bookkeeper export). web/src/data/series.json
 // holds the charts' series, every plant's forecast and its four-week schedule at the same clock;
-// web/src/data/genealogy.json every lot's batches and what they made (Lots & recall). HQ's live read of the
+// web/src/data/genealogy.json every lot's batches and what they made (Lots & recall); web/src/data/money.json
+// and savings.json the Money page's books and savings ledger. HQ's live read of the
 // contract is not in the snapshot: it changes with the chain (npm run escrow reads it).
 //   --check   exit 1 if a committed file differs from a fresh export
 
@@ -31,6 +32,7 @@ import { ReviewDesk } from "../api/src/review.ts";
 import { DemoSession } from "../api/src/session.ts";
 import { readAttestationFixture, recordedReceipts } from "../server/src/attestation/fixture.ts";
 import { verifyAttestation } from "../server/src/attestation/verify.ts";
+import { moneyData, savingsData } from "../server/src/finance/load.ts";
 import { areaViews } from "../server/src/ledger/areas.ts";
 import { books, booksCsv } from "../server/src/ledger/books.ts";
 import { genealogy } from "../server/src/ledger/genealogy.ts";
@@ -57,6 +59,8 @@ const REVIEW = join(root, "web/src/data/review.json");
 const ARENA = join(root, "web/src/data/arena.json");
 const GENEALOGY = join(root, "web/src/data/genealogy.json");
 const ASK = join(root, "web/src/data/ask.json");
+const MONEY = join(root, "web/src/data/money.json");
+const SAVINGS = join(root, "web/src/data/savings.json");
 const BRIEF = join(root, "web/public/brief.html");
 const CSV = join(root, "web/public/books.csv");
 const RELAYER = "dayone-relayer.testnet";
@@ -345,6 +349,10 @@ const ask = await recordedQuestions(
   root,
 );
 
+// The Money page (server/src/finance/): each plant's money book from its world, loaded by the page
+// alone, and the savings ledger with Kevin's cost inputs, which the header's counter reads everywhere.
+const money = moneyData(root, { plants: JSON.parse(JSON.stringify(plants)) });
+
 const files: [string, string][] = [
   [OUT, text],
   [PLANTS, `${JSON.stringify(plants, null, 2)}\n`],
@@ -355,6 +363,8 @@ const files: [string, string][] = [
   [ARENA, `${JSON.stringify(arena, null, 2)}\n`],
   [GENEALOGY, `${JSON.stringify(lineage)}\n`],
   [ASK, `${JSON.stringify(ask, null, 2)}\n`],
+  [MONEY, `${JSON.stringify(money.books)}\n`],
+  [SAVINGS, `${JSON.stringify(savingsData(money), null, 2)}\n`],
   [BRIEF, briefHtml(morningBrief(env.db, { now }))],
   [CSV, booksCsv(env.db)],
 ];
