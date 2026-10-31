@@ -133,6 +133,13 @@ export function formulaText(w: Weights): string {
   return `score = 100 × (${COMPONENTS.map((c) => `${w[c.key]}·${c.label}`).join(" + ")}) / ${sum}`;
 }
 
+/** "96%" from a 0–1 rate; a dash when the window had nothing to count. */
+export const pct = (v: number | null) => (v === null ? "—" : `${Math.round(v * 100)}%`);
+/** This supplier's average price over the best qualified one's: 1.00 is the cheapest. */
+export const priceIndex = (v: number | null) => (v === null || v === 0 ? "—" : (1 / v).toFixed(2));
+export const scoreTone = (s: number | null): Tone =>
+  s === null ? "neutral" : s >= 90 ? "ok" : s >= 75 ? "waiting" : "refused";
+
 // ------------------------------------------------------------------ the clock's date
 
 /** The last grid date on or before `date`; -1 before the first. */

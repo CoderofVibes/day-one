@@ -4,7 +4,7 @@
 // materials. The numbers come from src/suppliers.ts over web/src/data/suppliers.json.
 
 import "./suppliers.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { shortDay } from "../charts.tsx";
 import {
   type Column,
@@ -18,7 +18,6 @@ import {
   useSimDate,
 } from "../kit.tsx";
 import type { SupplierStanding } from "../reads.ts";
-import type { Tone } from "../run.ts";
 import { useRead } from "../series.ts";
 import {
   type At,
@@ -27,16 +26,14 @@ import {
   formulaText,
   type LeaderRow,
   leaderboard,
+  pct,
+  priceIndex,
   readSuppliers,
   type SuppliersData,
+  scoreTone,
+  standingOf,
 } from "../suppliers.ts";
-
-/** "96%" from a 0–1 rate; a dash when the window had nothing to count. */
-export const pct = (v: number | null) => (v === null ? "—" : `${Math.round(v * 100)}%`);
-/** This supplier's average price over the best qualified one's: 1.00 is the cheapest. */
-export const priceIndex = (v: number | null) => (v === null || v === 0 ? "—" : (1 / v).toFixed(2));
-export const scoreTone = (s: number | null): Tone =>
-  s === null ? "neutral" : s >= 90 ? "ok" : s >= 75 ? "waiting" : "refused";
+import { SupplierDetail } from "./SupplierDetail.tsx";
 
 function Score({ at }: { at: At }) {
   if (at.score === null)
@@ -277,9 +274,45 @@ export function SupplierScorecards({
 }) {
   const { value: data, error } = useRead(() => readSuppliers(), "suppliers");
   const clock = useSimDate();
+  const [picked, setPicked] = useState<string | null>(supplierInUrl);
+  const pick = (vendor: string | null) => {
+    setPicked(vendor);
+    supplierToUrl(vendor);
+  };
+  useEffect(() => {
+    if (picked) document.getElementById("supplier-detail")?.scrollIntoView({ block: "start" });
+  }, [picked]);
   if (error) return <ErrorCard what="The supplier scorecards" error={error} />;
   if (!data) return <Skeleton shape="table" />;
+  const date = clock ?? data.asOf;
+  const shown = picked && data.view.names[picked] ? picked : null;
   return (
-    <Leaderboard data={data} date={clock ?? data.asOf} standings={standings} curtain={curtain} />
+    <>
+      <Leaderboard data={data} date={date} standings={standings} curtain={curtain} onPick={pick} />
+      {shown && (
+        <SupplierDetail
+          data={data}
+          vendor={shown}
+          date={date}
+          standing={standingOf(shown, data.view.names, standings)}
+          curtain={curtain}
+          onClose={() => pick(null)}
+        />
+      )}
+    </>
   );
+}
+
+/** The supplier the address names (?page=suppliers&supplier=NGI), so a detail view can be linked. */
+function supplierInUrl(): string | null {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get("supplier");
+}
+
+function supplierToUrl(vendor: string | null) {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  if (vendor) url.searchParams.set("supplier", vendor);
+  else url.searchParams.delete("supplier");
+  window.history.replaceState(window.history.state, "", url);
 }

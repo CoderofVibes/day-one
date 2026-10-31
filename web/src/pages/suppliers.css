@@ -82,3 +82,73 @@
     width: auto;
   }
 }
+
+/* ---------- the detail view ---------- */
+.supplier-detail {
+  display: grid;
+  gap: var(--s-4);
+  scroll-margin-top: 80px;
+}
+.supplier-detail h3,
+.credential-card h4 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+.lead-histo {
+  display: grid;
+  gap: var(--s-1);
+}
+.lead-histo .spark-wrap,
+.lead-histo .histo {
+  display: block;
+  width: 100%;
+}
+.supplier-incidents {
+  margin: 0;
+  padding-left: var(--s-4);
+  display: grid;
+  gap: var(--s-1);
+}
+.supplier-records {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-1);
+}
+.supplier-records li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.supplier-records li > :last-child {
+  margin-left: auto;
+}
+.credential-card {
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: var(--s-3);
+  display: grid;
+  gap: var(--s-2);
+}
+.credential-card h4,
+.credential-card p {
+  margin: 0;
+}
+.credential-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px var(--s-3);
+  margin: 0;
+}
+.credential-facts dt {
+  color: var(--ink-2);
+}
+.credential-facts dd {
+  margin: 0;
+}
