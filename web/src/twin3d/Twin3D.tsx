@@ -45,6 +45,7 @@ import {
   topHeight,
 } from "./buildings.ts";
 import { ChainCurtain } from "./ChainLayer.tsx";
+import { type Box, KEEPOUT_SELECTOR, measureKeepout, underControl } from "./keepout.ts";
 import { chainLayout, chainSubjects } from "./chain.ts";
 import {
   anchor3,
@@ -283,6 +284,8 @@ interface LabelSlot {
 }
 
 const SlotsContext = createContext<React.RefObject<Map<string, LabelSlot>> | null>(null);
+/** The overlay controls' boxes in canvas pixels (keepout.ts), kept current off the frame loop. */
+const KeepoutContext = createContext<React.RefObject<Box[]> | null>(null);
 
 export const RANK = {
   callout: 10,
@@ -530,8 +533,9 @@ const SCREEN = new THREE.Vector3();
 
 /**
  * A DOM label at its parent's position that fades out when any of it would cross the frame
- * edge: half a plant name at the edge of the stage reads as a mistake, and the story camera
- * frames the step's subjects, not every label. `stackPx` lifts the label by whole pixels so
+ * edge or sit under an overlay control (the Views pill, zoom, layer chips): half a plant name at
+ * the edge of the stage reads as a mistake, and the story camera frames the step's subjects, not
+ * every label. `stackPx` lifts the label by whole pixels so
  * labels on coins stacked in the vault stay apart at every camera distance. Each label also
  * reports its box to the overprint pass and hides when a higher-ranked or nearer label covers it.
  */
@@ -556,6 +560,7 @@ export function Label({
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
   const slots = useContext(SlotsContext);
+  const keepout = useContext(KeepoutContext);
   const id = useId();
   useEffect(() => () => observer.current?.disconnect(), []);
   useEffect(() => () => void slots?.current?.delete(id), [slots, id]);
@@ -581,7 +586,8 @@ export function Label({
       x - w / 2 >= 0 &&
       x + w / 2 <= size.width &&
       y - h / 2 >= 0 &&
-      y + h / 2 <= size.height;
+      y + h / 2 <= size.height &&
+      !underControl(x, y, w, h, keepout?.current ?? []);
     let covered = false;
     if (slots?.current) {
       const slot = slots.current.get(id);
@@ -616,6 +622,37 @@ export function Label({
       </Html>
     </group>
   );
+}
+
+/**
+ * Keeps the overlay controls' boxes current: measured when the stage or a control changes size or
+ * a control mounts, never per frame, so the labels' check forces no layout.
+ */
+function KeepoutWatch({ boxes }: { boxes: React.RefObject<Box[]> }) {
+  const gl = useThree((s) => s.gl);
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const stage = canvas.closest(".t3-stage");
+    if (!stage) return;
+    const sizes = new ResizeObserver(() => {
+      boxes.current = measureKeepout(stage, canvas);
+    });
+    const watch = () => {
+      sizes.disconnect();
+      sizes.observe(stage);
+      for (const el of stage.querySelectorAll(KEEPOUT_SELECTOR)) sizes.observe(el);
+      boxes.current = measureKeepout(stage, canvas);
+    };
+    const mounts = new MutationObserver(watch);
+    // The controls are the stage's own children; the labels inside it change too often to watch.
+    mounts.observe(stage, { childList: true });
+    watch();
+    return () => {
+      sizes.disconnect();
+      mounts.disconnect();
+    };
+  }, [gl, boxes]);
+  return null;
 }
 
 /**
@@ -1671,82 +1708,86 @@ function Scene({
     .map((f) => f.id);
   const stackIndex = (id: string) => Math.max(held.indexOf(id), refused.indexOf(id));
   const slots = useRef(new Map<string, LabelSlot>());
+  const keepout = useRef<Box[]>([]);
   const ghost = useRef<THREE.Group>(null);
 
   return (
     <FrameContext.Provider value={frame}>
-      <SlotsContext.Provider value={slots}>
-        <Driver
-          prev={prev}
-          next={next}
-          at={at}
-          last={last}
-          record={record}
-          reduced={reduced}
-          onStep={onStep}
-          frame={frame}
-        />
-        <color attach="background" args={[theme.bg]} />
-        <hemisphereLight args={[theme.panel, theme.floor, 1.1]} />
-        <directionalLight
-          position={[70, 110, 50]}
-          intensity={1.5}
-          castShadow
-          shadow-mapSize={[2048, 2048]}
-          shadow-camera-left={-130}
-          shadow-camera-right={130}
-          shadow-camera-top={130}
-          shadow-camera-bottom={-130}
-          shadow-camera-near={10}
-          shadow-camera-far={400}
-          shadow-bias={-0.0004}
-        />
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[15, -0.02, 20]} receiveShadow>
-          <planeGeometry args={[900, 900]} />
-          <meshStandardMaterial color={theme.bg} roughness={1} />
-        </mesh>
-        <group ref={ghost}>
-          <Floors theme={theme} state={next} />
-          <Buildings theme={theme} onPick={onPick} equipment={layers.equipment} />
-          <Pads theme={theme} state={next} curtain={curtain} narrow={hideLabels} />
-          {layers.stock && <Pallets pallets={pallets} theme={theme} />}
-        </group>
-        <ChainCurtain
-          ghost={ghost}
-          layout={chain}
-          at={at}
-          curtain={curtain}
-          reduced={reduced}
-          labels={!hideLabels && layers.labels}
-        />
-        <Pings prev={prev} next={next} theme={theme} />
-        {picked && <PickedOutline picked={picked} theme={theme} />}
-        <DepartmentExtras theme={theme} hideLabels={hideLabels || !layers.labels} />
-        <Road theme={theme} state={next} />
-        {layers.money &&
-          flows.map((flow) => (
-            <FlowView
-              key={flow.id}
-              flow={flow}
-              state={next}
-              theme={theme}
-              curtain={curtain}
-              narrow={hideLabels}
-              index={stackIndex(flow.id)}
-            />
-          ))}
-        {layers.money && lots.map((l) => <LotView key={l.lot.code} frameLot={l} theme={theme} />)}
-        <StoryCamera
-          title={title}
-          at={at}
-          pooled={pooled}
-          chain={chainFrame}
-          record={record}
-          reduced={reduced}
-          request={camera}
-        />
-        <LabelPass />
-      </SlotsContext.Provider>
+      <KeepoutContext.Provider value={keepout}>
+        <KeepoutWatch boxes={keepout} />
+        <SlotsContext.Provider value={slots}>
+          <Driver
+            prev={prev}
+            next={next}
+            at={at}
+            last={last}
+            record={record}
+            reduced={reduced}
+            onStep={onStep}
+            frame={frame}
+          />
+          <color attach="background" args={[theme.bg]} />
+          <hemisphereLight args={[theme.panel, theme.floor, 1.1]} />
+          <directionalLight
+            position={[70, 110, 50]}
+            intensity={1.5}
+            castShadow
+            shadow-mapSize={[2048, 2048]}
+            shadow-camera-left={-130}
+            shadow-camera-right={130}
+            shadow-camera-top={130}
+            shadow-camera-bottom={-130}
+            shadow-camera-near={10}
+            shadow-camera-far={400}
+            shadow-bias={-0.0004}
+          />
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[15, -0.02, 20]} receiveShadow>
+            <planeGeometry args={[900, 900]} />
+            <meshStandardMaterial color={theme.bg} roughness={1} />
+          </mesh>
+          <group ref={ghost}>
+            <Floors theme={theme} state={next} />
+            <Buildings theme={theme} onPick={onPick} equipment={layers.equipment} />
+            <Pads theme={theme} state={next} curtain={curtain} narrow={hideLabels} />
+            {layers.stock && <Pallets pallets={pallets} theme={theme} />}
+          </group>
+          <ChainCurtain
+            ghost={ghost}
+            layout={chain}
+            at={at}
+            curtain={curtain}
+            reduced={reduced}
+            labels={!hideLabels && layers.labels}
+          />
+          <Pings prev={prev} next={next} theme={theme} />
+          {picked && <PickedOutline picked={picked} theme={theme} />}
+          <DepartmentExtras theme={theme} hideLabels={hideLabels || !layers.labels} />
+          <Road theme={theme} state={next} />
+          {layers.money &&
+            flows.map((flow) => (
+              <FlowView
+                key={flow.id}
+                flow={flow}
+                state={next}
+                theme={theme}
+                curtain={curtain}
+                narrow={hideLabels}
+                index={stackIndex(flow.id)}
+              />
+            ))}
+          {layers.money && lots.map((l) => <LotView key={l.lot.code} frameLot={l} theme={theme} />)}
+          <StoryCamera
+            title={title}
+            at={at}
+            pooled={pooled}
+            chain={chainFrame}
+            record={record}
+            reduced={reduced}
+            request={camera}
+          />
+          <LabelPass />
+        </SlotsContext.Provider>
+      </KeepoutContext.Provider>
     </FrameContext.Provider>
   );
 }
