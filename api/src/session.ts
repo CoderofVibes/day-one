@@ -40,7 +40,7 @@ import { summarizeChainTx } from "@day-one/server/chain/summary";
 import { areaViews } from "@day-one/server/ledger/areas";
 import { books, booksCsv } from "@day-one/server/ledger/books";
 import { catalog } from "@day-one/server/ledger/catalog";
-import { genealogy } from "@day-one/server/ledger/genealogy";
+import { buildGenealogy, genealogyTables } from "@day-one/server/ledger/genealogy";
 import { plantInventory } from "@day-one/server/ledger/inventory";
 import { approvals, chainTx, staff, vendors } from "@day-one/server/ledger/schema";
 import { historySeries, stockedMaterials, stockSeries } from "@day-one/server/ledger/series";
@@ -51,6 +51,8 @@ import {
   rfqViews,
 } from "@day-one/server/ledger/views";
 import { ReplayLlm } from "@day-one/server/llm/client";
+import { readWorlds } from "@day-one/server/world/files";
+import { mergeGenealogyTables, worldGenealogyTables } from "@day-one/server/world/genealogy";
 import { eq } from "drizzle-orm";
 import {
   ALL_SCANS,
@@ -62,6 +64,7 @@ import {
   loadPackingSlip,
   openDemoEnv,
   pageOf,
+  REPO_ROOT,
 } from "./env.ts";
 import { heldInvoiceDemo } from "./heldInvoice.ts";
 import {
@@ -601,9 +604,15 @@ export class DemoSession {
     return catalog(this.env.db);
   }
 
-  /** The lot genealogy at the run's clock, every plant, for the Lots & recall page. */
+  /**
+   * The lot genealogy at the run's clock, every plant, for the Lots & recall page: the ledger's
+   * lots and batches, and the twelve-month world's (data/world/) with its finished goods and
+   * shipments to customers.
+   */
   genealogy() {
-    return { at: this.env.clock(), genealogy: genealogy(this.env.db) };
+    const world = worldGenealogyTables(readWorlds(REPO_ROOT));
+    const tables = mergeGenealogyTables(genealogyTables(this.env.db), world);
+    return { at: this.env.clock(), genealogy: buildGenealogy(tables) };
   }
 
   /**

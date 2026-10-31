@@ -314,7 +314,17 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
       (l) => l.usedIn.length > 0,
     );
     expect(used.length).toBeGreaterThan(0);
-    expect(g.has).toEqual({ fgLots: false, shipments: false });
+    // The ledger has no finished goods or shipments; the twelve-month worlds (data/world/) add them.
+    expect(g.has).toEqual({ fgLots: true, shipments: true });
+    expect(g.lots["ASC-260209-01"]?.usedIn.length).toBeGreaterThan(5);
+  });
+
+  it("serves the supplier scorecards from the twelve-month worlds", async () => {
+    const res = await api("GET", "/api/suppliers/scorecards");
+    expect(res.status).toBe(200);
+    expect(res.body.asOf).toBe("2026-11-16");
+    const qcd = res.body.suppliers.find((s: { vendor: string }) => s.vendor === "QCD");
+    expect(qcd).toMatchObject({ status: "unqualified", override: "2 QC rejects in a row" });
   });
 
   it("serves the catalogue and drafts a limit change in plain words, signing nothing", async () => {
