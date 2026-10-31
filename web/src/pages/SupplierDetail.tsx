@@ -28,9 +28,15 @@ const RECENT = 6;
 /** Lead-time bins in days: the last holds everything slower. */
 const LEAD_BINS = [0, 3, 5, 7, 10, 14, 21];
 
-function chainDay(ns: string | null | undefined) {
-  if (!ns) return null;
-  return new Date(Number(BigInt(ns) / 1_000_000n)).toISOString();
+/** "Oct 29, 2027" from the contract's nanosecond clock: approvals run across years. */
+function chainDate(ns: string | null | undefined) {
+  if (!ns) return "—";
+  return new Date(Number(BigInt(ns) / 1_000_000n)).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 function poRecord(p: PoRow, supplier: string, materialName: (c: string) => string): InspectorData {
@@ -396,7 +402,7 @@ export function SupplierDetail({
             <dt>May sell</dt>
             <dd>{standing.credential.categories.map((k) => CATEGORY_NAMES[k] ?? k).join(", ")}</dd>
             <dt>Approved until</dt>
-            <dd>{day(chainDay(standing.credential.expires_at))}</dd>
+            <dd>{chainDate(standing.credential.expires_at)}</dd>
             <dt>Deliveries on the record</dt>
             <dd>
               {standing.credential.reputation.released} released,{" "}
@@ -461,7 +467,7 @@ function credentialSentence(
   if (standing?.standing === "Revoked")
     return `HQ withdrew ${name}'s approval: ${standing.credential?.revoked?.reason ?? "no reason recorded"}. Kevin may not buy from it.`;
   if (standing?.standing === "Expired")
-    return `${name}'s approval lapsed on ${day(chainDay(standing.credential?.expires_at))}; renewing it is HQ's call.`;
+    return `${name}'s approval lapsed on ${chainDate(standing.credential?.expires_at)}; renewing it is HQ's call.`;
   if (standing?.standing === "Suspended")
     return `${standing.credential?.reputation.consecutive_rejects ?? 0} QC rejects in a row: payments to ${name} stop until HQ reviews it.`;
   if (credential === "not qualified")
