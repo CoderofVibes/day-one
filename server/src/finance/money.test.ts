@@ -19,6 +19,7 @@ import {
   kevinTally,
   landedCosts,
   type MoneyBook,
+  monthsStarted,
   overheadFor,
   paidForHimself,
   poSizeHistogram,
@@ -421,22 +422,43 @@ describe("savings and Kevin's cost", () => {
       $(2),
     );
     expect(answerCostUsdc({ file: "x", inputTokens: null, outputTokens: null }, c)).toBe($(0.01));
-    // $365 a year is $1 a day: Apr 1–10 is ten days for two plants.
+    // $30 a month, billed per month started: Apr 1–10 is the first month, for two plants.
+    const monthly = { ...c, feeUsdPerMonth: 30 };
     const cost = kevinCostAt(
       "2026-04-10",
       "2026-04-01",
       2,
       [{ file: "x", inputTokens: 1_000_000, outputTokens: 0 }],
-      c,
+      monthly,
     );
-    expect(cost).toMatchObject({ days: 10, feeUsdc: $(20), inferenceUsdc: $(1), totalUsdc: $(21) });
-    expect(kevinCostAt("2026-03-31", "2026-04-01", 2, [], c).totalUsdc).toBe(0);
+    expect(cost).toMatchObject({
+      days: 10,
+      months: 1,
+      feeUsdc: $(60),
+      inferenceUsdc: $(1),
+      totalUsdc: $(61),
+    });
+    expect(kevinCostAt("2026-04-01", "2026-04-01", 1, [], monthly).feeUsdc).toBe($(30));
+    expect(kevinCostAt("2026-05-01", "2026-04-01", 1, [], monthly).feeUsdc).toBe($(60));
+    expect(kevinCostAt("2026-03-31", "2026-04-01", 2, [], monthly).totalUsdc).toBe(0);
+  });
+
+  it("starts a billing month on T0 and on each monthly anniversary", () => {
+    expect(monthsStarted("2026-11-09", "2026-11-08")).toBe(0);
+    expect(monthsStarted("2026-11-09", "2026-11-09")).toBe(1);
+    expect(monthsStarted("2026-11-09", "2026-12-08T23:59:59.999Z")).toBe(1);
+    expect(monthsStarted("2026-11-09", "2026-12-09")).toBe(2);
+    expect(monthsStarted("2026-11-09", "2027-11-09")).toBe(13);
+    // A T0 on the 31st bills on the last day of February.
+    expect(monthsStarted("2027-01-31", "2027-02-27")).toBe(1);
+    expect(monthsStarted("2027-01-31", "2027-02-28")).toBe(2);
   });
 
   it("puts value over cost, realized only unless identified is asked for", () => {
     const s = savingsAt(entries, "2026-04-30", ["B"], "2026-04-01");
     const cost = {
       days: 30,
+      months: 1,
       plants: 1,
       feeUsdc: $(250),
       inferenceUsdc: 0,
@@ -463,7 +485,7 @@ describe("savings and Kevin's cost", () => {
 });
 
 describe("the counter", () => {
-  const c = { feeUsdPerMonth: 365 / 12, inputUsdPerMTok: 1, outputUsdPerMTok: 0, usdPerAnswer: 0 };
+  const c = { feeUsdPerMonth: 10, inputUsdPerMTok: 1, outputUsdPerMTok: 0, usdPerAnswer: 0 };
   const entries = [
     entry({ id: "b1", plant: "B", evidence: ["x"], amountUsdc: $(40), realizedAt: "2026-04-03" }),
     entry({ id: "a1", plant: "A", evidence: ["y"], amountUsdc: $(10), realizedAt: "2026-04-05" }),
@@ -478,11 +500,11 @@ describe("the counter", () => {
   };
 
   it("charges one plant's fee and its own answers", () => {
-    // Apr 1–10: $10 of fee + $1 of inference against $40 realized.
+    // Apr 1–10: the first month's $10 of fee + $1 of inference against $40 realized.
     const b = kevinTally(t, "2026-04-10", "B");
     expect(b.cost.totalUsdc).toBe($(11));
     expect(b.paid).toMatchObject({ valueUsdc: $(40), ratio: 3.6 });
-    // Riverside: $10 of fee, no answers, $10 realized.
+    // Riverside: its own first month, no answers, $10 realized.
     expect(kevinTally(t, "2026-04-10", "A").paid).toMatchObject({ costUsdc: $(10), ratio: 1 });
   });
 

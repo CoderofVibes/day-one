@@ -248,7 +248,7 @@ function Hero({ filter, at, curtain }: { filter: MoneyPlant; at: string; curtain
           Kevin paid for himself
           <Info
             title="Kevin paid for himself"
-            formula={`Value = Σ realized savings since Day One (${t0})${withIdentified ? " plus every identified saving" : ""}. Cost = the assumed fee ($${c.feeUsdPerMonth}/month per plant Kevin runs at, fictional) by the day + NEAR AI Cloud inference (each recorded answer's tokens × an assumed $${c.inputUsdPerMTok}/M in, $${c.outputUsdPerMTok}/M out) + testnet gas ≈ $0. Ratio = value ÷ cost; the ring fills to break-even.`}
+            formula={`Value = Σ realized savings since Day One (${t0})${withIdentified ? " plus every identified saving" : ""}. Cost = the assumed fee ($${c.feeUsdPerMonth}/month per plant Kevin runs at, fictional), charged per month started since Day One since a subscription bills monthly + NEAR AI Cloud inference (each recorded answer's tokens × an assumed $${c.inputUsdPerMTok}/M in, $${c.outputUsdPerMTok}/M out) + testnet gas ≈ $0. Ratio = value ÷ cost; the ring fills to break-even.`}
             window={`${t0} to the clock`}
             records={[{ label: "the savings ledger below", page: "money" }]}
           />
@@ -285,7 +285,8 @@ function Hero({ filter, at, curtain }: { filter: MoneyPlant; at: string; curtain
         </fieldset>
         <p className="hero-cost small">
           Kevin's cost so far {dollars(cost.totalUsdc)}: {dollars(cost.feeUsdc)} assumed fee (
-          {cost.days} days × {cost.plants} plant{cost.plants === 1 ? "" : "s"}, fictional) +{" "}
+          {cost.months} month{cost.months === 1 ? "" : "s"} started × {cost.plants} plant
+          {cost.plants === 1 ? "" : "s"} × ${c.feeUsdPerMonth}, fictional) +{" "}
           {dollars(cost.inferenceUsdc)} inference ({cost.metered} of {cost.answers} recorded answers
           metered) + gas ≈ $0 (testnet)
           {curtain ? " · gas is paid in testnet NEAR by the relayer and the agents' accounts" : ""}.
