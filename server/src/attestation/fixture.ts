@@ -12,6 +12,8 @@ export const LLM_FIXTURE_FILES = [
   "data/replay/attacks-llm.json",
   "data/replay/inbox-llm.json",
   "data/replay/review-llm.json",
+  /** Talk to Kevin's answers to the suggested questions (npm run ask -- --live --record). */
+  "data/replay/ask-llm.json",
 ];
 
 /** The receipts of the recorded NEAR AI answers, in fixture order; other providers have none. */
