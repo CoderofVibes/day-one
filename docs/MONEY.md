@@ -38,7 +38,7 @@ All formulas are in `server/src/finance/money.ts`, pure and per plant, with hand
 
 ## Kevin's cost and the counter
 
-Cost = an assumed $450.00 a month per plant Kevin runs at (fictional), by the day from T0 (Nov 9) + each recorded answer's tokens at an assumed rate (NEAR AI Cloud's price is not recorded in the repo) + testnet gas ≈ $0. Value = realized savings since T0; identified only with "Including identified". The assumptions live in `server/src/finance/config.ts`.
+Cost = an assumed $450.00 a month per plant Kevin runs at (fictional), charged per month started from T0 (Nov 9): a subscription bills monthly, so day one carries the first month's fee, and the next month starts on Dec 9 + each recorded answer's tokens at an assumed rate (NEAR AI Cloud's price is not recorded in the repo) + testnet gas ≈ $0. Value = realized savings since T0; identified only with "Including identified". The assumptions live in `server/src/finance/config.ts`.
 
 ## Data
 

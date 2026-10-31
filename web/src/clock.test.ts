@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { jumpsFor } from "./ClockBar.tsx";
+import { incidentMarkers, jumpsFor, worldJumps } from "./ClockBar.tsx";
 import {
   type Clock,
   createClock,
@@ -14,6 +14,7 @@ import {
 } from "./clock.ts";
 import { plantsSnapshot } from "./plants.ts";
 import { run } from "./run.ts";
+import { WORLD_INDEX, WORLD_SPAN } from "./worldEvents.ts";
 
 const make = (initial = {}): Clock =>
   createClock({ history: plantsSnapshot, steps: run.steps, frames: null, initial });
@@ -120,6 +121,38 @@ describe("the sim clock", () => {
       ["Linda's approval", "Linda texts"],
       ["QC release of ASC-261116-01", "QC release"],
     ]);
+  });
+
+  it("marks every incident of the worlds on the scrubber, inside the clock's range", () => {
+    const clock = createClock({
+      history: plantsSnapshot,
+      steps: run.steps,
+      span: WORLD_SPAN,
+      frames: null,
+    });
+    const markers = incidentMarkers(WORLD_INDEX.incidents);
+    // One marker per incident and date: INC-09 hit all three plants on one day.
+    expect(markers.length).toBe(new Set(WORLD_INDEX.incidents.map((i) => `${i.id}|${i.at}`)).size);
+    expect(markers.find((m) => m.id === "INC-09")?.plants).toHaveLength(3);
+    for (const m of markers) {
+      expect(m.at, m.id).toBeGreaterThanOrEqual(clock.range.start);
+      expect(m.at, m.id).toBeLessThanOrEqual(clock.range.end);
+    }
+    expect(markers.map((m) => m.at)).toEqual([...markers.map((m) => m.at)].sort((a, b) => a - b));
+  });
+
+  it("offers the year's presets at their incidents, inside the clock's range", () => {
+    const jumps = worldJumps(WORLD_INDEX.incidents);
+    expect(jumps.map((j) => [j.label, new Date(j.at).toISOString().slice(0, 10)])).toEqual([
+      ["Winter peak", "2026-01-15"],
+      ["Price hike", "2026-08-24"],
+      ["Failed QC lot", "2026-06-01"],
+      ["Recall lot received", "2026-02-02"],
+    ]);
+    for (const j of jumps) {
+      expect(j.at).toBeGreaterThanOrEqual(WORLD_SPAN.start);
+      expect(j.at).toBeLessThanOrEqual(WORLD_SPAN.end);
+    }
   });
 
   it("restores the time, speed, seed and session from the URL before storage", () => {

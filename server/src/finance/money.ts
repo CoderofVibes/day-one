@@ -799,6 +799,8 @@ export function answerCostUsdc(a: RecordedAnswer, c: KevinCostConfig): number {
 
 export interface KevinCost {
   days: number;
+  /** Billing months started since T0: the fee is charged at the start of each. */
+  months: number;
   plants: number;
   feeUsdc: number;
   inferenceUsdc: number;
@@ -810,7 +812,22 @@ export interface KevinCost {
 }
 
 /**
- * Kevin's cost from T0 to `at`: the assumed fee for each plant he runs at, by the day, plus the
+ * Billing months started from `t0` through `at`: one on T0, another on each monthly anniversary
+ * (a T0 on the 31st bills on the last day of a shorter month). 0 before T0.
+ */
+export function monthsStarted(t0: string, at: string): number {
+  const a = day(at);
+  if (a < t0) return 0;
+  const [y0, m0, d0] = t0.split("-").map(Number) as [number, number, number];
+  const [y, m, d] = a.split("-").map(Number) as [number, number, number];
+  const whole = (y - y0) * 12 + (m - m0);
+  const anniversary = Math.min(d0, daysInMonth(month(a)));
+  return whole + (d >= anniversary ? 1 : 0);
+}
+
+/**
+ * Kevin's cost from T0 to `at`: the assumed monthly fee for each plant he runs at, charged per
+ * month started (a subscription bills monthly, so day one carries the first month), plus the
  * recorded answers' inference (all of it from T0: they are the run's) and gas at ≈ $0.
  */
 export function kevinCostAt(
@@ -821,10 +838,12 @@ export function kevinCostAt(
   c: KevinCostConfig,
 ): KevinCost {
   const days = day(at) < t0 ? 0 : daysBetween(t0, at) + 1;
-  const fee = Math.round(((c.feeUsdPerMonth * USD * 12) / 365) * days * plants);
+  const months = monthsStarted(t0, at);
+  const fee = Math.round(c.feeUsdPerMonth * USD * months * plants);
   const inference = days > 0 ? sum(answers.map((a) => answerCostUsdc(a, c))) : 0;
   return {
     days,
+    months,
     plants,
     feeUsdc: fee,
     inferenceUsdc: inference,

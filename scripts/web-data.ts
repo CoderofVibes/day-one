@@ -13,7 +13,8 @@
 // twelve-month worlds' lots, finished goods and shipments (data/world/); web/src/data/suppliers.json
 // the supplier scorecards; web/src/data/world/ the worlds' events for the sim clock, one file a
 // month and an index; web/src/data/money.json and savings.json the Money page's books and savings
-// ledger. HQ's live read of the
+// ledger; web/src/data/usdc.json PO-1047's transactions in Circle testnet USDC (data/usdc/), for
+// the Money page's curtain. HQ's live read of the
 // contract is not in the snapshot: it changes with the chain (npm run escrow reads it).
 //   --check   exit 1 if a committed file differs from a fresh export
 
@@ -35,6 +36,8 @@ import { ReviewDesk } from "../api/src/review.ts";
 import { DemoSession } from "../api/src/session.ts";
 import { readAttestationFixture, recordedReceipts } from "../server/src/attestation/fixture.ts";
 import { verifyAttestation } from "../server/src/attestation/verify.ts";
+import { explorerUrl } from "../server/src/chain/client.ts";
+import type { Fixture } from "../server/src/chain/replay.ts";
 import { moneyData, savingsData } from "../server/src/finance/load.ts";
 import { areaViews } from "../server/src/ledger/areas.ts";
 import { books, booksCsv } from "../server/src/ledger/books.ts";
@@ -516,6 +519,9 @@ const usdcChain = JSON.parse(readFileSync(join(root, "data/usdc/PO-1047-chain.js
   recordedAt: string;
   entries: { type: string; request: { method?: string; receiverId?: string; args?: object } }[];
 };
+const usdcFix = JSON.parse(
+  readFileSync(join(root, "data/usdc/PO-1047-chain.json"), "utf8"),
+) as Fixture;
 const usdcSubmit = usdcChain.entries.find(
   (e) => e.type === "call" && e.request.method === "submit_po",
 );
@@ -535,6 +541,24 @@ const usdc = {
     tx: s.txHash,
     url: s.explorerUrl,
   })),
+  // The same calls as the curtain lists transactions, for the Money page.
+  transactions: usdcFix.entries.flatMap((e) =>
+    e.type === "call" && e.outcome.txHash
+      ? [
+          {
+            tx: e.outcome.txHash,
+            url: explorerUrl(usdcFix.network, e.outcome.txHash),
+            method: e.request.method,
+            contract: e.request.receiverId,
+            signer: e.request.signerId,
+            paidBy: e.request.viaRelayer ? RELAYER : e.request.signerId,
+            status: e.outcome.status,
+            error: e.outcome.errorMessage,
+            events: e.outcome.events.map((ev) => ev.event),
+          },
+        ]
+      : [],
+  ),
 };
 
 const files: [string, string][] = [

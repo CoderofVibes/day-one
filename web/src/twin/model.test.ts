@@ -52,9 +52,21 @@ describe("deriveTwinState over the recorded run", () => {
     expect(transfer?.from).toEqual({ kind: "dept", facility: "A", dept: "warehouse" });
     expect(transfer?.to).toEqual({ kind: "dept", facility: "B", dept: "warehouse" });
     expect(transfer?.label).toBe("ASC-261009-01 · 200 kg sent, 187.45 kg weighed in");
+    // The twin's label reads as an open review, not as a rejected lot.
+    expect(transfer?.short).toBe("ASC-261009-01 · under review");
     expect(s.facilities.find((f) => f.id === "A")?.alerts).toEqual([
       "12.55 kg of ASC-261009-01 on the books is not there; adjustment proposed for review.",
     ]);
+  });
+
+  it("shows the disputed transfer only once Kevin has found it, and keeps it while it is open", () => {
+    const disputed = (i: number) =>
+      deriveTwinState(run, i).flows.some((f) => f.status === "disputed");
+    const found = index("Discrepancy");
+    for (let i = 0; i < found; i++) expect(disputed(i), run.steps[i]?.title).toBe(false);
+    // Nothing in the run or the worlds settles Plant A's adjustment, so it stays under review.
+    for (let i = found; i < run.steps.length; i++)
+      expect(disputed(i), run.steps[i]?.title).toBe(true);
   });
 
   it("moves money from HQ into escrow for the small PO and lights purchasing", () => {

@@ -2,8 +2,8 @@
 // at the key demo moments: wide in light mode and phone-width in dark mode, with the curtain
 // off and, for the money steps, on. Files are served by request interception, so no server
 // runs. Prints console errors, the renderer's draw calls and the frames rendered in one second
-// at each moment, and any visible label that crosses the stage edge or overprints another
-// (the exit code is 1 when one does). STEPS=all captures every step; CURTAIN=1 keeps the
+// at each moment, and any visible label that crosses the stage edge, sits under an overlay control
+// (the Views pill, zoom, layer chips) or overprints another (the exit code is 1 when one does). STEPS=all captures every step; CURTAIN=1 keeps the
 // curtain on throughout; RUN=group captures the recorded group purchase (the map pane's
 // "Group buy" run, docs/GROUP_BUY.md) at its own moments instead.
 
@@ -81,8 +81,9 @@ const PROBE = `new Promise((resolve) => {
 })`;
 
 /**
- * Visible labels that cross the stage edge, and label pairs that overprint. Labels the view
- * faded out (opacity 0) do not count: that is how the twin keeps a label from being clipped.
+ * Visible labels that cross the stage edge or sit under an overlay control, and label pairs that
+ * overprint. Labels the view faded out (opacity 0) do not count: that is how the twin keeps a
+ * label from being clipped or covered.
  */
 const LABELS = `(() => {
   const stage = document.querySelector(".t3-stage").getBoundingClientRect();
@@ -95,6 +96,13 @@ const LABELS = `(() => {
   const clipped = boxes
     .filter(({ r }) => r.left < stage.left - 1 || r.right > stage.right + 1 || r.top < stage.top - 1 || r.bottom > stage.bottom + 1)
     .map((b) => b.text);
+  const controls = [...document.querySelectorAll(".twin-views, .t3-tools, .t3-layers")]
+    .map((el) => el.getBoundingClientRect())
+    .filter((r) => r.width > 0 && r.height > 0);
+  const over = (a, b) =>
+    Math.min(a.right, b.right) - Math.max(a.left, b.left) > 2 &&
+    Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 2;
+  const covered = boxes.filter(({ r }) => controls.some((c) => over(r, c))).map((b) => b.text);
   const overlapping = [];
   for (let i = 0; i < boxes.length; i++)
     for (let j = i + 1; j < boxes.length; j++) {
@@ -104,7 +112,7 @@ const LABELS = `(() => {
       // A few pixels of touching corners is not overprinting.
       if (x > 6 && y > 6) overlapping.push(boxes[i].text + " / " + boxes[j].text);
     }
-  return { clipped, overlapping };
+  return { clipped, covered, overlapping };
 })()`;
 
 const browser = await chromium.launch({ channel: "msedge" });
@@ -197,15 +205,20 @@ for (const [name, width, height, scheme] of [
     }
     await page.waitForTimeout(2600);
     const stats = (await page.evaluate(PROBE)) as { calls: number; triangles: number; fps: number };
-    const labels = (await page.evaluate(LABELS)) as { clipped: string[]; overlapping: string[] };
+    const labels = (await page.evaluate(LABELS)) as {
+      clipped: string[];
+      covered: string[];
+      overlapping: string[];
+    };
     const file = `${prefix}${name}-${String(m.step).padStart(2, "0")}-${m.name}.png`;
     await stage.screenshot({ path: join(out, file) });
     console.log(
       `${file}: ${run.steps[m.step]?.title} · ${stats.calls} draw calls, ${stats.triangles} triangles, ${stats.fps} frames in 1 s`,
     );
     for (const text of labels.clipped) console.log(`  clipped at the edge: ${text}`);
+    for (const text of labels.covered) console.log(`  under a control: ${text}`);
     for (const pair of labels.overlapping) console.log(`  overprinting: ${pair}`);
-    labelProblems += labels.clipped.length + labels.overlapping.length;
+    labelProblems += labels.clipped.length + labels.covered.length + labels.overlapping.length;
   }
   console.log(name, "errors:", errors.length ? errors : "none");
   await page.close();

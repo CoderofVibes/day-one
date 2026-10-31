@@ -10,7 +10,13 @@
 // host (docs/HOSTING.md).
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityFrame, FeedButton, type FeedProps } from "./ActivityRail.tsx";
+import {
+  ActivityFrame,
+  FeedButton,
+  type FeedProps,
+  openFeed,
+  useKevinStatus,
+} from "./ActivityRail.tsx";
 import {
   ApiError,
   BOOKS_EXPORT_URL,
@@ -41,9 +47,15 @@ import {
   type ReviewState,
   type TransferSuggestions,
 } from "./api.ts";
-import { HeaderClock, HeaderClockLine, jumpsFor } from "./ClockBar.tsx";
+import {
+  HeaderClock,
+  HeaderClockLine,
+  incidentMarkers,
+  jumpsFor,
+  worldJumps,
+} from "./ClockBar.tsx";
 import { Curtain } from "./Curtain.tsx";
-import { kevinStatus, nextTurn, PEOPLE } from "./chrome.ts";
+import { nextTurn, PEOPLE } from "./chrome.ts";
 import {
   type Clock,
   createClock,
@@ -95,7 +107,7 @@ import { SavedCounter } from "./SavedCounter.tsx";
 import type { Source } from "./series.ts";
 import { PageHeader, type PageId, type PlantCode, Shell, useRoute } from "./shell.tsx";
 import { PlantView } from "./twin3d/PlantView.tsx";
-import { attachWorld, WORLD_SPAN } from "./worldEvents.ts";
+import { attachWorld, WORLD_INDEX, WORLD_SPAN } from "./worldEvents.ts";
 
 /** The video page (?video=1): the recorded run on the storyboard's clock (docs/RECORDING.md). */
 const VideoApp = lazy(() => import("./VideoApp.tsx"));
@@ -530,7 +542,8 @@ function badgesOf(
 
 // ------------------------------------------------------------------ replay (static)
 
-const JUMPS = jumpsFor(recorded.steps);
+const JUMPS = [...jumpsFor(recorded.steps), ...worldJumps(WORLD_INDEX.incidents)];
+const MARKERS = incidentMarkers(WORLD_INDEX.incidents);
 /** What the feed reads the recorded steps' words from. */
 const REPLAY_FEED = { steps: recorded.steps, approvals: recorded.approvals };
 
@@ -571,6 +584,7 @@ function ReplayApp() {
     <HeaderClock
       clock={clock}
       jumps={JUMPS}
+      markers={MARKERS}
       onPlay={() => {
         if (at === last) go(0);
         clock.play();
@@ -595,6 +609,8 @@ function ReplayApp() {
   }, [at, go, route.page]);
 
   const current = data.steps[at] as Step;
+  // The header's chip reads the same status as the feed's top line (one source).
+  const kevinNow = useKevinStatus(clock, REPLAY_FEED);
   const upNext = at < last ? audienceOf(data.steps[at + 1] as Step) : null;
   const links = { brief: STATIC_BRIEF_URL, books: STATIC_BOOKS_URL };
   const foot = (
@@ -652,8 +668,11 @@ function ReplayApp() {
       plant={route.plant}
       onPlant={(plant) => route.go({ plant })}
       clock={headerClock}
-      kevin={kevinStatus(current, upNext?.name ?? null)}
-      onKevin={() => route.go({ page: "overview" })}
+      kevin={kevinNow}
+      onKevin={() => {
+        route.go({ page: "overview" });
+        openFeed();
+      }}
       curtain={curtain}
       setCurtain={setCurtain}
       people={people}
@@ -694,6 +713,7 @@ function ReplayApp() {
                 clock,
                 context: REPLAY_FEED,
                 go: route.go,
+                plant: route.plant,
                 actions:
                   at < last ? (
                     <button type="button" className="primary" onClick={() => go(at + 1)}>
@@ -1104,6 +1124,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
     }),
     [state],
   );
+  const kevinNow = useKevinStatus(clock, feedContext);
   const foot = (
     <Foot>
       {state.mode === "live"
@@ -1126,12 +1147,11 @@ function LiveApp({ initial }: { initial: LiveState }) {
       plant={route.plant}
       onPlant={(plant) => route.go({ plant })}
       clock={<HeaderClockLine clock={clock} />}
-      kevin={
-        busy
-          ? { state: "drafting", label: "working…" }
-          : kevinStatus(state.steps[last], state.next.who)
-      }
-      onKevin={() => route.go({ page: "overview" })}
+      kevin={busy ? { state: "drafting", label: "working…", working: true } : kevinNow}
+      onKevin={() => {
+        route.go({ page: "overview" });
+        openFeed();
+      }}
       curtain={curtain}
       setCurtain={setCurtain}
       people={people}
@@ -1172,6 +1192,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
                 clock,
                 context: feedContext,
                 go: route.go,
+                plant: route.plant,
                 actions: actionsFor(state.next).map((a) => (
                   <ActionButton key={a.label} action={a} disabled={busy !== null} onAct={act} />
                 )),

@@ -6,10 +6,22 @@
         "laborUsd": 148000,
         "utilitiesUsd": 19500,
         "rentUsd": 24000
+      },
+      "A": {
+        "laborUsd": 86000,
+        "utilitiesUsd": 12000,
+        "rentUsd": 14000
+      },
+      "C": {
+        "laborUsd": 0,
+        "utilitiesUsd": 0,
+        "rentUsd": 0
       }
     },
     "openingCashUsd": {
-      "B": 120000
+      "B": 120000,
+      "A": 90000,
+      "C": 100000
     },
     "budgets": {
       "B": {
@@ -18,6 +30,17 @@
         "packaging": 22000,
         "lab_chemical": 2000,
         "freight": 3000
+      },
+      "A": {
+        "active": 30000,
+        "excipient": 4500,
+        "packaging": 2000,
+        "lab_chemical": 500,
+        "freight": 1600
+      },
+      "C": {
+        "packaging": 9500,
+        "freight": 600
       }
     },
     "kevinCost": {

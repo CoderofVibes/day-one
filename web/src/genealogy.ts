@@ -194,6 +194,8 @@ export function trace(g: Genealogy, start: NodeRef): Trace {
 export interface Hit extends NodeRef {
   label: string;
   detail: string;
+  /** The plant the record is at; null for a lot with no plant on file. */
+  facility: string | null;
 }
 const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
 /** "2026-10-12", "oct 12" and "oct 12 2026" for an ISO time, for date search. */
@@ -204,10 +206,15 @@ function dateWords(iso: string | null | undefined): string {
   return `${iso.slice(0, 10)} ${m} ${d} ${m} ${d} ${iso.slice(0, 4)}`;
 }
 
-/** Lots, batches and shipments that match a lot id, material, supplier, batch, customer or date. */
-export function search(g: Genealogy, query: string, limit = 40): Hit[] {
+/**
+ * Lots, batches and shipments that match a lot id, material, supplier, batch, customer or date,
+ * at one plant ("all" for every plant; a lot with no plant on file matches at any).
+ */
+export function search(g: Genealogy, query: string, limit = 40, plant = "all"): Hit[] {
   const q = query.trim().toLowerCase().replace(/,/g, "");
   if (!q) return [];
+  const here = (facility: string | null) =>
+    plant === "all" || facility === null || facility === plant;
   const words = q.split(/\s+/);
   const matches = (text: string) => {
     const t = text.toLowerCase();
@@ -216,12 +223,13 @@ export function search(g: Genealogy, query: string, limit = 40): Hit[] {
   const hits: Hit[] = [];
   for (const b of Object.values(g.batches)) {
     const text = `${b.batchNo} ${b.product} ${b.productName} ${dateWords(b.completedAt)}`;
-    if (matches(text)) {
+    if (here(b.facility) && matches(text)) {
       hits.push({
         kind: "batch",
         id: b.batchNo,
         label: b.batchNo,
         detail: `${b.productName} · ${b.inputs.length} lots in`,
+        facility: b.facility,
       });
     }
   }
@@ -236,18 +244,25 @@ export function search(g: Genealogy, query: string, limit = 40): Hit[] {
       l.po,
       dateWords(l.receivedAt),
     ].join(" ");
-    if (matches(text)) {
+    if (here(l.facility) && matches(text)) {
       hits.push({
         kind: "lot",
         id: l.code,
         label: l.code,
         detail: `${l.materialName}${l.vendorName ? ` · ${l.vendorName}` : ""} · ${l.usedIn.length} batches`,
+        facility: l.facility,
       });
     }
   }
   for (const s of Object.values(g.shipments)) {
-    if (matches(`${s.shipmentNo} ${s.customer} ${dateWords(s.shippedAt)}`)) {
-      hits.push({ kind: "shipment", id: s.shipmentNo, label: s.shipmentNo, detail: s.customer });
+    if (here(s.facility) && matches(`${s.shipmentNo} ${s.customer} ${dateWords(s.shippedAt)}`)) {
+      hits.push({
+        kind: "shipment",
+        id: s.shipmentNo,
+        label: s.shipmentNo,
+        detail: s.customer,
+        facility: s.facility,
+      });
     }
   }
   // An exact id first, then lots and batches by id.

@@ -277,7 +277,9 @@ export function useClock<T extends string | number | boolean>(
   clock: Clock,
   select: (state: ClockState) => T,
 ): T {
-  return useSyncExternalStore(clock.subscribeThrottled, () => select(clock.get()));
+  const read = () => select(clock.get());
+  // The same read on the server, so a page can be rendered to markup in tests.
+  return useSyncExternalStore(clock.subscribeThrottled, read, read);
 }
 
 // ------------------------------------------------------------------ formatting

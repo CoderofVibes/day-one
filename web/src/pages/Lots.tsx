@@ -76,6 +76,8 @@ export function LotsView({
   curtain: boolean;
 }) {
   const [query, setQuery] = useState("");
+  // Matches at the header's plant, or at every plant.
+  const [allPlants, setAllPlants] = useState(false);
   const [start, setStart] = useState<NodeRef | null>(() => firstStart(g, plant));
   const [picked, setPicked] = useState<string | null>(null);
   const [drill, setDrill] = useState<DrillReport | null>(null);
@@ -91,7 +93,10 @@ export function LotsView({
     if (!drill) setStart(firstStart(g, plant));
   }, [plant]);
 
-  const hits = useMemo(() => search(g, query, 12), [g, query]);
+  const hits = useMemo(
+    () => search(g, query, 12, allPlants ? "all" : plant),
+    [g, query, allPlants, plant],
+  );
   const t = useMemo(() => (start ? trace(g, start) : null), [g, start]);
   const target = useMemo(() => drillLot(g), [g]);
 
@@ -221,6 +226,19 @@ export function LotsView({
           onChange={(e) => setQuery(e.target.value)}
           autoComplete="off"
         />
+        <fieldset className="seg lineage-scope" aria-label="Search at">
+          {[false, true].map((all) => (
+            <button
+              key={String(all)}
+              type="button"
+              aria-pressed={allPlants === all}
+              className={allPlants === all ? "on" : undefined}
+              onClick={() => setAllPlants(all)}
+            >
+              {all ? "All plants" : plantName(plant)}
+            </button>
+          ))}
+        </fieldset>
         {query.trim() &&
           (hits.length ? (
             <ul className="lineage-hits" aria-label="Matches">
@@ -232,13 +250,19 @@ export function LotsView({
                     onClick={() => pick(h)}
                   >
                     <span className="num">{h.label}</span>
-                    <small>{h.detail}</small>
+                    <small>
+                      {h.detail}
+                      {allPlants && h.facility ? ` · ${plantName(h.facility)}` : ""}
+                    </small>
                   </button>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="small muted">No lot, batch, supplier or date matches “{query}”.</p>
+            <p className="small muted">
+              No lot, batch, supplier or date matches “{query}”
+              {allPlants ? "" : ` at ${plantName(plant)}`}.
+            </p>
           ))}
       </section>
 
