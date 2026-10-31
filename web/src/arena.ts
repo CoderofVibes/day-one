@@ -46,6 +46,19 @@ export function readArena(): Promise<Arena> {
   return arena;
 }
 
+/**
+ * Fired cases, as they reach their result: the 3D curtain (twin3d/ChainLayer.tsx) draws a case
+ * the contract refused as a red pulse into a shield, with the recording's own words.
+ */
+const firedListeners = new Set<(c: ArenaCase) => void>();
+export function onFired(listener: (c: ArenaCase) => void): () => void {
+  firedListeners.add(listener);
+  return () => firedListeners.delete(listener);
+}
+export function announceFired(c: ArenaCase): void {
+  for (const l of firedListeners) l(c);
+}
+
 /** A fired case's timeline: three steps, the result, then what happened to the money. */
 export const PHASES = 5;
 export const RESULT_PHASE = 3;

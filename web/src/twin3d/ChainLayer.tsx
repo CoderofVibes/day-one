@@ -9,14 +9,19 @@
 import { useFrame } from "@react-three/fiber";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { onFired } from "../arena.ts";
 import {
+  attackEvent,
+  attackSnapshot,
   type ChainEvent,
   type ChainLayout,
   chainSnapshot,
+  eventTimes,
   GHOST_MS,
   GHOST_REDUCED_MS,
   GRID_Y,
   MAX_PULSES,
+  SHRINK_MS,
 } from "./chain.ts";
 import { applyGhost, CHAIN_ORDER, disposeGhost, stepGhost } from "./ghost.ts";
 import { ease, type V3 } from "./scene.ts";
@@ -30,6 +35,8 @@ const GOLD = "#f5c451";
 const SIMULATED = "#7f9fa8";
 
 const PIN_CAPACITY = 64;
+/** An arena attack's event: drawn red, and not a transaction of the run to inspect. */
+const isAttack = (e: ChainEvent) => e.id.startsWith("chain-attack-");
 /** How far below its shield a refusal's callout card hangs, in pixels. */
 const CALLOUT_DROP_PX = 64;
 const SHOWN_PINS = 5;
@@ -69,6 +76,8 @@ function putBeam(mesh: THREE.InstancedMesh, i: number, a: V3, b: V3, width: numb
 function finish(mesh: THREE.InstancedMesh | null, count: number) {
   if (!mesh) return;
   mesh.count = count;
+  // An empty instanced mesh would still cost a draw call.
+  mesh.visible = count > 0;
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
 }
@@ -175,6 +184,18 @@ function ChainLayer({
     badges: [],
   });
   const shownRef = useRef(shownKey(shown));
+  // Arena attacks fired while the layer is up (src/arena.ts): each plays once from its own start.
+  const attacks = useRef<{ event: ChainEvent; t0: number }[]>([]);
+  useEffect(() => {
+    let n = 0;
+    return onFired((c) => {
+      if (c.refusedBy !== "contract") return;
+      for (const tx of c.txs.filter((x) => x.status === "refused")) {
+        const event = attackEvent(layout, tx, `${c.n}-${++n}`);
+        attacks.current = [...attacks.current, { event, t0: frame.current.t }].slice(-MAX_PULSES);
+      }
+    });
+  }, [layout, frame]);
 
   const kevin = layout.accounts.find((a) => /^kevin\./.test(a.account));
   const center = useMemo<V3>(() => {
@@ -251,6 +272,16 @@ function ChainLayer({
     });
 
     const snap = chainSnapshot(layout, at, frame.current.since);
+    const now = frame.current.t;
+    attacks.current = attacks.current.filter(
+      (a) => now - a.t0 < eventTimes(a.event).shrink + SHRINK_MS,
+    );
+    for (const a of attacks.current) {
+      const s = attackSnapshot(layout, a.event, now - a.t0);
+      snap.pulses.push(...s.pulses);
+      snap.shields.push(...s.shields);
+      snap.flashes.push(...s.flashes);
+    }
     const n = nodes.current;
     const h = halos.current;
     if (n && h) {
@@ -289,16 +320,19 @@ function ChainLayer({
     const p = pulses.current;
     if (p) {
       const live = reduced ? [] : snap.pulses.slice(0, MAX_PULSES);
-      picks.current.pulses = live.map((x) => x.event.id);
+      picks.current.pulses = live.map((x) => (isAttack(x.event) ? "" : x.event.id));
       live.forEach((x, i) => {
         put(p, i, x.position, x.money ? 1.1 : 0.9);
-        p.setColorAt(i, C.set(x.money ? GOLD : x.event.recorded ? CYAN : SIMULATED));
+        p.setColorAt(
+          i,
+          C.set(isAttack(x.event) ? RED : x.money ? GOLD : x.event.recorded ? CYAN : SIMULATED),
+        );
       });
       finish(p, live.length);
     }
     const sh = shields.current;
     if (sh) {
-      picks.current.shields = snap.shields.map((x) => x.event.id);
+      picks.current.shields = snap.shields.map((x) => (isAttack(x.event) ? "" : x.event.id));
       snap.shields.forEach((x, i) => {
         const e = x.event;
         const s = e.shield as V3;

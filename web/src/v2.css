@@ -1860,3 +1860,12 @@ ul.plain {
     transition: none;
   }
 }
+
+/* The arena's 3D card: the twin with the curtain on, under the attacks (twin3d/ChainLayer.tsx). */
+.arena-twin {
+  margin-top: 16px;
+}
+
+.arena-twin h3 {
+  margin: 0 0 4px;
+}

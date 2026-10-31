@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { announceFired, onFired } from "../arena.ts";
+import arenaData from "../data/arena.json";
 import groupBuy from "../data/group-buy.json";
 import { type RunData, run, transactionsThrough } from "../run.ts";
 import {
+  attackEvent,
+  attackSnapshot,
   chainLayout,
   chainSnapshot,
   eventTimes,
@@ -12,6 +16,7 @@ import {
   roleOf,
   SHIELD_MS,
   signedSteps,
+  strangerPoint,
 } from "./chain.ts";
 
 const layout = chainLayout(run);
@@ -135,5 +140,34 @@ describe("the chain layer at a moment", () => {
     for (let i = 0; i < run.steps.length; i++)
       for (const ms of [0, 300, 900, 1500])
         expect(chainSnapshot(layout, i, ms).pulses.length).toBeLessThanOrEqual(MAX_PULSES);
+  });
+});
+
+describe("an arena attack in the layer", () => {
+  const cases = arenaData.cases as unknown as import("../arena.ts").ArenaCase[];
+  const refused = cases.flatMap((c) =>
+    c.refusedBy === "contract" ? c.txs.filter((t) => t.status === "refused") : [],
+  );
+
+  it("flies from its signer, or from beyond the pad for a stranger, into a shield with the recording's words", () => {
+    expect(refused.length).toBeGreaterThan(0);
+    for (const tx of refused) {
+      const e = attackEvent(layout, tx, "t");
+      const known = layout.accounts.find((a) => a.account === tx.signer);
+      expect(e.path[0]).toEqual(known?.position ?? strangerPoint());
+      expect(e.path[1]).toEqual(e.shield);
+      const up = attackSnapshot(layout, e, eventTimes(e).arrive + 300);
+      expect(up.shields[0]?.callout).toBe(true);
+      expect(up.shields[0]?.event.tx.error).toBe(tx.error);
+    }
+  });
+
+  it("hears a fired case from the arena page", () => {
+    const heard: number[] = [];
+    const off = onFired((c) => heard.push(c.n));
+    announceFired(cases[0] as import("../arena.ts").ArenaCase);
+    off();
+    announceFired(cases[0] as import("../arena.ts").ArenaCase);
+    expect(heard).toEqual([cases[0]?.n]);
   });
 });

@@ -512,6 +512,9 @@ export function chainSnapshot(layout: ChainLayout, at: number, sinceMs: number):
  */
 export function chainSubjects(layout: ChainLayout, at: number): Subject[] {
   const out: Subject[] = [];
+  // A step without a transaction shows the whole network.
+  if (!layout.events.some((e) => e.stepIndex === at))
+    return layout.nodes.map((n) => ({ point: n.position, padPx: [60, 30] as [number, number] }));
   for (const e of layout.events) {
     if (e.stepIndex !== at) continue;
     const node = layout.nodes.find((n) => n.role === e.role);
@@ -527,6 +530,45 @@ export function chainSubjects(layout: ChainLayout, at: number): Subject[] {
     if (e.pin) out.push({ point: e.pin.position });
   }
   return out;
+}
+
+/** Where an attacker the run never saw signs from: beyond the suppliers' pad. */
+export function strangerPoint(): V3 {
+  const [x, z] = centerOf(PADS.suppliers);
+  return [x - 16, ORB_Y, z + 14];
+}
+
+/**
+ * A fired arena attack the contract refused (src/arena.ts) as an event of the layer: a pulse
+ * from its signer, or from beyond the suppliers' pad for an account the run never saw, into a
+ * shield in front of the node of the method it called. It belongs to no step of the run.
+ */
+export function attackEvent(layout: ChainLayout, tx: Transaction, key: string): ChainEvent {
+  const role = roleOf(tx.method);
+  const node = layout.nodes.find((n) => n.role === role)?.position ?? ([0, NODE_Y, 0] as V3);
+  const from = layout.accounts.find((a) => a.account === tx.signer)?.position ?? strangerPoint();
+  const shield = lerp3(node, from, 0.18);
+  return {
+    id: `chain-attack-${key}`,
+    tx,
+    line: tx.error ?? "",
+    stepIndex: 0,
+    order: 0,
+    role,
+    recorded: Boolean(tx.url),
+    refused: true,
+    path: [from, shield],
+    shield,
+  };
+}
+
+/** One attack event alone at `sinceMs` after it was fired: its pulse, shield and callout. */
+export function attackSnapshot(
+  layout: ChainLayout,
+  event: ChainEvent,
+  sinceMs: number,
+): ChainSnapshot {
+  return chainSnapshot({ ...layout, events: [event], signedSteps: [] }, 0, sinceMs);
 }
 
 // ------------------------------------------------------------------ the inspector
