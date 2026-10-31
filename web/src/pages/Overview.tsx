@@ -1,7 +1,11 @@
-// Overview (docs/VISION.md §6.6): the plant at a glance. Four number cards, the plant map, the
-// latest batches, Kevin's panel and what just happened, and three charts, all read from the same
-// ledger the other pages read, for the plant chosen in the sidebar.
+// Overview (docs/UPGRADE_BRIEF.md §5.6): the plant at a glance. A today strip, the stat tiles over
+// a window that ends on the clock's day, the twin with "Needs a person" beside it (Linda's text
+// approval is the hero card in the recorded run), the run so far as a timeline, recent batches,
+// and three charts, all read from the same ledger the other pages read, for the plant chosen in
+// the sidebar. Every number opens what produced it.
 
+import "./redesign.css";
+import { useState } from "react";
 import type { PlantInventory } from "../api.ts";
 import {
   BarChart,
@@ -11,21 +15,53 @@ import {
   dollarsShort,
   LineChart,
   monthName,
-  NumberCard,
   percent,
   qty,
   SERIES,
   shortDay,
-  type Tone,
 } from "../charts.tsx";
+import { readout, sharedClock } from "../clock.ts";
+import { initials, Phone, Pill } from "../feed.tsx";
+import { loadRecorded } from "../journey.ts";
+import {
+  BulletBar,
+  type Column,
+  compactDollars,
+  DataTable,
+  dayStartOf,
+  EmptyState,
+  ErrorCard,
+  Gauge,
+  inWindow,
+  jumpTo,
+  MiniBar,
+  RecordLink,
+  type RecordTarget,
+  Ring,
+  Skeleton,
+  Sparkline,
+  StatTile,
+  Timeline,
+  type TimelineItem,
+  useNav,
+  useSimDate,
+  WINDOWS,
+  type WindowKey,
+  WindowPicker,
+} from "../kit.tsx";
+import { audienceOf, type RunData, type Step, statusOf } from "../run.ts";
 import { type BatchPoint, type History, readHistory, type Source, useRead } from "../series.ts";
 import { PageHeader, PLANTS, type PlantCode } from "../shell.tsx";
+import { isOpen, usePlant } from "./common.tsx";
 
 const CATEGORY_NAMES: Record<string, string> = {
   raw_material: "Raw materials",
   packaging: "Packaging",
   lab_chemical: "Lab chemicals",
 };
+
+/** The tablet line's standard yield band (§5.6). */
+const YIELD_BAND: [number, number] = [89, 92];
 
 export function Overview({
   plant,
@@ -34,6 +70,10 @@ export function Overview({
   map,
   kevin,
   activity,
+  run,
+  at,
+  onStep,
+  saved,
 }: {
   plant: PlantCode;
   source: Source;
@@ -42,56 +82,75 @@ export function Overview({
   map: React.ReactNode;
   /** Kevin's panel: whoever is up next, or the replay's transport. */
   kevin: React.ReactNode;
-  /** What just happened, newest first. */
+  /** What just happened, newest first, in full. */
   activity: React.ReactNode;
+  /** The run on screen and the step it has reached. */
+  run: RunData;
+  at: number;
+  /** The replay's step control; live, the buttons are in Kevin's panel instead. */
+  onStep?: (i: number) => void;
+  /** A tile another view adds to the row (the money run's "Kevin saved"). */
+  saved?: React.ReactNode;
 }) {
   const here = PLANTS.find((p) => p.code === plant);
   const { value: history, error } = useRead(
     () => readHistory(source),
     `${source.live}-${source.version}`,
   );
+  const [win, setWin] = useState<WindowKey>("28d");
+  const simDate = useSimDate();
+  const end = endDate(history, plant, simDate);
   return (
-    <main className="page v2" aria-label="Overview">
+    <main className="page v2 overview2" aria-label="Overview">
       <PageHeader
         crumb={`${here?.name ?? ""} › Overview`}
         title={here?.name ?? "Overview"}
         sentence="What moved, what waits on a person, and what to buy or move first."
         right={
-          <span className={source.live ? "pill held" : "pill neutral"}>
-            {source.live ? "Live" : "Replay of the recorded run"}
-          </span>
+          <>
+            <WindowPicker value={win} onChange={setWin} />
+            <span className={source.live ? "pill held" : "pill neutral"}>
+              {source.live ? "Live" : "Replay of the recorded run"}
+            </span>
+          </>
         }
       />
-      {error && <p className="error">The history could not be read: {error}</p>}
-      <Cards plant={plant} history={history} inventory={inventory} />
-      <div className="overview-grid">
-        <div className="col">
-          {map}
-          <RecentBatches plant={plant} history={history} />
-        </div>
-        <div className="col">
+      {error && (
+        <ErrorCard what="The plant history" error={error} retry={() => location.reload()} />
+      )}
+      <TodayStrip plant={plant} source={source} history={history} end={end} run={run} at={at} />
+      <Tiles
+        plant={plant}
+        source={source}
+        history={history}
+        inventory={inventory}
+        end={end}
+        days={WINDOWS[win]}
+        win={win}
+        saved={saved}
+      />
+      <div className="ov-row">
+        <div className="ov-main">{map}</div>
+        <NeedsPerson run={run} at={at} onStep={onStep}>
           {kevin}
-          {activity}
-        </div>
+        </NeedsPerson>
+      </div>
+      <div className="ov-row">
+        <RunSoFar run={run} at={at} onStep={onStep} activity={activity} />
+        <RecentBatches plant={plant} history={history} end={end} />
       </div>
       {history && <Charts plant={plant} history={history} />}
     </main>
   );
 }
 
-/** The month the plant's history has reached: the latest batch or spend month on record. */
-function currentMonth(history: History) {
-  const months = [
-    ...history.production.map((b) => b.date.slice(0, 7)),
-    ...history.spend.months.map((m) => m.month),
-  ].sort();
-  return months.at(-1) ?? "";
+/** The window's last day: the clock's day, or the plant's latest batch without a clock. */
+function endDate(history: History | null, plant: string, simDate: string | null): string {
+  if (simDate) return simDate;
+  const mine = (history?.production ?? []).filter((b) => b.facility === plant);
+  return mine.at(-1)?.date ?? "2026-11-09";
 }
-function previousMonth(ym: string) {
-  const d = new Date(`${ym}-01T00:00:00.000Z`);
-  d.setUTCMonth(d.getUTCMonth() - 1);
-  return d.toISOString().slice(0, 7);
-}
+
 function weekOf(date: string) {
   const d = new Date(`${date}T00:00:00.000Z`);
   d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
@@ -108,170 +167,578 @@ function lastWeeks(date: string, n: number) {
 export function formOf(batchNo: string): "Tablets" | "Capsules" | "Powder" {
   return batchNo.startsWith("BC-") ? "Capsules" : batchNo.startsWith("BP-") ? "Powder" : "Tablets";
 }
-/** Batches in the 28 days ending `end` (or the 28 before that, `back` = 1). */
-function window4(batches: BatchPoint[], end: string, back = 0) {
-  const to = Date.parse(`${end}T00:00:00.000Z`) - back * 28 * DAY_MS;
-  const from = to - 28 * DAY_MS;
-  return batches.filter((b) => {
-    const t = Date.parse(`${b.date}T00:00:00.000Z`);
-    return t > from && t <= to;
-  });
-}
 function yieldOf(batches: BatchPoint[]) {
   const units = batches.reduce((s, b) => s + b.units, 0);
   const theory = batches.reduce((s, b) => s + b.theoreticalUnits, 0);
   return theory ? Math.round((units * 10_000) / theory) : 0;
 }
-function signed(n: number, unit = "") {
-  return `${n > 0 ? "↑" : n < 0 ? "↓" : "→"} ${Math.abs(n).toLocaleString("en-US")}${unit}`;
+function vsLabel(win: WindowKey) {
+  return win === "12m" ? "vs prior 12 mo" : `vs prior ${win.replace("d", " d")}`;
 }
 
-function Cards({
+/** Kevin's limits as the deployment sets them, in dollars. */
+function useLimits() {
+  const { value } = useRead(() => loadRecorded(), "recorded");
+  if (!value) return null;
+  const usd = (s: string) => Number(s.replace(/[$,]/g, "")) * 1_000_000;
+  return {
+    perPo: usd(value.limits.perPo),
+    monthly: usd(value.limits.monthly),
+    approver: value.limits.approver,
+  };
+}
+
+// ------------------------------------------------------------------ today strip
+
+function TodayStrip({
   plant,
+  source,
   history,
-  inventory,
+  end,
+  run,
+  at,
 }: {
   plant: PlantCode;
+  source: Source;
+  history: History | null;
+  end: string;
+  run: RunData;
+  at: number;
+}) {
+  const { value: tables } = usePlant(source, plant);
+  const next = run.steps[at + 1];
+  const waiting = next && audienceOf(next).channel !== "none" ? audienceOf(next).name : null;
+  const onTheWay = (tables?.orders ?? []).filter(
+    (o) => isOpen(o.status) && !o.receipt && o.status !== "draft",
+  );
+  const running = (history?.production ?? []).filter(
+    (b) => b.facility === plant && b.date === end,
+  ).length;
+  const held = (history?.spend.committed ?? [])
+    .filter((s) => s.facility === plant)
+    .reduce((s, x) => s + x.totalUsdc, 0);
+  const nav = useNav();
+  const items: {
+    key: string;
+    text: string;
+    tone: "waiting" | "neutral" | "held" | "ok";
+    open?: RecordTarget;
+  }[] = [
+    waiting
+      ? { key: "person", text: `${waiting} is up next`, tone: "waiting" }
+      : { key: "person", text: "Nobody waiting", tone: "ok" },
+    {
+      key: "trucks",
+      text: `${onTheWay.length} ${onTheWay.length === 1 ? "order" : "orders"} on the way`,
+      tone: "neutral",
+      open: { id: "open", page: "purchasing", filter: "open" },
+    },
+    {
+      key: "batches",
+      text: `${running} ${running === 1 ? "batch" : "batches"} today`,
+      tone: "neutral",
+    },
+    { key: "escrow", text: `${compactDollars(held)} set aside`, tone: "held" },
+  ];
+  return (
+    <ul className="today-strip" aria-label="Today">
+      <li className="today-day">{shortDay(end)}</li>
+      {items.map((i) => (
+        <li key={i.key} className={`t-${i.tone}`}>
+          {i.open ? (
+            <button type="button" onClick={() => nav.open(i.open as RecordTarget)}>
+              {i.text}
+            </button>
+          ) : (
+            i.text
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// ------------------------------------------------------------------ tiles
+
+function Tiles({
+  plant,
+  source,
+  history,
+  inventory,
+  end,
+  days,
+  win,
+  saved,
+}: {
+  plant: PlantCode;
+  source: Source;
   history: History | null;
   inventory: PlantInventory | null;
+  end: string;
+  days: number;
+  win: WindowKey;
+  saved: React.ReactNode;
 }) {
-  if (!history) return <div className="cards-4 loading-cards" aria-busy="true" />;
-  const month = currentMonth(history);
-  const prev = previousMonth(month);
-  const mine = history.production.filter((b) => b.facility === plant);
-  const end = mine.at(-1)?.date ?? `${month}-28`;
-  const recent = window4(mine, end);
-  const before = window4(mine, end, 1);
+  const limits = useLimits();
+  const { value: tables } = usePlant(source, plant);
+  if (!history) return <Skeleton shape="tiles" count={5} />;
+  const vs = vsLabel(win);
+  const mine = history.production.filter((b) => b.facility === plant && b.date <= end);
+  const recent = mine.filter((b) => inWindow(b.date, end, days));
+  const before = mine.filter((b) => inWindow(b.date, end, days, 1));
   const weeks = lastWeeks(end, 12);
   const perWeek = weeks.map((w) => mine.filter((b) => weekOf(b.date) === w).length);
 
   // Yield compares like with like: the tablet line only (capsules and powder run near 97%).
   const tablets = mine.filter((b) => formOf(b.batchNo) === "Tablets");
-  const yNow = yieldOf(window4(tablets, end));
-  const yPrev = yieldOf(window4(tablets, end, 1));
-  const lastYields = tablets.slice(-12).map((b) => b.yieldBp / 100);
+  const yNow = yieldOf(tablets.filter((b) => inWindow(b.date, end, days)));
+  const yPrev = yieldOf(tablets.filter((b) => inWindow(b.date, end, days, 1)));
+  const lastYields = tablets.slice(-12);
 
-  const lowNow =
-    inventory?.materials.filter((m) => m.byPlant[plant]?.low).length ??
-    history.belowReorder.filter((w) => w.facility === plant).at(-1)?.below ??
-    0;
-  const reorderWeeks = history.belowReorder.filter((w) => w.facility === plant);
+  const low = (inventory?.materials ?? []).filter((m) => m.byPlant[plant]?.low);
+  const reorderWeeks = history.belowReorder.filter((w) => w.facility === plant && w.week <= end);
+  const lowNow = inventory ? low.length : (reorderWeeks.at(-1)?.below ?? 0);
   const lowBefore = reorderWeeks.at(-2)?.below ?? lowNow;
 
+  const month = end.slice(0, 7);
   const spendIn = (m: string) =>
     history.spend.months
       .filter((s) => s.facility === plant && s.month === m)
       .reduce((s, x) => s + x.totalUsdc, 0);
+  const prevMonth = new Date(`${month}-01T00:00:00.000Z`);
+  prevMonth.setUTCMonth(prevMonth.getUTCMonth() - 1);
+  const prev = prevMonth.toISOString().slice(0, 7);
   const held = history.spend.committed
     .filter((s) => s.facility === plant)
     .reduce((s, x) => s + x.totalUsdc, 0);
-  const months = [...new Set(history.spend.months.map((m) => m.month))].sort();
-  const tone = (n: number, goodWhenUp: boolean): Tone =>
-    n === 0 ? "neutral" : n > 0 === goodWhenUp ? "ok" : "problem";
+  const spent = spendIn(month);
 
+  // Received in the 90 days to the clock's day; on time is judged only where a need-by is set.
+  const receipts = (tables?.orders ?? []).filter(
+    (o) =>
+      o.receipt &&
+      o.receipt.receivedAt.slice(0, 10) <= end &&
+      inWindow(o.receipt.receivedAt, end, 90),
+  );
+  const dated = receipts.filter((o) => o.needBy);
+  const onTime = dated.filter(
+    (o) => o.receipt && o.needBy && o.receipt.receivedAt.slice(0, 10) <= o.needBy.slice(0, 10),
+  );
   return (
-    <div className="cards-4">
-      <NumberCard
-        label="Batches, last 4 weeks"
+    <div className="tiles-6">
+      <StatTile
+        label={`Batches, ${win}`}
         value={recent.length}
-        delta={{
-          text: `${signed(recent.length - before.length)} vs the 4 weeks before (${before.length})`,
-          tone: "neutral",
-        }}
-        spark={perWeek}
-        sparkLabel="Batches per week, last 12 weeks"
-      />
-      <NumberCard
-        label="Tablet yield, last 4 weeks"
-        value={yNow ? percent(yNow) : "—"}
-        delta={
-          yNow && yPrev
-            ? {
-                text: `${signed(Math.round((yNow - yPrev) / 10) / 10, " pt")} vs the 4 weeks before`,
-                tone: tone(yNow - yPrev, true),
-              }
-            : { text: "no tablet batches in the last 4 weeks", tone: "neutral" }
+        delta={{ value: recent.length - before.length, vs }}
+        spark={
+          <Sparkline
+            values={perWeek}
+            label="Batches per week, last 12 weeks"
+            points={weeks.map((w) => `wk of ${shortDay(w)}`)}
+            end="neutral"
+          />
         }
-        spark={lastYields}
-        sparkLabel="Yield of the last 12 tablet batches"
+        context="confirmed batch records"
+        why={`${recent.length} batches confirmed in the ${days} days to ${shortDay(end)}, against ${before.length} in the ${days} days before.`}
+        open={{ id: "batches", page: "batches" }}
       />
-      <NumberCard
+      <StatTile
+        label={`Tablet yield, ${win}`}
+        value={yNow ? percent(yNow) : "—"}
+        visual={
+          yNow ? (
+            <Gauge
+              value={yNow / 100}
+              min={84}
+              max={96}
+              band={YIELD_BAND}
+              label="Tablet yield"
+              format={(v) => `${v.toFixed(1)}%`}
+            />
+          ) : undefined
+        }
+        {...(yNow && yPrev
+          ? {
+              delta: {
+                value: yNow - yPrev,
+                text: `${(Math.abs(yNow - yPrev) / 100).toFixed(1)} pt`,
+                goodWhenUp: true,
+                vs,
+              },
+            }
+          : {})}
+        context={yNow ? "standard 89–92%" : "no tablet batches"}
+        why={
+          yNow
+            ? `Units made over theoretical units for the tablet line, ${days} days to ${shortDay(end)}${yPrev ? `; ${percent(yPrev)} the ${days} days before` : ""}. The standard band is 89–92%.`
+            : `No tablet batches in the ${days} days to ${shortDay(end)}.`
+        }
+        spark={
+          lastYields.length > 0 ? (
+            <Sparkline
+              values={lastYields.map((b) => b.yieldBp / 100)}
+              band={YIELD_BAND}
+              label="Yield of the last 12 tablet batches"
+              points={lastYields.map((b) => b.batchNo)}
+              format={(v) => `${v.toFixed(1)}%`}
+              end={(lastYields.at(-1)?.yieldBp ?? 0) >= 8_900 ? "ok" : "waiting"}
+            />
+          ) : undefined
+        }
+        open={{ id: "batches", page: "batches", filter: "BR-" }}
+      />
+      <StatTile
         label="Below reorder point"
         value={lowNow}
-        unit="materials"
-        delta={{
-          text: `${signed(lowNow - lowBefore)} vs a week ago`,
-          tone: tone(lowNow - lowBefore, false),
-        }}
-        spark={reorderWeeks.slice(-12).map((w) => w.below)}
-        sparkLabel="Materials below reorder, week by week"
+        unit={lowNow === 1 ? "material" : "materials"}
+        tone={lowNow > 0 ? "waiting" : undefined}
+        delta={{ value: lowNow - lowBefore, goodWhenUp: false, vs: "vs a week ago" }}
+        context={
+          lowNow > 0 ? (
+            <Pill tone={lowNow > 2 ? "refused" : "waiting"}>
+              {low
+                .slice(0, 2)
+                .map((m) => m.code)
+                .join(", ")}
+              {low.length > 2 ? ` +${low.length - 2}` : ""}
+            </Pill>
+          ) : (
+            "all above reorder"
+          )
+        }
+        why={
+          low.length
+            ? `Below the reorder point now: ${low.map((m) => m.name).join(", ")}.`
+            : "Every stocked material is above its reorder point."
+        }
+        spark={
+          reorderWeeks.length > 0 ? (
+            <Sparkline
+              values={reorderWeeks.slice(-12).map((w) => w.below)}
+              label="Materials below reorder, week by week"
+              points={reorderWeeks.slice(-12).map((w) => `wk of ${shortDay(w.week)}`)}
+              end={lowNow > 0 ? "waiting" : "ok"}
+            />
+          ) : undefined
+        }
+        open={{ id: "inventory", page: "inventory" }}
       />
-      <NumberCard
+      <StatTile
         label="Spend this month"
-        value={dollarsShort(spendIn(month))}
-        delta={{
-          text: held
-            ? `${dollars(held)} held for orders on the way`
-            : `${dollarsShort(spendIn(prev))} in ${monthName(prev)}`,
-          tone: held ? "held" : "neutral",
-        }}
-        spark={months.map(spendIn)}
-        sparkLabel="Spend by month"
+        value={compactDollars(spent)}
+        context={
+          limits ? `of ${compactDollars(limits.monthly)} Kevin may commit` : monthName(month)
+        }
+        why={`${dollars(spent)} received in ${monthName(month)}${limits ? `; Kevin may commit ${dollars(limits.monthly)} a month, and any single PO over ${dollars(limits.perPo)} goes to ${limits.approver}` : ""}. ${held ? `${dollars(held)} is held for orders on the way.` : `${dollars(spendIn(prev))} in ${monthName(prev)}.`}`}
+        open={{ id: "purchasing", page: "purchasing" }}
+      >
+        {limits && (
+          <BulletBar
+            actual={spent}
+            target={spent + held}
+            limit={limits.monthly}
+            marker={{ value: limits.perPo, label: "per PO" }}
+            label="Spend this month against the monthly limit"
+            format={compactDollars}
+            tone="held"
+          />
+        )}
+      </StatTile>
+      <StatTile
+        label={dated.length ? "On-time receipts, 90 d" : "Receipts, 90 d"}
+        value={
+          dated.length ? `${Math.round((onTime.length * 100) / dated.length)}%` : receipts.length
+        }
+        visual={
+          dated.length ? (
+            <Ring
+              value={onTime.length}
+              total={dated.length}
+              label="Received by the need-by date"
+              rest="waiting"
+              center={`${onTime.length}/${dated.length}`}
+            />
+          ) : undefined
+        }
+        context={
+          dated.length
+            ? `${receipts.length} received, ${dated.length} dated`
+            : receipts.length
+              ? "no need-by dates set"
+              : "none in 90 days"
+        }
+        why={
+          dated.length
+            ? `${onTime.length} of the ${dated.length} orders with a need-by date, received in the 90 days to ${shortDay(end)}, arrived by it; ${receipts.length} orders were received in all.`
+            : `${receipts.length} orders received in the 90 days to ${shortDay(end)}; none of them carries a need-by date, so none is judged late or on time.`
+        }
+        open={{ id: "received", page: "purchasing", filter: "received" }}
       />
+      {saved}
     </div>
   );
 }
 
-function RecentBatches({ plant, history }: { plant: PlantCode; history: History | null }) {
-  const rows = (history?.production ?? [])
-    .filter((b) => b.facility === plant)
-    .slice(-6)
+// ------------------------------------------------------------------ needs a person
+
+/** "Needs a person": the queue of what waits on someone, with Linda's text as the hero. */
+function NeedsPerson({
+  run,
+  at,
+  onStep,
+  children,
+}: {
+  run: RunData;
+  at: number;
+  onStep: ((i: number) => void) | undefined;
+  children: React.ReactNode;
+}) {
+  const phoneAt = run.steps.findIndex((s) => audienceOf(s).channel === "phone");
+  const phone = run.steps[phoneAt];
+  const request = run.approvals[0];
+  const waitingOnLinda = phone && request && at === phoneAt - 1;
+  const po = request ? /PO-\d+/.exec(request.request)?.[0] : undefined;
+  const code = po?.replace("PO-", "") ?? "";
+  return (
+    <section className="needs" aria-label="Needs a person">
+      <div className="needs-head">
+        <h2>Needs a person</h2>
+      </div>
+      {waitingOnLinda && (
+        <article className="needs-card hero" aria-label="Linda's text approval">
+          <div className="head">
+            <span className="avatar" aria-hidden="true">
+              {initials(audienceOf(phone).name)}
+            </span>
+            <b>{audienceOf(phone).name}</b>
+            <span className="muted">· {audienceOf(phone).role} · by text</span>
+            <Pill tone="waiting">needs Linda</Pill>
+          </div>
+          <div className="phone">
+            <div className="from">Text message · Kevin</div>
+            <p className="bubble">{request.request}</p>
+          </div>
+          {onStep && (
+            <div className="needs-actions">
+              <button
+                type="button"
+                className="btn"
+                disabled
+                title="The recorded run's answer was YES"
+              >
+                NO {code}
+              </button>
+              <button type="button" className="btn primary" onClick={() => onStep(phoneAt)}>
+                YES {code}
+              </button>
+            </div>
+          )}
+        </article>
+      )}
+      {phone && at >= phoneAt && (
+        <article className="needs-card done" aria-label="Linda's answer">
+          <div className="head">
+            <b>{audienceOf(phone).name}</b>
+            <span className="muted">· answered by text</span>
+            {po && <RecordLink id={po} page="purchasing" />}
+          </div>
+          <Phone step={phone as Step} approvals={run.approvals} />
+        </article>
+      )}
+      {children}
+    </section>
+  );
+}
+
+// ------------------------------------------------------------------ the run so far
+
+function RunSoFar({
+  run,
+  at,
+  onStep,
+  activity,
+}: {
+  run: RunData;
+  at: number;
+  onStep: ((i: number) => void) | undefined;
+  activity: React.ReactNode;
+}) {
+  const times = sharedClock()?.range.steps;
+  const items: TimelineItem[] = run.steps
+    .slice(0, at + 1)
+    .map((step, i) => ({ step, i }))
+    .filter(({ step }) => audienceOf(step).channel !== "none")
+    .map(({ step, i }) => {
+      const st = statusOf(step);
+      const po = /\bPO-[\w-]*\d\b/.exec(step.staff.join(" "))?.[0];
+      const who = audienceOf(step).name;
+      return {
+        key: String(i),
+        title: step.title,
+        who: initials(who),
+        chip: { label: st.label, tone: st.tone },
+        ...(times?.[i] ? { when: readout(times[i] as number) } : {}),
+        ...(po
+          ? { open: { id: po, page: "purchasing" as const } }
+          : onStep
+            ? { onClick: () => onStep(i) }
+            : {}),
+      };
+    });
+  return (
+    <section className="card-v2 ov-run" aria-label="The run so far">
+      <div className="chart-head">
+        <h3>The run so far</h3>
+        <span className="right muted small">
+          {items.length} {items.length === 1 ? "step" : "steps"}
+        </span>
+      </div>
+      {items.length ? (
+        <Timeline items={items} label="The run so far, oldest first" />
+      ) : (
+        <EmptyState
+          title="Nothing has happened on the plant floor yet."
+          body="The recorded run starts when Ray uploads the first batch record."
+          action={{ label: "Jump to the run's start", onClick: () => jumpTo(times?.[0] ?? 0) }}
+        />
+      )}
+      <details className="ov-full">
+        <summary className="small">Every step in full</summary>
+        {activity}
+      </details>
+    </section>
+  );
+}
+
+// ------------------------------------------------------------------ recent batches
+
+/** The line's usual waste: the median share of issued material over the plant's history. */
+function usualWaste(batches: BatchPoint[]): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const form of ["Tablets", "Capsules", "Powder"]) {
+    const rates = batches
+      .filter((b) => formOf(b.batchNo) === form && b.issuedBase > 0)
+      .map((b) => b.wasteBase / b.issuedBase)
+      .sort((a, b) => a - b);
+    if (rates.length) out.set(form, rates[Math.floor(rates.length / 2)] ?? 0);
+  }
+  return out;
+}
+
+function RecentBatches({
+  plant,
+  history,
+  end,
+}: {
+  plant: PlantCode;
+  history: History | null;
+  end: string;
+}) {
+  if (!history)
+    return (
+      <section className="card-v2" aria-label="Recent batches">
+        <Skeleton shape="table" count={5} />
+      </section>
+    );
+  const mine = history.production.filter((b) => b.facility === plant);
+  const usual = usualWaste(mine);
+  const rows = mine
+    .filter((b) => b.date <= end)
+    .slice(-8)
     .reverse();
+  const first = mine[0];
+  const over = (b: BatchPoint) =>
+    b.issuedBase > 0 && b.wasteBase / b.issuedBase > (usual.get(formOf(b.batchNo)) ?? 1) * 1.2;
+  const cols: Column<BatchPoint>[] = [
+    {
+      key: "batch",
+      label: "Batch",
+      text: (b) => b.batchNo,
+      render: (b) => (
+        <RecordLink
+          id={b.batchNo}
+          page="batches"
+          preview={[
+            { label: "Product", value: b.productName.replace(/^(Hollow Pine|Acme) /, "") },
+            { label: "Date", value: shortDay(b.date) },
+            { label: "Units", value: b.units.toLocaleString("en-US") },
+            { label: "Yield", value: percent(b.yieldBp) },
+          ]}
+        />
+      ),
+    },
+    {
+      key: "product",
+      label: "Product",
+      text: (b) => b.productName,
+      render: (b) => b.productName.replace(/^(Hollow Pine|Acme) /, ""),
+    },
+    { key: "date", label: "Date", render: (b) => shortDay(b.date) },
+    {
+      key: "yield",
+      label: "Yield",
+      numeric: true,
+      render: (b) => (
+        <span className="yield-cell">
+          <MiniBar
+            value={b.yieldBp / 100 - 80}
+            max={20}
+            tick={YIELD_BAND[0] - 80}
+            tone={b.yieldBp >= 8_900 ? "ok" : "waiting"}
+            label={`Yield ${percent(b.yieldBp)}`}
+          />
+          {percent(b.yieldBp)}
+        </span>
+      ),
+    },
+    {
+      key: "waste",
+      label: "Waste",
+      numeric: true,
+      render: (b) =>
+        over(b) ? (
+          <span
+            className="pill waiting"
+            title={`${((b.wasteBase / b.issuedBase) * 100).toFixed(1)}% of issued material, above this line's usual ${((usual.get(formOf(b.batchNo)) ?? 0) * 100).toFixed(1)}%`}
+          >
+            {qty(b.wasteBase, "mass")}
+          </span>
+        ) : (
+          qty(b.wasteBase, "mass")
+        ),
+    },
+  ];
   return (
     <section className="card-v2" aria-label="Recent batches">
       <div className="chart-head">
         <h3>Recent batches</h3>
         <span className="right muted small">newest first · from the batch records</span>
       </div>
-      {rows.length === 0 ? (
-        <p className="muted small">No batches on record at this plant.</p>
-      ) : (
-        <div className="table-wrap">
-          <table className="data">
-            <thead>
-              <tr>
-                <th>Batch</th>
-                <th>Product</th>
-                <th>Date</th>
-                <th className="n">Units</th>
-                <th className="n">Yield</th>
-                <th className="n">Waste</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((b) => (
-                <tr key={b.batchNo}>
-                  <td>
-                    <b>{b.batchNo}</b>
-                  </td>
-                  <td>{b.productName.replace(/^(Hollow Pine|Acme) /, "")}</td>
-                  <td>{shortDay(b.date)}</td>
-                  <td className="n num">{b.units.toLocaleString("en-US")}</td>
-                  <td className="n num">
-                    <span className={b.yieldBp < 8_800 ? "pill waiting" : undefined}>
-                      {percent(b.yieldBp)}
-                    </span>
-                  </td>
-                  <td className="n num">{qty(b.wasteBase, "mass")}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <DataTable
+        rows={rows}
+        columns={cols}
+        rowKey={(b) => b.batchNo}
+        label="Recent batches"
+        search={false}
+        empty={
+          first ? (
+            <EmptyState
+              title={`No batches by ${shortDay(end)}.`}
+              action={{
+                label: `Jump to the first, ${shortDay(first.date)}`,
+                onClick: () => jumpTo(dayStartOf(first.date) + 12 * 3_600_000),
+              }}
+            />
+          ) : (
+            <EmptyState title="No batches on record at this plant." />
+          )
+        }
+      />
     </section>
   );
 }
+
+// ------------------------------------------------------------------ charts
 
 function Charts({ plant, history }: { plant: PlantCode; history: History }) {
   const mine = history.production.filter((b) => b.facility === plant);

@@ -16,7 +16,9 @@ import type {
 import { KevinNote, Pill } from "./feed.tsx";
 import { groupBuy } from "./groupBuy.ts";
 import { ImportPane } from "./ImportPane.tsx";
+import { ErrorCard, Skeleton } from "./kit.tsx";
 import { quantity } from "./live.ts";
+import { TransferCard } from "./pages/Plants.tsx";
 import type { RunData, Transaction } from "./run.ts";
 
 const usd = (units: number | string) =>
@@ -72,9 +74,11 @@ export function PlantsPane({
         <div className="panel-head">
           <h2>Three plants · one truth</h2>
         </div>
-        <p className={error ? "error" : "muted"}>
-          {error ? `The plant figures could not be read: ${error}` : "Loading…"}
-        </p>
+        {error ? (
+          <ErrorCard what="The plant figures" error={error} retry={() => location.reload()} />
+        ) : (
+          <Skeleton shape="table" count={4} />
+        )}
       </section>
     );
   }
@@ -191,7 +195,7 @@ export function PlantsPane({
           <li key={s.key}>
             <div className="cont">
               <Pill tone="held">before you buy</Pill>
-              <p>{s.sentence}</p>
+              <TransferCard move={s} inventory={inventory} />
             </div>
             {act && (
               <div className="actions">
@@ -584,9 +588,11 @@ export function BooksPane({
         </div>
       </div>
       {!books ? (
-        <p className={error ? "error" : "muted"}>
-          {error ? `The books could not be read: ${error}` : "Loading…"}
-        </p>
+        error ? (
+          <ErrorCard what="The books" error={error} retry={() => location.reload()} />
+        ) : (
+          <Skeleton shape="table" count={4} />
+        )
       ) : (
         <>
           {books.sentences
@@ -786,7 +792,7 @@ export function HqPane({ policy, live }: { policy: PolicyState | null; live: boo
       ) : policy?.reachable && !agent ? (
         <KevinNote alert>No spend policy is set for Kevin.</KevinNote>
       ) : live ? (
-        <p className="muted">Reading the contract…</p>
+        <Skeleton shape="tiles" count={4} />
       ) : (
         <KevinNote>
           The contract refused PO-1042 over my $2,500.00 per-PO limit in this run until Linda

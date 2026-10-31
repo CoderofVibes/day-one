@@ -34,7 +34,7 @@ export function NumberCard({
   children?: React.ReactNode;
 }) {
   return (
-    <section className="stat" aria-label={label}>
+    <section className="stat tile" aria-label={label}>
       <div className="stat-label">{label}</div>
       <div className="stat-value num">
         {value}
@@ -488,11 +488,14 @@ export function Donut({
   center,
   centerLabel,
   label,
+  format = String,
 }: {
   slices: { label: string; value: number; color: string }[];
   center: string;
   centerLabel: string;
   label: string;
+  /** How a slice's value reads on hover and in the legend. */
+  format?: (v: number) => string;
 }) {
   const [hover, setHover] = useState<number | null>(null);
   const total = slices.reduce((s, x) => s + x.value, 0) || 1;
@@ -527,7 +530,7 @@ export function Donut({
           return el;
         })}
         <text x="60" y="60" className="donut-center" textAnchor="middle">
-          {hover === null ? center : String(slices[hover]?.value ?? "")}
+          {hover === null ? center : format(slices[hover]?.value ?? 0)}
         </text>
         <text x="60" y="77" className="donut-sub" textAnchor="middle">
           {hover === null ? centerLabel : (slices[hover]?.label ?? "")}
@@ -542,7 +545,7 @@ export function Donut({
           >
             <i style={{ background: s.color }} />
             {s.label}
-            <b className="num">{s.value}</b>
+            <b className="num">{format(s.value)}</b>
           </li>
         ))}
       </ul>

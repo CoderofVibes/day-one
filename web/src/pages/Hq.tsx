@@ -3,10 +3,12 @@
 // Reconciliation (Day One, the ERP and the contract, check by check). All from recordings of
 // testnet runs; companies by name, the accounts and transactions behind the curtain.
 
-import { dollars, NumberCard, qty } from "../charts.tsx";
+import "./redesign.css";
+import { ChartCard, Donut, dollars, NumberCard, qty } from "../charts.tsx";
 import { Pill } from "../feed.tsx";
 import { groupBuy } from "../groupBuy.ts";
 import { readCatalog, readReconciliation } from "../journey.ts";
+import { compactDollars, Ring, StatTile, Timeline } from "../kit.tsx";
 import { type AttackResult, readRecorded, type SupplierStanding } from "../reads.ts";
 import type { Tone } from "../run.ts";
 import { type Source, useRead } from "../series.ts";
@@ -224,21 +226,45 @@ export function GroupPage({ go }: { go: () => void }) {
   const po = g.po;
   return (
     <>
-      <div className="cards-4">
-        <NumberCard label="Pooled" value={qty(g.pool.qtyBase, "mass")}>
-          <small className="muted">ascorbic acid, {g.pool.shares.length} plants</small>
-        </NumberCard>
-        <NumberCard label="Pooled order" value={po ? dollars(po.totalUsdc) : "—"}>
-          <small className="muted">{po ? `${po.poNo} to ${po.vendor}` : "not placed"}</small>
-        </NumberCard>
-        <NumberCard
+      <div className="tiles-4">
+        <StatTile
+          label="Pooled"
+          value={qty(g.pool.qtyBase, "mass")}
+          context={`ascorbic acid, ${g.pool.shares.length} plants`}
+        />
+        <StatTile
+          label="Pooled order"
+          value={po ? compactDollars(po.totalUsdc) : "—"}
+          context={po ? `${po.poNo} to ${po.vendor}` : "not placed"}
+        />
+        <StatTile
           label="Saved against the price on file"
           value={po ? dollars(po.savingsUsdc) : "—"}
-        >
-          <small className="muted">{po ? `${dollars(po.unitPriceUsdc)}/kg pooled` : ""}</small>
-        </NumberCard>
-        <NumberCard label="State" value={po?.status ?? "—"} />
+          context={po ? `${dollars(po.unitPriceUsdc)}/kg pooled` : ""}
+        />
+        <StatTile label="State" value={po?.status ?? "—"} context="released on QC" />
       </div>
+      <ChartCard title="Who paid for it" unit="each plant's share of the pooled order">
+        <Donut
+          label="Each plant's share of the pooled order"
+          center={po ? compactDollars(po.totalUsdc) : "—"}
+          centerLabel={`${g.pool.shares.length} plants paid`}
+          format={(v) => dollars(v)}
+          slices={[
+            ...g.pool.shares.map((s, i) => ({
+              label: s.plantName,
+              value: s.amount,
+              color: i === 0 ? "var(--chart-1)" : "var(--chart-2)",
+            })),
+          ]}
+        />
+        {g.pool.declined.length > 0 && (
+          <p className="small muted">
+            {g.pool.declined.map((c) => plantName(c)).join(", ")} declined: no need for it in the
+            next 10 days.
+          </p>
+        )}
+      </ChartCard>
       <div className="split-wide">
         <section className="card-v2" aria-label="Each plant's share">
           <div className="chart-head">
@@ -314,14 +340,46 @@ export function SealedPage({ source, curtain }: { source: Source; curtain: boole
   const bids = [...s.check.bids].sort((a, b) => a.terms.unitPriceUsdc - b.terms.unitPriceUsdc);
   return (
     <>
-      <div className="cards-4">
-        <NumberCard label="Round" value={s.round} />
-        <NumberCard label="Sealed quotes" value={s.check.bids.length}>
-          <small className="muted">each sealed before the deadline</small>
-        </NumberCard>
-        <NumberCard label="Check" value={s.check.result === "VALID" ? "valid" : "invalid"} />
-        <NumberCard label="Awarded" value={name(s.check.winner)} />
+      <div className="tiles-4">
+        <StatTile label="Round" value={s.round} context="sealed quote round" />
+        <StatTile
+          label="Sealed quotes"
+          value={s.check.bids.length}
+          context="each sealed before the deadline"
+        />
+        <StatTile
+          label="Check"
+          value={s.check.result === "VALID" ? "valid" : "invalid"}
+          tone={s.check.result === "VALID" ? undefined : "refused"}
+          context={s.check.result === "VALID" ? "every seal matched" : "a seal did not match"}
+        />
+        <StatTile label="Awarded" value={name(s.check.winner)} context="lowest landed price" />
       </div>
+      <section className="card-v2" aria-label="Commit, then reveal">
+        <div className="chart-head">
+          <h3>Commit, then reveal</h3>
+          <span className="right small muted">sealed until the deadline, opened together</span>
+        </div>
+        <Timeline
+          label="The sealed round, in order"
+          items={s.staff.map((l, i) => {
+            const [when, ...rest] = l.split(/\s{2,}/);
+            const text = rest.join(" ") || l;
+            return {
+              key: String(i),
+              title: text,
+              ...(rest.length ? { when } : {}),
+              chip: /refused/i.test(text)
+                ? { label: "refused", tone: "refused" as const }
+                : /selected|chose/.test(text)
+                  ? { label: "awarded", tone: "ok" as const }
+                  : /opened/.test(text)
+                    ? { label: "revealed", tone: "paid" as const }
+                    : { label: "sealed", tone: "held" as const },
+            };
+          })}
+        />
+      </section>
       <div className="split-wide">
         <section className="card-v2" aria-label="The round">
           <div className="chart-head">
@@ -380,14 +438,21 @@ export function ReconciliationPage({ source, curtain }: { source: Source; curtai
   const ok = rec.checks.filter((c) => c.ok && !c.skipped).length;
   return (
     <>
-      <div className="cards-4">
-        <NumberCard
+      <div className="tiles-4">
+        <StatTile
           label="Checks that agree"
-          value={`${ok} of ${rec.checks.length}`}
-          delta={{
-            text: rec.ok ? "all agree" : "a check disagrees",
-            tone: rec.ok ? "ok" : "problem",
-          }}
+          value={`${ok}/${rec.checks.length}`}
+          visual={
+            <Ring
+              value={ok}
+              total={rec.checks.length}
+              label="Reconciliation checks that agree"
+              tone={rec.ok ? "ok" : "refused"}
+              rest="refused"
+            />
+          }
+          context={rec.ok ? "all agree" : "a check disagrees"}
+          why={rec.checks.map((c) => `${c.ok ? "✓" : "✗"} ${c.name}`).join("\n")}
         />
       </div>
       <section className="card-v2" aria-label="The checks">
@@ -395,24 +460,30 @@ export function ReconciliationPage({ source, curtain }: { source: Source; curtai
           <h3>Day One, the ERP and the contract</h3>
           <span className="right small muted">the recorded run with the ERP attached</span>
         </div>
-        <ul className="recon wide">
-          {rec.checks.map((c) => (
-            <li key={c.name}>
-              <Pill tone={c.skipped ? "neutral" : c.ok ? "paid" : "refused"}>
-                {c.skipped ? "skipped" : c.ok ? "match" : "mismatch"}
-              </Pill>
-              <b>{c.name}</b>
-              {curtain ? (
-                <ul className="small">
-                  {c.lines.map((l) => (
-                    <li key={l}>{l}</li>
-                  ))}
-                </ul>
-              ) : (
-                <small>{RECON_PLAIN[c.name] ?? c.lines[0]}</small>
-              )}
-            </li>
-          ))}
+        <ul className="check-cards">
+          {rec.checks.map((c) => {
+            const state = c.skipped ? "skipped" : c.ok ? "ok" : "bad";
+            return (
+              <li key={c.name} className={`check-card ${state}`}>
+                <span className="check-tick" aria-hidden="true">
+                  {c.skipped ? "–" : c.ok ? "✓" : "✗"}
+                </span>
+                <b>{c.name}</b>
+                <Pill tone={c.skipped ? "neutral" : c.ok ? "paid" : "refused"}>
+                  {c.skipped ? "skipped" : c.ok ? "match" : "mismatch"}
+                </Pill>
+                {curtain ? (
+                  <ul className="small">
+                    {c.lines.map((l) => (
+                      <li key={l}>{l}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <small>{RECON_PLAIN[c.name] ?? c.lines[0]}</small>
+                )}
+              </li>
+            );
+          })}
         </ul>
         {curtain && (
           <p className="small muted">
