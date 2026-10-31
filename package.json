@@ -48,6 +48,7 @@
     "inbox": "tsx scripts/inbox.ts",
     "brief": "tsx scripts/brief.ts",
     "review": "tsx scripts/review.ts",
+    "ask": "tsx scripts/ask.ts",
     "import": "tsx scripts/import.ts",
     "render:import": "tsx scripts/render-import.ts",
     "api": "tsx api/src/main.ts",

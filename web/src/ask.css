@@ -1,0 +1,142 @@
+/* Talk to Kevin (pages/Ask.tsx). */
+.ask {
+  display: grid;
+  gap: var(--s-3);
+  min-width: 0;
+}
+.ask-start {
+  display: grid;
+  gap: var(--s-3);
+}
+.ask-chips {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ask-chip {
+  font: inherit;
+  font-size: var(--t-sm);
+  text-align: left;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  max-width: 100%;
+}
+.ask-chip:hover:not(:disabled) {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+.ask-chip:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.ask-form {
+  display: flex;
+  gap: 8px;
+}
+.ask-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+.ask-input:disabled {
+  background: var(--surface-2);
+  color: var(--ink-3);
+}
+.ask-turns {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-3);
+}
+.ask-turn {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.ask-q {
+  justify-self: end;
+  max-width: min(560px, 100%);
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 14px 14px 4px 14px;
+  background: var(--brand);
+  color: var(--brand-ink);
+  overflow-wrap: anywhere;
+}
+.ask-a {
+  display: grid;
+  gap: 8px;
+  max-width: 760px;
+  overflow-wrap: anywhere;
+}
+.ask-text {
+  margin: 0;
+  line-height: 1.5;
+}
+.ask-text a,
+.ask-cites a,
+.ask-proposal a {
+  color: var(--brand);
+  font-weight: 600;
+}
+.ask-cites,
+.ask-proposal {
+  margin: 0;
+}
+.ask-model {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.ask-badge {
+  font: inherit;
+  font-size: var(--t-sm);
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.ask-badge.signed {
+  color: var(--brand);
+  background: var(--brand-soft);
+  border-color: color-mix(in srgb, var(--brand) 35%, transparent);
+}
+.ask-badge.fallback {
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border-color: var(--line-2);
+}
+.ask-recorded {
+  color: var(--ink-3);
+}
+.ask-details {
+  flex-basis: 100%;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 12px;
+  margin: 0;
+  color: var(--ink-2);
+}
+.ask-details dt {
+  font-weight: 600;
+}
+.ask-details dd {
+  margin: 0;
+  min-width: 0;
+}

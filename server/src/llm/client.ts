@@ -47,6 +47,55 @@ export class RoutedLlm implements LlmClient {
   }
 }
 
+/**
+ * NEAR AI Cloud first; when it fails (down, timed out, no usable answer), the labeled fallback.
+ * The result's `provider` says which answered, so a screen can mark a fallback answer as not
+ * attested.
+ */
+export class FallbackLlm implements LlmClient {
+  constructor(
+    private readonly primary: LlmClient,
+    private readonly fallback: LlmClient | null,
+    private readonly onFallback: (error: unknown) => void = () => {},
+  ) {}
+
+  async complete(task: LlmTask, request: LlmRequest): Promise<LlmResult> {
+    try {
+      return await this.primary.complete(task, request);
+    } catch (error) {
+      if (!this.fallback) throw error;
+      this.onFallback(error);
+      return this.fallback.complete(task, request);
+    }
+  }
+}
+
+/** The fallback route when NEAR AI Cloud fails: LLM_ROUTE_FALLBACK, Claude by default. */
+export const DEFAULT_FALLBACK_ROUTE = "anthropic:claude-sonnet-5-5";
+
+/**
+ * Kevin's reasoning client with the labeled fallback, from .env: the reasoning route on NEAR AI
+ * Cloud, then LLM_ROUTE_FALLBACK when ANTHROPIC_API_KEY is set. Null when neither key is set.
+ */
+export function createFallbackLlm(
+  env: NodeJS.ProcessEnv = process.env,
+  onFallback?: (error: unknown) => void,
+): LlmClient | null {
+  const primary = parseRoute(env.LLM_ROUTE_REASONING ?? "nearai:z-ai/glm-5.3-flash");
+  const second = parseRoute(env.LLM_ROUTE_FALLBACK ?? DEFAULT_FALLBACK_ROUTE);
+  const adapters: Partial<Record<LlmProvider, LlmAdapter>> = {};
+  if (env.NEARAI_API_KEY) {
+    adapters.nearai = new NearAiAdapter(env.NEARAI_API_KEY, env.NEARAI_BASE_URL);
+  }
+  if (env.ANTHROPIC_API_KEY) adapters.anthropic = new AnthropicAdapter();
+  const route = (r: Route) =>
+    adapters[r.provider] ? new RoutedLlm({ reasoning: r, vision: r }, adapters) : null;
+  const first = route(primary);
+  const fallback = second.provider === primary.provider ? null : route(second);
+  if (!first) return fallback;
+  return new FallbackLlm(first, fallback, onFallback);
+}
+
 /** The replay key: the task and the full request, with images reduced to their hashes. */
 export function requestKey(task: LlmTask, request: LlmRequest): string {
   return sha256Hex(

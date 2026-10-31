@@ -1,0 +1,117 @@
+{
+  "recordedAt": null,
+  "enclave": {
+    "model": "z-ai/glm-5.3-flash",
+    "tier": "Private TEE",
+    "fetchedAt": "2026-10-30T09:36:16.260Z",
+    "checks": [
+      {
+        "name": "model TDX quote",
+        "status": "verified",
+        "detail": "v4, MRTD df4d77c8…"
+      },
+      {
+        "name": "model nonce",
+        "status": "verified",
+        "detail": "our nonce 564f47de… echoed"
+      },
+      {
+        "name": "model report_data",
+        "status": "verified",
+        "detail": "binds signer 3b753b44… and our nonce"
+      },
+      {
+        "name": "model debug mode",
+        "status": "verified",
+        "detail": "off"
+      },
+      {
+        "name": "model compose hash",
+        "status": "verified",
+        "detail": "app_compose hashes to MRCONFIGID 5f7ebd85…"
+      },
+      {
+        "name": "model event log",
+        "status": "verified",
+        "detail": "replays to RTMR3 e0f6c83e…"
+      },
+      {
+        "name": "model Intel collateral",
+        "status": "verified",
+        "detail": "TCB UpToDate (checked 2026-10-30 09:36Z)"
+      },
+      {
+        "name": "model NVIDIA GPU",
+        "status": "verified",
+        "detail": "NRAS overall attestation result true (checked 2026-10-30 09:36Z)"
+      },
+      {
+        "name": "gateway TDX quote",
+        "status": "verified",
+        "detail": "v4, MRTD 7fe60787…"
+      },
+      {
+        "name": "gateway nonce",
+        "status": "verified",
+        "detail": "our nonce 564f47de… echoed"
+      },
+      {
+        "name": "gateway report_data",
+        "status": "verified",
+        "detail": "binds signer b98a789c… and our nonce"
+      },
+      {
+        "name": "gateway debug mode",
+        "status": "verified",
+        "detail": "off"
+      },
+      {
+        "name": "gateway compose hash",
+        "status": "verified",
+        "detail": "app_compose hashes to MRCONFIGID f571e5da…"
+      },
+      {
+        "name": "gateway event log",
+        "status": "verified",
+        "detail": "replays to RTMR3 697010aa…"
+      },
+      {
+        "name": "gateway Intel collateral",
+        "status": "verified",
+        "detail": "TCB UpToDate (checked 2026-10-30 09:36Z)"
+      }
+    ]
+  },
+  "questions": [
+    {
+      "question": "Why did you order from Northgate instead of QuickChem?",
+      "answer": null,
+      "signature": null
+    },
+    {
+      "question": "Why was PO-1042 refused?",
+      "answer": null,
+      "signature": null
+    },
+    {
+      "question": "Where did lot ASC-261116-01 go?",
+      "answer": null,
+      "signature": null
+    },
+    {
+      "question": "What's below reorder point today?",
+      "answer": null,
+      "signature": null
+    },
+    {
+      "question": "Why is Pacific Excipient suspended?",
+      "answer": null,
+      "signature": null
+    },
+    {
+      "question": "What did the attack suite try?",
+      "answer": null,
+      "signature": null
+    }
+  ]
+}

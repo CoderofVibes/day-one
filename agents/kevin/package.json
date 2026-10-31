@@ -25,7 +25,9 @@
     "./groupBuy": "./src/groupBuy.ts",
     "./mcp": "./src/mcp.ts",
     "./transferSuggestions": "./src/transferSuggestions.ts",
-    "./schedule": "./src/schedule.ts"
+    "./schedule": "./src/schedule.ts",
+    "./facts": "./src/facts.ts",
+    "./ask": "./src/ask.ts"
   },
   "dependencies": {
     "@day-one/server": "*",

@@ -24,7 +24,9 @@
 //   GET  /api/brief                            Kevin's 5am brief (?plant=A|B|C; the acquired plant by default)
 //   GET  /api/brief.html                       the same brief as one printable page
 //   GET  /api/review                           Kevin's morning review of Ray's mailbox: each message, his check, what a signature does
-//   POST /api/review/:messageId/sign           JSON {"staff"?: "Ray Delgado"}: signs one draft (the schedule or a vendor card changes; never money)
+//   GET  /api/ask                              Talk to Kevin: how he answers here (live, recorded, off) and the suggested questions
+//   POST /api/ask                              JSON {"question": …}: Kevin's answer from the records, with citations and the model's label; changes nothing
+//   POST /api/review/:messageId/sign          JSON {"staff"?: "Ray Delgado"}: signs one draft (the schedule or a vendor card changes; never money)
 //   GET  /api/policy                           HQ's view: the limits the contract enforces now, policy changes
 //   GET  /api/journey                          the integration program: seven stages, what each holds (VISION §6.12.3)
 //   POST /api/journey/decisions                JSON {"stage": 3, "item": "plan", "decision"?: "confirmed", "staff"?: …, "note"?: …}
@@ -56,6 +58,7 @@ import { extname, join, normalize, resolve, sep } from "node:path";
 import { DemoOrderError } from "@day-one/kevin/demo";
 import { ExtractionError } from "@day-one/kevin/extraction";
 import { explainFailure } from "@day-one/server/chain/explain";
+import { AskDesk, AskError, AskLimitError, AskUnavailableError } from "./ask.ts";
 import { DemoEnvError, REPO_ROOT } from "./env.ts";
 import { ImportDesk } from "./imports.ts";
 import { recordedReconciliation } from "./reconcile.ts";
@@ -68,6 +71,8 @@ export interface ServerOptions {
   maxBodyBytes?: number;
   /** The import wizard's own ledger; a fresh empty plant by default. */
   imports?: ImportDesk;
+  /** Talk to Kevin; from .env on the first question by default (AskDesk.fromEnv). */
+  ask?: AskDesk;
 }
 
 export const API_MARK = '<meta name="day-one-api" content="live" />';
@@ -88,8 +93,16 @@ const TYPES: Record<string, string> = {
 export function createServer(session: DemoSession, options: ServerOptions = {}) {
   const maxBody = options.maxBodyBytes ?? 10 * 1024 * 1024;
   const desk = options.imports ?? new ImportDesk();
+  let ask = options.ask;
+  const askDesk = () => {
+    ask ??= AskDesk.fromEnv();
+    return ask;
+  };
   const server = createHttpServer(async (req, res) => {
     try {
+      if (req.url?.split("?")[0]?.replace(/\/+$/, "") === "/api/ask") {
+        return await askRoute(askDesk(), req, res, maxBody);
+      }
       await route(session, desk, req, res, options.staticDir, maxBody);
     } catch (error) {
       reply(res, ...statusOf(error, session));
@@ -378,6 +391,37 @@ function steps(
     stopped: state.stopped,
   };
   reply(res, 200, body);
+}
+
+/**
+ * Talk to Kevin: GET says how he answers here and what to ask; POST {question} answers from
+ * the records. It reads only: the run, the ledger and the chain do not move. A session is the
+ * browser's x-day-one-session header, limited per minute, and so is its address.
+ */
+async function askRoute(ask: AskDesk, req: IncomingMessage, res: ServerResponse, maxBody: number) {
+  if (req.method === "GET") return reply(res, 200, ask.info());
+  if (req.method !== "POST") return reply(res, 405, { error: "method not allowed" });
+  const body = await readJson(req, maxBody);
+  if (typeof body.question !== "string") {
+    return reply(res, 400, { error: 'ask Kevin with {"question": "…"}' });
+  }
+  const session = req.headers["x-day-one-session"];
+  try {
+    return reply(
+      res,
+      200,
+      await ask.ask(body.question, {
+        session: typeof session === "string" ? session.slice(0, 64) : "",
+        address: req.socket.remoteAddress ?? "",
+      }),
+    );
+  } catch (error) {
+    const message = (error as Error).message;
+    if (error instanceof AskLimitError) return reply(res, 429, { error: message });
+    if (error instanceof AskUnavailableError) return reply(res, 503, { error: message });
+    if (error instanceof AskError) return reply(res, 400, { error: message });
+    return reply(res, 502, { error: `Kevin's model did not answer: ${message}` });
+  }
 }
 
 function reply(res: ServerResponse, status: number, body: unknown) {
