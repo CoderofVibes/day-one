@@ -593,8 +593,8 @@ a {
 }
 
 .clock-mode.recorded {
-  color: var(--recorded);
-  background: var(--recorded-bg);
+  color: var(--chain);
+  background: var(--chain-tint);
 }
 
 .clock-mode.simulated {
@@ -620,8 +620,8 @@ a {
   background: linear-gradient(
       to right,
       transparent var(--golden-from),
-      var(--recorded-bg) var(--golden-from),
-      var(--recorded-bg) var(--golden-to),
+      var(--chain-tint) var(--golden-from),
+      var(--chain-tint) var(--golden-to),
       transparent var(--golden-to)
     )
     center / 100% 10px no-repeat;
@@ -1282,16 +1282,17 @@ tbody th:first-child {
   font-weight: 600;
 }
 
+/* Lot colours from src/lotStates.ts (each state's `fill`). */
 .plant-map .lot.quarantine {
   fill: var(--quarantine);
 }
 
 .plant-map .lot.released {
-  fill: var(--paid);
+  fill: var(--ok);
 }
 
 .plant-map .lot.rejected {
-  fill: var(--refused);
+  fill: var(--bad);
 }
 
 .plant-map .flow path {

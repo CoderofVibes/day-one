@@ -2,6 +2,7 @@
 // words, and the line a page shows for a plant that is already on Acme's systems.
 
 import { useState } from "react";
+import { lotStyle } from "../lotStates.ts";
 import { readPlant } from "../reads.ts";
 import type { Tone } from "../run.ts";
 import { type Source, useRead } from "../series.ts";
@@ -77,16 +78,10 @@ export function isOpen(status: string) {
   return !["paid", "cancelled", "rejected"].includes(status);
 }
 
-const LOT_STATES: Record<string, { label: string; tone: Tone }> = {
-  on_order: { label: "on order", tone: "neutral" },
-  en_route: { label: "on the way", tone: "neutral" },
-  received: { label: "received", tone: "held" },
-  quarantine: { label: "quarantine", tone: "waiting" },
-  released: { label: "released", tone: "ok" },
-  in_use: { label: "in use", tone: "ok" },
-};
+/** A lot state in staff words with its pill tone, from the one lot-state map (src/lotStates.ts). */
 export function lotState(state: string) {
-  return LOT_STATES[state] ?? { label: state.replace(/_/g, " "), tone: "neutral" as Tone };
+  const { label, tone } = lotStyle(state);
+  return { label, tone };
 }
 
 export const CATEGORY_NAMES: Record<string, string> = {

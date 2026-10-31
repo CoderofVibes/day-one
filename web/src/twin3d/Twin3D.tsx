@@ -11,6 +11,7 @@ import { createContext, useContext, useEffect, useId, useMemo, useRef, useState 
 import * as THREE from "three";
 import type { Line2, OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { sharedClock } from "../clock.ts";
+import { LOT_STATES } from "../lotStates.ts";
 import type { RunData } from "../run.ts";
 import {
   type AreaCode,
@@ -146,9 +147,9 @@ const VARS: Record<keyof Theme, string> = {
   pad: "--map-pad",
   accent: "--brand",
   money: "--money",
-  quarantine: "--quarantine",
-  warn: "--refused",
-  ok: "--paid",
+  quarantine: LOT_STATES.quarantine.fill,
+  warn: LOT_STATES.rejected.fill,
+  ok: LOT_STATES.released.fill,
 };
 
 function readTheme(): Theme {
@@ -167,7 +168,13 @@ function useTheme(): Theme {
     const media = matchMedia("(prefers-color-scheme: dark)");
     const update = () => setTheme(readTheme());
     media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
+    // The header's theme switch sets data-theme on the page.
+    const watch = new MutationObserver(update);
+    watch.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => {
+      media.removeEventListener("change", update);
+      watch.disconnect();
+    };
   }, []);
   return theme;
 }
