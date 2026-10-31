@@ -1,0 +1,75 @@
+{
+  "network": "testnet",
+  "recordedAt": "2026-10-29T15:37:24.579Z",
+  "po": "PO-1047",
+  "transactions": [
+    {
+      "tx": "5x72zCmhZhtEoUGjqhxsxxfgS2grMzDjJroYztyUx6Er",
+      "url": "https://testnet.nearblocks.io/txns/5x72zCmhZhtEoUGjqhxsxxfgS2grMzDjJroYztyUx6Er",
+      "method": "submit_po",
+      "contract": "spend-policy-usdc.acme-holdings.testnet",
+      "signer": "kevin.plant-b.acme-holdings.testnet",
+      "paidBy": "kevin.plant-b.acme-holdings.testnet",
+      "status": "success",
+      "error": null,
+      "events": [
+        "po_authorized",
+        "po_funded"
+      ]
+    },
+    {
+      "tx": "75YxNEFkJGGGH3CSPejQfA8iuM649VqSqeuFFUxQh5qH",
+      "url": "https://testnet.nearblocks.io/txns/75YxNEFkJGGGH3CSPejQfA8iuM649VqSqeuFFUxQh5qH",
+      "method": "accept_po",
+      "contract": "spend-policy-usdc.acme-holdings.testnet",
+      "signer": "bayfront-labsupply.testnet",
+      "paidBy": "bayfront-labsupply.testnet",
+      "status": "success",
+      "error": null,
+      "events": [
+        "po_accepted"
+      ]
+    },
+    {
+      "tx": "AvBA1We5nHg5JVbU4R2i135W1SMhoSig5BDSY7rEMd7y",
+      "url": "https://testnet.nearblocks.io/txns/AvBA1We5nHg5JVbU4R2i135W1SMhoSig5BDSY7rEMd7y",
+      "method": "mark_shipped",
+      "contract": "spend-policy-usdc.acme-holdings.testnet",
+      "signer": "bayfront-labsupply.testnet",
+      "paidBy": "bayfront-labsupply.testnet",
+      "status": "success",
+      "error": null,
+      "events": [
+        "po_shipped"
+      ]
+    },
+    {
+      "tx": "7at1y7jYpF6ACMAe4QiTNEQLw1PnFG5XsLLzAH9qytJY",
+      "url": "https://testnet.nearblocks.io/txns/7at1y7jYpF6ACMAe4QiTNEQLw1PnFG5XsLLzAH9qytJY",
+      "method": "confirm_receipt",
+      "contract": "spend-policy-usdc.acme-holdings.testnet",
+      "signer": "receiving.plant-b.acme-holdings.testnet",
+      "paidBy": "dayone-relayer.testnet",
+      "status": "success",
+      "error": null,
+      "events": [
+        "po_received"
+      ]
+    },
+    {
+      "tx": "5utQmP8fo5tmf3A1wQjTDZsfdXjWy861EXfp8KvXY9Xf",
+      "url": "https://testnet.nearblocks.io/txns/5utQmP8fo5tmf3A1wQjTDZsfdXjWy861EXfp8KvXY9Xf",
+      "method": "qc_release",
+      "contract": "spend-policy-usdc.acme-holdings.testnet",
+      "signer": "qc.plant-b.acme-holdings.testnet",
+      "paidBy": "dayone-relayer.testnet",
+      "status": "success",
+      "error": null,
+      "events": [
+        "ft_transfer",
+        "po_released",
+        "delivery_recorded"
+      ]
+    }
+  ]
+}

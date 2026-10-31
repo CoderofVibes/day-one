@@ -3,7 +3,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { Curtain } from "./Curtain.tsx";
 import { pageCards, RECENT } from "./curtainScope.ts";
+import arena from "./data/arena.json";
 import pages from "./data/pages.json";
+import usdc from "./data/usdc.json";
 import { groupBuy } from "./groupBuy.ts";
 import type { Recorded } from "./reads.ts";
 import { run } from "./run.ts";
@@ -15,6 +17,8 @@ const last = run.steps.length - 1;
 const known = new Set([
   ...run.transactions.map((t) => t.tx),
   ...groupBuy.transactions.map((t) => t.tx),
+  ...usdc.transactions.map((t) => t.tx),
+  ...arena.cases.flatMap((c) => c.txs.map((t) => t.tx)),
   ...[...recorded.attacks.attacks, ...recorded.sealed.attacks].flatMap((a) => a.txHashes),
 ]);
 
@@ -76,6 +80,39 @@ describe("behind the curtain, page by page", () => {
     const suppliers = pageCards("suppliers", run, last, recorded).cards;
     expect(suppliers.filter((c) => c.kind === "attack").length).toBeGreaterThanOrEqual(4);
     expect(suppliers.some((c) => c.kind === "attack" && c.url?.includes(c.hash))).toBe(true);
+  });
+
+  it("gives Money the escrow funding and releases and PO-1047 in USDC", () => {
+    const cards = pageCards("money", run, last, recorded).cards.flatMap((c) =>
+      c.kind === "tx" ? [c.tx] : [],
+    );
+    expect(cards.length).toBeGreaterThan(0);
+    for (const tx of cards.filter((t) => !t.contract.startsWith("spend-policy-usdc")))
+      expect(
+        tx.events.some((e) => e === "po_funded" || e === "po_released"),
+        tx.tx,
+      ).toBe(true);
+    // The run's two funded POs and the release, the pool's funding and release, and PO-1047.
+    expect(cards.filter((t) => t.contract.startsWith("spend-policy-usdc"))).toHaveLength(
+      usdc.transactions.length,
+    );
+    expect(cards.map((t) => t.method)).toContain("submit_pooled_po");
+    expect(cards.filter((t) => t.method === "qc_release")).toHaveLength(3);
+  });
+
+  it("gives the arena its refused transactions, Lots its anchors and Talk to Kevin the latest", () => {
+    const refused = new Set(
+      arena.cases.flatMap((c) => c.txs.filter((t) => t.status === "refused").map((t) => t.tx)),
+    );
+    const arenaCards = pageCards("arena", run, 0, null).cards;
+    expect(arenaCards.map((c) => (c.kind === "tx" ? c.tx.tx : c.hash)).sort()).toEqual(
+      [...refused].sort(),
+    );
+    const lots = pageCards("lots", run, last, recorded).cards;
+    expect(new Set(lots.map((c) => (c.kind === "tx" ? c.tx.method : "")))).toEqual(
+      new Set(["anchor_batch", "qc_release"]),
+    );
+    expect(pageCards("ask", run, last, recorded)).toMatchObject({ fallback: true });
   });
 
   it("counts this page's transactions and every recorded one", () => {

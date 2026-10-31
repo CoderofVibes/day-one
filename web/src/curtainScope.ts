@@ -3,6 +3,9 @@
 // when it has none yet, the latest ones recorded on testnet. Every card is a recorded
 // transaction from a fixture; nothing here makes up a hash.
 
+import type { Arena } from "./arena.ts";
+import arenaJson from "./data/arena.json";
+import usdcJson from "./data/usdc.json";
 import { groupBuy } from "./groupBuy.ts";
 import type { AttackResult, Recorded } from "./reads.ts";
 import { type RunData, run as recordedRun, type Transaction, transactionsThrough } from "./run.ts";
@@ -39,6 +42,13 @@ const PO_METHODS = [
 ];
 const LOT_METHODS = ["anchor_batch", "confirm_receipt", "qc_release"];
 const BOOK_METHODS = ["qc_release", "anchor_batch"];
+/** Escrow moving: a PO funded (on submit or on approval) or released to the supplier. */
+const ESCROW_EVENTS = ["po_funded", "po_released"];
+
+/** PO-1047 settled in Circle testnet USDC (data/usdc/, exported by npm run web:data). */
+const usdc = usdcJson as { po: string; transactions: Transaction[] };
+/** The attack arena's recorded transactions (scripts/lib/arena.ts). */
+const arena = arenaJson as unknown as Arena;
 
 interface Scope {
   /** Methods of the run's transactions up to the clock's step; "all" for every one. */
@@ -47,6 +57,12 @@ interface Scope {
   erp?: true;
   /** Methods of the recorded group purchase's transactions. */
   group?: string[] | "all";
+  /** The run's and the group purchase's transactions that carry one of these events. */
+  events?: string[];
+  /** PO-1047's transactions in Circle testnet USDC. */
+  usdc?: "all";
+  /** The attack arena's transactions the contract refused. */
+  arena?: true;
   /** Recorded attacks whose transactions belong here. */
   attacks?: (r: Recorded) => AttackResult[];
 }
@@ -70,6 +86,10 @@ export const SCOPES: Partial<Record<PageId, Scope>> = {
   sealed: { attacks: (r) => r.sealed.attacks },
   export: { run: BOOK_METHODS },
   reconciliation: { run: BOOK_METHODS, group: ["qc_release"] },
+  money: { events: ESCROW_EVENTS, usdc: "all" },
+  arena: { arena: true },
+  ask: {},
+  lots: { run: ["anchor_batch", "qc_release"] },
 };
 
 /** How many of the latest recorded transactions the fallback shows. */
@@ -77,6 +97,10 @@ export const RECENT = 4;
 
 function picks(methods: string[] | "all" | undefined, tx: Transaction) {
   return methods === "all" || (methods?.includes(tx.method) ?? false);
+}
+
+function carries(events: string[] | undefined, tx: Transaction) {
+  return events?.some((e) => tx.events.includes(e)) ?? false;
 }
 
 /** The run's transactions the ERP connector's recorded steps name (npm run erp:demo). */
@@ -124,10 +148,22 @@ export function pageCards(
   const cards: Card[] = [];
   const erp = scope.erp && recorded ? erpHashes(recorded) : null;
   for (const { stepIndex, tx } of transactionsThrough(data, upTo)) {
-    if (picks(scope.run, tx) || erp?.has(tx.tx)) cards.push({ kind: "tx", tx, stepIndex });
+    if (picks(scope.run, tx) || carries(scope.events, tx) || erp?.has(tx.tx))
+      cards.push({ kind: "tx", tx, stepIndex });
   }
   for (const tx of groupBuy.transactions) {
-    if (picks(scope.group, tx)) cards.push({ kind: "tx", tx, stepIndex: null });
+    if (picks(scope.group, tx) || carries(scope.events, tx))
+      cards.push({ kind: "tx", tx, stepIndex: null });
+  }
+  if (scope.usdc)
+    for (const tx of usdc.transactions) cards.push({ kind: "tx", tx, stepIndex: null });
+  if (scope.arena) {
+    const seen = new Set<string>();
+    for (const tx of arena.cases.flatMap((c) => c.txs)) {
+      if (tx.status !== "refused" || seen.has(tx.tx)) continue;
+      seen.add(tx.tx);
+      cards.push({ kind: "tx", tx, stepIndex: null });
+    }
   }
   if (scope.attacks && recorded) cards.push(...attackCards(scope.attacks(recorded)));
 
@@ -135,6 +171,8 @@ export function pageCards(
     ...recordedRun.transactions.map((t) => t.tx),
     ...data.transactions.map((t) => t.tx),
     ...groupBuy.transactions.map((t) => t.tx),
+    ...usdc.transactions.map((t) => t.tx),
+    ...arena.cases.flatMap((c) => c.txs.map((t) => t.tx)),
     ...(recorded
       ? [...recorded.attacks.attacks, ...recorded.sealed.attacks].flatMap((a) => a.txHashes)
       : []),

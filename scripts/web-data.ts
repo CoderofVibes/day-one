@@ -13,7 +13,8 @@
 // twelve-month worlds' lots, finished goods and shipments (data/world/); web/src/data/suppliers.json
 // the supplier scorecards; web/src/data/world/ the worlds' events for the sim clock, one file a
 // month and an index; web/src/data/money.json and savings.json the Money page's books and savings
-// ledger. HQ's live read of the
+// ledger; web/src/data/usdc.json PO-1047's transactions in Circle testnet USDC (data/usdc/), for
+// the Money page's curtain. HQ's live read of the
 // contract is not in the snapshot: it changes with the chain (npm run escrow reads it).
 //   --check   exit 1 if a committed file differs from a fresh export
 
@@ -35,6 +36,8 @@ import { ReviewDesk } from "../api/src/review.ts";
 import { DemoSession } from "../api/src/session.ts";
 import { readAttestationFixture, recordedReceipts } from "../server/src/attestation/fixture.ts";
 import { verifyAttestation } from "../server/src/attestation/verify.ts";
+import { explorerUrl } from "../server/src/chain/client.ts";
+import type { Fixture } from "../server/src/chain/replay.ts";
 import { moneyData, savingsData } from "../server/src/finance/load.ts";
 import { areaViews } from "../server/src/ledger/areas.ts";
 import { books, booksCsv } from "../server/src/ledger/books.ts";
@@ -71,6 +74,7 @@ const SUPPLIERS = join(root, "web/src/data/suppliers.json");
 const WORLD_EVENTS = join(root, "web/src/data/world");
 const MONEY = join(root, "web/src/data/money.json");
 const SAVINGS = join(root, "web/src/data/savings.json");
+const USDC = join(root, "web/src/data/usdc.json");
 const BRIEF = join(root, "web/public/brief.html");
 const CSV = join(root, "web/public/books.csv");
 const RELAYER = "dayone-relayer.testnet";
@@ -372,6 +376,34 @@ const ask = await recordedQuestions(
 // alone, and the savings ledger with Kevin's cost inputs, which the header's counter reads everywhere.
 const money = moneyData(root, { plants: JSON.parse(JSON.stringify(plants)) });
 
+// PO-1047 settled in Circle testnet USDC (npm run usdc): its recorded calls, as the curtain lists
+// transactions, for the Money page.
+const usdcFixture = JSON.parse(
+  readFileSync(join(root, "data/usdc/PO-1047-chain.json"), "utf8"),
+) as Fixture;
+const usdc = {
+  network: usdcFixture.network,
+  recordedAt: usdcFixture.recordedAt,
+  po: "PO-1047",
+  transactions: usdcFixture.entries.flatMap((e) =>
+    e.type === "call" && e.outcome.txHash
+      ? [
+          {
+            tx: e.outcome.txHash,
+            url: explorerUrl(usdcFixture.network, e.outcome.txHash),
+            method: e.request.method,
+            contract: e.request.receiverId,
+            signer: e.request.signerId,
+            paidBy: e.request.viaRelayer ? RELAYER : e.request.signerId,
+            status: e.outcome.status,
+            error: e.outcome.errorMessage,
+            events: e.outcome.events.map((ev) => ev.event),
+          },
+        ]
+      : [],
+  ),
+};
+
 const files: [string, string][] = [
   [OUT, text],
   [PLANTS, `${JSON.stringify(plants, null, 2)}\n`],
@@ -388,6 +420,7 @@ const files: [string, string][] = [
   ),
   [MONEY, `${JSON.stringify(money.books)}\n`],
   [SAVINGS, `${JSON.stringify(savingsData(money), null, 2)}\n`],
+  [USDC, `${JSON.stringify(usdc, null, 2)}\n`],
   [BRIEF, briefHtml(morningBrief(env.db, { now }))],
   [CSV, booksCsv(env.db)],
 ];
