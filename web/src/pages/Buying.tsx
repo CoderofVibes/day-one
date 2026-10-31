@@ -35,6 +35,7 @@ import {
   usePageFilter,
   useSimDate,
 } from "../kit.tsx";
+import { OrderDesk } from "../OrderDesk.tsx";
 import { HeldInvoiceCard } from "../panes.tsx";
 import { type PoView, type RfqView, readRecorded } from "../reads.ts";
 import { readHistory, useRead } from "../series.ts";
@@ -81,7 +82,12 @@ export function PurchasingPage({
   source,
   curtain,
   policy,
-}: PageProps & { policy: PolicyState | null }) {
+  desk,
+}: PageProps & {
+  policy: PolicyState | null;
+  /** The order desk's run, turn and buttons (the Overview desk's own); Hollow Pine only. */
+  desk?: Omit<React.ComponentProps<typeof OrderDesk>, "orders" | "end"> | null;
+}) {
   const key = `${source.live}-${source.version}`;
   const { value: tables, error } = usePlant(source, plant);
   const { value: history } = useRead(() => readHistory(source), key);
@@ -125,6 +131,7 @@ export function PurchasingPage({
   const mine = plant === "B" && limits;
   return (
     <>
+      {desk && plant === "B" && <OrderDesk {...desk} orders={tables.orders} end={end} />}
       <div className="tiles-4">
         <StatTile
           label={`Committed, ${monthName(month)}`}

@@ -34,6 +34,16 @@ Every entry opens the recorded words behind it, its record links and "Show on th
 
 Every decision and many handled entries name a place: the presses, the purchasing office, the receiving dock, the lot in quarantine, the escrow, accounting. "Show on the plant" tells the twin under the desk to fly there and open the Inspector on that object, using the same id as the Inspector's `?inspect=`. For Priya, that object is lot ASC-261116-01 in the quarantine cage, the same code as on her card. If an object is not drawn at that step, the twin falls back to the department. The prop is `PlantView`'s `focus`.
 
+## Purchasing's order desk
+
+The same desk opens the Purchasing page for Hollow Pine (`web/src/OrderDesk.tsx`), as a compact queue on the left and the selected order on the right.
+
+- **The queue** has three groups: an order a person decides on now (labelled with who: "needs Linda", "needs Priya"), orders in flight, then the last six closed. PO-1042 and PO-1041 take their state from the run's recorded lines (`orderRows` in `desk.ts`), because the ledger snapshot holds the run's end. Other orders come from the ledger up to the clock's day.
+- **An order that needs a person** opens the Overview's own decision card, with the same buttons, limit meter and "Before we buy". Approving on Purchasing is the same action as approving on the Overview.
+- **Any other order** shows what happens next, or how it closed, and its track with the payment condition. On Kevin's and the supplier's steps, PO-1042's card carries the replay's Next button, so the whole order can be stepped through from this page.
+- **"Show on the plant"** opens the Plant twin on the order (`?inspect=PO-1042`). The Inspector's "Open in Purchasing" leads back, so the record, the twin and the Inspector name the same object.
+- On a narrow screen, the selected order comes before the queue.
+
 ## Look
 
 - **A graphite surface with paper-white cards, the same in both themes.** In the light theme it becomes the page's anchor. The paper card re-declares the light tokens and the graphite the dark ones, so the kit's links and pills inside follow without a second style.

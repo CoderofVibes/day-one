@@ -143,7 +143,7 @@ function count(items: Handled[]) {
 
 // ------------------------------------------------------------------ the decision
 
-function NeedCard({
+export function NeedCard({
   need,
   facts,
   track,
@@ -276,7 +276,7 @@ function KevinCard({
   );
 }
 
-function WhereButton({ where, onShow }: { where: Where; onShow: (where: Where) => void }) {
+export function WhereButton({ where, onShow }: { where: Where; onShow: (where: Where) => void }) {
   return (
     <button type="button" className="where" onClick={() => onShow(where)}>
       <svg viewBox="0 0 16 16" aria-hidden="true">
@@ -321,18 +321,20 @@ function LimitMeter({ amount, limit, who }: { amount: string; limit: string; who
 
 // ------------------------------------------------------------------ the order's track
 
-function Track({ track }: { track: PoTrack }) {
+export function Track({ track, head = true }: { track: PoTrack; head?: boolean }) {
   const linked =
     track.stages.find((s) => s.key === "qc")?.state === "done" &&
     track.stages.find((s) => s.key === "paid")?.state === "done";
   return (
     <section className="track" aria-label={`${track.po}, from draft to paid`}>
-      <div className="track-head">
-        <RecordLink id={track.po} page="purchasing" />
-        <span className="muted small">
-          {track.supplier} · {track.amount}
-        </span>
-      </div>
+      {head && (
+        <div className="track-head">
+          <RecordLink id={track.po} page="purchasing" />
+          <span className="muted small">
+            {track.supplier} · {track.amount}
+          </span>
+        </div>
+      )}
       <ol className={linked ? "track-stages linked" : "track-stages"}>
         {track.stages.map((s) => (
           <li key={`${s.key}-${s.state}`} className={`st-${s.state} st-${s.key}`}>

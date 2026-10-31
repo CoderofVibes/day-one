@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
+import pages from "./data/pages.json";
 import {
   friendlyAction,
   handledFromReview,
   handledFromRun,
   needOf,
+  orderRows,
   poTrack,
   primaryLabel,
   runFacts,
   sourcingCheck,
+  trackFromPo,
   turnFromLive,
   turnFromStep,
   waitingBeside,
@@ -15,6 +18,7 @@ import {
 import { groupBuy } from "./groupBuy.ts";
 import { reviewSnapshot } from "./mail.ts";
 import { plantsSnapshot } from "./plants.ts";
+import type { PoView } from "./reads.ts";
 import { run } from "./run.ts";
 
 const idx = (title: string) => run.steps.findIndex((s) => s.title === title);
@@ -252,5 +256,63 @@ describe("the mailbox in staff words", () => {
       "Held an email asking to pay Northgate Ingredients Accounts at a new account; changed nothing",
     );
     expect(held?.detail.join(" ")).not.toMatch(/\.testnet/);
+  });
+});
+
+describe("Purchasing's order queue", () => {
+  const orders = pages.plant.B.orders as PoView[];
+  const rows = (at: number) =>
+    orderRows(
+      run,
+      at,
+      orders,
+      "2026-11-09",
+      needOf(turnFromStep(run.steps, at + 1), runFacts(run, at), run, at),
+    );
+
+  it("leads with the order a person decides on, its track from the recorded lines", () => {
+    const r = rows(BIG);
+    expect(r.map((x) => `${x.po} ${x.group} ${x.pill.label}`).slice(0, 3)).toEqual([
+      "PO-1042 decide needs Linda",
+      "PO-1041 flight money set aside",
+      "PO-1040 closed paid",
+    ]);
+    expect(r[0]?.what).toBe("700 kg ascorbic acid at $7.10/kg");
+    expect(r[1]?.track.stages.find((s) => s.key === "limit")).toMatchObject({
+      label: "Inside limits",
+      state: "done",
+    });
+    expect(r[1]?.next).toBe(
+      "Bayfront Lab Supply ships it. Nothing needs anyone at the plant until the truck arrives.",
+    );
+  });
+
+  it("never shows the ledger's end state for the run's orders, nor orders after the clock", () => {
+    const r = rows(2);
+    expect(r.some((x) => x.po === "PO-1042" || x.po === "PO-1041")).toBe(false);
+    expect(r.filter((x) => x.group === "closed")).toHaveLength(6);
+  });
+
+  it("reads a past order's track from its record, paid on QC release", () => {
+    const t = trackFromPo(orders.find((o) => o.poNo === "PO-1040") as PoView);
+    expect(t.stages.every((s) => s.state === "done")).toBe(true);
+    expect(t.condition).toEqual({
+      text: "QC released MGS-261021-01, so Pacific Excipient Co. was paid $467.50.",
+      met: true,
+    });
+  });
+
+  it("names the person an order waits on at the dock and in QC", () => {
+    expect(rows(DELIVERY)[0]).toMatchObject({
+      po: "PO-1042",
+      group: "decide",
+      pill: { label: "needs Priya", tone: "wait" },
+    });
+  });
+
+  it("closes PO-1042 once paid", () => {
+    const paid = orderRows(run, PAID, orders, "2026-11-16", null).find((x) => x.po === "PO-1042");
+    expect(paid).toMatchObject({ group: "closed", pill: { label: "paid", tone: "ok" } });
+    expect(paid?.next).toBe("Paid when QC released the lot. Nothing waits on anyone.");
   });
 });

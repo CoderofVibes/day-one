@@ -85,6 +85,7 @@ import { ImportPane } from "./ImportPane.tsx";
 import { InboxPane } from "./InboxPane.tsx";
 import { postDecision, postDropScans } from "./journey.ts";
 import { judgeStart } from "./judgeRoute.ts";
+import type { Where } from "./KevinDesk.tsx";
 import { type Action, actionsFor, actorOf, roleLabel } from "./live.ts";
 import { REVIEW_READ_ONLY, reviewSnapshot } from "./mail.ts";
 import ApproveApp from "./Phone.tsx";
@@ -379,6 +380,7 @@ function Pages({
   exportPane,
   hq,
   goMap,
+  go,
   foot,
   run,
   at,
@@ -411,6 +413,8 @@ function Pages({
   hq: React.ReactNode;
   /** Open the plant map on the group purchase. */
   goMap: () => void;
+  /** Open another page (the order desk's "Show on the plant"). */
+  go: (next: { page: PageId }) => void;
   foot: React.ReactNode;
   /** The run on screen and its step, for the Overview's queue and timeline. */
   run: RunData;
@@ -470,7 +474,20 @@ function Pages({
       case "schedule":
         return <SchedulePage {...props} />;
       case "purchasing":
-        return <PurchasingPage {...props} policy={policy} />;
+        return (
+          <PurchasingPage
+            {...props}
+            policy={policy}
+            desk={{
+              run,
+              at,
+              turn,
+              inventory,
+              actions: deskActions,
+              onShow: (where) => openOnTwin(where, go),
+            }}
+          />
+        );
       case "invoices":
         return <InvoicesPage {...props} books={books} exportUrl={links.books} />;
       case "spreadsheets":
@@ -528,6 +545,15 @@ function Pages({
       {foot}
     </Page>
   );
+}
+
+/** The plant twin opened on a place the order desk points at (the twin reads ?inspect= on open). */
+function openOnTwin(where: Where, go: (next: { page: PageId }) => void) {
+  const q = new URLSearchParams(location.search);
+  q.set("inspect", where.focus);
+  q.delete("run");
+  history.replaceState(null, "", `?${q.toString()}`);
+  go({ page: "map" });
 }
 
 /** The plant map opened on the recorded group purchase (the map reads ?run=group when it opens). */
@@ -779,6 +805,7 @@ function ReplayApp() {
             queue={null}
             wizard={null}
             goMap={() => openGroupOnMap(route.go)}
+            go={route.go}
             map={(pick) => (
               <PlantView
                 run={data}
@@ -1295,6 +1322,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
               </section>
             }
             goMap={() => openGroupOnMap(route.go)}
+            go={route.go}
             map={(pick) => (
               <PlantView
                 run={state}

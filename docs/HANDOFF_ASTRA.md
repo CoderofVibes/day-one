@@ -52,7 +52,7 @@ Run it: `npm run web:build`, then serve `web/dist/` statically (the replay), or 
 | | Batch records (`batches`) | Records, yield, the watched-folder scan queue (live) |
 | | Inventory & forecast (`inventory`) | Stock bars with reorder ticks and a forecast cone |
 | | Lots & recall (`lots`) | Lot genealogy graph (raw lot → batches → finished goods → shipments → customers), search, and the **mock recall drill** (traces Ridgeway lot ASC-260209-01 across two plants; never the PO-1042 lot) |
-| | Schedule, Purchasing, Invoices, Spreadsheets | Gantt by line; pipeline lanes, PO-size histogram with the $2,500 line, quotes chart; held invoices; the spreadsheet import wizard |
+| | Schedule, Purchasing, Invoices, Spreadsheets | Gantt by line; the order desk (docs/DESK.md: a queue of orders beside the selected one's decision or next step and track), pipeline lanes, PO-size histogram with the $2,500 line, quotes chart; held invoices; the spreadsheet import wizard |
 | Money | Money (`money`) | "Kevin paid for himself" (realized vs identified), cash, inventory value, turns, days on hand, escrow, cash flow, AP aging, spend vs budget, the savings ledger; every figure has a formula popover (`docs/MONEY.md`) |
 | | Bookkeeper export (`export`) | CSV of settled POs |
 | Across Acme | Three plants (`plants`), ERP connection (`erp`) | Plant comparison, transfer cards, material matrix; the two-system diagram, 34/34, 35/36, 7/7, the recorded run as a swimlane |

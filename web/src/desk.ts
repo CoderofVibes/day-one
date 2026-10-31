@@ -6,6 +6,7 @@
 
 import type { InboxState, NextAction, PlantInventory, ReviewProposal, ReviewState } from "./api.ts";
 import type { GroupBuyData } from "./groupBuy.ts";
+import type { PoView } from "./reads.ts";
 import { longDate, senderOf, staffWords } from "./review.ts";
 import type { RunData, Step } from "./run.ts";
 
@@ -221,54 +222,289 @@ export interface PoTrack {
   condition: { text: string; met: boolean } | null;
 }
 
+/** What is known about an order, stage by stage, from whichever source holds it. */
+interface TrackInput {
+  po: string;
+  supplier: string;
+  amount: string;
+  /** The approval stage: over the limit and waiting, approved, declined, or inside the limits. */
+  limit: { label: string; note: string; done: boolean; stopped: boolean };
+  funded: boolean;
+  shipped: boolean;
+  received: boolean;
+  /** QC's decision: released, rejected (the order stops there), or not yet. */
+  qc: "released" | "rejected" | null;
+  paid: boolean;
+  paidAmount?: string;
+  lot?: string;
+  /** The payment's condition holds from approval or funding on. */
+  conditional: boolean;
+}
+
+function buildTrack(t: TrackInput): PoTrack {
+  const halted = (t.limit.stopped && t.limit.done) || t.qc === "rejected";
+  const raw: [TrackStage["key"], string, boolean, string | undefined, boolean][] = [
+    ["drafted", "Drafted", true, t.amount, false],
+    ["limit", t.limit.label, t.limit.done, t.limit.note, t.limit.stopped],
+    ["funded", "Money set aside", t.funded, t.funded ? "not paid yet" : undefined, false],
+    ["shipped", "Shipped", t.shipped, undefined, false],
+    ["received", "Received", t.received, t.received && !t.qc ? "in quarantine" : undefined, false],
+    [
+      "qc",
+      t.qc === "rejected" ? "QC rejected" : "QC release",
+      t.qc !== null,
+      t.qc ? t.lot : undefined,
+      t.qc === "rejected",
+    ],
+    ["paid", "Paid", t.paid, t.paid ? (t.paidAmount ?? t.amount) : undefined, false],
+  ];
+  let nowSet = false;
+  const stages: TrackStage[] = raw.map(([key, label, happened, note, stops]) => {
+    let state: StageState;
+    if (happened) state = stops ? "stopped" : "done";
+    else if (!nowSet && !halted) {
+      state = key === "limit" ? "stopped" : "now";
+      nowSet = true;
+    } else state = "next";
+    return { key, label, state, ...(note && (happened || key === "limit") ? { note } : {}) };
+  });
+  // The payment's condition is set the moment the order is approved, and met when it is paid.
+  const condition = t.paid
+    ? {
+        text: `QC released ${t.lot ?? "the lot"}, so ${t.supplier} was paid ${t.paidAmount ?? t.amount}.`,
+        met: true,
+      }
+    : t.conditional && !halted
+      ? {
+          text: `Pays ${t.supplier} only, and only when QC releases ${t.lot ? `lot ${t.lot}` : "the delivered lot"}.`,
+          met: false,
+        }
+      : null;
+  return { po: t.po, supplier: t.supplier, amount: t.amount, stages, condition };
+}
+
 /** The big order's way from draft to paid, as far as the lines go. */
 export function poTrack(f: RunFacts): PoTrack | null {
   if (!f.big) return null;
   const { po, supplier, amount, limit } = f.big;
   const approved = f.approval?.answer === "approved";
   const declined = f.approval?.answer === "declined";
-  const funded = Boolean(f.funded);
-  const received = Boolean(f.delivery);
-  const released = f.qc?.released === true;
-  const paid = Boolean(f.paid);
-  const raw: [TrackStage["key"], string, boolean, string | undefined][] = [
-    ["drafted", "Drafted", true, `${amount}`],
-    [
-      "limit",
-      approved ? "Approved" : declined ? "Declined" : "Over the limit",
-      approved || declined,
-      approved ? `by ${f.approval?.by.split(" ")[0]}` : `limit ${limit.replace(".00", "")}`,
-    ],
-    ["funded", "Money set aside", funded, funded ? "not paid yet" : undefined],
-    ["shipped", "Shipped", Boolean(f.shipped), undefined],
-    ["received", "Received", received, f.delivery ? "in quarantine" : undefined],
-    ["qc", "QC release", released, released ? f.qc?.lot : undefined],
-    ["paid", "Paid", paid, paid ? f.paid?.amount : undefined],
-  ];
-  let nowSet = false;
-  const stages: TrackStage[] = raw.map(([key, label, happened, note]) => {
-    let state: StageState;
-    if (happened) state = key === "limit" && declined ? "stopped" : "done";
-    else if (!nowSet && !declined) {
-      state = key === "limit" ? "stopped" : "now";
-      nowSet = true;
-    } else state = "next";
-    return { key, label, state, ...(note && (happened || key === "limit") ? { note } : {}) };
+  const lot = f.qc?.lot ?? f.delivery?.lot;
+  return buildTrack({
+    po,
+    supplier,
+    amount,
+    limit: {
+      label: approved ? "Approved" : declined ? "Declined" : "Over the limit",
+      note: approved ? `by ${f.approval?.by.split(" ")[0]}` : `limit ${limit.replace(".00", "")}`,
+      done: approved || declined,
+      stopped: declined,
+    },
+    funded: Boolean(f.funded),
+    shipped: Boolean(f.shipped),
+    received: Boolean(f.delivery),
+    qc: f.qc ? (f.qc.released ? "released" : "rejected") : null,
+    paid: Boolean(f.paid),
+    ...(f.paid ? { paidAmount: f.paid.amount } : {}),
+    ...(lot ? { lot } : {}),
+    conditional: approved || Boolean(f.funded),
   });
-  const lot = f.delivery?.lot;
-  // The payment's condition is set the moment the order is approved, and met when it is paid.
-  const condition = paid
-    ? {
-        text: `QC released ${f.qc?.lot ?? lot ?? "the lot"}, so ${supplier} was paid ${f.paid?.amount ?? amount}.`,
-        met: true,
-      }
-    : funded || approved
+}
+
+/** The order Kevin placed inside his limits in the run: funded at once, nobody asked. */
+export function smallTrack(f: RunFacts): PoTrack | null {
+  if (!f.small) return null;
+  const { po, supplier, amount } = f.small;
+  return buildTrack({
+    po,
+    supplier,
+    amount,
+    limit: { label: "Inside limits", note: "no one needed", done: true, stopped: false },
+    funded: true,
+    shipped: false,
+    received: false,
+    qc: null,
+    paid: false,
+    conditional: true,
+  });
+}
+
+const FUNDED = new Set([
+  "authorized",
+  "approved",
+  "funded",
+  "shipped",
+  "received",
+  "released",
+  "paid",
+]);
+
+/** Any order from the ledger, as its record stands. */
+export function trackFromPo(o: PoView): PoTrack {
+  const approved = o.approval?.state === "approved";
+  const declined = o.approval?.state === "declined" || o.status === "cancelled";
+  const waiting = o.approval !== null && !approved && !declined;
+  const first = o.approval?.approver.split(" ")[0] ?? "";
+  return buildTrack({
+    po: o.poNo,
+    supplier: o.vendorName,
+    amount: usd(o.totalUsdc),
+    limit: o.approval
       ? {
-          text: `Pays ${supplier} only, and only when QC releases ${lot ? `lot ${lot}` : "the delivered lot"}.`,
-          met: false,
+          label: approved ? "Approved" : declined ? "Declined" : "Over the limit",
+          note: waiting ? "waits on a director" : `by ${first}`,
+          done: !waiting,
+          stopped: declined,
         }
-      : null;
-  return { po, supplier, amount, stages, condition };
+      : { label: "Inside limits", note: "no one needed", done: true, stopped: false },
+    funded: FUNDED.has(o.status),
+    shipped: ["shipped", "received", "released", "paid"].includes(o.status) || o.receipt !== null,
+    received: o.receipt !== null,
+    qc: o.qc ? (o.qc.decision === "released" ? "released" : "rejected") : null,
+    paid: o.status === "paid",
+    ...(o.qc?.lot ? { lot: o.qc.lot } : {}),
+    conditional: FUNDED.has(o.status) || approved,
+  });
+}
+
+// ------------------------------------------------------------------ the order desk
+
+/** One order in Purchasing's queue: where it stands, what happens next, and its track. */
+export interface OrderRow {
+  po: string;
+  supplier: string;
+  amount: string;
+  /** "700 kg ascorbic acid at $7.10/kg", when the ledger has the lines. */
+  what: string | null;
+  group: "decide" | "flight" | "closed";
+  pill: { label: string; tone: "wait" | "held" | "ok" | "stop" };
+  /** What happens next, in a line; for a closed order, how it closed. */
+  next: string;
+  track: PoTrack;
+  /** An order of the recorded run, which the twin draws. */
+  inRun: boolean;
+}
+
+/** Where an order stands, read off its track: its group, pill and next line. */
+function standing(t: PoTrack, approver: string): Pick<OrderRow, "group" | "pill" | "next"> {
+  const waiting = t.stages.find(
+    (s) => s.key === "limit" && s.state === "stopped" && !s.note?.startsWith("by "),
+  );
+  const ended = t.stages.find((s) => s.state === "stopped" && s !== waiting);
+  if (ended)
+    return {
+      group: "closed",
+      pill: { label: ended.key === "qc" ? "rejected" : "declined", tone: "stop" },
+      next:
+        ended.key === "qc"
+          ? "Closed. QC rejected the lot, and the money went back to the plant's budget."
+          : `Closed. ${approver} declined it, and nothing was ordered.`,
+    };
+  if (waiting)
+    return {
+      group: "flight",
+      pill: { label: `needs ${approver}`, tone: "wait" },
+      next: `${approver} decides: it is over Kevin's limit.`,
+    };
+  const now = t.stages.find((s) => s.state === "now");
+  switch (now?.key) {
+    case undefined:
+      return {
+        group: "closed",
+        pill: { label: "paid", tone: "ok" },
+        next: "Paid when QC released the lot. Nothing waits on anyone.",
+      };
+    case "funded":
+      return {
+        group: "flight",
+        pill: { label: "approved", tone: "held" },
+        next: `Kevin sends it to ${t.supplier} and sets the money aside.`,
+      };
+    case "shipped":
+      return {
+        group: "flight",
+        pill: { label: "money set aside", tone: "held" },
+        next: `${t.supplier} ships it. Nothing needs anyone at the plant until the truck arrives.`,
+      };
+    case "received":
+      return {
+        group: "flight",
+        pill: { label: "on its way", tone: "held" },
+        next: "Receiving checks it in at the dock against the packing slip.",
+      };
+    case "qc":
+      return {
+        group: "flight",
+        pill: { label: "in quarantine", tone: "wait" },
+        next: `QC releases or rejects the lot; ${t.supplier} is paid only on release.`,
+      };
+    default:
+      return {
+        group: "flight",
+        pill: { label: "QC released", tone: "held" },
+        next: "Kevin matches the invoice to the order and the receipt, and pays.",
+      };
+  }
+}
+
+/**
+ * Purchasing's queue: the run's orders from its recorded lines, then the ledger's other orders up
+ * to the clock's day, newest first. An order a person decides on now leads; a few closed ones end
+ * the list.
+ */
+export function orderRows(
+  run: Pick<RunData, "steps" | "approvals">,
+  at: number,
+  orders: PoView[],
+  end: string,
+  need: Need | null,
+  closedShown = 6,
+): OrderRow[] {
+  const f = runFacts(run, at);
+  // Every order the run names: the ledger's copy is the run's end, so it never stands in for them.
+  const runPos = new Set(run.steps.flatMap((s) => ids(text(s)).filter((x) => x.startsWith("PO-"))));
+  const whatOf = (po: string) => {
+    const o = orders.find((x) => x.poNo === po);
+    const l = o?.lines[0];
+    if (!o || !l) return null;
+    const more = o.lines.length > 1 ? `, and ${o.lines.length - 1} more` : "";
+    if (l.dimension === "count")
+      return `${l.qtyBase.toLocaleString("en-US")} × ${l.name} at ${usd(l.unitPriceUsdc)} each${more}`;
+    // "ascorbic acid" in a sentence, but "HPLC" and "4 L" keep their capitals.
+    const name = /[A-Z]/.test(l.name.slice(1)) ? l.name : l.name.toLowerCase();
+    const qty = (l.qtyBase / 1_000_000).toLocaleString("en-US", { maximumFractionDigits: 2 });
+    return `${qty} ${l.unit} ${name} at ${usd(l.unitPriceUsdc)}/${l.unit}${more}`;
+  };
+  const rows: OrderRow[] = [];
+  const add = (track: PoTrack | null, inRun: boolean, approver: string) => {
+    if (!track) return;
+    const st = standing(track, approver);
+    // An order a person decides on now names them, whatever stage it is at.
+    if (need?.records.includes(track.po))
+      st.pill = { label: `needs ${need.who.split(" ")[0]}`, tone: "wait" };
+    rows.push({
+      po: track.po,
+      supplier: track.supplier,
+      amount: track.amount,
+      what: whatOf(track.po),
+      ...st,
+      group: need?.records.includes(track.po) ? "decide" : st.group,
+      track,
+      inRun,
+    });
+  };
+  add(poTrack(f), true, f.approval?.by.split(" ")[0] ?? "Linda");
+  add(smallTrack(f), true, "Linda");
+  const history = orders
+    .filter((o) => !runPos.has(o.poNo) && o.date && o.date.slice(0, 10) <= end)
+    .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
+  for (const o of history)
+    add(trackFromPo(o), false, o.approval?.approver.split(" ")[0] ?? "the director");
+  const rank = { decide: 0, flight: 1, closed: 2 };
+  let closed = 0;
+  return rows
+    .sort((a, b) => rank[a.group] - rank[b.group])
+    .filter((r) => r.group !== "closed" || closed++ < closedShown);
 }
 
 // ------------------------------------------------------------------ what needs a person
