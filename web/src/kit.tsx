@@ -88,16 +88,20 @@ const noClock = () => () => {};
  */
 export function useSimDate(): string | null {
   const clock = sharedClock();
-  return useSyncExternalStore(clock ? clock.subscribeThrottled : noClock, () =>
-    clock ? isoDay(clock.get().simNow) : null,
+  return useSyncExternalStore(
+    clock ? clock.subscribeThrottled : noClock,
+    () => (clock ? isoDay(clock.get().simNow) : null),
+    () => null,
   );
 }
 
 /** The clock's time to the minute; null without a clock. */
 export function useSimMinute(): number | null {
   const clock = sharedClock();
-  return useSyncExternalStore(clock ? clock.subscribeThrottled : noClock, () =>
-    clock ? Math.floor(clock.get().simNow / 60_000) * 60_000 : null,
+  return useSyncExternalStore(
+    clock ? clock.subscribeThrottled : noClock,
+    () => (clock ? Math.floor(clock.get().simNow / 60_000) * 60_000 : null),
+    () => null,
   );
 }
 
