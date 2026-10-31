@@ -951,6 +951,7 @@ export function DataTable<T>({
   empty,
   rowClass,
   maxHeight = 520,
+  expand,
 }: {
   rows: T[];
   columns: Column<T>[];
@@ -961,12 +962,16 @@ export function DataTable<T>({
   search?: boolean;
   empty?: React.ReactNode;
   rowClass?: (row: T) => string | undefined;
+  /** A row's lines, shown inline under it when its toggle is pressed. */
+  expand?: (row: T) => React.ReactNode;
   maxHeight?: number;
 }) {
   const [q, setQ] = useState(query);
   useEffect(() => setQ(query), [query]);
   const [picked, setPicked] = useState<Record<string, string>>({});
   const [density, setDensity] = useState<keyof typeof ROW_H>("cozy");
+  const [opened, setOpened] = useState<string | null>(null);
+  const span = columns.length + (expand ? 1 : 0);
   const [scroll, setScroll] = useState(0);
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -1053,6 +1058,11 @@ export function DataTable<T>({
           <table className="data" aria-label={label} aria-rowcount={shown.length + 1}>
             <thead>
               <tr>
+                {expand && (
+                  <th scope="col">
+                    <span className="sr-only">Details</span>
+                  </th>
+                )}
                 {columns.map((c) => (
                   <th key={c.key} className={c.numeric ? "n" : undefined} scope="col">
                     {c.label}
@@ -1063,25 +1073,49 @@ export function DataTable<T>({
             <tbody>
               {first > 0 && (
                 <tr className="spacer" style={{ height: first * h }}>
-                  <td colSpan={columns.length} />
+                  <td colSpan={span} />
                 </tr>
               )}
-              {visible.map((r) => (
-                <tr
-                  key={rowKey(r)}
-                  className={rowClass?.(r)}
-                  style={windowed ? { height: h } : undefined}
-                >
-                  {columns.map((c) => (
-                    <td key={c.key} className={c.numeric ? "n num" : undefined}>
-                      {c.render(r)}
-                    </td>
-                  ))}
-                </tr>
-              ))}
+              {visible.map((r) => {
+                const key = rowKey(r);
+                const isOpen = expand !== undefined && opened === key;
+                return [
+                  <tr
+                    key={key}
+                    className={
+                      [rowClass?.(r), isOpen ? "on" : ""].filter(Boolean).join(" ") || undefined
+                    }
+                    style={windowed ? { height: h } : undefined}
+                  >
+                    {expand && (
+                      <td className="expand-cell">
+                        <button
+                          type="button"
+                          className="link-btn"
+                          aria-expanded={isOpen}
+                          aria-label={`Details of ${key}`}
+                          onClick={() => setOpened(isOpen ? null : key)}
+                        >
+                          {isOpen ? "▾" : "▸"}
+                        </button>
+                      </td>
+                    )}
+                    {columns.map((c) => (
+                      <td key={c.key} className={c.numeric ? "n num" : undefined}>
+                        {c.render(r)}
+                      </td>
+                    ))}
+                  </tr>,
+                  isOpen ? (
+                    <tr key={`${key}-detail`} className="detail">
+                      <td colSpan={span}>{expand?.(r)}</td>
+                    </tr>
+                  ) : null,
+                ];
+              })}
               {last < shown.length && (
                 <tr className="spacer" style={{ height: (shown.length - last) * h }}>
-                  <td colSpan={columns.length} />
+                  <td colSpan={span} />
                 </tr>
               )}
             </tbody>

@@ -27,13 +27,16 @@ export function usePlant(source: Source, plant: string) {
 export function Tabs<K extends string>({
   tabs,
   label,
+  initial,
   children,
 }: {
   tabs: { key: K; label: string; count?: number }[];
   label: string;
+  /** The tab open first; the first tab when omitted. */
+  initial?: K;
   children: (open: K) => React.ReactNode;
 }) {
-  const [open, setOpen] = useState<K>(tabs[0]?.key as K);
+  const [open, setOpen] = useState<K>(initial ?? (tabs[0]?.key as K));
   return (
     <section className="card-v2 tabbed" aria-label={label}>
       <div className="page-tabs" role="tablist" aria-label={label}>

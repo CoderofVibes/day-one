@@ -19,7 +19,7 @@
 }
 .stat.tile .stat-value {
   margin: 2px 0;
-  font-size: clamp(28px, 3.2vw, 40px);
+  font-size: clamp(26px, 2.6vw, 38px);
   font-weight: 700;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
@@ -196,6 +196,12 @@
 }
 .histo-bar {
   rx: 1;
+}
+.histo .hit {
+  fill: transparent;
+}
+.histo .hit:hover {
+  fill: color-mix(in srgb, var(--ink) 5%, transparent);
 }
 
 /* ---------- gauge, ring, bullet ---------- */
