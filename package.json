@@ -58,6 +58,7 @@
     "web:data": "tsx scripts/web-data.ts",
     "web:shot": "tsx tools/render/src/shot.ts",
     "web:shot:3d": "tsx tools/render/src/shot3d.ts",
+    "web:tour": "tsx tools/render/src/tour.ts",
     "host:build": "tsx scripts/host-build.ts",
     "erp": "tsx erp/src/server.ts",
     "erp:seed": "tsx scripts/erp-seed.ts",
