@@ -68,6 +68,7 @@ import { ArenaPage } from "./pages/Arena.tsx";
 import { InvoicesPage, PurchasingPage, SpreadsheetsPage } from "./pages/Buying.tsx";
 import { GroupPage, ReconciliationPage, SealedPage, SuppliersPage } from "./pages/Hq.tsx";
 import { Integration } from "./pages/Integration.tsx";
+import { LotsPage } from "./pages/Lots.tsx";
 import { MapPage, type MapPick } from "./pages/MapPage.tsx";
 import { Overview } from "./pages/Overview.tsx";
 import { BatchRecordsPage, BriefPage, InventoryPage, SchedulePage } from "./pages/Plant.tsx";
@@ -201,6 +202,11 @@ const PAGE_TEXT: Record<
     group: "plant",
     title: "Inventory & forecast",
     sentence: "What the plant holds, what the plan will draw, and every lot with its state.",
+  },
+  lots: {
+    group: "plant",
+    title: "Lots & recall",
+    sentence: "Every lot to the batches it went into and back to its supplier, PO and receipt.",
   },
   schedule: {
     group: "plant",
@@ -377,6 +383,8 @@ function Pages({
         return <BatchRecordsPage {...props} inbox={inbox} queue={queue} />;
       case "inventory":
         return <InventoryPage {...props} inventory={inventory} />;
+      case "lots":
+        return <LotsPage {...props} />;
       case "schedule":
         return <SchedulePage {...props} />;
       case "purchasing":

@@ -40,6 +40,7 @@ import { summarizeChainTx } from "@day-one/server/chain/summary";
 import { areaViews } from "@day-one/server/ledger/areas";
 import { books, booksCsv } from "@day-one/server/ledger/books";
 import { catalog } from "@day-one/server/ledger/catalog";
+import { genealogy } from "@day-one/server/ledger/genealogy";
 import { plantInventory } from "@day-one/server/ledger/inventory";
 import { approvals, chainTx, staff, vendors } from "@day-one/server/ledger/schema";
 import { historySeries, stockedMaterials, stockSeries } from "@day-one/server/ledger/series";
@@ -598,6 +599,11 @@ export class DemoSession {
   /** Every product with its formula and plants, every supplier with what it supplies. */
   catalog() {
     return catalog(this.env.db);
+  }
+
+  /** The lot genealogy at the run's clock, every plant, for the Lots & recall page. */
+  genealogy() {
+    return { at: this.env.clock(), genealogy: genealogy(this.env.db) };
   }
 
   /**

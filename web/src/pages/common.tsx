@@ -79,10 +79,7 @@ export function isOpen(status: string) {
 }
 
 /** A lot state in staff words with its pill tone, from the one lot-state map (src/lotStates.ts). */
-export function lotState(state: string): { label: string; tone: Tone } {
-  const { label, tone } = lotStyle(state);
-  return { label, tone };
-}
+export { lotState } from "../lotStates.ts";
 
 export const CATEGORY_NAMES: Record<string, string> = {
   raw_material: "Raw materials",

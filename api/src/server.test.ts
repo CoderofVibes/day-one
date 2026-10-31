@@ -305,6 +305,18 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect((await api("POST", "/api/batch-records/inbox", {})).status).toBe(409);
   });
 
+  it("serves the lot genealogy for the Lots & recall page", async () => {
+    const res = await api("GET", "/api/genealogy");
+    expect(res.status).toBe(200);
+    const g = res.body.genealogy;
+    expect(Object.keys(g.batches).length).toBeGreaterThan(0);
+    const used = Object.values(g.lots as Record<string, { usedIn: string[] }>).filter(
+      (l) => l.usedIn.length > 0,
+    );
+    expect(used.length).toBeGreaterThan(0);
+    expect(g.has).toEqual({ fgLots: false, shipments: false });
+  });
+
   it("serves the catalogue and drafts a limit change in plain words, signing nothing", async () => {
     const cat = await api("GET", "/api/catalog");
     expect(cat.body.products).toHaveLength(10);

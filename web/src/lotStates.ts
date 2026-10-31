@@ -114,3 +114,24 @@ export function lotStyle(state: string): LotStateStyle {
         onSite: false,
       };
 }
+
+/** A lot state's look with a CSS colour, for marks that are not pills: a node's edge, a swatch. */
+export interface LotStateLook {
+  label: string;
+  tone: Tone;
+  color: string;
+}
+
+/** A lot placed on hold in the recall drill: the page's overlay, never the ledger's state. */
+export const ON_HOLD: LotStateLook = {
+  label: "on hold (drill)",
+  tone: "waiting",
+  color: "var(--quarantine)",
+};
+
+/** A state in staff words with its pill tone and colour; no state reads as a dash. */
+export function lotState(state: string | null | undefined): LotStateLook {
+  if (!state) return { label: "—", tone: "neutral", color: "var(--neutral)" };
+  const { label, tone, fill } = lotStyle(state);
+  return { label, tone, color: `var(${fill})` };
+}

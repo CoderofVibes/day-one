@@ -13,6 +13,7 @@ export type PageId =
   | "brief"
   | "batches"
   | "inventory"
+  | "lots"
   | "schedule"
   | "purchasing"
   | "invoices"
@@ -50,6 +51,7 @@ export const NAV: { group: string; items: NavItem[] }[] = [
       { id: "brief", label: "5am brief", icon: "sun" },
       { id: "batches", label: "Batch records", icon: "doc" },
       { id: "inventory", label: "Inventory & forecast", icon: "box" },
+      { id: "lots", label: "Lots & recall", icon: "link" },
       { id: "schedule", label: "Schedule", icon: "calendar" },
       { id: "purchasing", label: "Purchasing", icon: "cart" },
       { id: "invoices", label: "Invoices", icon: "receipt" },
