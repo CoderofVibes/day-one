@@ -77,17 +77,7 @@ export function isOpen(status: string) {
   return !["paid", "cancelled", "rejected"].includes(status);
 }
 
-const LOT_STATES: Record<string, { label: string; tone: Tone }> = {
-  on_order: { label: "on order", tone: "neutral" },
-  en_route: { label: "on the way", tone: "neutral" },
-  received: { label: "received", tone: "held" },
-  quarantine: { label: "quarantine", tone: "waiting" },
-  released: { label: "released", tone: "ok" },
-  in_use: { label: "in use", tone: "ok" },
-};
-export function lotState(state: string) {
-  return LOT_STATES[state] ?? { label: state.replace(/_/g, " "), tone: "neutral" as Tone };
-}
+export { lotState } from "../lotStates.ts";
 
 export const CATEGORY_NAMES: Record<string, string> = {
   raw_material: "Raw materials",
