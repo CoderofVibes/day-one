@@ -160,9 +160,7 @@ export function AskKevin({ recorded, live }: { recorded: RecordedAsk; live: bool
             maxLength={300}
             disabled={!live || busy}
             placeholder={
-              live
-                ? "Ask Kevin about an order, a lot, a supplier…"
-                : "Live questions need the running API"
+              live ? "Ask Kevin about an order, a lot, a supplier…" : "Needs the running API"
             }
             onChange={(e) => setDraft(e.target.value)}
           />
