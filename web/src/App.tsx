@@ -45,6 +45,7 @@ import { HeaderClock, HeaderClockLine, jumpsFor } from "./ClockBar.tsx";
 import { Curtain } from "./Curtain.tsx";
 import { kevinStatus, nextTurn, PEOPLE } from "./chrome.ts";
 import {
+  type Clock,
   createClock,
   forgetClock,
   persist,
@@ -71,6 +72,7 @@ import { GroupPage, ReconciliationPage, SealedPage, SuppliersPage } from "./page
 import { Integration } from "./pages/Integration.tsx";
 import { LotsPage } from "./pages/Lots.tsx";
 import { MapPage, type MapPick } from "./pages/MapPage.tsx";
+import { MoneyPage } from "./pages/Money.tsx";
 import { Overview } from "./pages/Overview.tsx";
 import { BatchRecordsPage, BriefPage, InventoryPage, SchedulePage } from "./pages/Plant.tsx";
 import { BooksPane, HqPane, PlantsPane } from "./panes.tsx";
@@ -84,6 +86,7 @@ import {
   type Step,
   type Tone,
 } from "./run.ts";
+import { SavedCounter } from "./SavedCounter.tsx";
 import type { Source } from "./series.ts";
 import { PageHeader, type PageId, type PlantCode, Shell, useRoute } from "./shell.tsx";
 import { PlantView } from "./twin3d/PlantView.tsx";
@@ -182,7 +185,7 @@ const PLANT_NAMES: Record<PlantCode, string> = {
 /** Each page's header: where it sits, its title and one plain sentence. */
 const PAGE_TEXT: Record<
   Exclude<PageId, "integration" | "overview">,
-  { group: "plant" | "acme" | "hq" | "proof"; title: string; sentence: string }
+  { group: "plant" | "money" | "acme" | "hq" | "proof"; title: string; sentence: string }
 > = {
   map: {
     group: "plant",
@@ -267,8 +270,14 @@ const PAGE_TEXT: Record<
     sentence:
       "Quotes stay sealed until the deadline, so nobody, Kevin included, can peek or change one.",
   },
+  money: {
+    group: "money",
+    title: "Money",
+    sentence:
+      "The plant's cash, stock, bills and escrow over twelve months, and what Kevin has saved against what he costs, each figure with its formula.",
+  },
   export: {
-    group: "hq",
+    group: "money",
     title: "Bookkeeper export",
     sentence: "Settled purchase orders, one row per line, ready for the bookkeeper.",
   },
@@ -303,7 +312,9 @@ function headingOf(page: PageId, plant: PlantCode): { crumb: string; title: stri
         ? "Across Acme"
         : text.group === "proof"
           ? "Proof"
-          : "Acme HQ";
+          : text.group === "money"
+            ? "Money"
+            : "Acme HQ";
   return { crumb: `${where} › ${text.title}`, title: text.title };
 }
 
@@ -311,6 +322,7 @@ function headingOf(page: PageId, plant: PlantCode): { crumb: string; title: stri
 function Pages({
   page,
   plant,
+  clock,
   source,
   curtain,
   inventory,
@@ -332,6 +344,7 @@ function Pages({
 }: {
   page: PageId;
   plant: PlantCode;
+  clock: Clock;
   source: Source;
   curtain: boolean;
   inventory: PlantInventory | null;
@@ -417,6 +430,8 @@ function Pages({
         return <GroupPage go={goMap} />;
       case "sealed":
         return <SealedPage source={source} curtain={curtain} />;
+      case "money":
+        return <MoneyPage {...props} clock={clock} />;
       case "export":
         return exportPane;
       case "reconciliation":
@@ -603,6 +618,13 @@ function ReplayApp() {
       setCurtain={setCurtain}
       people={people}
       upNext={person}
+      saved={
+        <SavedCounter
+          clock={clock}
+          plant={route.plant}
+          onOpen={() => route.go({ page: "money" })}
+        />
+      }
     />
   );
 
@@ -644,6 +666,7 @@ function ReplayApp() {
         <Pages
           page={route.page}
           plant={route.plant}
+          clock={clock}
           source={{ live: false, version: 0 }}
           curtain={curtain}
           inventory={plantsSnapshot.inventory}
@@ -1054,6 +1077,13 @@ function LiveApp({ initial }: { initial: LiveState }) {
       setCurtain={setCurtain}
       people={people}
       upNext={person}
+      saved={
+        <SavedCounter
+          clock={clock}
+          plant={route.plant}
+          onOpen={() => route.go({ page: "money" })}
+        />
+      }
     />
   );
 
@@ -1090,6 +1120,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
         <Pages
           page={route.page}
           plant={route.plant}
+          clock={clock}
           source={{ live: true, version: `${state.steps.length}-${acted}` }}
           curtain={curtain}
           inventory={inventory}

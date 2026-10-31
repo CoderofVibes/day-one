@@ -2287,3 +2287,36 @@ ul.plain {
 .arena-twin h3 {
   margin: 0 0 4px;
 }
+/* The money counter (SavedCounter.tsx): gold, quiet, and only where the header has room. */
+.gh-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--money-border);
+  border-radius: var(--radius-full);
+  background: var(--money-tint);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--t-sm);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: box-shadow 0.3s ease;
+}
+.gh-saved .num {
+  color: var(--money);
+  font-weight: 650;
+}
+.gh-saved.landed {
+  box-shadow: 0 0 0 4px var(--money-tint);
+}
+@media (max-width: 1439px) {
+  .gh .gh-saved-wrap {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gh-saved {
+    transition: none;
+  }
+}

@@ -155,7 +155,7 @@ export function DataTable({ table }: { table: Table }) {
  * The chart's own width in CSS pixels, so the SVG is drawn 1:1 and its text keeps its size
  * however narrow the card is.
  */
-function useWidth(): [React.RefObject<HTMLDivElement | null>, number] {
+export function useWidth(): [React.RefObject<HTMLDivElement | null>, number] {
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(640);
   useLayoutEffect(() => {
@@ -173,7 +173,7 @@ function useWidth(): [React.RefObject<HTMLDivElement | null>, number] {
 
 const PAD = { top: 12, right: 12, bottom: 26, left: 52 };
 
-function niceTicks(min: number, max: number, count = 4) {
+export function niceTicks(min: number, max: number, count = 4) {
   if (max === min) return [min];
   const raw = (max - min) / count;
   const mag = 10 ** Math.floor(Math.log10(raw));
@@ -186,13 +186,13 @@ function niceTicks(min: number, max: number, count = 4) {
   return ticks;
 }
 
-interface Tip {
+export interface Tip {
   x: number;
   y: number;
   lines: string[];
 }
 
-function Tooltip({ tip, width }: { tip: Tip | null; width: number }) {
+export function Tooltip({ tip, width }: { tip: Tip | null; width: number }) {
   if (!tip) return null;
   const left = Math.min(Math.max(tip.x, 70), width - 70);
   return (
@@ -204,7 +204,7 @@ function Tooltip({ tip, width }: { tip: Tip | null; width: number }) {
   );
 }
 
-function Legend({ items }: { items: { name: string; color: string; dashed?: boolean }[] }) {
+export function Legend({ items }: { items: { name: string; color: string; dashed?: boolean }[] }) {
   if (items.length < 2) return null;
   return (
     <div className="chart-legend">

@@ -34,6 +34,7 @@
 //   GET  /api/catalog                          products with formulas and plants, suppliers with what they supply
 //   GET  /api/genealogy                        every lot's batches and what they made, both ways (Lots & recall)
 //   GET  /api/suppliers/scorecards             per supplier and material: on-time, QC, price, invoices, quotes, 0–100 score
+//   GET  /api/money                            each plant's money book, the savings ledger and Kevin's cost inputs (Money)
 //   POST /api/policy/draft                     JSON {"request": …}: Kevin's draft of HQ's owner call; nothing is signed
 //   GET  /api/erp/reconcile                    the recorded run's ERP reconciliation (npm run erp:reconcile -- --json)
 //   GET  /api/history                          the charts' series: batches, spend and QC per month
@@ -59,6 +60,7 @@ import { extname, join, normalize, resolve, sep } from "node:path";
 import { DemoOrderError } from "@day-one/kevin/demo";
 import { ExtractionError } from "@day-one/kevin/extraction";
 import { explainFailure } from "@day-one/server/chain/explain";
+import { type MoneyData, moneyData } from "@day-one/server/finance/load";
 import { WORLD } from "@day-one/server/world/config";
 import { readWorlds } from "@day-one/server/world/files";
 import { scorecards } from "@day-one/server/world/scorecard";
@@ -150,6 +152,7 @@ async function route(
   if (method === "GET" && path === "/api/genealogy") return reply(res, 200, session.genealogy());
   if (method === "GET" && path === "/api/suppliers/scorecards")
     return reply(res, 200, scorecards(readWorlds(REPO_ROOT), WORLD.calendar.recordedEnd));
+  if (method === "GET" && path === "/api/money") return reply(res, 200, money());
   if (method === "GET" && path === "/api/areas")
     return reply(res, 200, session.areas(url.searchParams.get("plant") ?? undefined));
   if (method === "GET" && path === "/api/plant")
@@ -428,6 +431,13 @@ async function askRoute(ask: AskDesk, req: IncomingMessage, res: ServerResponse,
     if (error instanceof AskError) return reply(res, 400, { error: message });
     return reply(res, 502, { error: `Kevin's model did not answer: ${message}` });
   }
+}
+
+/** The Money page's data: the worlds and recordings in the repo, which the run does not change. */
+let moneyCache: MoneyData | undefined;
+function money(): MoneyData {
+  moneyCache ??= moneyData(REPO_ROOT);
+  return moneyCache;
 }
 
 function reply(res: ServerResponse, status: number, body: unknown) {

@@ -305,6 +305,16 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect((await api("POST", "/api/batch-records/inbox", {})).status).toBe(409);
   });
 
+  it("serves the Money page's books and savings ledger, as the static export holds them", async () => {
+    const res = await api("GET", "/api/money");
+    expect(res.status).toBe(200);
+    expect(Object.keys(res.body.books)).toContain("B");
+    const saved = JSON.parse(
+      readFileSync(new URL("../../web/src/data/savings.json", import.meta.url), "utf8"),
+    );
+    expect(res.body.entries).toEqual(saved.entries);
+  });
+
   it("serves the lot genealogy for the Lots & recall page", async () => {
     const res = await api("GET", "/api/genealogy");
     expect(res.status).toBe(200);
