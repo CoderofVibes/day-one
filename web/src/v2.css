@@ -2187,6 +2187,36 @@ ul.plain {
   stroke: currentColor;
   stroke-width: 1.6;
 }
+/* Judge mode (src/JudgeMode.tsx): pine green, the one filled button in the header. */
+.gh-judge {
+  min-height: 32px;
+  padding: 2px 12px;
+  border: 1px solid var(--brand);
+  border-radius: var(--radius-full);
+  background: var(--brand);
+  color: var(--brand-ink);
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.gh-judge:hover {
+  filter: brightness(1.1);
+}
+/* Under 1280 px the header has no room for it: it moves into the menu. */
+.gh-judge-menu {
+  display: none;
+  width: 100%;
+  margin-bottom: 8px;
+}
+@media (max-width: 1279px) {
+  .gh > .gh-judge {
+    display: none;
+  }
+  .gh-judge-menu {
+    display: block;
+  }
+}
 .gh-curtain[aria-pressed="true"] {
   color: var(--chain);
   background: var(--chain-tint);
@@ -2249,8 +2279,8 @@ ul.plain {
   font-weight: 600;
 }
 
-/* Under 1440 px the speeds go into the clock's popover and the people button shows a face. */
-@media (max-width: 1439px) {
+/* Under 1600 px the speeds go into the clock's popover and the people button shows a face. */
+@media (max-width: 1599px) {
   .gh {
     gap: var(--s-2);
     padding: 8px var(--s-5);

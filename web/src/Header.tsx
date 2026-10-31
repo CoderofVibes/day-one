@@ -193,6 +193,7 @@ export function GlobalHeader({
   setCurtain,
   people,
   upNext,
+  onJudge,
 }: {
   /** The page's short name, shown under 1024 px (wider, the page's own eyebrow says it). */
   title: string;
@@ -206,6 +207,8 @@ export function GlobalHeader({
   people: Person[];
   /** Whoever the run waits on, for the people menu's button. */
   upNext: { name: string; role: string | null };
+  /** Judge mode (src/JudgeMode.tsx): the guided tour of the proof points. */
+  onJudge?: () => void;
 }) {
   const [theme, setTheme] = useThemeChoice();
   return (
@@ -220,6 +223,16 @@ export function GlobalHeader({
       <span className="gh-wide">
         <KevinChip status={kevin} onOpen={onKevin} />
       </span>
+      {onJudge && (
+        <button
+          type="button"
+          className="gh-judge"
+          onClick={onJudge}
+          title="A guided tour of every proof, with its testnet links"
+        >
+          Judge mode
+        </button>
+      )}
       <span className="gh-curtain-wrap">
         <CurtainSwitch on={curtain} set={setCurtain} />
       </span>
@@ -274,6 +287,18 @@ export function GlobalHeader({
             <div className="gh-narrow">
               <PeopleList people={people} close={close} />
             </div>
+            {onJudge && (
+              <button
+                type="button"
+                className="gh-judge gh-judge-menu"
+                onClick={() => {
+                  onJudge();
+                  close();
+                }}
+              >
+                Judge mode
+              </button>
+            )}
             <fieldset className="gh-theme" aria-label="Theme">
               <legend>Theme</legend>
               {THEMES.map((t) => (

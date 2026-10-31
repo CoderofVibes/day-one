@@ -61,6 +61,7 @@ import { GlobalHeader, type Person } from "./Header.tsx";
 import { ImportPane } from "./ImportPane.tsx";
 import { InboxPane } from "./InboxPane.tsx";
 import { postDecision, postDropScans } from "./journey.ts";
+import { judgeStart } from "./judgeRoute.ts";
 import { type Action, actionsFor, actorOf, roleLabel } from "./live.ts";
 import { REVIEW_READ_ONLY, reviewSnapshot } from "./mail.ts";
 import ApproveApp from "./Phone.tsx";
@@ -95,6 +96,9 @@ const QUERY = new URLSearchParams(typeof location === "undefined" ? "" : locatio
 const VIDEO = QUERY.get("video") === "1";
 /** Linda's phone on its own (?page=approve&po=1042), for a judge's phone: src/Phone.tsx. */
 const APPROVE = QUERY.get("page") === "approve";
+/** Judge mode (?judge=1, src/JudgeMode.tsx): recorded data only, so it always opens the replay. */
+const JudgeMode = lazy(() => import("./JudgeMode.tsx"));
+const JUDGE_AT = judgeStart(QUERY.toString());
 
 export function App() {
   if (VIDEO) {
@@ -113,6 +117,7 @@ function Screens() {
   useEffect(() => {
     probeApi().then(setLive);
   }, []);
+  if (JUDGE_AT !== null) return <ReplayApp />;
   if (live === undefined) return <div className="loading">Loading…</div>;
   return live ? <LiveApp initial={live} /> : <ReplayApp />;
 }
@@ -509,6 +514,7 @@ function ReplayApp() {
   const at = useClock(clock, (s) => stepAt(s.simNow, clock.range));
   const [curtain, setCurtain] = useState(false);
   const route = useRoute();
+  const [judge, setJudge] = useState<number | "summary" | null>(JUDGE_AT);
 
   const go = useCallback(
     (to: number) => clock.seek(clock.range.steps[Math.max(0, Math.min(last, to))] ?? 0),
@@ -605,6 +611,7 @@ function ReplayApp() {
       setCurtain={setCurtain}
       people={people}
       upNext={person}
+      onJudge={() => setJudge(0)}
     />
   );
 
@@ -719,6 +726,19 @@ function ReplayApp() {
           foot={foot}
         />
       </WithRail>
+      {judge !== null && (
+        <Suspense fallback={null}>
+          <JudgeMode
+            start={judge}
+            go={(page, step) => {
+              if (page !== route.page) route.go({ page, plant: "B" });
+              go(step);
+            }}
+            setCurtain={setCurtain}
+            onExit={() => setJudge(null)}
+          />
+        </Suspense>
+      )}
     </Shell>
   );
 }
@@ -1052,6 +1072,9 @@ function LiveApp({ initial }: { initial: LiveState }) {
       setCurtain={setCurtain}
       people={people}
       upNext={person}
+      onJudge={() => {
+        location.search = "?judge=1";
+      }}
     />
   );
 

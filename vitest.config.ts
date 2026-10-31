@@ -13,5 +13,7 @@ export default defineConfig({
     // Each test file seeds its own ledger. One worker per core (28 on the dev PC) is far more
     // than the suite needs and aborted workers when Windows was short of memory (LESSONS).
     maxWorkers: 2,
+    // The default output, and the count of a full green run for judge mode's summary card.
+    reporters: ["default", "./scripts/lib/test-count-reporter.ts"],
   },
 });

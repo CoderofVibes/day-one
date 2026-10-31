@@ -57,6 +57,7 @@ const REVIEW = join(root, "web/src/data/review.json");
 const ARENA = join(root, "web/src/data/arena.json");
 const GENEALOGY = join(root, "web/src/data/genealogy.json");
 const ASK = join(root, "web/src/data/ask.json");
+const USDC = join(root, "web/src/data/usdc.json");
 const BRIEF = join(root, "web/public/brief.html");
 const CSV = join(root, "web/public/books.csv");
 const RELAYER = "dayone-relayer.testnet";
@@ -345,6 +346,41 @@ const ask = await recordedQuestions(
   root,
 );
 
+// PO-1047 in Circle testnet USDC (data/usdc/, npm run usdc), for judge mode and the tour: the
+// replay's five calls with their explorer links, and the order as the recording made it.
+const usdcRun = recordedJson("scripts/usdc.ts") as {
+  ok: boolean;
+  staffLine: string;
+  amount: string;
+  poStatus: string;
+  steps: { step: string; status: string; txHash: string; explorerUrl: string }[];
+};
+const usdcChain = JSON.parse(readFileSync(join(root, "data/usdc/PO-1047-chain.json"), "utf8")) as {
+  network: string;
+  recordedAt: string;
+  entries: { type: string; request: { method?: string; receiverId?: string; args?: object } }[];
+};
+const usdcSubmit = usdcChain.entries.find(
+  (e) => e.type === "call" && e.request.method === "submit_po",
+);
+const usdcArgs = (usdcSubmit?.request.args ?? {}) as { po_id?: string; supplier?: string };
+const usdc = {
+  network: usdcChain.network,
+  recordedAt: usdcChain.recordedAt,
+  po: usdcArgs.po_id ?? "",
+  contract: usdcSubmit?.request.receiverId ?? "",
+  supplier: usdcArgs.supplier ?? "",
+  amountUsdc: (Number(usdcRun.amount) / 1e6).toFixed(2),
+  status: usdcRun.poStatus,
+  staffLine: usdcRun.staffLine,
+  calls: usdcRun.steps.map((s) => ({
+    call: s.step,
+    status: s.status,
+    tx: s.txHash,
+    url: s.explorerUrl,
+  })),
+};
+
 const files: [string, string][] = [
   [OUT, text],
   [PLANTS, `${JSON.stringify(plants, null, 2)}\n`],
@@ -355,6 +391,7 @@ const files: [string, string][] = [
   [ARENA, `${JSON.stringify(arena, null, 2)}\n`],
   [GENEALOGY, `${JSON.stringify(lineage)}\n`],
   [ASK, `${JSON.stringify(ask, null, 2)}\n`],
+  [USDC, `${JSON.stringify(usdc, null, 2)}\n`],
   [BRIEF, briefHtml(morningBrief(env.db, { now }))],
   [CSV, booksCsv(env.db)],
 ];
