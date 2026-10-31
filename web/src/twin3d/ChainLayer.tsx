@@ -185,6 +185,7 @@ function ChainLayer({
     badges: [],
   });
   const shownRef = useRef(shownKey(shown));
+  const lifted = useRef(frame.current.t);
   // Arena attacks fired while the layer is up (src/arena.ts): each plays once from its own start.
   const attacks = useRef<{ event: ChainEvent; t0: number }[]>([]);
   useEffect(() => {
@@ -272,7 +273,10 @@ function ChainLayer({
       m.opacity = base * g;
     });
 
-    const snap = chainSnapshot(layout, at, frame.current.since);
+    // The step's own transactions replay from the moment the curtain lifts, so turning it on at
+    // the refusal shows the shield, not only the marker it leaves.
+    const since = Math.min(frame.current.since, frame.current.t - lifted.current);
+    const snap = chainSnapshot(layout, at, since);
     const now = frame.current.t;
     attacks.current = attacks.current.filter(
       (a) => now - a.t0 < eventTimes(a.event).shrink + SHRINK_MS,
