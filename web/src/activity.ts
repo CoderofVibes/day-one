@@ -27,7 +27,8 @@ export type FeedType =
   | "transfer_suggested"
   | "credential_event"
   | "attack_refused"
-  | "brief_ready";
+  | "brief_ready"
+  | "shipped";
 
 /** The filter chips besides All; an item can sit under several. */
 export type FeedGroup = "person" | "money" | "quality" | "chain";
@@ -82,6 +83,7 @@ export const TYPE_LOOK: Record<FeedType, { icon: string; tone: FeedTone }> = {
   credential_event: { icon: "badge", tone: "cyan" },
   attack_refused: { icon: "shield", tone: "red" },
   brief_ready: { icon: "sun", tone: "gold" },
+  shipped: { icon: "truck", tone: "neutral" },
 };
 export type FeedTone = "neutral" | "amber" | "red" | "green" | "gold" | "blue" | "cyan";
 
@@ -322,6 +324,66 @@ function eventDrafts(e: SimEvent, ctx: FeedContext | undefined): Draft[] {
       const po = e.id.replace(/^paid:/, "");
       return [
         { type: "paid", text: `Paid ${dollars(e.usdc)} for ${po}`, records: [po], routine: true },
+      ];
+    }
+    case "qc": {
+      const plant = PLANT_NAMES[e.facility] ?? `Plant ${e.facility}`;
+      return e.released
+        ? [
+            {
+              type: "qc_released",
+              text: `QC released ${e.lot} (${e.material}) at ${plant}`,
+              records: [e.lot],
+              routine: true,
+            },
+          ]
+        : [
+            {
+              type: "anomaly",
+              text: `QC rejected ${e.lot} (${e.material} from ${e.vendor}) at ${plant}: it goes back to the supplier`,
+              records: [e.lot],
+            },
+          ];
+    }
+    case "shipment": {
+      const no = e.id.replace(/^shipment:/, "");
+      const plant = PLANT_NAMES[e.facility] ?? `Plant ${e.facility}`;
+      return [
+        {
+          type: "shipped",
+          text: `${plant} shipped ${e.units.toLocaleString("en-US")} units to ${e.customer} (${no})`,
+          records: [no],
+          routine: true,
+        },
+      ];
+    }
+    case "transfer": {
+      const no = e.id.replace(/^transfer:/, "");
+      const from = PLANT_NAMES[e.facility] ?? `Plant ${e.facility}`;
+      const to = PLANT_NAMES[e.to] ?? `Plant ${e.to}`;
+      return [
+        {
+          type: "inventory_update",
+          text: `${from} sent ${e.lines} ${e.lines === 1 ? "lot" : "lots"} of packaging to ${to} (${no})`,
+          records: [no],
+          routine: true,
+        },
+      ];
+    }
+    case "incident": {
+      const plant = PLANT_NAMES[e.facility] ?? `Plant ${e.facility}`;
+      const type: FeedType =
+        e.type === "price_change"
+          ? "price_drift"
+          : e.type === "supplier_trial"
+            ? "credential_event"
+            : "anomaly";
+      return [
+        {
+          type,
+          text: `${e.title} at ${plant}`,
+          records: e.records.length > 0 ? e.records : [e.id.split(":")[1] ?? e.id],
+        },
       ];
     }
     case "step":

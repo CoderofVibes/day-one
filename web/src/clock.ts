@@ -44,6 +44,8 @@ export interface ClockState {
   mode: Mode;
   /** The session log: people's actions at the sim time they took them. */
   log: SessionAction[];
+  /** Events added after the clock started (the world's months as they load). */
+  loaded: number;
 }
 
 export interface Range {
@@ -55,13 +57,20 @@ export interface Range {
   steps: number[];
 }
 
-/** The clock's range from the data: the first day of history to the end of the run's last day. */
-export function rangeOf(events: SimEvent[], steps: Step[]): Range {
+/**
+ * The clock's range from the data: the first day of history to the end of the last day with an
+ * event, widened to `span` (the twelve-month world's, before its months have loaded).
+ */
+export function rangeOf(
+  events: SimEvent[],
+  steps: Step[],
+  span?: { start: number; end: number },
+): Range {
   const times = stepTimes(steps);
   const goldenStart = times[0] ?? 0;
   const goldenEnd = times.at(-1) ?? goldenStart;
-  const first = events[0]?.at ?? goldenStart;
-  const last = events.at(-1)?.at ?? goldenEnd;
+  const first = Math.min(events[0]?.at ?? goldenStart, span?.start ?? Number.POSITIVE_INFINITY);
+  const last = Math.max(events.at(-1)?.at ?? goldenEnd, span?.end ?? Number.NEGATIVE_INFINITY);
   return {
     start: dayStart(simDay(first)),
     end: dayStart(simDay(last) + 1) - MINUTE_MS,
@@ -107,6 +116,8 @@ export interface Clock {
   act(label: string): void;
   /** Clears the session log. */
   resetSession(): void;
+  /** Adds data events (a month of the world as it loads); the range does not change. */
+  addEvents(events: readonly SimEvent[]): void;
 }
 
 /** What a clock starts from; the rest is the default. */
@@ -115,14 +126,16 @@ export type ClockInitial = Partial<Pick<ClockState, "simNow" | "speed" | "seed" 
 export interface ClockOptions {
   history: HistorySource;
   steps: Step[];
+  /** The range the data will cover once every month has loaded (src/data/world/index.json). */
+  span?: { start: number; end: number };
   initial?: ClockInitial;
   /** Drives the frame loop; the browser's by default, none in tests. */
   frames?: { request: (cb: (ms: number) => void) => number; cancel: (id: number) => void } | null;
 }
 
 export function createClock(options: ClockOptions): Clock {
-  const base = buildEvents(options.history, options.steps);
-  const range = rangeOf(base, options.steps);
+  let base = buildEvents(options.history, options.steps);
+  const range = rangeOf(base, options.steps, options.span);
   const clamp = (t: number) => Math.max(range.start, Math.min(range.end, t));
   let log = options.initial?.log ?? [];
   let timeline = new Timeline(sortEvents([...base, ...actionEvents(log)]));
@@ -133,6 +146,7 @@ export function createClock(options: ClockOptions): Clock {
     seed: options.initial?.seed ?? DEFAULT_SEED,
     mode: modeAt(simNow, range),
     log,
+    loaded: 0,
   };
   let resume: Speed = state.speed === "paused" ? "10x" : state.speed;
   const fast = new Set<() => void>();
@@ -233,6 +247,12 @@ export function createClock(options: ClockOptions): Clock {
       log = [];
       timeline = new Timeline(base);
       set({ log }, true);
+    },
+    addEvents(events) {
+      if (events.length === 0) return;
+      base = sortEvents([...base, ...events]);
+      timeline = new Timeline(sortEvents([...base, ...actionEvents(log)]));
+      set({ loaded: state.loaded + events.length }, true);
     },
   };
   startLoop();

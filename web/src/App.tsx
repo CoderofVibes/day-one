@@ -87,6 +87,7 @@ import {
 import type { Source } from "./series.ts";
 import { PageHeader, type PageId, type PlantCode, Shell, useRoute } from "./shell.tsx";
 import { PlantView } from "./twin3d/PlantView.tsx";
+import { attachWorld, WORLD_SPAN } from "./worldEvents.ts";
 
 /** The video page (?video=1): the recorded run on the storyboard's clock (docs/RECORDING.md). */
 const VideoApp = lazy(() => import("./VideoApp.tsx"));
@@ -487,6 +488,7 @@ function ReplayApp() {
   const [clock] = useState(() =>
     createClock({
       history: plantsSnapshot,
+      span: WORLD_SPAN,
       steps: data.steps,
       initial: readPersisted(location.search, storedClock()),
     }),
@@ -494,8 +496,11 @@ function ReplayApp() {
   useEffect(() => {
     shareClock(clock);
     const stop = persist(clock);
+    // The twelve-month worlds load month by month onto the clock (worldEvents.ts).
+    const unload = attachWorld(clock);
     return () => {
       stop();
+      unload();
       shareClock(null);
     };
   }, [clock]);
@@ -834,6 +839,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const [clock] = useState(() =>
     createClock({
       history: plantsSnapshot,
+      span: WORLD_SPAN,
       steps: recorded.steps,
       frames: null,
       initial: { log: readPersisted(location.search, storedClock()).log ?? [] },
@@ -842,8 +848,11 @@ function LiveApp({ initial }: { initial: LiveState }) {
   useEffect(() => {
     shareClock(clock);
     const stop = persist(clock);
+    // The twelve-month worlds load month by month onto the clock (worldEvents.ts).
+    const unload = attachWorld(clock);
     return () => {
       stop();
+      unload();
       shareClock(null);
     };
   }, [clock]);

@@ -12,5 +12,5 @@
     "outDir": "build/tsc",
     "emitDeclarationOnly": true
   },
-  "include": ["src", "src/data/*.json", "vite.config.ts"]
+  "include": ["src", "src/data/*.json", "src/data/world/index.json", "vite.config.ts"]
 }
