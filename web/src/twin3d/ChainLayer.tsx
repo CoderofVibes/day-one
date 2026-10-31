@@ -6,6 +6,7 @@
 // so the layer costs a handful of draw calls whatever the run holds; labels are the twin's DOM
 // labels, so they share its overprint pass. Turning the curtain off runs it all backwards.
 
+import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -186,6 +187,8 @@ function ChainLayer({
   });
   const shownRef = useRef(shownKey(shown));
   const lifted = useRef(frame.current.t);
+  /** The pin under the pointer: its record, transaction and where it stands. */
+  const [hover, setHover] = useState<{ id: string; text: string; at: V3 } | null>(null);
   // Arena attacks fired while the layer is up (src/arena.ts): each plays once from its own start.
   const attacks = useRef<{ event: ChainEvent; t0: number }[]>([]);
   useEffect(() => {
@@ -385,6 +388,8 @@ function ChainLayer({
       }
       picks.current.pins = ids;
       finish(pn, ids.length);
+      // A hovered pin that has gone (a seek, the next step) takes its tip with it.
+      if (hover && !ids.includes(hover.id)) setHover(null);
     }
     const en = enclave.current;
     if (en) {
@@ -538,9 +543,32 @@ function ChainLayer({
         frustumCulled={false}
         renderOrder={order + 1}
         {...pick(() => picks.current.pins)}
+        onPointerMove={(e) => {
+          e.stopPropagation();
+          const id = e.instanceId !== undefined ? picks.current.pins[e.instanceId] : undefined;
+          const ev = layout.events.find((x) => x.id === id);
+          if (!id || !ev?.pin || hover?.id === id) return;
+          document.body.style.cursor = "pointer";
+          setHover({
+            id,
+            text: `${ev.pin.label} · ${ev.tx.method} · ${ev.tx.tx.slice(0, 8)}…`,
+            at: [e.point.x, e.point.y + 2.2, e.point.z],
+          });
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = "";
+          setHover(null);
+        }}
       >
         <meshBasicMaterial color={CYAN} transparent opacity={1} depthWrite={false} />
       </instancedMesh>
+      {hover && (
+        <group position={hover.at}>
+          <Html center pointerEvents="none" zIndexRange={[30, 0]} className="t3-label chain tip">
+            {hover.text}
+          </Html>
+        </group>
+      )}
       {kevin && (
         <mesh
           ref={enclave}
@@ -550,6 +578,13 @@ function ChainLayer({
           <boxGeometry args={[1.1, 1.1, 1.1]} />
           <meshBasicMaterial color={CYAN} transparent opacity={0.85} depthWrite={false} />
         </mesh>
+      )}
+      {kevin && labels && (
+        <group position={[kevin.position[0] + 2.4, kevin.position[1] + 1.6, kevin.position[2]]}>
+          <Label zIndexRange={[11, 0]} rank={RANK.orb} className="t3-label chain orb enclave">
+            🔒 enclave
+          </Label>
+        </group>
       )}
 
       {labels &&
