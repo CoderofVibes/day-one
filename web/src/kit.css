@@ -45,6 +45,7 @@
 }
 .tile-body {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--s-3);
   min-width: 0;
@@ -54,7 +55,8 @@
 }
 .tile-visual {
   flex: 0 0 auto;
-  width: 84px;
+  width: 72px;
+  margin-left: auto;
 }
 .tile-visual .bullet,
 .tile-visual .histo {
@@ -282,12 +284,13 @@
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
-.bullet-marker-label {
-  position: absolute;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  color: var(--ink);
-  font-weight: 600;
+.bullet-key {
+  display: inline-block;
+  width: 2px;
+  height: 9px;
+  margin-right: 4px;
+  background: var(--ink);
+  vertical-align: -1px;
 }
 
 /* ---------- mini bar ---------- */

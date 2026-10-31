@@ -1,0 +1,156 @@
+/* The redesigned pages (docs/UPGRADE_BRIEF.md §5.6), built from the kit (src/kit.tsx). */
+
+/* ---------- shared rows ---------- */
+.tiles-6 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--s-4);
+}
+.tiles-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-4);
+}
+.page-header .right {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ---------- Overview ---------- */
+.overview2 {
+  display: grid;
+  gap: var(--s-4);
+  container-type: inline-size;
+}
+.today-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.today-strip li {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--glass-strong);
+  font-size: var(--t-sm);
+  font-weight: 600;
+}
+.today-strip .today-day {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+.today-strip .t-waiting {
+  border-color: var(--wait-border);
+  background: var(--wait-tint);
+  color: var(--wait);
+}
+.today-strip .t-held {
+  border-color: var(--money-border);
+  background: var(--money-tint);
+  color: var(--money);
+}
+.today-strip .t-ok {
+  color: var(--ok);
+}
+.ov-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+  gap: var(--s-4);
+  align-items: start;
+}
+.ov-main {
+  min-width: 0;
+}
+.needs {
+  display: grid;
+  gap: var(--s-3);
+  min-width: 0;
+}
+.needs-head h2 {
+  margin: 0;
+  font-size: var(--t-md);
+}
+.needs-card {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--waiting);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.needs-card.done {
+  border-left-color: var(--ok);
+}
+.needs-card.hero {
+  box-shadow: var(--e2);
+}
+.needs-card .head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.needs-card .head .pill {
+  margin-left: auto;
+}
+.needs-card .phone {
+  margin: 0;
+  max-width: none;
+}
+.needs-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-2);
+}
+.needs > .panel {
+  border-left: 3px solid var(--waiting);
+}
+.ov-run {
+  min-width: 0;
+}
+.ov-full {
+  margin-top: var(--s-2);
+}
+.ov-full summary {
+  cursor: pointer;
+  color: var(--brand);
+  font-weight: 600;
+}
+.ov-full .panel.run {
+  margin-top: var(--s-2);
+  box-shadow: none;
+}
+.ov-full .panel.run .feed {
+  max-height: 520px;
+  overflow-y: auto;
+}
+.yield-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@container (max-width: 980px) {
+  .ov-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 1100px) {
+  .tiles-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .tiles-6 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-3);
+  }
+  .tiles-6 .tile-visual {
+    display: none;
+  }
+}

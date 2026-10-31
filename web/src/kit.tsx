@@ -522,15 +522,19 @@ export function BulletBar({
         {target !== undefined && <i className="bullet-target" style={{ left: pct(target) }} />}
         {marker && <i className="bullet-marker" style={{ left: pct(marker.value) }} />}
       </div>
-      {marker && (
-        <div className="bullet-legend">
-          <span>{format(0)}</span>
-          <span className="bullet-marker-label" style={{ left: pct(marker.value) }}>
-            {marker.label}
-          </span>
-          <span>{format(limit)}</span>
-        </div>
-      )}
+      <div className="bullet-legend">
+        <span>
+          {marker ? (
+            <>
+              <i className="bullet-key" aria-hidden="true" />
+              {marker.label} {format(marker.value)}
+            </>
+          ) : (
+            format(0)
+          )}
+        </span>
+        <span>{format(limit)}</span>
+      </div>
     </div>
   );
 }
@@ -671,7 +675,7 @@ export function StatTile({
   label: string;
   value: React.ReactNode;
   unit?: string;
-  delta?: Delta;
+  delta?: Delta | undefined;
   /** A sparkline under the value. */
   spark?: React.ReactNode;
   /** A gauge, ring or bullet bar instead of (or beside) the sparkline. */
@@ -679,10 +683,10 @@ export function StatTile({
   /** Six words or fewer. */
   context?: React.ReactNode;
   /** The full sentence. */
-  why?: string;
-  open?: RecordTarget;
+  why?: string | undefined;
+  open?: RecordTarget | undefined;
   /** A tile that needs a look takes a coloured edge. */
-  tone?: Tone;
+  tone?: Tone | undefined;
   children?: React.ReactNode;
 }) {
   const nav = useNav();
@@ -739,6 +743,8 @@ export interface TimelineItem {
   who?: string;
   chip?: { label: string; tone: Tone };
   open?: RecordTarget;
+  /** Instead of a record: what the card does (jump the replay to the step). */
+  onClick?: () => void;
 }
 
 /** A horizontal, scrollable row of events, oldest first; each opens its record. */
@@ -771,11 +777,11 @@ export function Timeline({ items, label }: { items: TimelineItem[]; label: strin
         return (
           <li key={it.key} className={it.chip ? `t-${it.chip.tone}` : undefined}>
             <i className="ht-dot" aria-hidden="true" />
-            {it.open ? (
+            {it.open || it.onClick ? (
               <button
                 type="button"
                 className="ht-card"
-                onClick={() => nav.open(it.open as RecordTarget)}
+                onClick={() => (it.open ? nav.open(it.open) : it.onClick?.())}
               >
                 {body}
               </button>

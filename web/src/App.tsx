@@ -329,6 +329,9 @@ function Pages({
   hq,
   goMap,
   foot,
+  run,
+  at,
+  onStep,
 }: {
   page: PageId;
   plant: PlantCode;
@@ -354,6 +357,11 @@ function Pages({
   /** Open the plant map on the group purchase. */
   goMap: () => void;
   foot: React.ReactNode;
+  /** The run on screen and its step, for the Overview's queue and timeline. */
+  run: RunData;
+  at: number;
+  /** The replay's step control. */
+  onStep?: (i: number) => void;
 }) {
   if (page === "integration")
     return (
@@ -372,6 +380,9 @@ function Pages({
           map={map()}
           kevin={kevin}
           activity={activity}
+          run={run}
+          at={at}
+          {...(onStep ? { onStep } : {})}
         />
         <div className="page v2 foot-wrap">{foot}</div>
       </>
@@ -642,6 +653,9 @@ function ReplayApp() {
             page={route.page}
             plant={route.plant}
             source={{ live: false, version: 0 }}
+            run={data}
+            at={at}
+            onStep={go}
             curtain={curtain}
             inventory={plantsSnapshot.inventory}
             books={plantsSnapshot.books}
@@ -1086,6 +1100,8 @@ function LiveApp({ initial }: { initial: LiveState }) {
             page={route.page}
             plant={route.plant}
             source={{ live: true, version: `${state.steps.length}-${acted}` }}
+            run={state}
+            at={last}
             curtain={curtain}
             inventory={inventory}
             books={books}
