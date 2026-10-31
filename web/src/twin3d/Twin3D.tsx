@@ -21,6 +21,7 @@ import {
   PADS,
   siteScale,
 } from "../twin/layout.ts";
+import { LOT_STATES, type LotStateKey } from "../twin/lotStates.ts";
 import {
   deriveTwinState,
   type FacilityId,
@@ -33,6 +34,7 @@ import {
   type TwinState,
 } from "../twin/model.ts";
 import { type Focus, flowObjectId, supplierObjectId } from "../twin/objects.ts";
+import { type Pallet, palletLine } from "../twin/pallets.ts";
 import {
   BUILDING_HEIGHT,
   type PartKind,
@@ -68,6 +70,9 @@ import {
   lerp,
   lerpFraming,
   objectFraming,
+  PALLET,
+  type PalletPlace,
+  palletPlaces,
   RECORD_FRAME_MS,
   road3,
   STEP_MS,
@@ -100,6 +105,8 @@ export interface Twin3DProps {
   onSelect?: (id: string) => void;
   /** A preset or object to fly to; each new `seq` starts one move. */
   camera?: CameraRequest | null;
+  /** Every lot on site at the step shown (src/twin/pallets.ts). */
+  pallets?: Pallet[];
 }
 
 /** An area of a plant, as the maps hand it to the area sheet. */
@@ -243,6 +250,7 @@ export interface Layers {
   equipment: boolean;
   money: boolean;
   labels: boolean;
+  stock: boolean;
 }
 
 /** Equipment on and around the buildings: silos, tanks, stacks, rooftop units and vents. */
@@ -1410,7 +1418,6 @@ function LotView({ frameLot, theme }: { frameLot: LotFrame; theme: Theme }) {
   const frame = useFrameRef();
   const cage = useRef<THREE.Group>(null);
   const shell = useRef<THREE.Mesh>(null);
-  const pallet = useRef<THREE.Mesh>(null);
   const { lot, box } = frameLot;
   const [cx, cy] = centerOf(box);
   const decidedColor = lot.state === "rejected" ? theme.warn : theme.ok;
@@ -1418,7 +1425,7 @@ function LotView({ frameLot, theme }: { frameLot: LotFrame; theme: Theme }) {
     const f = frame.current;
     const l = f.lots.find((x) => x.lot.code === lot.code);
     if (!l) return;
-    // The pallet stands on the roof over the quarantine area, the cage dropped over it.
+    // The cage drops over the lot's pallet on the roof over the quarantine area.
     const roof = FLOOR_Z + BUILDING_HEIGHT.warehouse * siteScale(lot.facility);
     const c = cage.current;
     if (c) {
@@ -1431,22 +1438,11 @@ function LotView({ frameLot, theme }: { frameLot: LotFrame; theme: Theme }) {
       mat.opacity = 0.16 * l.cage;
       mat.color.set(theme.quarantine).lerp(COLOR_B.set(decidedColor), l.decided);
     }
-    const p = pallet.current;
-    if (p) {
-      p.position.set(cx, roof + 0.9, cy);
-      (p.material as THREE.MeshStandardMaterial).color
-        .set(theme.quarantine)
-        .lerp(COLOR_B.set(decidedColor), l.decided);
-    }
   });
   const mark = lot.state === "quarantine" ? "⚠" : lot.state === "released" ? "✓" : "✗";
-  const selectable = useSelectable(lot.code);
+  // The lot's pallet is one of the instanced pallets (Pallets); this is its cage and label.
   return (
     <group>
-      <mesh ref={pallet} castShadow {...selectable}>
-        <boxGeometry args={[3.2, 1.8, 3.2]} />
-        <meshStandardMaterial color={theme.quarantine} roughness={0.8} />
-      </mesh>
       <group ref={cage}>
         <mesh ref={shell} position={[0, 2.6, 0]}>
           <boxGeometry args={[box.w * 0.8, 5.2, box.d * 0.8]} />
@@ -1472,6 +1468,105 @@ function LotView({ frameLot, theme }: { frameLot: LotFrame; theme: Theme }) {
   );
 }
 
+// ------------------------------------------------------------------ pallets
+
+/** Room for every lot the plants hold, with a margin; one draw call whatever the count. */
+const PALLET_CAPACITY = 512;
+const NO_PALLETS: Pallet[] = [];
+
+/** The lot-state colours from the page's tokens, so the pallets match the legend and the pills. */
+function lotColors(): Record<LotStateKey, string> {
+  const style = getComputedStyle(document.documentElement);
+  return Object.fromEntries(
+    (Object.keys(LOT_STATES) as LotStateKey[]).map((k) => [
+      k,
+      style.getPropertyValue(LOT_STATES[k].token).trim() || FALLBACK.off,
+    ]),
+  ) as Record<LotStateKey, string>;
+}
+
+/**
+ * Every lot on site as one InstancedMesh (src/twin/pallets.ts): a matrix and a lot-state colour per
+ * instance, set when the pallets change; only the run's own lots are recoloured each frame, as QC
+ * decides them. Hover shows the lot's line, a click opens it in the inspector.
+ */
+function Pallets({ pallets, theme }: { pallets: Pallet[]; theme: Theme }) {
+  const frame = useFrameRef();
+  const mesh = useRef<THREE.InstancedMesh>(null);
+  const select = useContext(SelectContext);
+  const [hover, setHover] = useState<number | null>(null);
+  const places = useMemo(() => palletPlaces(pallets), [pallets]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the colours follow the theme
+  const colors = useMemo(lotColors, [theme]);
+  const shown = Math.min(pallets.length, PALLET_CAPACITY);
+  useEffect(() => {
+    const m = mesh.current;
+    if (!m) return;
+    for (let i = 0; i < shown; i++) {
+      const { position, scale } = places[i] as PalletPlace;
+      MATRIX.makeScale(PALLET.w * scale, PALLET.h * scale, PALLET.w * scale).setPosition(
+        ...position,
+      );
+      m.setMatrixAt(i, MATRIX);
+      m.setColorAt(i, COLORS.set(colors[(pallets[i] as Pallet).state]));
+    }
+    m.count = shown;
+    m.instanceMatrix.needsUpdate = true;
+    if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    m.computeBoundingSphere();
+  }, [pallets, places, colors, shown]);
+  useFrame(() => {
+    const m = mesh.current;
+    if (!m) return;
+    let changed = false;
+    for (let i = 0; i < shown; i++) {
+      const p = pallets[i] as Pallet;
+      if (!p.run) continue;
+      const l = frame.current.lots.find((x) => x.lot.code === p.code);
+      if (!l) continue;
+      m.setColorAt(i, COLORS.set(colors.quarantine).lerp(COLOR_B.set(colors[p.state]), l.decided));
+      changed = true;
+    }
+    if (changed && m.instanceColor) m.instanceColor.needsUpdate = true;
+  });
+  const hovered = hover !== null ? pallets[hover] : undefined;
+  const at = hover !== null ? places[hover]?.position : undefined;
+  return (
+    <>
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: a three.js mesh, not DOM; the Objects list is its keyboard path */}
+      <instancedMesh
+        ref={mesh}
+        args={[undefined, undefined, PALLET_CAPACITY]}
+        receiveShadow
+        onPointerMove={(e) => {
+          e.stopPropagation();
+          if (e.instanceId !== undefined && e.instanceId !== hover) setHover(e.instanceId);
+          document.body.style.cursor = select ? "pointer" : "";
+        }}
+        onPointerOut={() => {
+          setHover(null);
+          document.body.style.cursor = "";
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          const p = e.instanceId !== undefined ? pallets[e.instanceId] : undefined;
+          if (p && select) select(p.code);
+        }}
+      >
+        <boxGeometry />
+        <meshStandardMaterial color="#ffffff" roughness={0.85} />
+      </instancedMesh>
+      {hovered && at && (
+        <group position={[at[0], at[1] + (hovered.run ? 2.4 : 1.4), at[2]]}>
+          <Html center pointerEvents="none" zIndexRange={[30, 0]} className="t3-label lot tip">
+            {palletLine(hovered)}
+          </Html>
+        </group>
+      )}
+    </>
+  );
+}
+
 // ------------------------------------------------------------------ the scene
 
 function Scene({
@@ -1490,11 +1585,13 @@ function Scene({
   picked,
   layers,
   camera,
+  pallets,
 }: {
   onPick?: ((pick: AreaPick) => void) | undefined;
   picked?: AreaPick | null | undefined;
   layers: Layers;
   camera: CameraRequest | null;
+  pallets: Pallet[];
   theme: Theme;
   prev: TwinState;
   next: TwinState;
@@ -1584,6 +1681,7 @@ function Scene({
             />
           ))}
         {layers.money && lots.map((l) => <LotView key={l.lot.code} frameLot={l} theme={theme} />)}
+        {layers.stock && <Pallets pallets={pallets} theme={theme} />}
         <StoryCamera
           title={title}
           at={at}
@@ -1609,6 +1707,7 @@ export default function Twin3D({
   picked,
   onSelect,
   camera,
+  pallets,
   children,
 }: Twin3DProps & { children?: React.ReactNode }) {
   const theme = useTheme();
@@ -1623,7 +1722,12 @@ export default function Twin3D({
   const notes = [...formatTwinState(next, curtain), ...formatQuotes(next, curtain)];
   const [narrow, setNarrow] = useState(() => matchMedia("(max-width: 560px)").matches);
   const command = useRef<CameraCommand>({ zoom: 1, fit: false });
-  const [layers, setLayers] = useState<Layers>({ equipment: true, money: true, labels: true });
+  const [layers, setLayers] = useState<Layers>({
+    equipment: true,
+    money: true,
+    labels: true,
+    stock: true,
+  });
   const toggle = (k: keyof Layers) => setLayers((l) => ({ ...l, [k]: !l[k] }));
   useEffect(() => {
     const media = matchMedia("(max-width: 560px)");
@@ -1677,6 +1781,7 @@ export default function Twin3D({
               picked={picked}
               layers={layers}
               camera={camera ?? null}
+              pallets={pallets ?? NO_PALLETS}
             />
           </Canvas>
         </SelectContext.Provider>
@@ -1709,6 +1814,7 @@ export default function Twin3D({
               [
                 ["equipment", "Equipment"],
                 ["money", "Orders & money"],
+                ["stock", "Stock"],
                 ["labels", "Labels"],
               ] as const
             ).map(([k, label]) => (

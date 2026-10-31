@@ -11,6 +11,7 @@ import {
   FLOOR_Z,
   PAD_Z,
   PADS,
+  siteScale,
   zoneOf,
 } from "../twin/layout.ts";
 import type {
@@ -24,7 +25,8 @@ import type {
   TwinState,
 } from "../twin/model.ts";
 import type { Focus } from "../twin/objects.ts";
-import { siteTop, topHeight } from "./buildings.ts";
+import type { Pallet } from "../twin/pallets.ts";
+import { BUILDING_HEIGHT, siteTop, topHeight } from "./buildings.ts";
 
 export type V3 = [number, number, number];
 
@@ -831,7 +833,7 @@ export function objectShot(focus: Focus): Shot {
       };
     }
     case "lot": {
-      const box = zoneOf(focus.facility, "quarantine")?.box;
+      const box = zoneOf(focus.facility, focus.area)?.box;
       return {
         subjects: box ? boxSubjects(box, FLOOR_Z + 14) : plantSubjects(focus.facility),
         azimuth: ISO - 0.2,
@@ -876,6 +878,62 @@ export function objectFraming(
       f.target[1],
       f.target[2] - Math.sin(f.azimuth) * shift,
     ],
+  });
+}
+
+// ------------------------------------------------------------------ pallets
+
+/** A pallet's footprint and height, and the grid it stands on, in plant units. */
+export const PALLET = { w: 1.3, h: 0.9, cell: 1.9, inset: 1 } as const;
+
+/** A run's own lot stands this much larger, in the middle of the quarantine cage it is caged in. */
+export const HERO_SCALE = 2;
+
+export interface PalletPlace {
+  position: V3;
+  /** 1 for a stock pallet, HERO_SCALE for the run's lot. */
+  scale: number;
+}
+
+/**
+ * Where each pallet stands: in rows on the roof over its area, the way the run's lot stands over
+ * the quarantine cage, stacked a level higher when an area's roof is full. The run's lots stand
+ * larger in the middle of the cage, and stock pallets leave the middle of the quarantine roof to them.
+ */
+export function palletPlaces(pallets: Pallet[]): PalletPlace[] {
+  const used = new Map<string, number>();
+  return pallets.map((p) => {
+    const zone = zoneOf(p.facility, p.area);
+    if (!zone) return { position: world(0, 0, -10), scale: 1 };
+    const { x, y, w, d } = zone.box;
+    const [cx, cy] = centerOf(zone.box);
+    const roof = FLOOR_Z + BUILDING_HEIGHT[zone.building] * siteScale(p.facility);
+    if (p.run)
+      return { position: world(cx, cy, roof + (PALLET.h * HERO_SCALE) / 2), scale: HERO_SCALE };
+    const cols = Math.max(1, Math.floor((w - 2 * PALLET.inset) / PALLET.cell));
+    const rows = Math.max(1, Math.floor((d - 2 * PALLET.inset) / PALLET.cell));
+    const slotAt = (n: number): [number, number, number] => {
+      const level = Math.floor(n / (cols * rows));
+      const slot = n % (cols * rows);
+      return [
+        x + (w - cols * PALLET.cell) / 2 + ((slot % cols) + 0.5) * PALLET.cell,
+        y + (d - rows * PALLET.cell) / 2 + (Math.floor(slot / cols) + 0.5) * PALLET.cell,
+        level,
+      ];
+    };
+    const key = `${p.facility}:${p.area}`;
+    let n = used.get(key) ?? 0;
+    let [x0, y0, level] = slotAt(n);
+    // The cage's middle is the run's lot's: a stock pallet there moves on to the next place.
+    while (
+      p.area === "quarantine" &&
+      level === 0 &&
+      Math.hypot(x0 - cx, y0 - cy) < PALLET.cell * 1.6 &&
+      n < cols * rows
+    )
+      [x0, y0, level] = slotAt(++n);
+    used.set(key, n + 1);
+    return { position: world(x0, y0, roof + PALLET.h / 2 + level * (PALLET.h + 0.1)), scale: 1 };
   });
 }
 

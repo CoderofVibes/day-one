@@ -7,7 +7,8 @@
 
 import type { RunData, Tone, Transaction } from "../run.ts";
 import type { PageId } from "../shell.tsx";
-import { AREAS, BUILDING_NAMES } from "./layout.ts";
+import { AREAS, type AreaCode, BUILDING_NAMES } from "./layout.ts";
+import { lotLook } from "./lotStates.ts";
 import {
   DEPARTMENTS,
   type DeptCode,
@@ -18,6 +19,7 @@ import {
   type NodeRef,
   type TwinState,
 } from "./model.ts";
+import type { Pallet } from "./pallets.ts";
 
 export type TwinObjectKind =
   | "plant"
@@ -36,7 +38,7 @@ export type Focus =
   | { kind: "dept"; facility: FacilityId; dept: DeptCode }
   | { kind: "pad"; pad: "escrow" | "hq" | "suppliers" }
   | { kind: "depot"; index: number }
-  | { kind: "lot"; facility: FacilityId }
+  | { kind: "lot"; facility: FacilityId; area: AreaCode }
   | { kind: "flow"; from: NodeRef; to: NodeRef };
 
 export interface TwinObject {
@@ -94,12 +96,6 @@ const DEPT_STATE: Record<DeptStatus, { label: string; tone: Tone }> = {
   offline: { label: "not on Day One yet", tone: "neutral" },
 };
 
-const LOT_STATE = {
-  quarantine: { label: "quarantine", tone: "waiting" },
-  released: { label: "released", tone: "paid" },
-  rejected: { label: "rejected", tone: "refused" },
-} as const;
-
 function slug(s: string): string {
   return s
     .toLowerCase()
@@ -144,7 +140,7 @@ function shipmentState(flow: Flow): { label: string; tone: Tone } {
 }
 
 /** Every object on the map at this state, in the Objects list's order. */
-export function twinObjects(state: TwinState): TwinObject[] {
+export function twinObjects(state: TwinState, pallets: Pallet[] = []): TwinObject[] {
   const out: TwinObject[] = [];
   for (const f of ["B", "A", "C"] as FacilityId[]) {
     const facility = state.facilities.find((x) => x.id === f);
@@ -257,14 +253,30 @@ export function twinObjects(state: TwinState): TwinObject[] {
       type: "Lot",
       name: lot.code,
       plant: lot.facility,
-      state: LOT_STATE[lot.state],
-      focus: { kind: "lot", facility: lot.facility },
+      state: lotLook(lot.state),
+      focus: { kind: "lot", facility: lot.facility, area: "quarantine" },
     });
+  for (const p of pallets) {
+    if (p.run) continue;
+    out.push({
+      id: p.code,
+      kind: "lot",
+      type: "Lot",
+      name: p.code,
+      plant: p.facility,
+      state: lotLook(p.state),
+      focus: { kind: "lot", facility: p.facility, area: p.area },
+    });
+  }
   return out;
 }
 
-export function findObject(state: TwinState, id: string): TwinObject | undefined {
-  return twinObjects(state).find((o) => o.id === id);
+export function findObject(
+  state: TwinState,
+  id: string,
+  pallets: Pallet[] = [],
+): TwinObject | undefined {
+  return twinObjects(state, pallets).find((o) => o.id === id);
 }
 
 /** True when an object matches a search: its name, type, id, plant or state, any case. */
@@ -324,8 +336,9 @@ export function inspectObject(
   run: RunData,
   upTo: number,
   id: string,
+  pallets: Pallet[] = [],
 ): InspectorData | undefined {
-  const o = findObject(state, id);
+  const o = findObject(state, id, pallets);
   if (!o) return undefined;
   const base = {
     id: o.id,
@@ -544,6 +557,46 @@ export function inspectObject(
     }
     case "lot": {
       const lot = state.lots.find((l) => l.code === o.id);
+      const pallet = pallets.find((p) => p.code === o.id);
+      const about = pallet
+        ? [
+            { label: "Material", value: pallet.name },
+            ...(pallet.vendor ? [{ label: "Supplier", value: pallet.vendor }] : []),
+            ...(pallet.qty ? [{ label: "On hand", value: pallet.qty }] : []),
+          ]
+        : [];
+      if (!lot && pallet) {
+        const where = AREAS[pallet.area];
+        const stage =
+          pallet.state === "quarantine" || pallet.state === "received"
+            ? 1
+            : pallet.state === "rejected"
+              ? 2
+              : 3;
+        return {
+          ...base,
+          summary:
+            stage === 1
+              ? "Received and waiting in quarantine until QC decides."
+              : stage === 2
+                ? "QC rejected it; it waits to go back to the supplier."
+                : "Released by QC and in stock.",
+          fields: [
+            ...about,
+            {
+              label: "Where",
+              value: `${where.label}, ${BUILDING_NAMES[where.building].toLowerCase()}`,
+            },
+          ],
+          timeline: stages(
+            ["Received", "Quarantine", pallet.state === "rejected" ? "Rejected" : "Released"],
+            stage,
+            stage === 2,
+          ),
+          page: { id: "inventory", label: "Inventory & forecast" },
+          chain: chain(new RegExp(`\\b${o.id}\\b`)),
+        };
+      }
       const decided = lot?.state !== "quarantine";
       return {
         ...base,
@@ -554,6 +607,7 @@ export function inspectObject(
               ? "QC released it; it can be used, and the supplier has been paid."
               : "QC rejected it; the money went back to the budget.",
         fields: [
+          ...about,
           { label: "Where", value: "Quarantine cage, warehouse" },
           { label: "QC", value: o.state.label },
         ],

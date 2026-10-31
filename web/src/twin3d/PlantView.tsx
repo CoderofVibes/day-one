@@ -7,13 +7,16 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GROUP_TWIN, groupRun } from "../groupBuy.ts";
 import { Inspector } from "../Inspector.tsx";
+import { type LotView, readSnapshotLots } from "../reads.ts";
 import type { RunData } from "../run.ts";
 import type { PageId } from "../shell.tsx";
 import { AREAS, mainArea } from "../twin/layout.ts";
+import { LOT_STATES } from "../twin/lotStates.ts";
 import type { DeptCode, DeptStatus, FacilityId } from "../twin/model.ts";
 import { deriveTwinState, formatQuotes, formatTwinState } from "../twin/model.ts";
 import { inspectObject, twinObjects } from "../twin/objects.ts";
 import { type AreaPick, PlantMap } from "../twin/PlantMap.tsx";
+import { palletsAt, runLotCodes } from "../twin/pallets.ts";
 import { ObjectsList } from "./ObjectsList.tsx";
 
 /** A picked area with its department's status at the step shown. */
@@ -74,11 +77,13 @@ function webgl(): boolean {
   }
 }
 
+// The lot states come from the one lot-state map the pallets and the pages' pills use.
 const LEGEND: { token: string; label: string }[] = [
   { token: "--brand", label: "online" },
   { token: "--map-off", label: "not yet" },
   { token: "--money", label: "money" },
-  { token: "--quarantine", label: "quarantine" },
+  { token: LOT_STATES.quarantine.token, label: LOT_STATES.quarantine.label },
+  { token: LOT_STATES.released.token, label: LOT_STATES.released.label },
   { token: "--refused", label: "refused / disputed" },
 ];
 
@@ -153,7 +158,21 @@ export function PlantView({
     (r: Omit<CameraRequest, "seq">) => setRequest({ ...r, seq: ++seq.current }),
     [],
   );
-  const objects = useMemo(() => twinObjects(state), [state]);
+  // The pallets: the seed's lots from the bundled snapshot (loaded after the map), and the run's.
+  const [stock, setStock] = useState<LotView[]>([]);
+  useEffect(() => {
+    let live = true;
+    readSnapshotLots().then(
+      (lots) => live && setStock(lots),
+      () => undefined,
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
+  const runLots = useMemo(() => runLotCodes(shown, options), [shown, options]);
+  const pallets = useMemo(() => palletsAt(stock, state, runLots), [stock, state, runLots]);
+  const objects = useMemo(() => twinObjects(state, pallets), [state, pallets]);
   const select = useCallback(
     (id: string | null) => {
       setSelected(id);
@@ -171,7 +190,7 @@ export function PlantView({
     const o = id ? objects.find((x) => x.id === id) : undefined;
     if (o) fly({ focus: o.focus });
   }, [objects, fly]);
-  const inspected = selected ? inspectObject(state, shown, shownAt, selected) : undefined;
+  const inspected = selected ? inspectObject(state, shown, shownAt, selected, pallets) : undefined;
   // A department in the inspector is outlined like a picked area.
   const deptPick: AreaPick | null = selected?.startsWith("dept-")
     ? (() => {
@@ -376,6 +395,7 @@ export function PlantView({
             curtain={curtain}
             record={record}
             {...(options ? { options } : {})}
+            pallets={pallets}
             {...(group ? { onStep: goGroup } : onStep ? { onStep } : {})}
             {...(choose && !full
               ? { onPick: choose, picked: picked ?? deptPick }
