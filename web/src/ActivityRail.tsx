@@ -14,9 +14,11 @@ import {
   type FeedFilter,
   type FeedItem,
   type FeedRow,
+  feedForPlant,
   filterFeed,
   type KevinStatus,
   kevinStatus,
+  PLANT_NAMES,
   pageForRecord,
   TYPE_LOOK,
   timeLabel,
@@ -275,6 +277,8 @@ export interface FeedProps {
   /** What the page offers the person Kevin waits on, on the item that waits for them. */
   actions: React.ReactNode;
   go: (next: { page: PageId; plant?: PlantCode }) => void;
+  /** The header's plant: the feed shows its lines unless "All plants" is on. */
+  plant: PlantCode;
 }
 
 export function ActivityRail({
@@ -283,14 +287,21 @@ export function ActivityRail({
   curtain,
   actions,
   go,
+  plant,
 }: FeedProps & { curtain: boolean }) {
-  const { items, now } = useFeed(clock, context);
+  const { items: everywhere, now } = useFeed(clock, context);
+  const [allPlants, setAllPlants] = useState(false);
+  const items = useMemo(
+    () => feedForPlant(everywhere, allPlants ? "all" : plant),
+    [everywhere, allPlants, plant],
+  );
   const wide = useWide();
   const [filter, setFilter] = useState<FeedFilter>("all");
   const [open, setOpen] = useState<ReadonlySet<string>>(new Set());
   const [page, setPage] = useState(0);
   const shownFilter = filter === "chain" && !curtain ? "all" : filter;
-  const status = kevinStatus(items, now);
+  // Kevin's status reads every plant, as the header's chip does (one source).
+  const status = kevinStatus(everywhere, now);
   const newest = items.at(-1)?.at ?? 0;
 
   // Items newer than the first paint (or the last step back in time) slide in; the rest do not.
@@ -341,6 +352,22 @@ export function ActivityRail({
           </button>
         )}
       </header>
+      <fieldset className="feed-chips" aria-label="Plant">
+        {[false, true].map((all) => (
+          <button
+            key={String(all)}
+            type="button"
+            className={allPlants === all ? "feed-chip on" : "feed-chip"}
+            aria-pressed={allPlants === all}
+            onClick={() => {
+              setAllPlants(all);
+              setPage(0);
+            }}
+          >
+            {all ? "All plants" : (PLANT_NAMES[plant] ?? plant)}
+          </button>
+        ))}
+      </fieldset>
       <fieldset className="feed-chips" aria-label="Show">
         {FILTERS.filter((f) => f.id !== "chain" || curtain).map((f) => (
           <button

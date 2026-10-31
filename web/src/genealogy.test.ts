@@ -41,6 +41,13 @@ describe("search", () => {
     expect(search(FIXTURE, "Sample Grocers").map((h) => h.id)).toEqual(["SH-2"]);
     expect(search(FIXTURE, "  ")).toEqual([]);
   });
+
+  it("keeps to one plant unless every plant is asked for", () => {
+    expect(search(FIXTURE, "sep 10", 40, "B").map((h) => h.id)).toEqual(["BR-1B"]);
+    expect(search(FIXTURE, "sep 10", 40, "A").map((h) => h.id)).toEqual(["BR-2A"]);
+    expect(search(FIXTURE, "sep 10", 40, "all").map((h) => h.id)).toEqual(["BR-1B", "BR-2A"]);
+    for (const h of search(FIXTURE, "ridgeway", 40, "A")) expect(h.facility ?? "A").toBe("A");
+  });
 });
 
 describe("runDrill", () => {

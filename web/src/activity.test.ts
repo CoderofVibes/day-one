@@ -4,6 +4,7 @@ import {
   eventsToFeed,
   type FeedContext,
   type FeedItem,
+  feedForPlant,
   filterFeed,
   IDLE_AFTER_MS,
   kevinStatus,
@@ -77,6 +78,21 @@ describe("Kevin's activity feed", () => {
     }
     // Each item sits at its recorded step's time on the clock.
     for (const i of runItems) expect(i.at).toBe(times[i.step as number]);
+  });
+
+  it("follows the plant picker: one plant's lines, or every plant's", () => {
+    const at = (plant: "A" | "B" | "C") => feedForPlant(feed, plant);
+    expect(feedForPlant(feed, "all")).toEqual(feed);
+    // The recorded run is Hollow Pine's; Riverside sees none of it, only its own batches.
+    for (const i of runItems) expect(i.plants).toEqual(["B"]);
+    expect(at("B").length).toBeGreaterThan(runItems.length);
+    expect(at("A").length).toBeGreaterThan(0);
+    expect(at("A").some((i) => i.step !== undefined)).toBe(false);
+    for (const plant of ["A", "B", "C"] as const)
+      for (const i of at(plant)) expect(i.plants ?? [plant], i.text).toContain(plant);
+    // Every line lands at some plant: the three views together cover the whole feed.
+    const covered = new Set([...at("A"), ...at("B"), ...at("C")].map((i) => i.id));
+    expect(covered.size).toBe(feed.length);
   });
 
   it("puts the run's chain lines behind the Chain filter, with the recorded transactions", () => {

@@ -48,6 +48,8 @@ export interface FeedItem {
   step?: number;
   /** Who Kevin is waiting on; set only while nothing has happened after it. */
   needs?: { who: string; role: string };
+  /** The plants the line is about (a transfer names both ends); absent for this session's actions. */
+  plants?: FeedPlant[];
   /** The step's chain lines, for the Chain filter (curtain only). */
   chain?: ChainLine[];
 }
@@ -87,7 +89,9 @@ export const TYPE_LOOK: Record<FeedType, { icon: string; tone: FeedTone }> = {
 };
 export type FeedTone = "neutral" | "amber" | "red" | "green" | "gold" | "blue" | "cyan";
 
-const PLANT_NAMES: Record<string, string> = {
+export type FeedPlant = "A" | "B" | "C";
+
+export const PLANT_NAMES: Record<string, string> = {
   A: "Acme Riverside",
   B: "Hollow Pine",
   C: "Acme Lakeview",
@@ -133,7 +137,26 @@ type Draft = Omit<FeedItem, "id" | "at" | "groups" | "records" | "routine"> & {
   routine?: boolean;
 };
 
+const isPlant = (code: string | undefined): code is FeedPlant =>
+  code === "A" || code === "B" || code === "C";
+
+/**
+ * The plants an event is about: its facility, and a transfer's receiving plant too. The seed's
+ * receipts and payments and the recorded run's steps are Hollow Pine's; a person's action this
+ * session belongs to no one plant.
+ */
+function plantsOf(e: SimEvent): FeedPlant[] | undefined {
+  if (e.kind === "action") return undefined;
+  if (e.kind === "step") return ["B"];
+  const facility = "facility" in e ? e.facility : undefined;
+  if (!facility) return ["B"];
+  const out = isPlant(facility) ? [facility] : [];
+  if (e.kind === "transfer" && isPlant(e.to) && e.to !== facility) out.push(e.to);
+  return out;
+}
+
 function finish(e: SimEvent, drafts: Draft[]): FeedItem[] {
+  const plants = plantsOf(e);
   return drafts.flatMap((d, i) => {
     const records = d.records ?? recordIds(d.text);
     if (records.length === 0) return [];
@@ -150,6 +173,7 @@ function finish(e: SimEvent, drafts: Draft[]): FeedItem[] {
         records,
         groups,
         routine: routine ?? false,
+        ...(plants ? { plants } : {}),
       },
     ];
   });
@@ -445,6 +469,11 @@ export type FeedFilter = "all" | FeedGroup;
 
 export function filterFeed(items: FeedItem[], filter: FeedFilter): FeedItem[] {
   return filter === "all" ? items : items.filter((i) => i.groups.includes(filter));
+}
+
+/** The feed at one plant ("all" for every plant); a line with no plant shows everywhere. */
+export function feedForPlant(items: FeedItem[], plant: FeedPlant | "all"): FeedItem[] {
+  return plant === "all" ? items : items.filter((i) => !i.plants || i.plants.includes(plant));
 }
 
 export type FeedRow =

@@ -699,6 +699,7 @@ function ReplayApp() {
                 clock,
                 context: REPLAY_FEED,
                 go: route.go,
+                plant: route.plant,
                 actions:
                   at < last ? (
                     <button type="button" className="primary" onClick={() => go(at + 1)}>
@@ -1161,6 +1162,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
                 clock,
                 context: feedContext,
                 go: route.go,
+                plant: route.plant,
                 actions: actionsFor(state.next).map((a) => (
                   <ActionButton key={a.label} action={a} disabled={busy !== null} onAct={act} />
                 )),
