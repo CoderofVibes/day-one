@@ -63,6 +63,7 @@ import { InboxPane } from "./InboxPane.tsx";
 import { postDecision, postDropScans } from "./journey.ts";
 import { type Action, actionsFor, actorOf, roleLabel } from "./live.ts";
 import { REVIEW_READ_ONLY, reviewSnapshot } from "./mail.ts";
+import ApproveApp from "./Phone.tsx";
 import { ErpPage, ThreeSchedules } from "./pages/Acme.tsx";
 import { ArenaPage } from "./pages/Arena.tsx";
 import { AskPage } from "./pages/Ask.tsx";
@@ -86,7 +87,6 @@ import {
 } from "./run.ts";
 import type { Source } from "./series.ts";
 import { PageHeader, type PageId, type PlantCode, Shell, useRoute } from "./shell.tsx";
-import ApproveApp from "./Phone.tsx";
 import { PlantView } from "./twin3d/PlantView.tsx";
 
 /** The video page (?video=1): the recorded run on the storyboard's clock (docs/RECORDING.md). */
