@@ -20,8 +20,8 @@ The header's pine-green **Judge mode** button opens it from 1440 px; under that 
 
 | # | Step | Page, recorded step | Proof links |
 |---|---|---|---|
-| 1 | Meet Kevin, and the twist | Overview at the start; the curtain flips on after 1.5 s | none |
-| 2 | PO-1042 refused by the contract | Plant twin at "Big PO" (the red shield) | refused `submit_po` |
+| 1 | Kevin handled the paperwork | Overview at "Small PO", Kevin's desk spotlit; the curtain flips on after 1.5 s | PO-1041's `submit_po` |
+| 2 | One decision needs Linda | Overview at "Big PO", the decision card spotlit (the limit meter, why her, what she decides, what happens after) | refused `submit_po` |
 | 3 | Linda approves by text | Overview at "Linda texts", her phone over it | `approve_po`, funded `submit_po` |
 | 4 | Escrow released on QC | Plant twin at "QC release" | `confirm_receipt`, `qc_release` |
 | 5 | 15 of 15 attacks refused | Attack arena | three refused transactions; the summary lists all |

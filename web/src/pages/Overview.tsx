@@ -1,12 +1,13 @@
-// Overview (docs/UPGRADE_BRIEF.md §5.6): the plant at a glance. A today strip, the stat tiles over
-// a window that ends on the clock's day, the twin with "Needs a person" beside it (Linda's text
-// approval is the hero card in the recorded run), the run so far as a timeline, recent batches,
-// and three charts, all read from the same ledger the other pages read, for the plant chosen in
-// the sidebar. Every number opens what produced it.
+// Overview (docs/UPGRADE_BRIEF.md §5.6): the plant at a glance. Kevin's desk first (src/KevinDesk.tsx:
+// the one decision that needs a person, with why, what and what next, beside what Kevin already
+// handled), the twin under it, which flies to a task's place when the desk points at it, then a
+// today strip, the stat tiles over a window that ends on the clock's day, the run so far as a
+// timeline, recent batches, and three charts, all read from the same ledger the other pages read,
+// for the plant chosen in the sidebar. Every number opens what produced it.
 
 import "./redesign.css";
-import { useState } from "react";
-import type { PlantInventory } from "../api.ts";
+import { useCallback, useRef, useState } from "react";
+import type { InboxState, PlantInventory, ReviewState } from "../api.ts";
 import {
   BarChart,
   ChartCard,
@@ -21,8 +22,10 @@ import {
   shortDay,
 } from "../charts.tsx";
 import { readout, sharedClock } from "../clock.ts";
-import { initials, Phone, Pill } from "../feed.tsx";
+import type { Turn } from "../desk.ts";
+import { initials, Pill } from "../feed.tsx";
 import { loadRecorded } from "../journey.ts";
+import { Desk, type Where } from "../KevinDesk.tsx";
 import {
   BulletBar,
   type Column,
@@ -49,9 +52,10 @@ import {
   type WindowKey,
   WindowPicker,
 } from "../kit.tsx";
-import { audienceOf, type RunData, type Step, statusOf } from "../run.ts";
+import { audienceOf, type RunData, statusOf } from "../run.ts";
 import { type BatchPoint, type History, readHistory, type Source, useRead } from "../series.ts";
 import { PageHeader, PLANTS, type PlantCode } from "../shell.tsx";
+import type { TwinFocus } from "../twin3d/PlantView.tsx";
 import { isOpen, usePlant } from "./common.tsx";
 
 const CATEGORY_NAMES: Record<string, string> = {
@@ -74,12 +78,16 @@ export function Overview({
   at,
   onStep,
   saved,
+  turn,
+  review,
+  inbox,
+  deskActions,
 }: {
   plant: PlantCode;
   source: Source;
   inventory: PlantInventory | null;
-  /** The plant map card (the flat map or the twin). */
-  map: React.ReactNode;
+  /** The plant map card (the flat map or the twin), pointed at a place when the desk asks. */
+  map: (focus: TwinFocus | null) => React.ReactNode;
   /** Kevin's panel: whoever is up next, or the replay's transport. */
   kevin: React.ReactNode;
   /** What just happened, newest first, in full. */
@@ -91,6 +99,13 @@ export function Overview({
   onStep?: (i: number) => void;
   /** A tile another view adds to the row (the money run's "Kevin saved"). */
   saved?: React.ReactNode;
+  /** Whose turn it is, for the desk. */
+  turn: Turn;
+  /** Kevin's morning review of the mailbox and the scan folder, for what he handled. */
+  review: ReviewState | null;
+  inbox: InboxState | null;
+  /** The buttons on the desk's decision. */
+  deskActions: React.ReactNode;
 }) {
   const here = PLANTS.find((p) => p.code === plant);
   const { value: history, error } = useRead(
@@ -100,12 +115,20 @@ export function Overview({
   const [win, setWin] = useState<WindowKey>("28d");
   const simDate = useSimDate();
   const end = endDate(history, plant, simDate);
+  // "Show on the plant": the twin under the desk flies to the place and comes into view.
+  const [focus, setFocus] = useState<TwinFocus | null>(null);
+  const seq = useRef(0);
+  const twin = useRef<HTMLDivElement>(null);
+  const show = useCallback((where: Where) => {
+    setFocus({ id: where.focus, fallback: where.fallback, seq: ++seq.current });
+    twin.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, []);
   return (
     <main className="page v2 overview2" aria-label="Overview">
       <PageHeader
         crumb={`${here?.name ?? ""} › Overview`}
         title={here?.name ?? "Overview"}
-        sentence="What moved, what waits on a person, and what to buy or move first."
+        sentence="What Kevin handled, what needs you, and where it is on the plant."
         right={
           <>
             <WindowPicker value={win} onChange={setWin} />
@@ -118,7 +141,25 @@ export function Overview({
       {error && (
         <ErrorCard what="The plant history" error={error} retry={() => location.reload()} />
       )}
-      <TodayStrip plant={plant} source={source} history={history} end={end} run={run} at={at} />
+      {plant === "B" && (
+        <Desk
+          run={run}
+          at={at}
+          turn={turn}
+          review={review}
+          inbox={inbox}
+          inventory={inventory}
+          actions={deskActions}
+          onShow={show}
+        />
+      )}
+      <div className="ov-row">
+        <div className="ov-main ov-twin" ref={twin}>
+          {map(focus)}
+        </div>
+        <NeedsPerson>{kevin}</NeedsPerson>
+      </div>
+      <TodayStrip plant={plant} source={source} history={history} end={end} />
       <Tiles
         plant={plant}
         source={source}
@@ -129,12 +170,6 @@ export function Overview({
         win={win}
         saved={saved}
       />
-      <div className="ov-row">
-        <div className="ov-main">{map}</div>
-        <NeedsPerson run={run} at={at} onStep={onStep}>
-          {kevin}
-        </NeedsPerson>
-      </div>
       <div className="ov-row">
         <RunSoFar run={run} at={at} onStep={onStep} activity={activity} />
         <RecentBatches plant={plant} history={history} end={end} />
@@ -195,19 +230,13 @@ function TodayStrip({
   source,
   history,
   end,
-  run,
-  at,
 }: {
   plant: PlantCode;
   source: Source;
   history: History | null;
   end: string;
-  run: RunData;
-  at: number;
 }) {
   const { value: tables } = usePlant(source, plant);
-  const next = run.steps[at + 1];
-  const waiting = next && audienceOf(next).channel !== "none" ? audienceOf(next).name : null;
   const onTheWay = (tables?.orders ?? []).filter(
     (o) => isOpen(o.status) && !o.receipt && o.status !== "draft",
   );
@@ -221,12 +250,9 @@ function TodayStrip({
   const items: {
     key: string;
     text: string;
-    tone: "waiting" | "neutral" | "held" | "ok";
+    tone: "neutral" | "held";
     open?: RecordTarget;
   }[] = [
-    waiting
-      ? { key: "person", text: `${waiting} is up next`, tone: "waiting" }
-      : { key: "person", text: "Nobody waiting", tone: "ok" },
     {
       key: "trucks",
       text: `${onTheWay.length} ${onTheWay.length === 1 ? "order" : "orders"} on the way`,
@@ -481,70 +507,13 @@ function Tiles({
 
 // ------------------------------------------------------------------ needs a person
 
-/** "Needs a person": the queue of what waits on someone, with Linda's text as the hero. */
-function NeedsPerson({
-  run,
-  at,
-  onStep,
-  children,
-}: {
-  run: RunData;
-  at: number;
-  onStep: ((i: number) => void) | undefined;
-  children: React.ReactNode;
-}) {
-  const phoneAt = run.steps.findIndex((s) => audienceOf(s).channel === "phone");
-  const phone = run.steps[phoneAt];
-  const request = run.approvals[0];
-  const waitingOnLinda = phone && request && at === phoneAt - 1;
-  const po = request ? /PO-\d+/.exec(request.request)?.[0] : undefined;
-  const code = po?.replace("PO-", "") ?? "";
+/**
+ * Beside the twin: the run's own panels (the replay's steps and Ray's morning review; live, the
+ * up-next panel, the scan queue and the review). The decision itself is on the desk above.
+ */
+function NeedsPerson({ children }: { children: React.ReactNode }) {
   return (
-    <section className="needs" aria-label="Needs a person">
-      <div className="needs-head">
-        <h2>Needs a person</h2>
-      </div>
-      {waitingOnLinda && (
-        <article className="needs-card hero" aria-label="Linda's text approval">
-          <div className="head">
-            <span className="avatar" aria-hidden="true">
-              {initials(audienceOf(phone).name)}
-            </span>
-            <b>{audienceOf(phone).name}</b>
-            <span className="muted">· {audienceOf(phone).role} · by text</span>
-            <Pill tone="waiting">needs Linda</Pill>
-          </div>
-          <div className="phone">
-            <div className="from">Text message · Kevin</div>
-            <p className="bubble">{request.request}</p>
-          </div>
-          {onStep && (
-            <div className="needs-actions">
-              <button
-                type="button"
-                className="btn"
-                disabled
-                title="The recorded run's answer was YES"
-              >
-                NO {code}
-              </button>
-              <button type="button" className="btn primary" onClick={() => onStep(phoneAt)}>
-                YES {code}
-              </button>
-            </div>
-          )}
-        </article>
-      )}
-      {phone && at >= phoneAt && (
-        <article className="needs-card done" aria-label="Linda's answer">
-          <div className="head">
-            <b>{audienceOf(phone).name}</b>
-            <span className="muted">· answered by text</span>
-            {po && <RecordLink id={po} page="purchasing" />}
-          </div>
-          <Phone step={phone as Step} approvals={run.approvals} />
-        </article>
-      )}
+    <section className="needs" aria-label="Trays">
       {children}
     </section>
   );

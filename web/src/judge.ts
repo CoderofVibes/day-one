@@ -1,6 +1,7 @@
-// Judge mode's script (brief §5.12): ten steps that hand a judge the story in a few minutes, each
-// with the page it opens, the recorded step it seeks to, what it spotlights, one or two sentences,
-// and its "See it on chain" links. Every link is taken from the recordings the pages already read
+// Judge mode's script (brief §5.12): ten steps that hand a judge the story in a few minutes, the
+// employee's day first (what Kevin handled, the one decision a person makes, the outcome), then
+// the proof behind it. Each step has the page it opens, the recorded step it seeks to, what it
+// spotlights, one or two sentences, and its "See it on chain" links. Every link is taken from the recordings the pages already read
 // (demo-run.json, arena.json, group-buy.json, usdc.json), never typed here; src/judge.test.ts
 // checks each one against the files under data/. Pure data, so the tests read it without a page.
 
@@ -52,6 +53,7 @@ export function po1042(data: RunData = recorded) {
   const stepTx = (title: string) =>
     tx(data.steps.find((s) => s.title === title)?.chain.find((c) => c.tx)?.tx);
   return {
+    small: stepTx("Small PO"),
     refused: data.transactions.find((t) => t.method === "submit_po" && t.status === "refused"),
     approved: data.transactions.find((t) => t.method === "approve_po" && t.status === "success"),
     funded: stepTx("Kevin retries"),
@@ -125,29 +127,29 @@ const last = recorded.steps.length - 1;
 export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "kevin",
-    title: "Meet Kevin, and the twist",
-    body: "Kevin buys for Hollow Pine, a plant Acme just acquired. Staff never see the chain: they see dollars, orders and approvals. You will: Behind the curtain shows every transaction under them.",
+    title: "Kevin handled the paperwork",
+    body: "Before anyone needs to look: Kevin read the batch record, caught 12.55 kg missing from a transfer, forecast a shortfall, compared three quotes and placed PO-1041 inside his limits. Done work sits apart from drafts and suggestions. Behind the curtain shows the chain staff never see.",
     page: "overview",
-    at: 0,
-    spotlight: ".gh-curtain",
-    links: [],
-    seconds: 25,
+    at: refusedAt - 1,
+    spotlight: ".desk",
+    links: link(po.small, "submit_po PO-1041, funded"),
+    seconds: 30,
   },
   {
     id: "refused",
-    title: "PO-1042 refused by the contract",
-    body: "Kevin's key sent PO-1042 for $5,150.00. The spend-policy contract refused it: over his $2,500 per-PO limit. The red shield is the contract saying no, not a screen rule.",
+    title: "One decision needs Linda",
+    body: "PO-1042 is $5,150.00, over Kevin's $2,500 limit, and the contract refused it. The desk hands Linda one decision with why her, what she decides and what happens after. Kevin first checked that no other plant could spare the stock.",
     ...(po.refused?.error ? { quote: `Contract: “${po.refused.error}”` } : {}),
-    page: "map",
+    page: "overview",
     at: refusedAt,
-    spotlight: ".map-frame",
+    spotlight: ".desk-card.need",
     links: link(po.refused, "submit_po, refused"),
     seconds: 35,
   },
   {
     id: "approve",
     title: "Linda approves by text",
-    body: "Linda Park replies YES 1042 from her phone. The reply becomes approve_po signed by her own account, gas paid by Day One; Kevin cannot fake it, and Linda never sees a wallet.",
+    body: "Linda Park replies YES 1042 from her phone. The reply becomes approve_po signed by her own account, gas paid by Day One; Kevin cannot fake it, and Linda never sees a wallet. Her approval files under what was handled; the payment's condition stays in view.",
     page: "overview",
     at: textedAt,
     overlay: "phone",
@@ -160,7 +162,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "paid",
     title: "Escrow released on QC",
-    body: "The truck arrives, lot ASC-261116-01 waits in quarantine, and Priya releases it. The contract pays Northgate from escrow in that call: paid on QC, not on an invoice.",
+    body: "The truck arrives, lot ASC-261116-01 waits in quarantine, and Priya releases it. The contract pays Northgate from escrow in that call: paid on QC, not on an invoice. On the desk, the condition reads met and nothing needs anyone.",
     page: "map",
     at: releasedAt,
     spotlight: ".map-frame",

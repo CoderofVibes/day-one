@@ -68,6 +68,16 @@ import {
   storedClock,
   useClock,
 } from "./clock.ts";
+import {
+  friendlyAction,
+  nextWords,
+  primaryLabel,
+  runFacts,
+  secondaryLabel,
+  type Turn,
+  turnFromLive,
+  turnFromStep,
+} from "./desk.ts";
 import { stepTimes } from "./engine.ts";
 import { initials, Pill, StaffFeed } from "./feed.tsx";
 import { GlobalHeader, type Person } from "./Header.tsx";
@@ -106,8 +116,11 @@ import {
 import { SavedCounter } from "./SavedCounter.tsx";
 import type { Source } from "./series.ts";
 import { PageHeader, type PageId, type PlantCode, Shell, useRoute } from "./shell.tsx";
-import { PlantView } from "./twin3d/PlantView.tsx";
+import { PlantView, type TwinFocus } from "./twin3d/PlantView.tsx";
 import { attachWorld, WORLD_INDEX, WORLD_SPAN } from "./worldEvents.ts";
+
+/** What the plant map takes: the map page's area picking, or the desk's place to fly to. */
+type MapProps = Partial<MapPick> & { focus?: TwinFocus | null };
 
 /** The video page (?video=1): the recorded run on the storyboard's clock (docs/RECORDING.md). */
 const VideoApp = lazy(() => import("./VideoApp.tsx"));
@@ -370,6 +383,9 @@ function Pages({
   run,
   at,
   onStep,
+  turn,
+  review,
+  deskActions,
 }: {
   page: PageId;
   plant: PlantCode;
@@ -381,8 +397,8 @@ function Pages({
   policy: PolicyState | null;
   inbox: InboxState | null;
   links: { brief: string | null; books: string };
-  /** The plant map; on the map page it takes the area picking. */
-  map: (pick?: MapPick) => React.ReactNode;
+  /** The plant map; on the map page it takes the area picking, on the Overview the desk's place. */
+  map: (pick?: MapProps) => React.ReactNode;
   kevin: React.ReactNode;
   activity: React.ReactNode;
   integration: React.ReactNode;
@@ -401,6 +417,10 @@ function Pages({
   at: number;
   /** The replay's step control. */
   onStep?: (i: number) => void;
+  /** Whose turn it is, the morning review and the decision's buttons, for the Overview's desk. */
+  turn: Turn;
+  review: ReviewState | null;
+  deskActions: React.ReactNode;
 }) {
   if (page === "integration")
     return (
@@ -416,13 +436,17 @@ function Pages({
           plant={plant}
           source={source}
           inventory={inventory}
-          map={map()}
+          map={(focus) => map(focus ? { focus } : undefined)}
           kevin={kevin}
           activity={activity}
           run={run}
           at={at}
           {...(onStep ? { onStep } : {})}
           saved={<MoneyTile clock={clock} plant={plant} />}
+          turn={turn}
+          review={review}
+          inbox={inbox}
+          deskActions={deskActions}
         />
         <div className="page v2 foot-wrap">{foot}</div>
       </>
@@ -609,6 +633,16 @@ function ReplayApp() {
   }, [at, go, route.page]);
 
   const current = data.steps[at] as Step;
+  const turn = turnFromStep(data.steps, at + 1);
+  const deskActions = (
+    <ReplayDeskActions
+      turn={turn}
+      data={data}
+      at={at}
+      onNext={() => go(at + 1)}
+      onReplay={() => go(0)}
+    />
+  );
   // The header's chip reads the same status as the feed's top line (one source).
   const kevinNow = useKevinStatus(clock, REPLAY_FEED);
   const upNext = at < last ? audienceOf(data.steps[at + 1] as Step) : null;
@@ -733,6 +767,9 @@ function ReplayApp() {
             run={data}
             at={at}
             onStep={go}
+            turn={turn}
+            review={reviewSnapshot}
+            deskActions={deskActions}
             curtain={curtain}
             inventory={plantsSnapshot.inventory}
             books={plantsSnapshot.books}
@@ -1116,6 +1153,31 @@ function LiveApp({ initial }: { initial: LiveState }) {
       (i) => i.status === "waiting" && (i.waitingFor === null || i.waitingFor === "Ray Delgado"),
     ).length ?? 0;
   const actor = actorOf(state.next);
+  const deskTurn = turnFromLive(state.next);
+  // The desk carries the decision's buttons; Up next keeps the upload, the queue and Start over.
+  const onDesk = DESK_PHASES.has(state.next.phase);
+  // At Ray's turn with scans in the folder, the queue itself is the desk's action.
+  const deskActions =
+    atUpload && queue ? (
+      <div className="desk-queue">
+        <InboxPane
+          inbox={queue}
+          busy={busy !== null}
+          viewer="Ray Delgado"
+          onConfirm={confirmScan}
+          embedded
+        />
+      </div>
+    ) : onDesk ? (
+      actionsFor(state.next).map((a) => (
+        <ActionButton
+          key={a.label}
+          action={{ ...a, label: friendlyAction(a.label) }}
+          disabled={busy !== null}
+          onAct={act}
+        />
+      ))
+    ) : null;
   const feedContext = useMemo(
     () => ({
       steps: state.steps,
@@ -1208,6 +1270,9 @@ function LiveApp({ initial }: { initial: LiveState }) {
             source={{ live: true, version: `${state.steps.length}-${acted}` }}
             run={state}
             at={last}
+            turn={deskTurn}
+            review={mail}
+            deskActions={deskActions}
             curtain={curtain}
             inventory={inventory}
             books={books}
@@ -1244,22 +1309,13 @@ function LiveApp({ initial }: { initial: LiveState }) {
               <>
                 <UpNext
                   state={state}
+                  onDesk={onDesk}
                   busy={busy}
                   error={error}
                   onAct={act}
                   onUpload={uploadFile}
                   onReset={reset}
-                  queue={
-                    atUpload && queue ? (
-                      <InboxPane
-                        inbox={queue}
-                        busy={busy !== null}
-                        viewer="Ray Delgado"
-                        onConfirm={confirmScan}
-                        embedded
-                      />
-                    ) : null
-                  }
+                  queue={null}
                 />
                 {!atUpload && queue && (
                   <InboxPane
@@ -1364,6 +1420,7 @@ function nextPill(state: LiveState, busy: string | null): { tone: Tone; label: s
 /** Whoever is up next, Kevin's one-line ask and their buttons; Linda's phone; Ray's queue. */
 function UpNext({
   state,
+  onDesk,
   busy,
   error,
   onAct,
@@ -1372,6 +1429,8 @@ function UpNext({
   queue,
 }: {
   state: LiveState;
+  /** The decision's buttons are on the desk above; this panel keeps the rest. */
+  onDesk: boolean;
   busy: string | null;
   error: { message: string; hint?: string } | null;
   onAct: (a: Action) => void;
@@ -1382,8 +1441,8 @@ function UpNext({
 }) {
   const { next } = state;
   const actor = actorOf(next);
-  const actions = queue ? [] : actionsFor(next);
-  const waitingOnKevin = actions.length === 0 && !queue && next.phase !== "done";
+  const actions = queue || onDesk ? [] : actionsFor(next);
+  const waitingOnKevin = actions.length === 0 && !queue && !onDesk && next.phase !== "done";
   const request = state.approvals.find((a) => a.response === null)?.request;
   const pill = nextPill(state, busy);
   const lead = busy
@@ -1418,7 +1477,7 @@ function UpNext({
       {queue ?? <p className="lead">{lead}</p>}
       {state.stopped && state.help && !busy && <p className="muted small help">{state.help}</p>}
 
-      {next.phase === "reply" && request && !busy ? (
+      {next.phase === "reply" && request && !busy && !onDesk ? (
         <div className="phone">
           <div className="from">Text message · Kevin</div>
           <p className="bubble">{request}</p>
@@ -1481,7 +1540,7 @@ function ActionButton({
   onAct: (a: Action) => void;
 }) {
   // A refusal (NO, reject) is outlined in the refused colour, never the brand green.
-  const refuses = /^(NO\b|Reject\b)/.test(action.label);
+  const refuses = /^(NO\b|Reject\b|Decline\b)/.test(action.label);
   return (
     <button
       type="button"
@@ -1499,4 +1558,57 @@ function summaryLine(state: LiveState) {
   const s = state.summary;
   if (!s) return "The run is complete.";
   return `Done: ${s.transactions} actions recorded, ${s.refusedByDesign} refused on purpose, ${s.failed} failed.`;
+}
+
+/** The phases whose buttons sit on the desk's decision card. */
+const DESK_PHASES = new Set(["upload", "confirm", "reply", "receive", "qc"]);
+
+/**
+ * The desk's buttons in the replay: the decision in the person's words, which steps the recorded
+ * run on; the other answer is shown but off, since the recording took the first one.
+ */
+function ReplayDeskActions({
+  turn,
+  data,
+  at,
+  onNext,
+  onReplay,
+}: {
+  turn: Turn;
+  data: RunData;
+  at: number;
+  onNext: () => void;
+  onReplay: () => void;
+}) {
+  const facts = runFacts(data, at);
+  const last = data.steps.length - 1;
+  const other = secondaryLabel(turn, facts);
+  const next = data.steps[at + 1];
+  const label =
+    turn.kind === "done" && at >= last
+      ? primaryLabel(turn, facts)
+      : turn.kind === "kevin" || turn.kind === "supplier" || turn.kind === "done"
+        ? nextWords(next?.title)
+        : primaryLabel(turn, facts);
+  return (
+    <>
+      <button
+        type="button"
+        className="primary"
+        onClick={turn.kind === "done" && at >= last ? onReplay : onNext}
+      >
+        {label}
+      </button>
+      {other && (
+        <button
+          type="button"
+          className="danger"
+          disabled
+          title={`The recorded run's answer was "${primaryLabel(turn, facts)}"`}
+        >
+          {other}
+        </button>
+      )}
+    </>
+  );
 }

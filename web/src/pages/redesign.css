@@ -54,18 +54,10 @@
   color: var(--bg);
   border-color: var(--ink);
 }
-.today-strip .t-waiting {
-  border-color: var(--wait-border);
-  background: var(--wait-tint);
-  color: var(--wait);
-}
 .today-strip .t-held {
   border-color: var(--money-border);
   background: var(--money-tint);
   color: var(--money);
-}
-.today-strip .t-ok {
-  color: var(--ok);
 }
 .ov-row {
   display: grid;
@@ -80,43 +72,6 @@
   display: grid;
   gap: var(--s-3);
   min-width: 0;
-}
-.needs-head h2 {
-  margin: 0;
-  font-size: var(--t-md);
-}
-.needs-card {
-  display: grid;
-  gap: var(--s-2);
-  padding: var(--s-3);
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--waiting);
-  border-radius: var(--r-md);
-  background: var(--surface);
-}
-.needs-card.done {
-  border-left-color: var(--ok);
-}
-.needs-card.hero {
-  box-shadow: var(--e2);
-}
-.needs-card .head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-}
-.needs-card .head .pill {
-  margin-left: auto;
-}
-.needs-card .phone {
-  margin: 0;
-  max-width: none;
-}
-.needs-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--s-2);
 }
 .needs > .panel {
   border-left: 3px solid var(--waiting);

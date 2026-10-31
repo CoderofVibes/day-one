@@ -20,6 +20,14 @@ import { palletsAt, runLotCodes } from "../twin/pallets.ts";
 import { chainLayout, inspectChain } from "./chain.ts";
 import { ObjectsList } from "./ObjectsList.tsx";
 
+/** A place another panel points the twin at: an object, a fallback when it is not drawn, and a
+ * sequence number so pointing at the same place twice flies there again. */
+export interface TwinFocus {
+  id: string;
+  fallback: string;
+  seq: number;
+}
+
 /** A picked area with its department's status at the step shown. */
 export interface PickedArea extends AreaPick {
   status: DeptStatus;
@@ -100,6 +108,7 @@ export function PlantView({
   page,
   camera,
   groupAt: groupStep,
+  focus,
 }: {
   run: RunData;
   at: number;
@@ -119,6 +128,8 @@ export function PlantView({
   camera?: CameraRequest | null;
   /** The tour shows the recorded group purchase at this step instead of this run. */
   groupAt?: number;
+  /** Kevin's desk points the twin at a task's place: it flies there and opens the inspector. */
+  focus?: TwinFocus | null;
 }) {
   // The video page (?video=1) drives the steps itself; the twin keeps its fixed-step clock.
   const record = useMemo(() => params().get("record") === "1" || params().get("video") === "1", []);
@@ -206,6 +217,17 @@ export function PlantView({
     const o = id ? objects.find((x) => x.id === id) : undefined;
     if (o) fly({ focus: o.focus });
   }, [objects, fly]);
+  // The desk's "Show on the plant": this run's view, the object if it is drawn, else its fallback.
+  const pointed = useRef(0);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fly once per request, keyed by its seq
+  useEffect(() => {
+    if (!focus || focus.seq === pointed.current) return;
+    pointed.current = focus.seq;
+    setGroup(false);
+    const o =
+      objects.find((x) => x.id === focus.id) ?? objects.find((x) => x.id === focus.fallback);
+    if (o) select(o.id);
+  }, [focus?.seq]);
   // The chain layer's nodes, accounts and transactions (chain.ts) are inspected behind the curtain only.
   const chain = useMemo(() => chainLayout(shown), [shown]);
   const inspected = selected

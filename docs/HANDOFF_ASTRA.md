@@ -46,7 +46,7 @@ Run it: `npm run web:build`, then serve `web/dist/` statically (the replay), or 
 | Group | Page (`id`) | What it shows |
 |---|---|---|
 | Plant | Your integration (`integration`) | The eight-stage onboarding journey with each stage's artifact; a floor plan lighting up by department |
-| | Overview (`overview`) | Today strip, stat tiles over 7d/28d/90d/12m (batches, yield gauge, below reorder, spend bullet bar, receipts, Kevin's money tile), the embedded twin, "Needs a person" (Linda's text is the hero card in the recorded run), the run so far as a timeline, recent batches; Kevin's activity rail |
+| | Overview (`overview`) | Kevin's desk first (docs/DESK.md: the decision that needs a person with why, what and what next, the order's track and payment condition, "Before we buy", and what Kevin handled, done apart from drafts and suggestions; "Show on the plant" flies the twin), then the embedded twin, today strip, stat tiles over 7d/28d/90d/12m, the run so far as a timeline, recent batches; Kevin's activity rail |
 | | Plant twin (`map`) | The 3D site plan filling the page (§4) |
 | | 5am brief (`brief`) | Kevin's printable morning page |
 | | Batch records (`batches`) | Records, yield, the watched-folder scan queue (live) |

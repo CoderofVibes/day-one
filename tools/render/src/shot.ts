@@ -63,11 +63,16 @@ for (const [name, width, scheme] of [
     await page.getByText("Behind the curtain").filter({ visible: true }).first().click();
   }
   if (url) {
-    // Live: take the primary action STEPS times, waiting for each to land.
+    // Live: take the primary action STEPS times, waiting for each to land. A person's decision
+    // has its buttons on Kevin's desk; Up next keeps the upload and Start over.
     const bar = page.getByRole("region", { name: "Next action" });
     await bar.waitFor();
     for (let i = 0; i < steps; i++) {
-      const primary = bar.locator('button[data-action="primary"]:not([disabled])').first();
+      const primary = page
+        .locator(
+          '.desk .card-actions > button[data-action="primary"]:not([disabled]), [aria-label="Next action"] button[data-action="primary"]:not([disabled])',
+        )
+        .first();
       await primary.waitFor({ timeout: 30_000 }).catch(async (e: unknown) => {
         await page.screenshot({ path: join(out, `${name}-failed.png`) });
         console.error(`${name}: action bar reads "${await bar.textContent()}"`);
