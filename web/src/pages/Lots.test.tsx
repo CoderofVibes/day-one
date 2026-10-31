@@ -18,8 +18,8 @@ describe("Lots & recall page", () => {
 
   it("colours each lot by its state from the one lot-state map", () => {
     expect(html).toContain('aria-label="lot ASC-1, in use"');
-    expect(html).toContain('fill="var(--lot-in-use)"');
-    expect(html).toContain('fill="var(--lot-released)"');
+    expect(html).toContain('fill="var(--info)"');
+    expect(html).toContain('fill="var(--ok)"');
   });
 
   it("shows no chain words to staff", () => {

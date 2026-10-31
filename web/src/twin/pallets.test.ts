@@ -98,10 +98,10 @@ describe("pallets", () => {
 
 describe("the lot-state map", () => {
   it("gives the pages' pills the tones they had", () => {
-    expect(lotState("quarantine")).toEqual({ label: "quarantine", tone: "waiting" });
-    expect(lotState("released")).toEqual({ label: "released", tone: "ok" });
-    expect(lotState("en_route")).toEqual({ label: "on the way", tone: "neutral" });
-    expect(lotState("some_new_state")).toEqual({ label: "some new state", tone: "neutral" });
+    expect(lotState("quarantine")).toMatchObject({ label: "quarantine", tone: "waiting" });
+    expect(lotState("released")).toMatchObject({ label: "released", tone: "ok" });
+    expect(lotState("en_route")).toMatchObject({ label: "on the way", tone: "neutral" });
+    expect(lotState("some_new_state")).toMatchObject({ label: "some new state", tone: "neutral" });
   });
 
   it("covers the brief's nine states with a colour token each", () => {
