@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { AskError, askKevin, type KevinAnswer, SUGGESTED_QUESTIONS } from "@day-one/kevin/ask";
 import { buildFactCards, type FactCard, type FactsSnapshot } from "@day-one/kevin/facts";
 import { readAttestationFixture, recordedReceipts } from "@day-one/server/attestation/fixture";
-import type { AnswerResult } from "@day-one/server/attestation/types";
+import type { AnswerResult, AttestationResult } from "@day-one/server/attestation/types";
 import { verifyAttestation } from "@day-one/server/attestation/verify";
 import { createFallbackLlm, type LlmFixture, ReplayLlm } from "@day-one/server/llm/client";
 import type { LlmClient } from "@day-one/server/llm/types";
@@ -131,6 +131,18 @@ export interface RecordedQuestion {
   signature: Pick<AnswerResult, "chatId" | "signer" | "checks"> | null;
 }
 
+export interface RecordedAsk {
+  recordedAt: string | null;
+  /** Kevin's model's enclave report and its checks; null before npm run attest. */
+  enclave: {
+    model: string;
+    tier: string;
+    fetchedAt: string;
+    checks: AttestationResult["enclave"];
+  } | null;
+  questions: RecordedQuestion[];
+}
+
 /**
  * The suggested questions answered from a recording, for the static page and npm run ask.
  * Without a recording every answer is null: the page says the answers arrive with it.
@@ -139,10 +151,32 @@ export async function recordedQuestions(
   cards: FactCard[],
   fixtureFile: string,
   root = REPO_ROOT,
-): Promise<{ recordedAt: string | null; questions: RecordedQuestion[] }> {
-  if (!existsSync(fixtureFile)) {
+): Promise<RecordedAsk> {
+  // The enclave report Kevin's model was attested with (npm run attest), checked offline; the
+  // Intel and NVIDIA verdicts are the recorded ones, dated in their detail.
+  const attestation = readAttestationFixture(root);
+  const recorded = existsSync(fixtureFile);
+  const verified = attestation
+    ? await verifyAttestation(
+        attestation,
+        recorded
+          ? recordedReceipts(root, [fixtureFile.slice(root.length + 1).replace(/\\/g, "/")])
+          : [],
+        { online: false },
+      )
+    : null;
+  const enclave = verified
+    ? {
+        model: verified.model,
+        tier: verified.tier,
+        fetchedAt: verified.fetchedAt,
+        checks: verified.enclave,
+      }
+    : null;
+  if (!recorded) {
     return {
       recordedAt: null,
+      enclave,
       questions: SUGGESTED_QUESTIONS.map((question) => ({
         question,
         answer: null,
@@ -151,14 +185,6 @@ export async function recordedQuestions(
     };
   }
   const fixture = JSON.parse(readFileSync(fixtureFile, "utf8")) as LlmFixture;
-  const attestation = readAttestationFixture(root);
-  const verified = attestation
-    ? await verifyAttestation(
-        attestation,
-        recordedReceipts(root, [fixtureFile.slice(root.length + 1).replace(/\\/g, "/")]),
-        { online: false },
-      )
-    : null;
   const llm = new ReplayLlm(fixture);
   const questions: RecordedQuestion[] = [];
   for (const question of SUGGESTED_QUESTIONS) {
@@ -174,5 +200,5 @@ export async function recordedQuestions(
         : null,
     });
   }
-  return { recordedAt: fixture.recordedAt, questions };
+  return { recordedAt: fixture.recordedAt, enclave, questions };
 }

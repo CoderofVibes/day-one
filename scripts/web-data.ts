@@ -18,9 +18,11 @@ import { tmpdir } from "node:os";
 import { join, relative, resolve, sep } from "node:path";
 import { briefHtml, morningBrief } from "../agents/kevin/src/brief.ts";
 import { runDemo } from "../agents/kevin/src/demo.ts";
+import { buildFactCards, type FactsSnapshot } from "../agents/kevin/src/facts.ts";
 import { massBalance } from "../agents/kevin/src/massBalance.ts";
 import { plantForecast, plantSchedule } from "../agents/kevin/src/schedule.ts";
 import { suggestTransfers, transfersInTransit } from "../agents/kevin/src/transferSuggestions.ts";
+import { recordedQuestions } from "../api/src/ask.ts";
 import { fixtureFiles, openDemoEnv } from "../api/src/env.ts";
 import { heldInvoiceDemo } from "../api/src/heldInvoice.ts";
 import { ImportDesk } from "../api/src/imports.ts";
@@ -51,6 +53,7 @@ const JOURNEY = join(root, "web/src/data/journey.json");
 const PAGES = join(root, "web/src/data/pages.json");
 const REVIEW = join(root, "web/src/data/review.json");
 const ARENA = join(root, "web/src/data/arena.json");
+const ASK = join(root, "web/src/data/ask.json");
 const BRIEF = join(root, "web/public/brief.html");
 const CSV = join(root, "web/public/books.csv");
 const RELAYER = "dayone-relayer.testnet";
@@ -322,6 +325,21 @@ async function recordedJourney() {
   }
 }
 
+// Talk to Kevin's suggested questions, answered from data/replay/ask-llm.json when it is
+// recorded (npm run ask -- --live --record), over the cards built from the snapshot above; no
+// answers before that, and the page says they arrive with the recording.
+const ask = await recordedQuestions(
+  buildFactCards({
+    pages: JSON.parse(JSON.stringify(pages)),
+    plants: JSON.parse(JSON.stringify(plants)),
+    journey: JSON.parse(JSON.stringify(journey)),
+    demoRun: JSON.parse(text),
+    groupBuy: JSON.parse(readFileSync(join(root, "web/src/data/group-buy.json"), "utf8")),
+  } as FactsSnapshot),
+  fixtureFiles(root).askLlm,
+  root,
+);
+
 const files: [string, string][] = [
   [OUT, text],
   [PLANTS, `${JSON.stringify(plants, null, 2)}\n`],
@@ -330,6 +348,7 @@ const files: [string, string][] = [
   [PAGES, `${JSON.stringify(pages)}\n`],
   [REVIEW, `${JSON.stringify(review, null, 2)}\n`],
   [ARENA, `${JSON.stringify(arena, null, 2)}\n`],
+  [ASK, `${JSON.stringify(ask, null, 2)}\n`],
   [BRIEF, briefHtml(morningBrief(env.db, { now }))],
   [CSV, booksCsv(env.db)],
 ];

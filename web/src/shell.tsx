@@ -25,7 +25,8 @@ export type PageId =
   | "sealed"
   | "export"
   | "reconciliation"
-  | "arena";
+  | "arena"
+  | "ask";
 export type PlantCode = "A" | "B" | "C";
 
 export const PLANTS: { code: PlantCode; name: string; note: string }[] = [
@@ -76,7 +77,10 @@ export const NAV: { group: string; items: NavItem[] }[] = [
   },
   {
     group: "Proof",
-    items: [{ id: "arena", label: "Attack arena", icon: "target" }],
+    items: [
+      { id: "arena", label: "Attack arena", icon: "target" },
+      { id: "ask", label: "Talk to Kevin", icon: "doc" },
+    ],
   },
 ];
 

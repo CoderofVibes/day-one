@@ -62,6 +62,7 @@ import { type Action, actionsFor, actorOf } from "./live.ts";
 import { REVIEW_READ_ONLY, reviewSnapshot } from "./mail.ts";
 import { ErpPage, ThreeSchedules } from "./pages/Acme.tsx";
 import { ArenaPage } from "./pages/Arena.tsx";
+import { AskPage } from "./pages/Ask.tsx";
 import { InvoicesPage, PurchasingPage, SpreadsheetsPage } from "./pages/Buying.tsx";
 import { GroupPage, ReconciliationPage, SealedPage, SuppliersPage } from "./pages/Hq.tsx";
 import { Integration } from "./pages/Integration.tsx";
@@ -262,6 +263,11 @@ const PAGE_TEXT: Record<
     title: "Attack arena",
     sentence: "Pick one of the fifteen recorded attacks, fire it, and see what refused it and why.",
   },
+  ask: {
+    group: "proof",
+    title: "Talk to Kevin",
+    sentence: "Ask Kevin why he did something; he answers from the records and cites each one.",
+  },
 };
 
 /** The pages both sources share; each source hands in its own panes and reads. */
@@ -386,6 +392,8 @@ function Pages({
         return <ReconciliationPage source={source} curtain={curtain} />;
       case "arena":
         return <ArenaPage />;
+      case "ask":
+        return <AskPage source={source} />;
     }
   })();
   return (
