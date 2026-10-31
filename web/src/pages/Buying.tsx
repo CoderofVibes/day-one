@@ -9,10 +9,10 @@ import type { Books, ImportView, PolicyState } from "../api.ts";
 import {
   BarChart,
   ChartCard,
+  Donut,
   dollars,
   dollarsShort,
   monthName,
-  NumberCard,
   qty,
   SERIES,
 } from "../charts.tsx";
@@ -27,6 +27,7 @@ import {
   Histogram,
   MoneyAmount,
   RecordLink,
+  Ring,
   Skeleton,
   type Stage,
   StatTile,
@@ -715,7 +716,8 @@ export function InvoicesPage({
   exportUrl,
 }: PageProps & { books: Books | null; exportUrl: string }) {
   const { value: recorded, error } = useRead(() => readRecorded(), "recorded");
-  if (!recorded || !books) return <Loading error={error} what="the invoices" />;
+  const filter = usePageFilter("invoices");
+  if (!recorded || !books) return <Loading error={error} what="the invoices" shape="tiles" />;
   const history = new Map(recorded.erp.cutover.history.bills.map((b) => [b.invoiceNo, b]));
   const bills = recorded.erp.erp.bills;
   const escrowPaid = new Set(
@@ -725,31 +727,82 @@ export function InvoicesPage({
   );
   const toApprove = bills.filter((b) => b.approval === "pendingApproval").length;
   const matched = bills.filter((b) => b.match === "matched").length;
+  const paidHow = (b: (typeof bills)[number]) =>
+    b.status === "paidInFull"
+      ? escrowPaid.has(b.tranId)
+        ? "on QC release"
+        : "by check"
+      : b.approval === "rejected"
+        ? "not paid: rejected"
+        : "open";
+  const outcomes = [
+    { label: "paid by check", color: "var(--chart-1)" },
+    { label: "paid on QC release", color: "var(--ok)" },
+    { label: "open", color: "var(--chart-2)" },
+    { label: "rejected", color: "var(--bad)" },
+  ]
+    .map((o) => ({
+      ...o,
+      value: bills.filter((b) => {
+        const how = paidHow(b);
+        return o.label === "rejected" ? how.startsWith("not paid") : o.label.endsWith(how);
+      }).length,
+    }))
+    .filter((o) => o.value > 0);
   return (
     <>
-      <div className="cards-4">
-        <NumberCard label="To approve" value={toApprove} />
-        <NumberCard
+      <div className="tiles-4">
+        <StatTile
+          label="To approve"
+          value={toApprove}
+          context={toApprove ? "matched, waiting on approval" : "nothing waiting"}
+          why={`${toApprove} bills matched to their PO and receipt and waiting for approval in the ERP.`}
+        />
+        <StatTile
           label="Held for Marcy"
           value={books.held.length}
-          {...(books.held.length
-            ? { delta: { text: "waiting on Marcy", tone: "problem" as const } }
-            : {})}
+          tone={books.held.length ? "refused" : undefined}
+          context={books.held.length ? "waiting on Marcy" : "nothing held"}
+          why={
+            books.held.map((h) => `${h.invoiceNo}: ${h.staff.join(" ")}`).join(" ") ||
+            "No invoice is held."
+          }
         />
-        <NumberCard label="Matched to PO and receipt" value={`${matched} of ${bills.length}`} />
-        <NumberCard
+        <StatTile
+          label="Matched to PO and receipt"
+          value={`${matched}/${bills.length}`}
+          visual={
+            <Ring value={matched} total={bills.length} label="Bills matched" rest="waiting" />
+          }
+          context={`${bills.length - matched} held back`}
+          why={`${matched} of ${bills.length} bills matched to their PO and receipt before approval; the rest were rejected as duplicates or did not match.`}
+        />
+        <StatTile
           label="Price drift"
           value={books.alerts.length}
-          {...(books.alerts.length
-            ? {
-                delta: {
-                  text: books.alerts.map((a) => a.poNo).join(", "),
-                  tone: "attention" as const,
-                },
-              }
-            : {})}
+          tone={books.alerts.length ? "waiting" : undefined}
+          context={
+            books.alerts.length ? books.alerts.map((a) => a.poNo).join(", ") : "prices as quoted"
+          }
+          why={
+            books.alerts.map((a) => a.sentence).join(" ") || "Every bill is at the price on its PO."
+          }
         />
       </div>
+      <ChartCard
+        title="Bills by outcome"
+        table={{
+          columns: ["Outcome", "Bills"],
+          rows: outcomes.map((o) => [o.label, o.value]),
+        }}
+      >
+        <Donut
+          label="Bills by outcome"
+          center={String(bills.length)}
+          centerLabel="bills"
+          slices={outcomes}
+        />
+      </ChartCard>
       {books.held.length > 0 && (
         <section className="card-v2" aria-label="Held invoices">
           <div className="chart-head">
@@ -776,55 +829,62 @@ export function InvoicesPage({
             </a>
           </span>
         </div>
-        <div className="table-wrap tall">
-          <table className="data">
-            <thead>
-              <tr>
-                <th>Invoice</th>
-                <th>PO</th>
-                <th className="n">Total</th>
-                <th>Match</th>
-                <th>Paid</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...bills].reverse().map((b) => {
+        <DataTable
+          rows={[...bills].reverse()}
+          columns={[
+            {
+              key: "invoice",
+              label: "Invoice",
+              text: (b) => b.tranId,
+              render: (b) => {
                 const h = history.get(b.tranId);
-                const drift = h?.priceDrift ?? 0;
                 return (
-                  <tr key={b.tranId}>
-                    <td>
-                      <b>{b.tranId}</b>
-                      {h?.duplicateOf && (
-                        <small className="sub">a second copy of {h.duplicateOf}</small>
-                      )}
-                    </td>
-                    <td>{b.po ?? "—"}</td>
-                    <td className="n">{dollars(Math.round(b.total * 1_000_000))}</td>
-                    <td>
-                      {b.match === "duplicate" ? (
-                        <Pill tone="refused">duplicate</Pill>
-                      ) : drift > 0 ? (
-                        <Pill tone="waiting">price drift +{(drift / 100).toFixed(1)}%</Pill>
-                      ) : (
-                        <Pill tone="paid">{b.match}</Pill>
-                      )}
-                    </td>
-                    <td>
-                      {b.status === "paidInFull"
-                        ? escrowPaid.has(b.tranId)
-                          ? "on QC release"
-                          : "by check"
-                        : b.approval === "rejected"
-                          ? "not paid: rejected"
-                          : "open"}
-                    </td>
-                  </tr>
+                  <>
+                    <b className="mono">{b.tranId}</b>
+                    {h?.duplicateOf && (
+                      <small className="sub">a second copy of {h.duplicateOf}</small>
+                    )}
+                  </>
                 );
-              })}
-            </tbody>
-          </table>
-        </div>
+              },
+            },
+            {
+              key: "po",
+              label: "PO",
+              text: (b) => b.po ?? "",
+              render: (b) => (b.po ? <RecordLink id={b.po} page="purchasing" /> : "—"),
+            },
+            {
+              key: "total",
+              label: "Total",
+              numeric: true,
+              render: (b) => dollars(Math.round(b.total * 1_000_000)),
+            },
+            {
+              key: "match",
+              label: "Match",
+              text: (b) => b.match,
+              render: (b) => {
+                const drift = history.get(b.tranId)?.priceDrift ?? 0;
+                return b.match === "duplicate" ? (
+                  <Pill tone="refused">duplicate</Pill>
+                ) : drift > 0 ? (
+                  <Pill tone="waiting">price drift +{(drift / 100).toFixed(1)}%</Pill>
+                ) : (
+                  <Pill tone="paid">{b.match}</Pill>
+                );
+              },
+            },
+            { key: "paid", label: "Paid", text: paidHow, render: paidHow },
+          ]}
+          rowKey={(b) => b.tranId}
+          label="Every invoice"
+          query={filter}
+          filters={[
+            { key: "match", label: "Match", value: (b) => b.match },
+            { key: "paid", label: "Paid", value: paidHow },
+          ]}
+        />
         <p className="small muted">
           The ERP's bills on the recorded run with the ERP attached: every one checked against its
           PO and its receipt before it could be approved.
@@ -879,13 +939,42 @@ export function SpreadsheetsPage({
     : (view?.opening.length ?? 0);
   return (
     <>
-      <div className="cards-4">
-        <NumberCard label="Files brought in" value={files} />
-        <NumberCard label="Rows read" value={rows} />
-        <NumberCard label="Kevin asked about" value={questions}>
-          <small className="muted">rows a person answered before anything posted</small>
-        </NumberCard>
-        <NumberCard label={source.live ? "Lots posted" : "Materials posted"} value={lots} />
+      <div className="tiles-4">
+        <StatTile
+          label="Files brought in"
+          value={files}
+          context={source.live ? "through the wizard" : (view?.fileName ?? "none yet")}
+        />
+        <StatTile
+          label="Rows read"
+          value={rows}
+          context="every row, none typed in"
+          spark={
+            rows ? (
+              <BulletBar
+                actual={rows - questions}
+                limit={rows}
+                label="Rows Kevin read without a question, of all rows"
+                format={(v) => String(Math.round(v))}
+                tone="ok"
+              />
+            ) : undefined
+          }
+          why={`${rows} rows read; ${rows - questions} needed no question, ${questions} Kevin asked a person about before anything posted.`}
+        />
+        <StatTile
+          label="Kevin asked about"
+          value={questions}
+          tone={questions ? "waiting" : undefined}
+          context="answered before posting"
+          why="Rows a person answered before anything posted."
+        />
+        <StatTile
+          label={source.live ? "Lots posted" : "Materials posted"}
+          value={lots}
+          context="the opening stock"
+          open={{ id: "inventory", page: "inventory" }}
+        />
       </div>
       <OnAcmeSystems
         plant={plant}
