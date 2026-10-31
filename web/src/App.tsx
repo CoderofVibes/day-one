@@ -47,7 +47,13 @@ import {
   type ReviewState,
   type TransferSuggestions,
 } from "./api.ts";
-import { HeaderClock, HeaderClockLine, jumpsFor } from "./ClockBar.tsx";
+import {
+  HeaderClock,
+  HeaderClockLine,
+  incidentMarkers,
+  jumpsFor,
+  worldJumps,
+} from "./ClockBar.tsx";
 import { Curtain } from "./Curtain.tsx";
 import { nextTurn, PEOPLE } from "./chrome.ts";
 import {
@@ -99,7 +105,7 @@ import { SavedCounter } from "./SavedCounter.tsx";
 import type { Source } from "./series.ts";
 import { PageHeader, type PageId, type PlantCode, Shell, useRoute } from "./shell.tsx";
 import { PlantView } from "./twin3d/PlantView.tsx";
-import { attachWorld, WORLD_SPAN } from "./worldEvents.ts";
+import { attachWorld, WORLD_INDEX, WORLD_SPAN } from "./worldEvents.ts";
 
 /** The video page (?video=1): the recorded run on the storyboard's clock (docs/RECORDING.md). */
 const VideoApp = lazy(() => import("./VideoApp.tsx"));
@@ -524,7 +530,8 @@ function badgesOf(
 
 // ------------------------------------------------------------------ replay (static)
 
-const JUMPS = jumpsFor(recorded.steps);
+const JUMPS = [...jumpsFor(recorded.steps), ...worldJumps(WORLD_INDEX.incidents)];
+const MARKERS = incidentMarkers(WORLD_INDEX.incidents);
 /** What the feed reads the recorded steps' words from. */
 const REPLAY_FEED = { steps: recorded.steps, approvals: recorded.approvals };
 
@@ -564,6 +571,7 @@ function ReplayApp() {
     <HeaderClock
       clock={clock}
       jumps={JUMPS}
+      markers={MARKERS}
       onPlay={() => {
         if (at === last) go(0);
         clock.play();

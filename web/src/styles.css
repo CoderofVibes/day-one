@@ -613,6 +613,14 @@ a {
   border-radius: 8px;
 }
 
+.clock-track {
+  position: relative;
+  flex: 1 1 140px;
+  min-width: 0;
+  display: flex;
+  padding-bottom: 12px;
+}
+
 .clock-scrub {
   flex: 1 1 140px;
   min-width: 0;
@@ -625,6 +633,55 @@ a {
       transparent var(--golden-to)
     )
     center / 100% 10px no-repeat;
+}
+
+/* The worlds' incidents under the scrubber: each a tick that jumps the clock to it. */
+.clock-marks {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 0;
+  height: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clock-marks li {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+}
+
+.clock-mark {
+  display: block;
+  width: 10px;
+  height: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.clock-mark::before {
+  content: "";
+  display: block;
+  width: 3px;
+  height: 10px;
+  margin: 1px auto 0;
+  border-radius: 2px;
+  background: var(--wait);
+}
+
+.clock-mark:hover::before,
+.clock-mark:focus-visible::before {
+  width: 5px;
+  background: var(--bad);
+}
+
+.clock-mark:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
 }
 
 .clock-end,
