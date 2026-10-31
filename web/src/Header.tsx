@@ -6,7 +6,8 @@
 // then also holds the plant, Kevin and the people.
 
 import { useEffect, useRef, useState } from "react";
-import { applyTheme, type KevinStatus, storedTheme, type ThemeChoice } from "./chrome.ts";
+import type { KevinStatus } from "./activity.ts";
+import { applyTheme, storedTheme, type ThemeChoice } from "./chrome.ts";
 import { initials } from "./feed.tsx";
 import { PLANTS, type PlantCode } from "./shell.tsx";
 
@@ -112,7 +113,7 @@ function KevinChip({ status, onOpen }: { status: KevinStatus; onOpen: () => void
       type="button"
       className={`gh-kevin ${status.state}`}
       onClick={onOpen}
-      title="Kevin's panel on the Overview"
+      title="Kevin's activity"
     >
       <span className="avatar kevin" aria-hidden="true">
         K<i className="dot" />

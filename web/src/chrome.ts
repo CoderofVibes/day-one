@@ -1,40 +1,7 @@
-// What the global header shows, read from the run: Kevin's status in a word, each person's next
-// turn, and the theme a viewer picked. Pure, so the header and its tests read the same thing.
+// What the global header shows, read from the run: each person's next turn and the theme a viewer
+// picked (Kevin's status is the feed's, activity.ts kevinStatus). Pure, so the header and its tests read the same thing.
 
-import { type Audience, audienceOf, type Step, statusOf } from "./run.ts";
-
-export type KevinState = "idle" | "reading" | "drafting" | "waiting" | "paying" | "signed";
-
-export interface KevinStatus {
-  state: KevinState;
-  label: string;
-}
-
-/**
- * What Kevin is doing once a step has happened: reading a scan or quotes, drafting the next
- * move, waiting on whoever acts next, paying (escrow funded or released), or signed (a record
- * anchored). `nextWho` is the next person in the run, null when nobody is.
- */
-export function kevinStatus(step: Step | undefined, nextWho: string | null): KevinStatus {
-  const first = nextWho?.split(" ")[0];
-  const waiting = (): KevinStatus =>
-    first && first !== "Kevin" && first !== "Day"
-      ? { state: "waiting", label: `waiting on ${first}` }
-      : { state: "idle", label: "idle" };
-  if (!step) return { state: "idle", label: "idle" };
-  const t = step.title;
-  const tone = statusOf(step).tone;
-  if (t.startsWith("Upload ") || t === "Quotes") return { state: "reading", label: "reading" };
-  if (t.endsWith(" confirms") || t === "Paid") return { state: "signed", label: "signed ✓" };
-  if (t === "Discrepancy" || t === "Forecast") return { state: "drafting", label: "drafting" };
-  if (t === "Small PO" || t === "Big PO" || t === "Kevin retries")
-    return tone === "held" ? { state: "paying", label: "paying" } : waiting();
-  if (t.endsWith(" texts"))
-    return tone === "ok" ? { state: "drafting", label: "drafting" } : waiting();
-  if (t === "QC release") return { state: "paying", label: "paying" };
-  if (t === "Supplier ships" || t === "Delivery") return waiting();
-  return { state: "idle", label: "idle" };
-}
+import { type Audience, audienceOf, type Step } from "./run.ts";
 
 /** The four people a viewer can step into, each with their own "up next". */
 export const PEOPLE: { name: string; role: string }[] = [

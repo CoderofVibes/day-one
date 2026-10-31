@@ -77,12 +77,13 @@ function subscribeRail(l: () => void) {
   return () => listeners.delete(l);
 }
 function useRail(): RailState {
-  return useSyncExternalStore(subscribeRail, railState);
+  return useSyncExternalStore(subscribeRail, railState, railState);
 }
 
-/** Opens the feed's drawer below 1280 px; the header's Kevin chip can call it too. */
+/** Opens the feed: the drawer below 1280 px, the rail expanded wider. The header's Kevin chip calls it. */
 export function openFeed(): void {
-  setRail({ drawer: true });
+  const wide = typeof matchMedia === "undefined" || matchMedia(WIDE).matches;
+  setRail(wide ? { collapsed: false } : { drawer: true });
 }
 
 function useWide(): boolean {
@@ -93,6 +94,7 @@ function useWide(): boolean {
       return () => query?.removeEventListener("change", l);
     },
     () => query?.matches ?? true,
+    () => true,
   );
 }
 
