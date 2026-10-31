@@ -18,7 +18,7 @@
 //   --check   exit 1 if a committed file differs from a fresh export
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative, resolve, sep } from "node:path";
 import { briefHtml, morningBrief } from "../agents/kevin/src/brief.ts";
@@ -54,6 +54,8 @@ import { worldEventFiles } from "../server/src/world/events.ts";
 import { readWorlds } from "../server/src/world/files.ts";
 import { mergeGenealogyTables, worldGenealogyTables } from "../server/src/world/genealogy.ts";
 import { scorecards } from "../server/src/world/scorecard.ts";
+import { extended } from "../server/src/world/sim.ts";
+import { type RfqSummary, supplierView } from "../server/src/world/supplierView.ts";
 import { buildArena, readRecordings } from "./lib/arena.ts";
 import { PLANT_AGENTS } from "./lib/dayone-sandbox.ts";
 
@@ -352,8 +354,136 @@ const lineage = {
     mergeGenealogyTables(genealogyTables(env.db), worldGenealogyTables(worlds, now)),
   ),
 };
-// The supplier scorecards at the end of the recorded run (server/src/world/scorecard.ts).
-const suppliers = scorecards(worlds, WORLD.calendar.recordedEnd);
+// The supplier scorecards at the end of the recorded run (server/src/world/scorecard.ts), and the
+// Suppliers page's view: the cards on a weekly grid, each supplier's records, the recorded RFQ's
+// quotes and the credential transactions recorded on testnet (server/src/world/supplierView.ts).
+const suppliers = {
+  ...scorecards(worlds, WORLD.calendar.recordedEnd),
+  view: supplierView(worlds, WORLD.calendar.recordedEnd),
+  recorded: {
+    rfqs: PLANT_CODES.flatMap((plant) => rfqViews(env.db, plant)).map(
+      (r): RfqSummary => ({
+        rfqNo: r.rfqNo,
+        material: r.material,
+        materialName: r.name,
+        uom: r.dimension === "mass" ? "kg" : "ea",
+        qtyBase: r.qtyBase,
+        day: WORLD.calendar.t0,
+        winner: r.quotes.find((q) => q.status === "accepted")?.vendor ?? "",
+        quotes: r.quotes.map((q) => ({
+          vendor: q.vendor,
+          unitPriceUsdc: q.unitPriceUsdc,
+          freightUsdc: q.freightUsdc,
+          leadDays: q.leadTimeDays,
+          landedUsdc: extended(r.material, r.qtyBase, q.unitPriceUsdc) + q.freightUsdc,
+          status: q.status as RfqSummary["quotes"][number]["status"],
+          reason: q.exclusionReason,
+        })),
+      }),
+    ),
+    credentialTxs: credentialTransactions(),
+  },
+};
+
+/**
+ * The supplier-credential transactions recorded on testnet (npm run record:credentials): HQ's
+ * issues and revocations, the deliveries QC rejected until the contract suspended Pacific, the
+ * orders the contract refused; and the quotes the suppliers anchored (data/quotes/). Each with
+ * its hash and explorer link as recorded, the supplier's account and a staff sentence.
+ */
+function credentialTransactions() {
+  const rec = JSON.parse(readFileSync(join(root, "data/attacks/credentials-testnet.json"), "utf8"));
+  const recordedAt: string = rec.recordedAt;
+  const supplierOfPo = new Map<string, string>();
+  const out: {
+    supplier: string;
+    method: string;
+    signer: string;
+    ok: boolean;
+    hash: string;
+    url: string;
+    what: string;
+    recordedAt: string;
+  }[] = [];
+  const push = (
+    supplier: string,
+    method: string,
+    signer: string,
+    ok: boolean,
+    hash: string,
+    what: string,
+  ) =>
+    out.push({
+      supplier,
+      method,
+      signer,
+      ok,
+      hash,
+      url: `https://testnet.nearblocks.io/txns/${hash}`,
+      what,
+      recordedAt,
+    });
+  for (const s of rec.setup as {
+    signerId: string;
+    method: string;
+    args: Record<string, string>;
+    status: string;
+    txHash: string;
+  }[]) {
+    if (s.method === "submit_po" && s.args.supplier)
+      supplierOfPo.set(s.args.po_id ?? "", s.args.supplier);
+    const supplier = s.args.supplier ?? supplierOfPo.get(s.args.po_id ?? "") ?? "";
+    const po = s.args.po_id ?? "";
+    const what =
+      s.method === "issue_credential"
+        ? "HQ issued the supplier credential"
+        : s.method === "revoke_credential"
+          ? `HQ revoked the credential: ${s.args.reason}`
+          : s.method === "qc_reject"
+            ? `QC rejected ${po}: ${s.args.reason}; the money went back`
+            : s.method === "submit_po"
+              ? `Kevin's order ${po} funded`
+              : s.method === "accept_po"
+                ? `Accepted ${po}`
+                : s.method === "mark_shipped"
+                  ? `Shipped ${po}`
+                  : s.method === "confirm_receipt"
+                    ? `Receiving confirmed ${po}`
+                    : s.method;
+    push(supplier, s.method, s.signerId, s.status === "success", s.txHash, what);
+  }
+  for (const e of rec.entries as {
+    type: string;
+    request: { method: string; signerId: string; args: Record<string, string> };
+    outcome: { status: string; txHash: string; errorMessage: string | null };
+  }[]) {
+    if (e.type !== "call" || !e.request.args.supplier) continue;
+    const ok = e.outcome.status !== "refused";
+    push(
+      e.request.args.supplier,
+      e.request.method,
+      e.request.signerId,
+      ok,
+      e.outcome.txHash,
+      ok
+        ? `${e.request.method} ${e.request.args.po_id ?? ""}`.trim()
+        : `Kevin's order ${e.request.args.po_id ?? ""} refused: ${e.outcome.errorMessage ?? ""}`,
+    );
+  }
+  for (const file of readdirSync(join(root, "data/quotes")).sort()) {
+    const q = JSON.parse(readFileSync(join(root, "data/quotes", file), "utf8"));
+    if (q.kind !== "quote" || !q.anchored_tx) continue;
+    push(
+      q.record.supplier,
+      "anchor",
+      q.record.supplier,
+      true,
+      q.anchored_tx,
+      `Quote on ${q.record.rfq} anchored by the supplier`,
+    );
+  }
+  return out;
+}
 // Talk to Kevin's suggested questions, answered from data/replay/ask-llm.json when it is
 // recorded (npm run ask -- --live --record), over the cards built from the snapshot above; no
 // answers before that, and the page says they arrive with the recording.

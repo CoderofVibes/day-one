@@ -1,0 +1,204 @@
+/* The Suppliers page's scorecards and detail view (src/pages/Suppliers.tsx), on the kit's tokens. */
+
+.score-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  min-width: 96px;
+}
+.score-cell .minibar {
+  flex: 1 1 56px;
+  max-width: 72px;
+}
+.score-cell .sub {
+  display: block;
+  white-space: nowrap;
+}
+.supplier-name {
+  padding: 0;
+  text-align: left;
+}
+.th-sort {
+  all: unset;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.th-sort:focus-visible {
+  outline: 2px solid var(--focus, var(--chart-1));
+  outline-offset: 2px;
+}
+.materials-sub {
+  margin: var(--s-2) 0;
+}
+
+/* ---------- the formula popover ---------- */
+.formula-info {
+  position: relative;
+  display: inline-block;
+}
+.info-btn {
+  border: 0;
+  background: none;
+  color: var(--ink-3);
+  cursor: pointer;
+  font-size: 0.95em;
+  padding: 0 2px;
+}
+.formula-pop {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  display: grid;
+  gap: var(--s-2);
+  width: min(420px, calc(100vw - 48px));
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  box-shadow: var(--e3);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+.formula-pop code {
+  white-space: normal;
+}
+.formula-terms {
+  display: grid;
+  gap: 2px;
+}
+.formula-pop small {
+  color: var(--ink-2);
+}
+@media (max-width: 560px) {
+  .formula-pop {
+    position: fixed;
+    top: 96px;
+    left: 16px;
+    right: 16px;
+    width: auto;
+  }
+}
+
+/* ---------- the detail view ---------- */
+.supplier-detail {
+  display: grid;
+  gap: var(--s-4);
+  scroll-margin-top: 80px;
+}
+.supplier-detail h3,
+.credential-card h4 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+.lead-histo {
+  display: grid;
+  gap: var(--s-1);
+}
+.lead-histo .spark-wrap,
+.lead-histo .histo {
+  display: block;
+  width: 100%;
+}
+.supplier-incidents {
+  margin: 0;
+  padding-left: var(--s-4);
+  display: grid;
+  gap: var(--s-1);
+}
+.supplier-records {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-1);
+}
+.supplier-records li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.supplier-records li > :last-child {
+  margin-left: auto;
+}
+.credential-card {
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: var(--s-3);
+  display: grid;
+  gap: var(--s-2);
+}
+.credential-card h4,
+.credential-card p {
+  margin: 0;
+}
+.credential-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px var(--s-3);
+  margin: 0;
+}
+.credential-facts dt {
+  color: var(--ink-2);
+}
+.credential-facts dd {
+  margin: 0;
+}
+.why-picks h4 {
+  margin: 0 0 var(--s-2);
+}
+.why-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-3);
+}
+.why-list li {
+  display: grid;
+  gap: 2px;
+}
+.why-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+.credential-chain {
+  display: grid;
+  gap: var(--s-2);
+  padding-top: var(--s-2);
+  border-top: 1px dashed var(--line-2);
+}
+.credential-chain h5,
+.credential-chain p {
+  margin: 0;
+}
+.credential-txs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--s-1);
+}
+.credential-txs li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-2);
+  overflow-wrap: anywhere;
+}
+.credential-txs li.refused > span:first-child {
+  color: var(--bad);
+}
+.credential-txs li.simulated {
+  color: var(--ink-2);
+}
