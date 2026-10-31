@@ -14,6 +14,7 @@ import type { Tone } from "../run.ts";
 import { type Source, useRead } from "../series.ts";
 import { CATEGORY_NAMES, day, Loading, plantName } from "./common.tsx";
 import { RECON_PLAIN } from "./Integration.tsx";
+import { SupplierScorecards } from "./Suppliers.tsx";
 
 /** "2026-10-29" from the contract's nanosecond clock. */
 function chainDay(ns: string | null | undefined) {
@@ -77,6 +78,7 @@ export function SuppliersPage({ source, curtain }: { source: Source; curtain: bo
         <NumberCard label="Lapsed" value={count("Expired")} />
         <NumberCard label="Withdrawn" value={count("Revoked")} />
       </div>
+      <SupplierScorecards standings={creds} curtain={curtain} />
       <section className="card-v2" aria-label="Supplier approvals HQ issued">
         <div className="chart-head">
           <h3>Supplier approvals HQ issued</h3>

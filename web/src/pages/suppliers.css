@@ -1,0 +1,84 @@
+/* The Suppliers page's scorecards and detail view (src/pages/Suppliers.tsx), on the kit's tokens. */
+
+.score-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  min-width: 96px;
+}
+.score-cell .minibar {
+  flex: 1 1 56px;
+  max-width: 72px;
+}
+.score-cell .sub {
+  display: block;
+  white-space: nowrap;
+}
+.supplier-name {
+  padding: 0;
+  text-align: left;
+}
+.th-sort {
+  all: unset;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.th-sort:focus-visible {
+  outline: 2px solid var(--focus, var(--chart-1));
+  outline-offset: 2px;
+}
+.materials-sub {
+  margin: var(--s-2) 0;
+}
+
+/* ---------- the formula popover ---------- */
+.formula-info {
+  position: relative;
+  display: inline-block;
+}
+.info-btn {
+  border: 0;
+  background: none;
+  color: var(--ink-3);
+  cursor: pointer;
+  font-size: 0.95em;
+  padding: 0 2px;
+}
+.formula-pop {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  display: grid;
+  gap: var(--s-2);
+  width: min(420px, calc(100vw - 48px));
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  box-shadow: var(--e3);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+.formula-pop code {
+  white-space: normal;
+}
+.formula-terms {
+  display: grid;
+  gap: 2px;
+}
+.formula-pop small {
+  color: var(--ink-2);
+}
+@media (max-width: 560px) {
+  .formula-pop {
+    position: fixed;
+    top: 96px;
+    left: 16px;
+    right: 16px;
+    width: auto;
+  }
+}
