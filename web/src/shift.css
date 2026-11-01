@@ -277,3 +277,37 @@ html[data-product-ui="shift"][data-theme="dark"] .desk .paper .card-actions > bu
 .morning-summary .ms-refused {
   color: var(--refused);
 }
+
+/* ---------- the sidebar: no second plant picker or curtain switch, groups that fold ---------- */
+html[data-product-ui="shift"] .sidebar .picker,
+html[data-product-ui="shift"] .sidebar-bottom .trust {
+  display: none;
+}
+.nav-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+.nav-group:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+  border-radius: 4px;
+}
+.nav-chev {
+  font-size: 10px;
+  opacity: 0.7;
+}
+.nav-utility {
+  padding-bottom: var(--s-2);
+  margin-bottom: var(--s-2);
+  border-bottom: 1px solid var(--line);
+}

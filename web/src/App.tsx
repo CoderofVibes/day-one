@@ -199,6 +199,7 @@ function Page({
   label,
   title,
   sentence,
+  note,
   className,
   children,
 }: {
@@ -206,12 +207,14 @@ function Page({
   title: string;
   /** What the page is for: shown behind the header's "About" button, not under the title. */
   sentence: string;
+  /** Where the page's numbers come from, beside the title (a recorded snapshot, in the replay). */
+  note?: React.ReactNode;
   className?: string;
   children: React.ReactNode;
 }) {
   return (
     <main className={className ? `page v2 ${className}` : "page v2"} aria-label={label}>
-      <PageHeader title={title} help={sentence} />
+      <PageHeader title={title} help={sentence} {...(note ? { right: note } : {})} />
       {children}
     </main>
   );
@@ -533,12 +536,56 @@ function Pages({
       label={`${text.title} page`}
       title={text.title}
       sentence={text.sentence}
+      {...(!source.live && SNAPSHOT_PAGES.has(page) ? { note: <SnapshotNote /> } : {})}
       {...(page === "map" ? { className: "twin-page" } : {})}
     >
       {body}
       {foot}
     </Page>
   );
+}
+
+/**
+ * The replay's pages that read the ledger as it stood at the end of the recorded run
+ * (web/src/data/pages.json and plants.json), not at the clock's time: each says so beside its title,
+ * so nobody reads Monday 5:00 AM's screen as Monday's stock (Astra's first pass, A4.3).
+ */
+const SNAPSHOT_PAGES = new Set<PageId>([
+  "batches",
+  "inventory",
+  "purchasing",
+  "schedule",
+  "invoices",
+  "plants",
+  "export",
+]);
+
+function SnapshotNote() {
+  const when = new Date(plantsSnapshot.at).toLocaleString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/Los_Angeles",
+  });
+  return (
+    <span
+      className="src-note"
+      title="These figures are the plant's records as they stood at the end of the recorded run, not at the clock's time."
+    >
+      Recorded snapshot · {when}
+    </span>
+  );
+}
+
+/** Drops ?inspect= from the address once the first shift no longer points the twin at a place. */
+function clearInspect() {
+  const q = new URLSearchParams(location.search);
+  if (!q.has("inspect")) return;
+  q.delete("inspect");
+  const search = q.toString();
+  history.replaceState(null, "", search ? `?${search}` : location.pathname);
 }
 
 /** The plant twin opened on a place the order desk points at (the twin reads ?inspect= on open). */
@@ -621,6 +668,20 @@ function ReplayApp() {
   const [judge, setJudge] = useState<number | "summary" | null>(JUDGE_AT);
   // The first shift: Kevin's introduction, then the walkthrough (FirstShift.tsx).
   const [shift, setShift] = useState<"intro" | "guide" | null>(FIRST_OPEN ? "intro" : null);
+  /** Where a replay opened from the menu started, to return there; null on a first visit. */
+  const entry = useRef<{ page: PageId; plant: PlantCode; at: number; curtain: boolean } | null>(
+    null,
+  );
+  /** The page the walkthrough last opened: any other page is the person choosing their own way. */
+  const guidePage = useRef<PageId | null>(null);
+  // A page or plant chosen from the sidebar ends the walkthrough there and honours the choice.
+  useEffect(() => {
+    if (shift !== "guide") return;
+    if (route.page === guidePage.current && route.plant === "B") return;
+    entry.current = null;
+    clearInspect();
+    setShift(null);
+  }, [route.page, route.plant, shift]);
 
   const go = useCallback(
     (to: number) => clock.seek(clock.range.steps[Math.max(0, Math.min(last, to))] ?? 0),
@@ -742,8 +803,13 @@ function ReplayApp() {
           onOpen={() => route.go({ page: "money" })}
         />
       }
-      onJudge={() => setJudge(0)}
+      onJudge={() => {
+        setShift(null);
+        setJudge(0);
+      }}
       onFirstShift={() => {
+        // Opened by hand: remember where the person was, to put them back there after.
+        entry.current = { page: route.page, plant: route.plant, at, curtain };
         setJudge(null);
         setShift("intro");
       }}
@@ -751,12 +817,23 @@ function ReplayApp() {
   );
   /** Back to Ray's desk at the start of his morning, as the first shift leaves it. */
   const toDesk = () => {
-    const q = new URLSearchParams(location.search);
-    q.delete("inspect");
-    history.replaceState(null, "", q.toString() ? `?${q.toString()}` : location.pathname);
+    clearInspect();
     setCurtain(false);
     route.go({ page: "overview", plant: "B" });
     go(0);
+  };
+  /**
+   * The first shift is over: a first visit lands on Ray's desk at 5:00 AM; a replay opened from
+   * the menu puts the person back where they were (Astra's first pass, B4).
+   */
+  const leaveShift = () => {
+    const was = entry.current;
+    entry.current = null;
+    if (!was) return toDesk();
+    clearInspect();
+    setCurtain(was.curtain);
+    route.go({ page: was.page, plant: was.plant });
+    go(was.at);
   };
 
   return (
@@ -885,12 +962,15 @@ function ReplayApp() {
         <FirstShiftIntro
           onTour={() => {
             remember("walked");
-            toDesk();
+            guidePage.current = "overview";
+            setCurtain(false);
+            route.go({ page: "overview", plant: "B" });
+            go(0);
             setShift("guide");
           }}
           onDesk={() => {
             remember("skipped");
-            toDesk();
+            leaveShift();
             setShift(null);
           }}
         />
@@ -898,13 +978,14 @@ function ReplayApp() {
       {shift === "guide" && (
         <FirstShiftGuide
           go={(page, step) => {
+            guidePage.current = page;
             route.go({ page, plant: "B" });
             go(step);
           }}
           setCurtain={setCurtain}
           onEnd={(finished) => {
             remember(finished ? "finished" : "walked");
-            toDesk();
+            leaveShift();
             setShift(null);
           }}
           onProof={() => {

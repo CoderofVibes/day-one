@@ -88,12 +88,23 @@ export const NAV: { group: string; items: NavItem[] }[] = [
     group: "Proof",
     items: [
       { id: "arena", label: "Attack arena", icon: "target" },
-      { id: "ask", label: "Talk to Kevin", icon: "doc" },
     ],
   },
 ];
 
-const PAGE_IDS = new Set(NAV.flatMap((g) => g.items.map((i) => i.id)));
+/** Talk to Kevin sits above the groups: asking Kevin is for every page, not a proof (Astra, A3). */
+export const ASK_ITEM: NavItem = { id: "ask", label: "Talk to Kevin", icon: "doc" };
+
+const PAGE_IDS = new Set([...NAV.flatMap((g) => g.items.map((i) => i.id)), ASK_ITEM.id]);
+
+const NAV_CLOSED_KEY = "day-one:nav-closed";
+function readClosed(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(NAV_CLOSED_KEY) ?? "[]") as string[];
+  } catch {
+    return [];
+  }
+}
 
 function fromUrl(): { page: PageId; plant: PlantCode } {
   const q = new URLSearchParams(typeof location === "undefined" ? "" : location.search);
@@ -153,6 +164,41 @@ export function Shell({
   children: React.ReactNode;
 }) {
   const [menu, setMenu] = useState(false);
+  // Groups fold away on request; the group holding the open page is always open.
+  const [closed, setClosed] = useState<string[]>(readClosed);
+  const toggle = (group: string) => {
+    const next = closed.includes(group) ? closed.filter((g) => g !== group) : [...closed, group];
+    setClosed(next);
+    try {
+      localStorage.setItem(NAV_CLOSED_KEY, JSON.stringify(next));
+    } catch {
+      // Storage refused: the choice lasts until the page closes.
+    }
+  };
+  const link = (item: NavItem) => {
+    const badge = badges[item.id];
+    return (
+      <a
+        key={item.id}
+        href={`?page=${item.id}${plant === "B" ? "" : `&plant=${plant}`}`}
+        aria-current={page === item.id ? "page" : undefined}
+        onClick={(e) => {
+          e.preventDefault();
+          setMenu(false);
+          go({ page: item.id });
+        }}
+      >
+        <Icon name={item.icon} />
+        {item.label}
+        {badge && badge.count > 0 ? (
+          <span className={`count ${badge.tone}`}>
+            {badge.count}
+            <span className="sr-only"> waiting</span>
+          </span>
+        ) : null}
+      </a>
+    );
+  };
   const here = PLANTS.find((p) => p.code === plant) ?? PLANTS[0];
   const trust = (
     <label className="trust" title="Every limit, approval and payment here is a contract rule.">
@@ -221,35 +267,28 @@ export function Shell({
           </span>
         </label>
         <nav className="nav">
-          {NAV.map((g) => (
-            <div key={g.group}>
-              <h6>{g.group}</h6>
-              {g.items.map((item) => {
-                const badge = badges[item.id];
-                return (
-                  <a
-                    key={item.id}
-                    href={`?page=${item.id}${plant === "B" ? "" : `&plant=${plant}`}`}
-                    aria-current={page === item.id ? "page" : undefined}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setMenu(false);
-                      go({ page: item.id });
-                    }}
+          <div className="nav-utility">{link(ASK_ITEM)}</div>
+          {NAV.map((g) => {
+            const open = !closed.includes(g.group) || g.items.some((i) => i.id === page);
+            return (
+              <div key={g.group}>
+                <h6>
+                  <button
+                    type="button"
+                    className="nav-group"
+                    aria-expanded={open}
+                    onClick={() => toggle(g.group)}
                   >
-                    <Icon name={item.icon} />
-                    {item.label}
-                    {badge && badge.count > 0 ? (
-                      <span className={`count ${badge.tone}`}>
-                        {badge.count}
-                        <span className="sr-only"> waiting</span>
-                      </span>
-                    ) : null}
-                  </a>
-                );
-              })}
-            </div>
-          ))}
+                    {g.group}
+                    <span className="nav-chev" aria-hidden="true">
+                      {open ? "▾" : "▸"}
+                    </span>
+                  </button>
+                </h6>
+                {open && g.items.map(link)}
+              </div>
+            );
+          })}
         </nav>
         <div className="sidebar-bottom">
           {trust}

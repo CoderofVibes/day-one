@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { type KevinAnswer, type RecordedAsk, withCitations } from "./ask.ts";
 import askJson from "./data/ask.json";
 import { AnswerCard, AskKevin, type Turn } from "./pages/Ask.tsx";
-import { NAV } from "./shell.tsx";
+import { ASK_ITEM, NAV } from "./shell.tsx";
 
 const recorded = askJson as unknown as RecordedAsk;
 const text = (html: string) =>
@@ -36,9 +36,11 @@ const turn = (a: KevinAnswer, recordedAnswer = false): Turn => ({
 });
 
 describe("Talk to Kevin", () => {
-  it("sits in the Proof group below the attack arena", () => {
-    const proof = NAV.find((g) => g.group === "Proof")?.items.map((i) => i.id);
-    expect(proof).toEqual(["arena", "ask"]);
+  it("sits above the page groups, for every page, not only the proofs", () => {
+    expect(ASK_ITEM.id).toBe("ask");
+    const grouped = NAV.flatMap((g) => g.items.map((i) => i.id));
+    expect(grouped).not.toContain("ask");
+    expect(NAV.find((g) => g.group === "Proof")?.items.map((i) => i.id)).toEqual(["arena"]);
   });
 
   it("links each cited record to the page that shows it, and the proposal to where a person acts", () => {
