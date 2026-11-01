@@ -4,4 +4,4 @@ One row per pass GPT-6 Astra writes (`docs/ASTRA.md`). Astra adds its row; Claud
 
 | Date | Pass | Seat(s) | Taken up |
 |---|---|---|---|
-| 2026-11-01 | [First shift: Kevin meets Ray at his desk](2026-11-01_FirstShift.md) | 3 — Product and visual direction; 4 — Divergent ideation; 5 — Consistency | Pending Tony's decision |
+| 2026-11-01 | [First shift: Kevin meets Ray at his desk](2026-11-01_FirstShift.md) | 3 — Product and visual direction; 4 — Divergent ideation; 5 — Consistency | Taken up Nov 1 (OPEN_QUESTIONS #45, #46): solid surfaces, the line, six staff stops plus three proof stops |

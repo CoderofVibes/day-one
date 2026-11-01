@@ -148,10 +148,9 @@ export function PlantsPane({
         )}
       </div>
       {!act && (
-        <p className="small muted">
-          Read-only here: with the API running (npm run api) each proposal has its Apply, Dismiss or
-          Approve button.
-        </p>
+        <span className="src-note">
+          Preview only · Apply, Dismiss and Approve work in the working app
+        </span>
       )}
 
       {(reviews.length > 0 ||

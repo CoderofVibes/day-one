@@ -10,4 +10,4 @@ export const reviewSnapshot = snapshot as ReviewState;
 
 /** The footer of the panel on a static host, where no one can sign. */
 export const REVIEW_READ_ONLY =
-  "This replay shows the drafts as Kevin left them; Ray signs them in the live run (npm run api).";
+  "Recorded preview · drafts unsigned. Ray signs them in the working app.";

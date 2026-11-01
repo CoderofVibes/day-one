@@ -39,6 +39,7 @@ export const DATED_RECORDS: RegExp[] = [
   /^docs\/OPEN_QUESTIONS\.md$/,
   /^docs\/research\//,
   /^docs\/phase0\//,
+  /^docs\/astra\/2/, // Astra's dated passes and briefs: they name files they propose
 ];
 
 const LINK = /\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;

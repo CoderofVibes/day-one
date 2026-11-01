@@ -1673,47 +1673,6 @@ tbody th:first-child {
   margin: 2px 0 0;
 }
 
-/* ---------- The static replay's guide and the closing card ---------- */
-
-.guide {
-  grid-column: 1 / -1;
-  position: relative;
-  padding: var(--s-3) 44px var(--s-3) var(--s-4);
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--brand);
-  border-radius: var(--r-md);
-  background: var(--surface);
-  font-size: var(--t-sm);
-}
-
-.guide p {
-  margin: 0;
-}
-
-.guide p + p {
-  margin-top: 6px;
-}
-
-.guide-close {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 32px;
-  height: 32px;
-  border: 0;
-  border-radius: var(--r-sm);
-  background: transparent;
-  color: var(--ink-2);
-  font-size: 1.2rem;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.guide-close:hover {
-  background: var(--surface-2);
-  color: var(--ink);
-}
-
 /* ---------- The import wizard ---------- */
 
 .import {

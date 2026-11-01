@@ -229,7 +229,7 @@ export function BatchRecordsPage({
           why={
             source.live
               ? `${waiting} scanned batch records wait for Ray to confirm.`
-              : "With npm run api, Kevin watches the scan folder and the scans wait here for Ray."
+              : "In the working app, Kevin watches the scan folder and scans wait here for Ray."
           }
         />
       </div>

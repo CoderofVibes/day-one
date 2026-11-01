@@ -109,9 +109,11 @@ export function ArenaConsole({ arena }: { arena: Arena }) {
   return (
     <div className="arena">
       <div className="arena-bar">
-        <span className="small muted">
-          Recorded mode: each attack replays its recorded refusal. Nothing here changes the plant,
-          its money or its records.
+        <span
+          className="src-note"
+          title="Each attack replays its recorded refusal. Nothing here changes the plant, its money or its records."
+        >
+          Recorded replay · no changes
         </span>
         <span className="arena-tally" aria-live="polite">
           <span className="arena-dot refused" aria-hidden="true" />

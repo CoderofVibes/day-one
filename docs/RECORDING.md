@@ -67,7 +67,7 @@ Check **View → Stats** during a test take: "frames missed due to rendering lag
 | 1:05–1:15 | Approve by text (`approve`) | The desk: Linda's approval slides into "Handled for you" and the order's track pins its payment condition (Northgate is paid only when QC releases the lot); the tour shows her phone instead | Linda approves from her phone… |
 | 1:15–1:25 | Delivery (`delivery`) | Funded retry, the packing slip photo, the lot in quarantine (amber cage) | The truck shows up… |
 | 1:25–1:33 | New bank details (`bank-details`) | Marcy's screen: the attack suite's hidden-text invoice for PO-1042, held: "asks for payment to a different account; PO-1042 can only pay Northgate Ingredients"; a small curtain inset with the account the order was funded for and the funding transaction | Then an invoice arrives saying Northgate's bank details changed… |
-| 1:33–1:43 | QC release → paid (`paid`) | The desk: Priya's release, then the gold line from QC release to Paid and "Condition met"; "All clear. PO-1042 is paid."; the payout flies to Northgate on the twin | Priya releases the lot… |
+| 1:33–1:43 | QC release → paid (`paid`) | The desk: Priya's release, then the gold line from QC release to Paid and "Condition met"; "PO-1042 is paid."; the payout flies to Northgate on the twin | Priya releases the lot… |
 | 1:43–1:51 | The numbers reconcile (`reconcile`) | Mass balance: Riverside's 115.2 kg (6.84%), Hollow Pine to the gram | Material in, batches out… |
 | 1:51–2:07 | Behind the curtain (`curtain`) | Who signed what and who paid the gas, then the transaction log scrolling, with the refusal in red | Here's what's underneath… |
 | 2:07–2:14 | Close (`close`) | "Day One · Built at NEAR HACKATHON", team credit | Kevin doesn't need crypto… |

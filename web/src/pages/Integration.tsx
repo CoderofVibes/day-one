@@ -101,15 +101,15 @@ function kevinLine(stage: JourneyStage): string {
   const open = stage.items.filter((i) => !i.done);
   if (stage.done) {
     return {
-      meet: "We're set. Each stage below moves one piece of the work; nothing posts until someone checks it.",
+      meet: "We're set. Each stage below moves one piece of the work, with a person checking it.",
       sheets:
         "The workbook is posted as Hollow Pine's opening stock, with every row I was unsure of answered by Ray.",
       paper:
         "This week's records are in the ledger. Stock now moves when the batch is confirmed, not when the binder is typed.",
       plan: "The ten products and the next four weeks are confirmed. My forecast reads them from here.",
-      rules: "The suppliers and my limits are confirmed; the contract enforces the limits, not me.",
+      rules: "Acme's suppliers and spending rules are confirmed; the rules hold whatever I do.",
       order: "PO-1042 is paid. The money waited in escrow until Priya released the lot.",
-      books: "The books are matched and the ERP agrees with the ledger and the contract.",
+      books: "The books are matched, and the recorded books and payment records reconcile.",
       daily: "From here, the 5am brief, the plant map and the trends are the day.",
     }[stage.key];
   }
@@ -162,11 +162,7 @@ export function Integration({
   if (!journey) {
     return (
       <main className="page v2" aria-label="Your integration">
-        <PageHeader
-          crumb="Hollow Pine Tablet Co. › Your integration"
-          title="Your integration"
-          sentence="Seven stages after you meet Kevin."
-        />
+        <PageHeader title="Your integration" />
         {error ? (
           <ErrorCard what="The integration program" error={error} retry={() => location.reload()} />
         ) : (
@@ -182,15 +178,14 @@ export function Integration({
   return (
     <main className="page v2" aria-label="Your integration">
       <PageHeader
-        crumb="Hollow Pine Tablet Co. › Your integration"
         title="Your integration"
-        sentence="Seven stages after you meet Kevin. Each one moves a piece of the plant's work from the old way to Kevin, with a person checking every step. Nothing posts until someone says so."
+        help="Seven stages after you meet Kevin. Each one moves a piece of the plant's work from the old way to Kevin, with a person checking every step."
         right={
           <>
             <span className={journey.current >= 7 ? "pill paid" : "pill waiting"}>
               {journey.current >= 7 ? "all stages done" : `stage ${journey.current} of 7`}
             </span>
-            {!source.live && <span className="pill neutral">as recorded</span>}
+            {!source.live && <span className="src-note">Recorded program outcome</span>}
           </>
         }
       />
@@ -624,10 +619,10 @@ function Meet({
         ))}
       </ul>
       <KevinNote>
-        I read the plant's sheets and scans, draft orders and flag what does not add up. I never
-        post or pay on my own: a person checks every reading, and the limits, the approvals and the
-        payment on delivery are rules HQ sets in a contract I cannot change. The ✓ Protected marker
-        opens the record behind it.
+        I read your sheets and scans, prepare orders, and flag differences. You confirm my
+        batch-record readings before they enter the plant ledger. I can place orders inside Acme's
+        spending rules. Orders over my limits need approval, and a delivered lot waits for QC before
+        its supplier is paid.
       </KevinNote>
       <div className="actions">
         <Decide
@@ -1062,13 +1057,12 @@ function Rules({
           </div>
         </div>
       ) : (
-        <p className="small muted">The contract could not be read just now.</p>
+        <p className="small muted">The spending rules are unavailable just now.</p>
       )}
       {act && <PlainWords />}
-      <p className="small muted">
-        {agent ? "Read from the contract just now." : "As the deployment sets them."} The contract
-        enforces these: Kevin cannot change them, and a change takes HQ's signature.
-      </p>
+      <span className="src-note">
+        {agent ? "Set by Acme HQ · read just now" : "Set by Acme HQ"} · Kevin cannot change them
+      </span>
       <div className="actions">
         <Decide
           act={act}

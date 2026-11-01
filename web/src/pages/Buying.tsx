@@ -1015,10 +1015,9 @@ export function SpreadsheetsPage({
               ))}
             </>
           )}
-          <p className="small muted">
-            Live (npm run api), the same workbook opens in the wizard: Ray answers each row, then
-            posts the opening stock.
-          </p>
+          <span className="src-note">
+            Recorded preview · Ray answers each row in the working app
+          </span>
         </section>
       ) : null}
       {posted.length > 0 && (

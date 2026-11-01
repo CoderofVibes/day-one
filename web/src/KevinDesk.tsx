@@ -228,8 +228,8 @@ function KevinCard({
   const done = turn.kind === "done";
   const title = done
     ? facts.paid
-      ? `All clear. ${facts.paid.po} is paid.`
-      : "All clear."
+      ? `${facts.paid.po} is paid.`
+      : "This order is closed."
     : "Nothing needs you right now";
   const line =
     turn.kind === "kevin"

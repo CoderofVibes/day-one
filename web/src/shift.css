@@ -1,0 +1,251 @@
+/* The product look (Astra's first pass, docs/astra/2026-11-01_FirstShift.md A3; Tony chose solid
+   cards on Nov 1, OPEN_QUESTIONS #46): opaque surfaces on a flat background, a compact header,
+   one strong work surface (Kevin's desk). Scoped to html[data-product-ui="shift"], which App sets
+   for the staff and judge pages only, so the video (?video=1) and Linda's phone keep their look
+   frame for frame. */
+
+html[data-product-ui="shift"] {
+  --bg: #f4f6f7;
+  --surface: #ffffff;
+  --surface-2: #eef2f4;
+  --ink: #182126;
+  --ink-2: #4c5b65;
+  --ink-3: #60717d;
+  --line: #dbe2e6;
+  --line-2: #bac7ce;
+  --brand: #1f6f5c;
+  --brand-ink: #ffffff;
+  --brand-soft: #e3f1ec;
+  --wash-1: transparent;
+  --wash-2: transparent;
+  --glass: var(--surface);
+  --glass-strong: var(--surface);
+  --glass-edge: var(--line);
+  --glass-line: var(--line);
+  --glass-blur: none;
+  --backdrop-1: var(--bg);
+  --backdrop-2: var(--bg);
+  --backdrop-3: var(--bg);
+  --backdrop-4: var(--bg);
+  --shadow: none;
+  --e1: none;
+  --e2: 0 4px 16px rgb(16 24 40 / 0.1);
+  --e3: 0 16px 48px rgb(16 24 40 / 0.16);
+
+  --fs-h1: 24px;
+  --lh-h1: 32px;
+  --fs-h2: 20px;
+  --lh-h2: 28px;
+  --fs-h3: 16px;
+  --lh-h3: 24px;
+  --fs-stat: 32px;
+  --lh-stat: 38px;
+  --fs-hero: 36px;
+  --lh-hero: 40px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 12px;
+  --radius-chip: 4px;
+  --radius-btn: 6px;
+  --radius-card: 10px;
+  --radius-hero: 12px;
+  --dur-micro: 120ms;
+  --dur-ui: 180ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-product-ui="shift"]:not([data-theme="light"]) {
+    --bg: #11161b;
+    --surface: #192128;
+    --surface-2: #222c34;
+    --ink: #edf2f5;
+    --ink-2: #b5c1c9;
+    --ink-3: #95a7b3;
+    --line: #35434e;
+    --line-2: #566975;
+    --brand: #67c7ad;
+    --brand-ink: #10231d;
+    --brand-soft: #193b31;
+    --e2: 0 4px 16px rgb(0 0 0 / 0.25);
+    --e3: 0 16px 48px rgb(0 0 0 / 0.4);
+  }
+}
+
+html[data-product-ui="shift"][data-theme="dark"] {
+  --bg: #11161b;
+  --surface: #192128;
+  --surface-2: #222c34;
+  --ink: #edf2f5;
+  --ink-2: #b5c1c9;
+  --ink-3: #95a7b3;
+  --line: #35434e;
+  --line-2: #566975;
+  --brand: #67c7ad;
+  --brand-ink: #10231d;
+  --brand-soft: #193b31;
+  --e2: 0 4px 16px rgb(0 0 0 / 0.25);
+  --e3: 0 16px 48px rgb(0 0 0 / 0.4);
+}
+
+/* A flat page: no painted scene behind the cards. */
+html[data-product-ui="shift"] body {
+  background-image: none;
+  background-color: var(--bg);
+}
+
+/* ---------- the frame: a narrower sidebar, a compact header ---------- */
+@media (min-width: 901px) {
+  html[data-product-ui="shift"] .app {
+    grid-template-columns: 208px minmax(0, 1fr);
+  }
+}
+html[data-product-ui="shift"] .sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  backdrop-filter: none;
+}
+
+/* ---------- the page header: the title and the page's controls, help on request ---------- */
+html[data-product-ui="shift"] .page-header {
+  align-items: center;
+  row-gap: var(--s-2);
+}
+.ph-title {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+}
+html[data-product-ui="shift"] .page-header h1 {
+  margin: 0;
+  font-size: var(--fs-h1);
+  line-height: var(--lh-h1);
+  font-weight: 650;
+  letter-spacing: -0.005em;
+}
+.ph-help {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink-2);
+  font: 600 12px / 1 var(--sans);
+  cursor: pointer;
+}
+.ph-help:hover,
+.ph-help[aria-expanded="true"] {
+  color: var(--ink);
+  border-color: var(--ink-3);
+}
+.ph-help:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+@media (pointer: coarse) {
+  .ph-help {
+    width: 32px;
+    height: 32px;
+  }
+}
+.ph-about {
+  flex-basis: 100%;
+  max-width: 68ch;
+  margin: 0;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+
+/* ---------- Kevin's desk: one strong, flat work surface ---------- */
+html[data-product-ui="shift"] .desk {
+  --d-bg: #172127;
+  --d-bg-2: #202c34;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--d-bg);
+  box-shadow: none;
+}
+html[data-product-ui="shift"] .desk .paper {
+  border-radius: 10px;
+}
+html[data-product-ui="shift"] .desk-card,
+html[data-product-ui="shift"] .desk-card.need {
+  box-shadow: none;
+}
+html[data-product-ui="shift"] .desk-card.need {
+  outline: 2px solid var(--cyan);
+  outline-offset: 0;
+}
+
+/* In dark mode the paper is a dark card too, not a white flashlight on a phone. */
+@media (prefers-color-scheme: dark) {
+  html[data-product-ui="shift"]:not([data-theme="light"]) .desk .paper {
+    --ink: #edf2f5;
+    --ink-2: #b5c1c9;
+    --ink-3: #95a7b3;
+    --line: #43515c;
+    --line-2: #566975;
+    --surface: #202a32;
+    --surface-2: #2a3640;
+    --brand: #67c7ad;
+    --brand-ink: #10231d;
+    --refused: #ff9a92;
+    --waiting: #f2c35c;
+    --paid: #74c69d;
+    --money: #e0b23a;
+    background: #202a32;
+  }
+}
+html[data-product-ui="shift"][data-theme="dark"] .desk .paper {
+  --ink: #edf2f5;
+  --ink-2: #b5c1c9;
+  --ink-3: #95a7b3;
+  --line: #43515c;
+  --line-2: #566975;
+  --surface: #202a32;
+  --surface-2: #2a3640;
+  --brand: #67c7ad;
+  --brand-ink: #10231d;
+  --refused: #ff9a92;
+  --waiting: #f2c35c;
+  --paid: #74c69d;
+  --money: #e0b23a;
+  background: #202a32;
+}
+
+/* Small notes that used to be paragraphs: a label beside what they qualify. */
+.src-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-chip, 4px);
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  white-space: nowrap;
+}
+
+/* The dark paper's main action: a light button, readable on the dark card. */
+@media (prefers-color-scheme: dark) {
+  html[data-product-ui="shift"]:not([data-theme="light"]) .desk .paper .card-actions > button.primary {
+    background: #edf2f5;
+    border-color: #edf2f5;
+    color: #182126;
+  }
+}
+html[data-product-ui="shift"][data-theme="dark"] .desk .paper .card-actions > button.primary {
+  background: #edf2f5;
+  border-color: #edf2f5;
+  color: #182126;
+}

@@ -54,7 +54,7 @@ import {
 } from "../kit.tsx";
 import { audienceOf, type RunData, statusOf } from "../run.ts";
 import { type BatchPoint, type History, readHistory, type Source, useRead } from "../series.ts";
-import { PageHeader, PLANTS, type PlantCode } from "../shell.tsx";
+import { PageHeader, type PlantCode } from "../shell.tsx";
 import type { TwinFocus } from "../twin3d/PlantView.tsx";
 import { isOpen, usePlant } from "./common.tsx";
 
@@ -107,7 +107,6 @@ export function Overview({
   /** The buttons on the desk's decision. */
   deskActions: React.ReactNode;
 }) {
-  const here = PLANTS.find((p) => p.code === plant);
   const { value: history, error } = useRead(
     () => readHistory(source),
     `${source.live}-${source.version}`,
@@ -131,9 +130,8 @@ export function Overview({
   return (
     <main className="page v2 overview2" aria-label="Overview">
       <PageHeader
-        crumb={`${here?.name ?? ""} › Overview`}
-        title={here?.name ?? "Overview"}
-        sentence="What Kevin handled, what needs you, and where it is on the plant."
+        title="Overview"
+        help="What Kevin handled, what needs you, and where it is on the plant."
         right={
           <>
             <WindowPicker value={win} onChange={setWin} />

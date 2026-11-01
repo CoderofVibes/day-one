@@ -132,7 +132,7 @@ export function AskKevin({ recorded, live }: { recorded: RecordedAsk; live: bool
           {live
             ? "Kevin answers from the plant's records and cites each one. He explains and proposes; he never places, approves or pays from here."
             : anyRecorded
-              ? "This replay answers the suggested questions from Kevin's recorded, signed answers. Run the API with a NEAR AI key to ask anything."
+              ? "Recorded questions · choose one to see Kevin's answer and the records it cites."
               : `This replay answers the suggested questions from Kevin's recorded answers. ${NOT_YET}`}
         </p>
         <fieldset className="ask-chips">
@@ -149,25 +149,27 @@ export function AskKevin({ recorded, live }: { recorded: RecordedAsk; live: bool
             </button>
           ))}
         </fieldset>
-        <form className="ask-form" onSubmit={submit}>
-          <label className="sr-only" htmlFor="ask-input">
-            Your question for Kevin
-          </label>
-          <input
-            id="ask-input"
-            className="ask-input"
-            value={draft}
-            maxLength={300}
-            disabled={!live || busy}
-            placeholder={
-              live ? "Ask Kevin about an order, a lot, a supplier…" : "Needs the running API"
-            }
-            onChange={(e) => setDraft(e.target.value)}
-          />
-          <button type="submit" className="btn" disabled={!live || busy || !draft.trim()}>
-            Ask
-          </button>
-        </form>
+        {live && (
+          <form className="ask-form" onSubmit={submit}>
+            <label className="sr-only" htmlFor="ask-input">
+              Your question for Kevin
+            </label>
+            <input
+              id="ask-input"
+              className="ask-input"
+              value={draft}
+              maxLength={300}
+              disabled={!live || busy}
+              placeholder={
+                live ? "Ask Kevin about an order, a lot, a supplier…" : "Needs the running API"
+              }
+              onChange={(e) => setDraft(e.target.value)}
+            />
+            <button type="submit" className="btn" disabled={!live || busy || !draft.trim()}>
+              Ask
+            </button>
+          </form>
+        )}
       </section>
 
       {turns.length > 0 && (

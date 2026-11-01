@@ -31,15 +31,7 @@ export function MapPage({
   const [picked, setPicked] = useState<PickedArea | null>(null);
   return (
     <div className={picked ? "map-page with-sheet" : "map-page"}>
-      <div className="map-stage">
-        {map({ onPick: setPicked, picked, page: true })}
-        {!picked && (
-          <p className="small muted map-hint">
-            Click any area of any plant for what it holds, its equipment and what last happened
-            there.
-          </p>
-        )}
-      </div>
+      <div className="map-stage">{map({ onPick: setPicked, picked, page: true })}</div>
       {picked && (
         <AreaSheet
           key={`${picked.facility}-${picked.area}`}

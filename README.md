@@ -23,7 +23,7 @@ So at 5:13 the desk shows Linda one decision, and answers the three questions a 
 **What you decide.** Whether to spend $5,150.00 with Northgate at $7.10/kg, delivered in 7 days; Kevin compared three quotes and checked the other plants first.
 **What happens next.** Approve, and the money is set aside, not paid: Northgate is paid only after the delivery passes QC. Decline, and nothing is ordered.
 
-Linda replies "YES 1042" from her phone. Her reply becomes a transaction signed with her own key, the money is set aside in escrow, and her decision moves to the right-hand column as a history entry while the payment's condition stays pinned under the order. A week later Priya Natarajan releases the lot in QC, the contract pays Northgate in that same call, and the desk reads "All clear. PO-1042 is paid." Nobody at the plant touched a wallet.
+Linda replies "YES 1042" from her phone. Her reply becomes a transaction signed with her own key, the money is set aside in escrow, and her decision moves to the right-hand column as a history entry while the payment's condition stays pinned under the order. A week later Priya Natarajan releases the lot in QC, the contract pays Northgate in that same call, and the desk reads "PO-1042 is paid." Nobody at the plant touched a wallet.
 
 The desk's model and the three questions are in `docs/DESK.md` (`web/src/desk.ts`, tested without a browser). Every line on it comes from the recorded run, the ledger or Kevin's recorded readings; nothing is invented for the screen.
 
@@ -120,7 +120,7 @@ From `data/replay/transcript.txt` (recorded live on testnet, Oct 29, 2026; in th
 
 Thirteen transactions, two refused by design (the over-limit PO and QuickChem's anchor), none failed.
 
-At the end with "Behind the curtain" on: the desk reads "All clear. PO-1042 is paid." with the order's track from Drafted to Paid and its condition met, and the rail beside it holds one card per transaction with its signer, who paid the gas and the explorer link.
+At the end with "Behind the curtain" on: the desk reads "PO-1042 is paid." with the order's track from Drafted to Paid and its condition met, and the rail beside it holds one card per transaction with its signer, who paid the gas and the explorer link.
 
 ![The Overview at the end of the run with the curtain on, 1280 px: the desk's card reads All clear, PO-1042 is paid, every step of the order closed and each one on file; under it the order's track, Drafted $5,150.00, Approved by Linda, Money set aside, Shipped, Received, QC release ASC-261116-01, Paid $5,150.00, and a green line, Condition met: QC released ASC-261116-01, so Northgate Ingredients was paid $5,150.00; the dark rail on the right holds transaction cards: mark_shipped signed by northgate-ingredients.testnet, confirm_receipt signed by receiving.plant-b with gas paid by dayone-relayer.testnet, qc_release signed by qc.plant-b with gas paid by the relayer and the events ft_transfer, po_released and delivery_recorded, and anchor_batch signed by kevin.plant-b, each with a link to the explorer](docs/readme/paid-curtain-wide.png)
 

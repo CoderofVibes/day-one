@@ -47,17 +47,17 @@ export const NAV: { group: string; items: NavItem[] }[] = [
   {
     group: "Plant",
     items: [
-      { id: "integration", label: "Your integration", icon: "flag" },
       { id: "overview", label: "Overview", icon: "grid" },
-      { id: "map", label: "Plant twin", icon: "cube" },
       { id: "brief", label: "5am brief", icon: "sun" },
       { id: "batches", label: "Batch records", icon: "doc" },
       { id: "inventory", label: "Inventory & forecast", icon: "box" },
-      { id: "lots", label: "Lots & recall", icon: "link" },
-      { id: "schedule", label: "Schedule", icon: "calendar" },
       { id: "purchasing", label: "Purchasing", icon: "cart" },
+      { id: "schedule", label: "Schedule", icon: "calendar" },
+      { id: "lots", label: "Lots & recall", icon: "link" },
+      { id: "map", label: "Plant twin", icon: "cube" },
       { id: "invoices", label: "Invoices", icon: "receipt" },
       { id: "spreadsheets", label: "Spreadsheets", icon: "sheet" },
+      { id: "integration", label: "Your integration", icon: "flag" },
     ],
   },
   {
@@ -100,7 +100,7 @@ function fromUrl(): { page: PageId; plant: PlantCode } {
   const page = q.get("page") as PageId | null;
   const plant = q.get("plant") as PlantCode | null;
   return {
-    page: page && PAGE_IDS.has(page) ? page : "integration",
+    page: page && PAGE_IDS.has(page) ? page : "overview",
     plant: plant && PLANTS.some((p) => p.code === plant) ? plant : "B",
   };
 }
@@ -119,7 +119,7 @@ export function useRoute() {
     q.set("page", merged.page);
     if (merged.plant === "B") q.delete("plant");
     else q.set("plant", merged.plant);
-    if (merged.page === "integration") q.delete("page");
+    if (merged.page === "overview") q.delete("page");
     const search = q.toString();
     history.pushState(null, "", search ? `?${search}` : location.pathname);
     setRoute(merged);
@@ -272,25 +272,45 @@ export function Shell({
   );
 }
 
+/**
+ * A page's header: its title, the page's own controls on the right, and what the page is for
+ * behind an "About this page" button rather than as a sentence under the title (Astra's first
+ * pass, docs/astra/2026-11-01_FirstShift.md A1: a program does not narrate itself).
+ */
 export function PageHeader({
-  crumb,
   title,
-  sentence,
+  help,
   right,
 }: {
-  crumb: string;
   title: string;
-  sentence: string;
+  /** What the page is for, shown on request. */
+  help?: string;
   right?: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(false);
   return (
     <div className="page-header">
-      <div>
-        <div className="crumb">{crumb}</div>
+      <div className="ph-title">
         <h1>{title}</h1>
-        <p>{sentence}</p>
+        {help && (
+          <button
+            type="button"
+            className="ph-help"
+            aria-expanded={open}
+            aria-label={`About ${title}`}
+            title={`About ${title}`}
+            onClick={() => setOpen((o) => !o)}
+          >
+            ?
+          </button>
+        )}
       </div>
       {right && <div className="right">{right}</div>}
+      {help && open && (
+        <p className="ph-about" role="note">
+          {help}
+        </p>
+      )}
     </div>
   );
 }

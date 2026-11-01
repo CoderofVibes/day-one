@@ -97,14 +97,7 @@ import { BooksPane, HqPane, PlantsPane } from "./panes.tsx";
 import { plantsSnapshot, STATIC_BOOKS_URL, STATIC_BRIEF_URL } from "./plants.ts";
 import { RecordNav } from "./RecordNav.tsx";
 import { ReviewPane } from "./ReviewPane.tsx";
-import {
-  audienceOf,
-  type DemoRun,
-  type RunData,
-  run as recorded,
-  type Step,
-  type Tone,
-} from "./run.ts";
+import { audienceOf, type RunData, run as recorded, type Step, type Tone } from "./run.ts";
 import { SavedCounter } from "./SavedCounter.tsx";
 import type { Source } from "./series.ts";
 import { PageHeader, type PageId, type PlantCode, Shell, useRoute } from "./shell.tsx";
@@ -123,6 +116,14 @@ const APPROVE = QUERY.get("page") === "approve";
 /** Judge mode (?judge=1, src/JudgeMode.tsx): recorded data only, so it always opens the replay. */
 const JudgeMode = lazy(() => import("./JudgeMode.tsx"));
 const JUDGE_AT = judgeStart(QUERY.toString());
+
+/**
+ * The product look (shift.css, OPEN_QUESTIONS #46) is for the staff and judge pages only: the
+ * video keeps its frames and Linda's phone its own screen.
+ */
+if (!VIDEO && !APPROVE && typeof document !== "undefined") {
+  document.documentElement.dataset.productUi = "shift";
+}
 
 export function App() {
   if (VIDEO) {
@@ -186,34 +187,27 @@ function WithRail({
 /** Every page but the Overview: the header, then the page's content. */
 function Page({
   label,
-  crumb,
   title,
   sentence,
   className,
   children,
 }: {
   label: string;
-  crumb: string;
   title: string;
+  /** What the page is for: shown behind the header's "About" button, not under the title. */
   sentence: string;
   className?: string;
   children: React.ReactNode;
 }) {
   return (
     <main className={className ? `page v2 ${className}` : "page v2"} aria-label={label}>
-      <PageHeader crumb={crumb} title={title} sentence={sentence} />
+      <PageHeader title={title} help={sentence} />
       {children}
     </main>
   );
 }
 
-const PLANT_NAMES: Record<PlantCode, string> = {
-  A: "Acme Riverside",
-  B: "Hollow Pine Tablet Co.",
-  C: "Acme Lakeview",
-};
-
-/** Each page's header: where it sits, its title and one plain sentence. */
+/** Each page's header: where it sits, its title, and one plain sentence for its "About" button. */
 const PAGE_TEXT: Record<
   Exclude<PageId, "integration" | "overview">,
   { group: "plant" | "money" | "acme" | "hq" | "proof"; title: string; sentence: string }
@@ -221,7 +215,8 @@ const PAGE_TEXT: Record<
   map: {
     group: "plant",
     title: "Plant twin",
-    sentence: "The three plants, the suppliers, the escrow and HQ, as the run moves through them.",
+    sentence:
+      "The three plants, the suppliers, the escrow and HQ, as the run moves through them. Click any area of any plant for what it holds, its equipment and what last happened there.",
   },
   brief: {
     group: "plant",
@@ -330,23 +325,11 @@ const PAGE_TEXT: Record<
   },
 };
 
-/** Where a page sits and its short name, for the global header. */
-function headingOf(page: PageId, plant: PlantCode): { crumb: string; title: string } {
-  if (page === "integration")
-    return { crumb: `${PLANT_NAMES.B} › Your integration`, title: "Your integration" };
-  if (page === "overview") return { crumb: `${PLANT_NAMES[plant]} › Overview`, title: "Overview" };
-  const text = PAGE_TEXT[page];
-  const where =
-    text.group === "plant"
-      ? PLANT_NAMES[plant]
-      : text.group === "acme"
-        ? "Across Acme"
-        : text.group === "proof"
-          ? "Proof"
-          : text.group === "money"
-            ? "Money"
-            : "Acme HQ";
-  return { crumb: `${where} › ${text.title}`, title: text.title };
+/** A page's short name, for the global header. */
+function titleOf(page: PageId): string {
+  if (page === "integration") return "Your integration";
+  if (page === "overview") return "Overview";
+  return PAGE_TEXT[page].title;
 }
 
 /** The pages both sources share; each source hands in its own panes and reads. */
@@ -538,7 +521,6 @@ function Pages({
   return (
     <Page
       label={`${text.title} page`}
-      crumb={headingOf(page, plant).crumb}
       title={text.title}
       sentence={text.sentence}
       {...(page === "map" ? { className: "twin-page" } : {})}
@@ -726,7 +708,7 @@ function ReplayApp() {
   });
   const header = (
     <GlobalHeader
-      title={headingOf(route.page, route.plant).title}
+      title={titleOf(route.page)}
       plant={route.plant}
       onPlant={(plant) => route.go({ plant })}
       clock={headerClock}
@@ -822,7 +804,6 @@ function ReplayApp() {
             )}
             kevin={
               <>
-                <Guide data={data} />
                 {kevin}
                 <ReviewPane
                   review={reviewSnapshot}
@@ -887,53 +868,6 @@ function ReplayApp() {
         </Suspense>
       )}
     </Shell>
-  );
-}
-
-const GUIDE_KEY = "day-one-guide-closed";
-
-/**
- * What a first-time visitor is looking at and how to step through it. Shown on the static
- * replay (a hosted demo); closed for good with ×. Not part of the run, so not in video mode.
- */
-function Guide({ data }: { data: DemoRun }) {
-  const [open, setOpen] = useState(() => {
-    try {
-      return localStorage.getItem(GUIDE_KEY) !== "1";
-    } catch {
-      return true;
-    }
-  });
-  if (!open) return null;
-  const close = () => {
-    setOpen(false);
-    try {
-      localStorage.setItem(GUIDE_KEY, "1");
-    } catch {
-      // Private windows may refuse storage; the guide just comes back next time.
-    }
-  };
-  const s = data.summary;
-  return (
-    <aside className="guide" aria-label="How to read this demo">
-      <button type="button" className="guide-close" onClick={close} aria-label="Close">
-        ×
-      </button>
-      <p>
-        <strong>Day One.</strong> Kevin is an AI purchasing assistant at Hollow Pine, a small tablet
-        plant that has just been bought. He reads batch records, gets quotes and drafts purchase
-        orders; his spending limits, the approvals and the payment on delivery are rules in a
-        contract on NEAR testnet.
-      </p>
-      <p>
-        This page replays a run recorded on {data.recordedAt.slice(0, 10)}
-        {s ? ` (${s.transactions} transactions, ${s.refusedByDesign} refused by design)` : ""}.
-        Press <strong>Play</strong> or the → key. Staff see dollars and POs only; switch on{" "}
-        <strong>Behind the curtain</strong> for every transaction with its explorer link,{" "}
-        <strong>3D</strong> on the map for the twin, and the pages on the left for the integration
-        program, every plant page, the three plants and HQ.
-      </p>
-    </aside>
   );
 }
 
@@ -1235,7 +1169,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
   }));
   const header = (
     <GlobalHeader
-      title={headingOf(route.page, route.plant).title}
+      title={titleOf(route.page)}
       plant={route.plant}
       onPlant={(plant) => route.go({ plant })}
       clock={<HeaderClockLine clock={clock} />}

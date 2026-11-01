@@ -95,6 +95,6 @@ describe("the morning review on Ray's screen", () => {
       for (const line of [p.kevin, ...p.flagged])
         expect(staffWords(line, false)).not.toMatch(/\.testnet\b/);
     }
-    expect(REVIEW_READ_ONLY).toContain("npm run api");
+    expect(REVIEW_READ_ONLY).toContain("drafts unsigned");
   });
 });
