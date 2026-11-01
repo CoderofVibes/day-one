@@ -510,6 +510,17 @@ export function orderRows(
 // ------------------------------------------------------------------ what needs a person
 
 /** The three questions a person asks before acting, answered together. */
+/**
+ * A place on the plant twin: an object id, a department to fall back to when that object is not
+ * drawn yet, and the other places the work touches, which the camera frames with it.
+ */
+export interface Place {
+  label: string;
+  focus: string;
+  fallback: string;
+  also?: string[];
+}
+
 export interface Need {
   id: string;
   who: string;
@@ -521,8 +532,8 @@ export interface Need {
   why: string;
   deciding: string;
   after: string;
-  /** Where on the plant this happens: a twin object id, and a department to fall back to. */
-  where: { label: string; focus: string; fallback: string };
+  /** Where on the plant this happens, and what else the decision touches. */
+  where: Place;
   records: string[];
 }
 
@@ -531,6 +542,14 @@ const ROLES: Record<string, string> = {
   "Linda Park": "Ops director",
   "Tommy Reyes": "Receiving",
   "Priya Natarajan": "QC",
+};
+
+/** A batch record's place: the presses, framed with the line that feeds them. */
+const PRESSES: Place = {
+  label: "Presses, Hollow Pine",
+  focus: "dept-B-compression",
+  fallback: "plant-B",
+  also: ["dept-B-weigh_dispense", "dept-B-blending"],
 };
 
 /** The decision the turn asks for, or null when nobody on the floor is needed. */
@@ -566,11 +585,7 @@ export function needOf(
             )}.${asks.length ? " Kevin could not read every line, so he asks rather than guesses." : ""}`,
           after:
             "Each one posts when you confirm it: what the batch used comes off stock, and Kevin checks what needs ordering.",
-          where: {
-            label: "Presses, Hollow Pine",
-            focus: "dept-B-compression",
-            fallback: "plant-B",
-          },
+          where: PRESSES,
           records: scans.map((i) => i.batchNo as string),
         };
       }
@@ -585,7 +600,7 @@ export function needOf(
         deciding: "Nothing yet. Drop the scan in the folder or upload a photo.",
         after:
           "Kevin reads every line against the recipe and shows you what he found. Nothing posts until you confirm it.",
-        where: { label: "Presses, Hollow Pine", focus: "dept-B-compression", fallback: "plant-B" },
+        where: PRESSES,
         records: [],
       };
     case "confirm": {
@@ -608,7 +623,7 @@ export function needOf(
           : `Whether Kevin read ${batch} right.`,
         after:
           "Kevin posts the batch. What it used comes off stock, and he checks whether anything needs ordering.",
-        where: { label: "Presses, Hollow Pine", focus: "dept-B-compression", fallback: "plant-B" },
+        where: PRESSES,
         records: [batch],
       };
     }
@@ -633,6 +648,7 @@ export function needOf(
           label: "Purchasing office, Hollow Pine",
           focus: "dept-B-purchasing",
           fallback: "plant-B",
+          also: ["escrow"],
         },
         records: [big.po],
       };
@@ -655,6 +671,7 @@ export function needOf(
           label: "Receiving dock, Hollow Pine",
           focus: "dept-B-receiving",
           fallback: "plant-B",
+          also: ["dept-B-warehouse"],
         },
         records: po ? [po] : [],
       };
@@ -677,6 +694,7 @@ export function needOf(
           label: "Quarantine, Hollow Pine",
           focus: lot ?? "dept-B-qc_lab",
           fallback: "dept-B-qc_lab",
+          also: ["dept-B-qc_lab", "escrow"],
         },
         records: [lot, f.delivery?.po].filter((x): x is string => Boolean(x)),
       };
@@ -762,7 +780,7 @@ export interface Handled {
   from?: boolean;
   /** What became of a draft or a suggestion later in the run. */
   outcome?: string;
-  where?: { label: string; focus: string; fallback: string };
+  where?: Place;
 }
 
 const RECORD =
@@ -785,7 +803,7 @@ export function handledFromRun(run: Pick<RunData, "steps" | "approvals">, at: nu
         ...base,
         kind: "done",
         title: `Read batch record ${batch} from the scan`,
-        where: { label: "Presses, Hollow Pine", focus: "dept-B-compression", fallback: "plant-B" },
+        where: PRESSES,
       });
     } else if (t.endsWith(" confirms")) {
       const turn = turnFromStep(run.steps, i);
@@ -852,6 +870,7 @@ export function handledFromRun(run: Pick<RunData, "steps" | "approvals">, at: nu
             label: "Purchasing office, Hollow Pine",
             focus: "dept-B-purchasing",
             fallback: "plant-B",
+            also: ["escrow"],
           },
         });
       } else {
@@ -882,7 +901,12 @@ export function handledFromRun(run: Pick<RunData, "steps" | "approvals">, at: nu
         title: funded
           ? `Sent ${f.big?.po ?? "the order"} to ${f.big?.supplier ?? "the supplier"}; ${f.big?.amount ?? "the money"} set aside until QC releases the lot`
           : `Could not send ${f.big?.po ?? "the order"}`,
-        where: { label: "Escrow, Acme", focus: "escrow", fallback: "hq" },
+        where: {
+          label: "Escrow, Acme",
+          focus: "escrow",
+          fallback: "hq",
+          also: ["dept-B-purchasing"],
+        },
       });
     } else if (t === "Supplier ships") {
       out.push({
@@ -905,6 +929,7 @@ export function handledFromRun(run: Pick<RunData, "steps" | "approvals">, at: nu
           label: "Receiving dock, Hollow Pine",
           focus: "dept-B-receiving",
           fallback: "plant-B",
+          also: ["dept-B-warehouse"],
         },
       });
     } else if (t === "QC release" || t === "QC reject") {
@@ -914,7 +939,12 @@ export function handledFromRun(run: Pick<RunData, "steps" | "approvals">, at: nu
         kind: "decision",
         who: "Priya Natarajan",
         title: `Priya ${released ? "released" : "rejected"} lot ${f.qc?.lot ?? ""}`.trim(),
-        where: { label: "QC lab, Hollow Pine", focus: "dept-B-qc_lab", fallback: "plant-B" },
+        where: {
+          label: "QC lab, Hollow Pine",
+          focus: "dept-B-qc_lab",
+          fallback: "plant-B",
+          also: [f.qc?.lot, released ? "escrow" : null].filter((x): x is string => Boolean(x)),
+        },
       });
     } else if (t === "Paid") {
       out.push({
@@ -927,6 +957,7 @@ export function handledFromRun(run: Pick<RunData, "steps" | "approvals">, at: nu
           label: "Accounting, Hollow Pine",
           focus: "dept-B-accounting",
           fallback: "plant-B",
+          also: ["escrow"],
         },
       });
     }

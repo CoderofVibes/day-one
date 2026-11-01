@@ -380,6 +380,8 @@ export interface CameraRequest {
   seq: number;
   view?: string;
   focus?: Focus;
+  /** Other places framed with `focus`, so the shot takes in all of a task. */
+  also?: Focus[];
 }
 
 const TARGET = new THREE.Vector3();
@@ -498,7 +500,7 @@ function StoryCamera({
       const target = request.view
         ? viewFraming(request.view, size)
         : request.focus
-          ? objectFraming(request.focus, size, size.width >= 768 ? INSPECTOR_PX : 0)
+          ? objectFraming(request.focus, size, size.width >= 768 ? INSPECTOR_PX : 0, request.also)
           : undefined;
       if (target) move(target, FLY_MS, "fly");
     }

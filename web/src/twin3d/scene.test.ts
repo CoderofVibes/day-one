@@ -22,10 +22,13 @@ import {
   isPooled,
   labelPadScale,
   lerpFraming,
+  objectFraming,
+  objectShot,
   projectPoint,
   road3,
   shotFor,
   siteBounds,
+  taskShot,
   type Viewport,
 } from "./scene.ts";
 
@@ -291,5 +294,25 @@ describe("story camera", () => {
     });
     expect(padded.distance).toBeGreaterThan(f.distance);
     expect(projectPoint(f, [0, 0, 0])?.[0]).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe("a task's shot", () => {
+  const purchasing = { kind: "dept", facility: "B", dept: "purchasing" } as const;
+  const escrow = { kind: "pad", pad: "escrow" } as const;
+
+  it("is the object's own shot when the task touches nothing else", () => {
+    expect(taskShot(purchasing)).toEqual(objectShot(purchasing));
+  });
+
+  it("adds the other places at the object's angle, and pulls back to fit them", () => {
+    const shot = taskShot(purchasing, [escrow]);
+    expect(shot.azimuth).toBe(objectShot(purchasing).azimuth);
+    expect(shot.subjects.length).toBe(
+      objectShot(purchasing).subjects.length + objectShot(escrow).subjects.length,
+    );
+    const alone = objectFraming(purchasing, DEFAULT_VIEWPORT, 400);
+    const both = objectFraming(purchasing, DEFAULT_VIEWPORT, 400, [escrow]);
+    expect(both.distance).toBeGreaterThan(alone.distance);
   });
 });

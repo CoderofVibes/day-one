@@ -20,6 +20,7 @@ import {
   type Need,
   needOf,
   nextWords,
+  type Place,
   type PoTrack,
   poTrack,
   primaryLabel,
@@ -36,12 +37,8 @@ import { groupBuy } from "./groupBuy.ts";
 import { RecordLink } from "./kit.tsx";
 import type { RunData } from "./run.ts";
 
-/** A place on the plant twin: an object id, and what to show if that object is not drawn yet. */
-export interface Where {
-  label: string;
-  focus: string;
-  fallback: string;
-}
+/** A place on the plant twin (desk.ts Place): an object, its fallback, what else it touches. */
+export type Where = Place;
 
 const SHOWN = 6;
 
@@ -268,6 +265,7 @@ function KevinCard({
                     label: "Accounting, Hollow Pine",
                     focus: "dept-B-accounting",
                     fallback: "plant-B",
+                    also: ["escrow"],
                   }
                 : { label: `${track.po}'s money, Escrow`, focus: track.po, fallback: "escrow" }
             }

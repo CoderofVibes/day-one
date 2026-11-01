@@ -20,11 +20,13 @@ import { palletsAt, runLotCodes } from "../twin/pallets.ts";
 import { chainLayout, inspectChain } from "./chain.ts";
 import { ObjectsList } from "./ObjectsList.tsx";
 
-/** A place another panel points the twin at: an object, a fallback when it is not drawn, and a
- * sequence number so pointing at the same place twice flies there again. */
+/** A place another panel points the twin at: an object, a fallback when it is not drawn, the
+ * other places the work touches (framed with it when drawn), and a sequence number so pointing at
+ * the same place twice flies there again. */
 export interface TwinFocus {
   id: string;
   fallback: string;
+  also?: string[];
   seq: number;
 }
 
@@ -201,11 +203,12 @@ export function PlantView({
   const pallets = useMemo(() => palletsAt(stock, state, runLots), [stock, state, runLots]);
   const objects = useMemo(() => twinObjects(state, pallets), [state, pallets]);
   const select = useCallback(
-    (id: string | null) => {
+    (id: string | null, also: string[] = []) => {
       setSelected(id);
       setInspectParam(id);
       const o = id ? objects.find((x) => x.id === id) : undefined;
-      if (o) fly({ focus: o.focus });
+      const more = objects.filter((x) => x !== o && also.includes(x.id)).map((x) => x.focus);
+      if (o) fly(more.length ? { focus: o.focus, also: more } : { focus: o.focus });
     },
     [objects, fly],
   );
@@ -217,7 +220,8 @@ export function PlantView({
     const o = id ? objects.find((x) => x.id === id) : undefined;
     if (o) fly({ focus: o.focus });
   }, [objects, fly]);
-  // The desk's "Show on the plant": this run's view, the object if it is drawn, else its fallback.
+  // The desk's "Show on the plant": this run's view, the object if it is drawn, else its fallback,
+  // framed with the other places the work touches so the shot is sized to the task.
   const pointed = useRef(0);
   // biome-ignore lint/correctness/useExhaustiveDependencies: fly once per request, keyed by its seq
   useEffect(() => {
@@ -226,7 +230,7 @@ export function PlantView({
     setGroup(false);
     const o =
       objects.find((x) => x.id === focus.id) ?? objects.find((x) => x.id === focus.fallback);
-    if (o) select(o.id);
+    if (o) select(o.id, focus.also);
   }, [focus?.seq]);
   // The chain layer's nodes, accounts and transactions (chain.ts) are inspected behind the curtain only.
   const chain = useMemo(() => chainLayout(shown), [shown]);

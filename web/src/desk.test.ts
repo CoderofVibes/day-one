@@ -169,6 +169,13 @@ describe("what needs a person", () => {
     expect(n?.after).toContain("Northgate Ingredients is paid $5,150.00");
   });
 
+  it("names the other places each decision touches, so the twin frames all of it", () => {
+    const at = (t: number) => needOf(turnFromStep(run.steps, t), runFacts(run, t - 1), run, t - 1);
+    expect(at(1)?.where.also).toEqual(["dept-B-weigh_dispense", "dept-B-blending"]);
+    expect(at(LINDA)?.where).toMatchObject({ focus: "dept-B-purchasing", also: ["escrow"] });
+    expect(at(QC)?.where.also).toEqual(["dept-B-qc_lab", "escrow"]);
+  });
+
   it("needs nobody on Kevin's own steps", () => {
     const at = idx("Forecast");
     expect(needOf(turnFromStep(run.steps, at + 1), runFacts(run, at), run, at)).toBeNull();

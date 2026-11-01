@@ -120,7 +120,12 @@ export function Overview({
   const seq = useRef(0);
   const twin = useRef<HTMLDivElement>(null);
   const show = useCallback((where: Where) => {
-    setFocus({ id: where.focus, fallback: where.fallback, seq: ++seq.current });
+    setFocus({
+      id: where.focus,
+      fallback: where.fallback,
+      also: where.also ?? [],
+      seq: ++seq.current,
+    });
     twin.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, []);
   return (

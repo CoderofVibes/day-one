@@ -865,16 +865,29 @@ export function objectShot(focus: Focus): Shot {
 }
 
 /**
+ * A task's shot: the picked object at its own angle, with the subjects of the other places the
+ * task touches added, so the frame is sized to all of it (the presses with the line feeding them,
+ * Linda's purchasing office with the escrow her approval funds).
+ */
+export function taskShot(focus: Focus, also: Focus[] = []): Shot {
+  const shot = objectShot(focus);
+  if (also.length === 0) return shot;
+  return { ...shot, subjects: [...shot.subjects, ...also.flatMap((f) => objectShot(f).subjects)] };
+}
+
+/**
  * An object's framing in the part of the stage a panel on the right leaves free: fitted to the
  * narrower width, then the target moved right by half the panel so the object sits mid-left.
+ * `also` widens the shot to the other places the task touches.
  */
 export function objectFraming(
   focus: Focus,
   viewport: Viewport = DEFAULT_VIEWPORT,
   rightPanelPx = 0,
+  also: Focus[] = [],
 ): Framing {
   const free = { width: Math.max(200, viewport.width - rightPanelPx), height: viewport.height };
-  const f = frameShot(objectShot(focus), free);
+  const f = frameShot(taskShot(focus, also), free);
   const shift =
     ((rightPanelPx / 2) * 2 * f.distance * Math.tan((FOV / 2) * (Math.PI / 180))) / viewport.height;
   return clampFraming({
