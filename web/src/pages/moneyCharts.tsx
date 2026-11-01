@@ -553,19 +553,19 @@ export function Ring({
   const c = 2 * Math.PI * r;
   const v = Math.max(0, Math.min(1, value));
   return (
-    <div className="ring">
+    <div className="money-ring">
       <svg viewBox="0 0 128 128" role="img" aria-label={label}>
-        <circle cx="64" cy="64" r={r} className="ring-track" />
+        <circle cx="64" cy="64" r={r} className="money-ring-track" />
         <circle
           cx="64"
           cy="64"
           r={r}
-          className="ring-fill"
+          className="money-ring-fill"
           strokeDasharray={`${(c * v).toFixed(1)} ${c.toFixed(1)}`}
           transform="rotate(-90 64 64)"
         />
       </svg>
-      <div className="ring-text">{children}</div>
+      <div className="money-ring-text">{children}</div>
     </div>
   );
 }
