@@ -237,7 +237,7 @@ Judge verification (no keys): `npm run verify -- <record>` canonicalizes, hashes
 
 ---
 
-## 7. Tests (minimum set, all must pass by Nov 7)
+## 7. Tests (minimum set, all must pass)
 
 spend-policy:
 - within-limit `submit_po` moves funds from budget to escrow; token balance = budget + escrowed

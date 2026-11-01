@@ -28,7 +28,6 @@
 | Event | NEAR HACKATHON — https://nearhackathon.com |
 | Build window | 2026-11-01 00:00 UTC → 2026-11-14 23:59 UTC |
 | Deadline in Oregon time | **Sat Nov 14, 3:59 PM PST** (DST ends Nov 1) |
-| Our internal deadline | **Fri Nov 13** — repo public, README done, demo posted. Submit morning of Nov 14. |
 | Judging / results | Nov 16–18 |
 | Prizes (paid in NEAR) | Grand $55K; per track $10K / $3K / $2K; 13 tracks |
 | Team | Solo |
@@ -113,7 +112,7 @@ The human worked ~10 years at a small manufacturer (~$20M revenue, one plant, ~1
 
 Everything below is in scope. The tiers are **build order and cut order**, not a list of what to drop. Nothing in a later tier starts before the earlier tier is on testnet and committed.
 
-**Tier 0 — the spine (target: on testnet by Nov 7):**
+**Tier 0 — the spine:**
 - Inventory ledger with lot lifecycle, genealogy, formulas, units, cross-facility transfers.
 - Batch-record extraction for one document type with confidence and human confirm.
 - Spend-policy contract: per-agent limits, refused over-limit attempt, director approval method.
@@ -130,7 +129,7 @@ Everything below is in scope. The tiers are **build order and cut order**, not a
 - 2D/2.5D plant map (SVG or Canvas) with department onboarding and quarantine states.
 - Kevin's LLM on NEAR AI Cloud with attestation shown behind the curtain (enables `privacy`).
 
-**Tier 2 — the polish (Nov 10–12, only if Tier 0 and 1 are solid):**
+**Tier 2 — the polish (only once Tier 0 and 1 are solid):**
 - 3D twin in Three.js / React Three Fiber, **procedural geometry only, no Blender pipeline.** Replaces the 2D map if finished; otherwise the 2D map ships.
 - Group purchasing across the 3 plants: supplier agents bid on pooled volume (`swarms`).
 - Kevin's 5am brief: one printable page from Kevin's own data.
@@ -146,7 +145,7 @@ Everything below is in scope. The tiers are **build order and cut order**, not a
 - Real SMS, real suppliers, mainnet operation, legal/compliance claims.
 - NEAR Intents in the spine. Intents is cross-chain settlement and has no testnet; direct NEP-141 USDC on NEAR is the path. Intents appears only as a roadmap item ("pay a supplier on another chain") or, with explicit human approval, a tiny mainnet dry run shown in the video.
 
-**Cut rule:** if on Nov 10 the spine is not flawless on testnet, every Tier 2 item is cut and the remaining days go to the spine, README and demo. Unbuilt features leave no directories or stubs in the repo.
+**Cut rule:** while the spine is not flawless on testnet, no Tier 2 work happens; the spine, README and demo come first. Unbuilt features leave no directories or stubs in the repo.
 
 ---
 
@@ -281,21 +280,11 @@ Directories for Tier 1 and Tier 2 features (`agents/suppliers/`, `web/twin/`) ar
 
 ---
 
-## 12. Timeline
+## 12. Build order
 
-| When | Focus |
-|---|---|
-| Oct 22–31 (prep) | Phase 0: research, specs, plans, fictional data spec, demo script spec, storyboard, skeleton. Human: create testnet accounts (Acme, 3 plants, Kevin, director, suppliers) and the mainnet payout account; obtain testnet USDC; join NEAR Discord; ask about prep rules; confirm X account can post. |
-| Nov 1–4 | Tier 0 part 1: ledger + lot lifecycle + genealogy; seed data and rendered batch records; extraction with confirm; contracts written with tests. |
-| Nov 5–7 | Tier 0 part 2: contracts deployed to testnet; USDC escrow; refused-then-approved flow via relayer; plain UI; demo script; replay mode. **Spine on testnet by Nov 7.** |
-| Nov 8–10 | Tier 1: supplier agents with accounts; three-facility discrepancy; 2D map; NEAR AI Cloud inference + attestation. |
-| Nov 10 | **Cut decision.** Spine flawless → Tier 2 begins. Otherwise Tier 2 is cut. |
-| Nov 10–12 | Tier 2 in order: 3D twin (procedural), group purchasing, 5am brief, NL policy commands, trust ramp, HQ view, Kevin as callable agent, OutLayer spike. |
-| **Nov 13** | Freeze. README final, clean-clone test, repo public (with confirmation), record demo, human posts on X. |
-| Nov 14 (morning PT) | Submit form (human confirms payload). Afternoon = buffer. Deadline 3:59 PM PST. |
-| Nov 15–16 | Human is at the NASA hackathon — nothing scheduled. |
+Prep first (Phase 0: research, specs, plans, the fictional data spec, the demo script and storyboard, the skeleton; the human creates the testnet accounts and the payout account, collects testnet USDC and confirms the X account can post). Then Tier 0, Tier 1 and Tier 2 in the order of §5. Last: README final, clean-clone test, repo public (with confirmation), record the demo, the human posts on X and confirms the submission payload.
 
-Plan for half the human's days to be lost. Claude Code sessions should be resumable from the docs alone.
+Tony and Muse keep the dates outside the repo and say when one matters (Tony, Oct 31; bridge #149). The human is interrupted often, so Claude Code sessions should be resumable from the docs alone.
 
 ---
 
@@ -321,7 +310,7 @@ Plan for half the human's days to be lost. Claude Code sessions should be resuma
 - [ ] `OPEN_QUESTIONS.md` is short, specific, and ready for the human.
 - [ ] Nothing pushed, published, deployed, or posted. No feature code, seed scripts or rendered documents.
 
-**Hackathon (by Nov 13):**
+**Hackathon (at submission):**
 - [ ] Spine works end to end on testnet; the refused-then-approved sequence is on the explorer.
 - [ ] A clean clone runs the demo with one command and no secrets (replay mode with real transaction hashes).
 - [ ] Contract tests pass with one command.

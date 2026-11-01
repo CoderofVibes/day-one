@@ -69,7 +69,7 @@ feeding the sales history into the forecast.
 
 ## 2. Bookkeeper pack
 
-**Gate:** settlement working end-to-end on testnet (Nov 6–7). **Slot:** Nov 10 [IF].
+**Gate:** settlement working end-to-end on testnet. [IF]
 
 **User story.** Marcy Allen does Hollow Pine's books the way she has for a decade
 and closes the month in QuickBooks. She does not care what a blockchain is; she
@@ -124,8 +124,7 @@ anything outside the existing escrow flow; general accounts-payable automation
 
 ## 3. Cross-plant transfer suggestions
 
-**Gate:** forecast job working (Nov 7). **Slots:** Nov 10 [IF] forecast-side
-proposals, Nov 11 [IF] UI card.
+**Gate:** forecast job working. [IF] Forecast-side proposals first, then the UI card.
 
 **User story.** Ray is about to reorder 150 cc bottles for Hollow Pine. Twenty miles
 of paperwork away, Acme Lakeview is sitting on more bottles than it will use, and

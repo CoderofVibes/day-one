@@ -2,6 +2,8 @@
 
 **Handoff brief for Claude, from Anthony (team DadMod). Paste this whole document as your instructions. No images are needed: every visual direction is written out in words.**
 
+*Deadline and freeze wording removed Oct 31 (Tony, bridge #149): the scope is set by the vision, not a countdown.*
+
 ---
 
 ## 0. Read this first
@@ -41,7 +43,7 @@ Anthony's honest read, which I agree with: **Day One shows that Kevin works, but
 
 The bones are excellent. The job now is to make Day One **alive** (time and motion), **deep** (a believable 12-month, three-plant world with real money depth) and **hands-on** (judges can poke it).
 
-You have until **Nov 14, 2026, 3:59 PM PST**. The repo goes public on Nov 13. Do all of this in **one run**, working through the milestones in §6.2 in order.
+Do all of this in **one run**, working through the milestones in §6.2 in order.
 
 ### 0.3 How to read this document
 
@@ -800,7 +802,7 @@ Keep that DNA. It's charming and on-brand. Make it **bigger, deeper, alive, and 
 - **Geometry approach:**
   - Stay **procedural and low-poly** (boxes, extrusions, lathe shapes) like the current buildings.
   - Use a handful of small glTF props only if they're tiny (<150 KB each, Draco/meshopt compressed) and license-clean (CC0 such as Kenney or Quaternius; record the attribution in the README).
-  - Procedural is safer for the deadline and keeps the bundle small.
+  - Procedural is safer and keeps the bundle small.
 - **Code-split the twin.** Lazy-load it so pages without 3D don't pay for three.js.
 
 ### 4.2 Modes and entry points
@@ -1132,7 +1134,7 @@ This is a sketch. Map it onto the existing scene components and keep their names
 8. **Performance work.** Build the tier system, LOD and the flat-fallback data binding.
 9. **Accessibility.** Add the Objects list, keyboard hotspots and live region.
 
-Commit after each step. If time runs short, steps 1–5 and 7 are the must-haves for the video. Riverside and Lakeview interiors and people are the first things to cut.
+Commit after each step. Steps 1–5 and 7 are the must-haves for the video. Riverside and Lakeview interiors and people come last.
 
 ### 4.15 Common pitfalls to avoid
 
@@ -1692,9 +1694,9 @@ Work in small, reviewable commits on a feature branch, or the branch convention 
 - **Add an e2e test** (Playwright, or whatever the repo uses) that runs the golden run plus judge mode plus the tour (at speed) and asserts the key texts, IDs, amounts and explorer URLs. **It must pass with the network blocked**, apart from the static explorer link URLs.
 - Before every milestone commit, run the golden-run test.
 
-### 6.4 Feature freeze
+### 6.4 Releasable at every step
 
-Plan for a **feature freeze on Nov 11**. Nov 12–14 are reserved for Anthony's demo video, README and polish (the repo goes public on Nov 13, and submission closes Nov 14 at 3:59 PM PST). Since you're doing this in one run, the practical meaning is:
+Anthony's demo video, README and polish follow this work. Since you're doing this in one run, the practical meaning is:
 
 - Finish in priority order.
 - Leave the codebase in a **releasable state after every milestone.** Any unfinished feature must sit behind a flag that's off by default and must not appear in judge mode.
@@ -1738,7 +1740,7 @@ Include:
 7. **Tests:** the before and after counts, and the new suites.
 8. **Golden run and judge mode:** the URLs (`?golden=1`, `?judge=1`), the steps, and how long each takes.
 9. **Demo-video helper:** the tour beat list with timestamps and captions, the clean-capture instructions, and the recommended recording settings.
-10. **Known issues and risks** before Nov 14, and what to cut first if something breaks.
+10. **Known issues and risks**, and what to cut first if something breaks.
 11. **A screenshot list:** which pages and states to capture for the README, with their routes.
 
 ---

@@ -1,10 +1,10 @@
 # Open questions for the human
 
-Each question has a recommendation. Reply with the number and "yes" to accept it, or your own answer.
+Each question has a recommendation. Reply with the number and "yes" to accept it, or your own answer. Questions are grouped by subject, not by date: Tony and Muse keep the hackathon dates (Tony, Oct 31; bridge #149).
 
 **Settled by what was built (Claude, Oct 29).** Questions #1–#16 and #19 below were overtaken by events and need nothing from Tony: `acme-holdings.testnet` and `dayone-relayer.testnet` exist (#1); contract tests run on `near-sandbox` (#3); the demo settles in DTUSD, and PO-1047 in real Circle testnet USDC (#4); testnet NEAR and both LLM keys are in place (#5, #6); Claude runs setup unattended (#7, #19, superseded by #25); feature code started Oct 28 (#8, #30); director approval, demo numbers and fictional names are as built (#9–#11, CONTRACTS.md, FICTIONAL_DATA.md); the enclave attestation is verified (`npm run attest`, #12); Intents stays roadmap (#14); disk stays within budget (#16). #13 (no judge quotes) holds for the README. Open for Tony: #39.
 
-## Before Nov 1 (these block the first build days)
+## Setup (these blocked the first build days)
 
 1. **Root testnet account name.** Recommend `acme-holdings.testnet` (free on Oct 22), plus `dayone-relayer.testnet`. Create both soon so nobody takes them. Alternative root: `acme-dayone.testnet`.
 2. **Tool installs.** You install WSL2 Ubuntu (needs admin and a reboot). May Claude then install Node 24 LTS and near-cli-rs on Windows, and Rust plus cargo-near inside WSL2? Total disk is roughly 7–10 GB. Recommend yes. **Answered Oct 25: yes.** Tony runs the WSL2 install; Claude does the rest once WSL2 is up. Node 24 is already installed.
@@ -15,7 +15,7 @@ Each question has a recommendation. Reply with the number and "yes" to accept it
 7. **Who runs the testnet setup script.** It creates sub-accounts and keys on testnet from your local credentials. Recommend: Claude runs it on Nov 4 after you say yes in chat. **Superseded by #25 (Oct 25): Claude runs it unattended.**
 8. **NEAR Discord.** Please ask: "Do research docs, specs and an empty repo skeleton made before Nov 1 count as allowed prep?" and "Is KYC required to receive a prize?" **Checked Oct 27 (Tony):** the prep question has been asked many times in the NEAR Discord; the answer so far is only "see blog post coming out soon". Until that post appears, the conservative rule stands: docs and accounts before Nov 1, no code. Muse watches for the post.
 
-## Before Nov 1 — added Oct 25 (workflow)
+## Workflow — added Oct 25
 
 17. **Two Phase 0 packages exist.** This repo (committed Oct 22) and Muse's "Plan v2" folder (Oct 23–25) were produced separately from the same brief and disagree on fictional names (Hollow Pine / Acme Riverside vs Summit Ridge / Juniper Ridge), demo numbers (PO-1042 = $5,150 for 700 kg ascorbic acid vs $410 for 100 kg Vitamin C), the test token (DTUSD vs mock tUSDC), the data layer (Drizzle vs plain SQLite), the twin order (2D map first vs 3D first) and the plan structure. Recommend: **this repo is canonical**; Muse's three approved Plan v2 features and the pull-forward rule are now folded into `PLAN.md`; `FEATURES_V2.md` and `HANDOFF_FROM_MUSE.md` are kept as inputs. Muse stops editing its own copy of `docs/` and proposes changes through the bridge; Claude commits them. Muse's research findings that this repo lacks get checked against `docs/research/` one by one. **Answered Oct 25: yes, the repo is canonical.** Muse is told in Claude's first bridge message.
 18. **Private GitHub remote.** Muse cannot read this repo (it is only on your PC), so it verifies work from descriptions, not from files, and scheduled unattended Claude runs cannot work on the code either. Recommend: create a **private** GitHub repository and let Claude push to it. Private is not public, so the hackathon's "build during the window" evidence is unaffected and the repo stays hidden until the Nov 13 confirmation. Pushing still needs your "yes" each time until you say otherwise. **Answered Oct 25: yes, with a rules check.** The only prior-work rule is "build the project during the hackathon" (research 19, verified against the live pages). Git history is the evidence. Pushing docs-only commits to a private remote before Nov 1 is prep, not building: the remote changes where the history is stored, not what is in it. Keep this one repo rather than starting a new one on Nov 1 — a judge reading the history then sees research and plans before Nov 1 and the first code commit on or after Nov 1 UTC, which is the cleanest possible evidence; a fresh repo would hide the honest prep trail. The repo stays private until the Nov 13 confirmation. **Still needed from Tony:** the GitHub repo name, created under his account (recommend `day-one`), and a "push" yes for the first push.
@@ -25,21 +25,21 @@ Each question has a recommendation. Reply with the number and "yes" to accept it
 
 29. **Clearance free run.** @Selliks offers hackathon builders a free run of Clearance, a crash test for agents that hold money, on NEAR AI Agent Market. Running it against Kevin and publishing before/after numbers in the README is cheap credibility for the `security` track. It sends Kevin's behaviour to an outside service, so it is yours to approve. Recommend: **not before Nov 12**, only if the spine is green and the run needs nothing public, and only with the repo's own attack-suite results as the fallback if Clearance does not fit. Do not rebuild a crash-test harness ourselves. **Answered Oct 27: extras only if we have time.** The Clearance run (and any other extra) starts as soon as the spine is green and the planned work for that day is done, not on a fixed date; the pull-forward rule applies. Nothing about it is posted without Tony.
 
-## By Nov 4
+## The contract and the demo numbers
 
 9. **What a director approval overrides.** Recommend: for that one PO, it overrides the per-PO limit and the monthly caps, but never the plant budget. Alternative: per-PO limit only.
 10. **Demo numbers.** Kevin's per-PO limit $2,500; PO-1042 is $5,150.00 for 700 kg of ascorbic acid; lab chemicals capped at $2,000 a month. OK?
 11. **Fictional names.** Hollow Pine Tablet Co. (acquired plant), Acme Riverside and Acme Lakeview, staff Ray Delgado, Linda Park, Tommy Reyes, Priya Natarajan, Marcy Allen, Jordan Pike, and suppliers Northgate, Ridgeway, QuickChem and Bayfront. OK, or do you want different names? None should resemble your former employer or its people.
 12. **Privacy track rule.** Recommend tagging `privacy` only if Kevin's extraction and reasoning both run on NEAR AI Cloud's attested enclave models after the Nov 2 accuracy test. OK?
 
-## Before Nov 13
+## The README and the submission
 
 13. **Quoting a judge.** The judge research suggests building the "Why NEAR" line on Haseeb Qureshi's "your agent does not need crypto; you need crypto". Recommend using the idea without quoting him, since he is on the panel.
 14. **NEAR Intents.** Recommend roadmap only. The alternative is a human-signed mainnet transfer of about 1 USDC shown in the video.
 15. **Credit line.** What name goes in "Built by" and in the form's team lead field? **Answered Oct 26:** team name **DadMod**; lead Tony Langford, solo entry (one human, two AI collaborators, stated plainly). Never name his employer; "an advanced nuclear reactor startup" only. Blurbs in `README_TEMPLATE.md` and `DEMO_STORYBOARD.md`. **Form lead name (Tony, Oct 27):** Anthony Langford. His form email is known to Tony and Claude and deliberately not stored in this repo.
 16. **Disk budget.** C: has about 50 GB free, not the ~100 GB in the brief. Recommend capping this project at 15 GB. OK?
 
-## Added Oct 25 — from `docs/phase0/BUILD_ANALYSIS.md` (answer before Nov 2)
+## Added Oct 25 — from `docs/phase0/BUILD_ANALYSIS.md`
 
 21. **One contract instead of two.** Merge `po-escrow` into `spend-policy` now (escrow state lives inside the policy contract; same refusal, approval, release and refund semantics; one deployment). Recommend **yes**: the cross-contract funding hop is the riskiest code on the hero beat and buys only legibility (analysis §4.2). Alternative: keep two contracts and decide on Nov 4 as planned. **Answered Oct 25: yes.** One contract; CONTRACTS.md updated.
 22. **USDC proof optional.** Run PO-1047 in Circle testnet USDC only if your first faucet claim has landed by Nov 4 and the contract is already on testnet; otherwise drop it and state so in Limitations. Recommend **yes** (analysis §4.2). **Answered Oct 25: yes, as a bonus.** Tony expects to collect the USDC; it never gates week 2.

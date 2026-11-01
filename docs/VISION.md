@@ -61,9 +61,9 @@ Today Kevin is a name on the screen: a button is pressed and results appear, and
 
 - **Invisible chain** on staff screens (AGENTS.md). HQ pages show the effect ("refused: over the director's limit"), not the mechanism. The curtain keeps the detail.
 - **Fictional data only.** History, batch records, schedules and invoices come from the deterministic seed (`server/src/seed/`). Charts are computed from the same ledger the rest of the app uses, so the numbers agree across pages; no random numbers in the UI.
-- **No stubs.** A page that is not working by Nov 12 is removed, not left as a placeholder.
+- **No stubs.** A page that is not working is removed, not left as a placeholder.
 - **Honest Kevin.** The hosted demo cannot call the model (it would expose the key), so there Kevin's answers are the recorded ones; `npm run api:live` runs him live. Say which is which.
-- **Schedule.** Submission is Nov 14. The video (RECORDING.md) and the README screenshots are redone after v2, so v2 must be merged by about **Nov 10**. Cut scope rather than slip.
+- **Order.** The video (RECORDING.md) and the README screenshots are redone after v2, so v2 merges before they are.
 - **Checks stay green.** `npm run check`, `demo`, `test:attacks`, `web:data -- --check`, `web:shot`, `web:shot:3d`, `host:build`.
 
 ## 6. Proposal (v2 design session writes this; Tony approves)
@@ -252,28 +252,26 @@ Charts show the ledger or nothing. Today the seed holds 56 days: eight summarize
 | New particles, bloom, HDRI | offline rule, draw-call budget (TWIN3D.md idea 11) | glass materials, edge glow, ground rings |
 | Rebuilding the video page's layout | the beats and clock are checked and the video is recorded after the merge | the video page takes the tokens and the Kevin panel only |
 
-If the schedule slips, the order of further cuts is: Sealed bids and Group purchasing become links to the map's group run and the round file (one day back); the Schedule page keeps its strip and loses the budget chart (half a day); the twin keeps glass and clicking and loses layers (half a day); the rooms re-model waits for v3.
+If a step runs long, the order of further cuts is: Sealed bids and Group purchasing become links to the map's group run and the round file (one day back); the Schedule page keeps its strip and loses the budget chart (half a day); the twin keeps glass and clicking and loses layers (half a day); the rooms re-model waits for v3.
 
 ### 6.9 Build order
 
 Each step ends committed with `npm run check`, `demo`, `demo:group`, `sealed`, `test:attacks`, `web:data -- --check`, `web:shot`, `web:shot:3d` and `host:build` green; the two screenshot scripts get the new page parameter and the sidebar's selectors.
 
-| Date | Step | Done when |
+| # | Step | Done when |
 |---|---|---|
-| **Oct 30** | Seed history (§6.7), `history.ts` with tests, `GET /api/history`, `/api/forecast`, `/api/schedule`; the snapshot export carries them | `npm run demo` prints the same lines; `books`, `erp:reconcile` unchanged; the series tests pass |
-| **Oct 31** | Tokens v2, the shell (sidebar, picker, header, trust marker), `charts.tsx`, number card, chart card, activity feed; Overview with the flat map in its centre | Overview live and static, wide and phone, 0 console errors |
-| **Nov 1** | The Kevin panel and the review sheet; the batch-record check (scan beside the table, flags); the PO draft; Tommy's and Priya's sheets | the run clicks through from Overview with every confirm going through a sheet; transcript unchanged |
-| **Nov 2** | Batch records, Inventory & forecast (three tabs, the stock line), 5am brief | the three pages on both sources |
-| **Nov 3** | Schedule, Purchasing (three tabs), Invoices | the pages; the held invoice in its sheet |
-| **Nov 4** | Spreadsheets (the wizard in the sheet), Three plants, ERP connection (with the proxy and the recorded views) | the pages; `npm run erp` beside the API shows live bills |
-| **Nov 5** | HQ: the six pages, the plain-words limit change, the credentials and sealed-round exports | HQ pages on both sources; `web:data -- --check` green |
-| **Nov 6** | Twin: the site plan in `layout.ts` (footprints per building and zone, three plants) and the building kit in `buildings.ts` (hall with sawtooth bays, warehouse with docks and canopy, office, lab, utilities, gatehouse, trees, trucks, roads); the flat map on the same footprints; shots refitted | `web:shot:3d` 0 label problems, under 90 draw calls, both runs; `scene.test.ts` green |
-| **Nov 7** | Twin: glass materials, edge glow, lit windows, rings, the layer bar, zoom and fit buttons; click to the area sheet, equipment rows, activity pings; the Plant map page | every building and bay opens its sheet with ledger data |
-| **Nov 8** | The hall's bays after the rooms image if it has arrived; the curtain rail on the tokens; the video page on the shell | `?video=1` plays every beat on the fixed clock at 1080p |
-| **Nov 9** | Phone pass on every page, dark theme, README screenshot list, `host:build`, the clean-clone script, UI_DESIGN.md §10 "what v2 built" | all checks green; the branch rebased on main |
-| **Nov 10** | Merge | PLAN.md's "In progress" line removed; the main session told |
-
-Buffer: Nov 8 is a half day and Nov 9 is a check day; a slip of more than a day takes the cuts in §6.8 in order.
+| 1 | Seed history (§6.7), `history.ts` with tests, `GET /api/history`, `/api/forecast`, `/api/schedule`; the snapshot export carries them | `npm run demo` prints the same lines; `books`, `erp:reconcile` unchanged; the series tests pass |
+| 2 | Tokens v2, the shell (sidebar, picker, header, trust marker), `charts.tsx`, number card, chart card, activity feed; Overview with the flat map in its centre | Overview live and static, wide and phone, 0 console errors |
+| 3 | The Kevin panel and the review sheet; the batch-record check (scan beside the table, flags); the PO draft; Tommy's and Priya's sheets | the run clicks through from Overview with every confirm going through a sheet; transcript unchanged |
+| 4 | Batch records, Inventory & forecast (three tabs, the stock line), 5am brief | the three pages on both sources |
+| 5 | Schedule, Purchasing (three tabs), Invoices | the pages; the held invoice in its sheet |
+| 6 | Spreadsheets (the wizard in the sheet), Three plants, ERP connection (with the proxy and the recorded views) | the pages; `npm run erp` beside the API shows live bills |
+| 7 | HQ: the six pages, the plain-words limit change, the credentials and sealed-round exports | HQ pages on both sources; `web:data -- --check` green |
+| 8 | Twin: the site plan in `layout.ts` (footprints per building and zone, three plants) and the building kit in `buildings.ts` (hall with sawtooth bays, warehouse with docks and canopy, office, lab, utilities, gatehouse, trees, trucks, roads); the flat map on the same footprints; shots refitted | `web:shot:3d` 0 label problems, under 90 draw calls, both runs; `scene.test.ts` green |
+| 9 | Twin: glass materials, edge glow, lit windows, rings, the layer bar, zoom and fit buttons; click to the area sheet, equipment rows, activity pings; the Plant map page | every building and bay opens its sheet with ledger data |
+| 10 | The hall's bays after the rooms image if it has arrived; the curtain rail on the tokens; the video page on the shell | `?video=1` plays every beat on the fixed clock at 1080p |
+| 11 | Phone pass on every page, dark theme, README screenshot list, `host:build`, the clean-clone script, UI_DESIGN.md §10 "what v2 built" | all checks green; the branch rebased on main |
+| 12 | Merge | PLAN.md's "In progress" line removed; the main session told |
 
 ### 6.10 Mockups
 
@@ -367,7 +365,7 @@ Build order, each step committed with the checks green, sized in build sessions 
 | 6 | **Twin**: the large plant in `layout.ts` and `buildings.ts`, glass, zones, click to the area sheet, equipment rows, pings, layers, the Plant map page; the flat map on the same footprints (done Oct 30, docs/TWIN3D.md "The site plan": glass transmission and pad clicks not built, said there) | `web:shot:3d` 0 label problems, both runs |
 | 7 | **Finish**: video page on the shell, phone and dark passes, screenshots, README screenshot list, `host:build`, the clean clone (done Oct 30: the video page plays on the new twin unchanged, as §6.8 planned; screens in `docs/v2/after/`, list in §6.12.7) | all checks green; merge |
 
-Target: steps 1–4 by Nov 3, 5–7 by Nov 6, merged by Nov 7. Nov 8–10 stay as buffer and for the video storyboard rewrite (main session). If a step runs long, the order above is also the order of importance.
+The video storyboard rewrite follows the merge (main session). The order above is also the order of importance.
 
 #### 6.12.7 Screens for the README after the merge
 

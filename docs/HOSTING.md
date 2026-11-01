@@ -61,5 +61,5 @@ The API adds two things a judge could not get from the static page: the import w
 ## Fallbacks
 
 - **Netlify Drop:** drag the `web/dist` folder onto app.netlify.com/drop (free Netlify account). Same files; `_headers` works there too.
-- **GitHub Pages:** only once the repo is public (Pages from a private repo needs a paid plan). Not before Nov 13.
+- **GitHub Pages:** only once the repo is public (Pages from a private repo needs a paid plan).
 - **No hosted demo:** the video and the README's keyless commands carry the demo; Q-012 asks for a hosted demo only if there is one.

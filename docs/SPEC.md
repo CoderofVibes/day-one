@@ -105,7 +105,7 @@ Each step must pass its acceptance criteria in both **live mode** (testnet) and 
 
 ## 3. Track-fit matrix
 
-Tag a track only if its row is true on Nov 13.
+Tag a track only if its row is true at submission.
 
 | Track | Feature that earns the tag | Artifact a judge sees | Tier |
 |---|---|---|---|
