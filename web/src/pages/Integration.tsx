@@ -174,7 +174,6 @@ export function Integration({
   // Live, the stage in progress; recorded, the start of the story.
   const shown = open ?? (source.live ? journey.current : 0);
   const stage = journey.stages[shown] ?? journey.stages[0];
-  const pct = Math.round((journey.done / journey.stages.length) * 100);
   return (
     <main className="page v2" aria-label="Your integration">
       <PageHeader
@@ -190,46 +189,7 @@ export function Integration({
         }
       />
       <JourneyMap journey={journey} shown={shown} onPick={setOpen} />
-      <div className="journey">
-        <nav className="card-v2 stages" aria-label="Stages">
-          <div className="chart-head">
-            <h3>Progress</h3>
-            <span className="right muted small">
-              {journey.done} of {journey.stages.length} done
-            </span>
-          </div>
-          <div
-            className="progress"
-            role="progressbar"
-            aria-valuenow={pct}
-            aria-valuemin={0}
-            aria-valuemax={100}
-          >
-            <i style={{ width: `${pct}%` }} />
-          </div>
-          <ol>
-            {journey.stages.map((s) => (
-              <li key={s.key}>
-                <button
-                  type="button"
-                  className={s.stage === shown ? "st on" : "st"}
-                  aria-current={s.stage === shown ? "step" : undefined}
-                  onClick={() => setOpen(s.stage)}
-                >
-                  <span className={s.done ? "n done" : s.stage === journey.current ? "n now" : "n"}>
-                    {s.done ? "✓" : s.stage}
-                  </span>
-                  <span>
-                    <b>
-                      {s.stage} · {s.title}
-                    </b>
-                    <small>{s.summary}</small>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ol>
-        </nav>
+      <div className="journey journey-one">
         {stage && (
           <StageScreen
             stage={stage}

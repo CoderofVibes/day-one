@@ -1,5 +1,5 @@
-/* Kevin's activity feed (ActivityRail.tsx): a 320 px column beside the Overview from 1280 px,
-   a 48 px strip when collapsed, a drawer below 1280 px. Colour carries meaning only (§5.1):
+/* Kevin's activity feed (ActivityRail.tsx): a 320 px column beside the Overview from 1440 px,
+   a 48 px strip when collapsed, a drawer below 1440 px. Colour carries meaning only (§5.1):
    amber waiting, red refused, green released, gold money, blue in progress, cyan chain. */
 
 .with-feed {
@@ -360,4 +360,9 @@
   margin: 0;
   min-width: 0;
   border-width: 0 0 1px;
+}
+
+.feed-tabs {
+  display: inline-flex;
+  margin: 0 0 var(--s-2);
 }

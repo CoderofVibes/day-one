@@ -1,6 +1,6 @@
 // Kevin's activity feed as a right rail on the Overview (docs/UPGRADE_BRIEF.md §1.2): his status
 // at the top, filter chips, then what he did, newest first, from activity.ts over the clock's
-// events. On wide screens (≥1280 px) the rail is a column beside the page that collapses to a
+// events. On wide screens (≥1440 px; Astra's first pass gives a laptop's width to the desk) the rail is a column beside the page that collapses to a
 // strip with an unread count; with the curtain on, the feed sits above the curtain in the same
 // column, so turning the curtain on reveals the chain without hiding what Kevin is doing.
 // Narrower, the feed is a drawer opened from the step player (FeedButton).
@@ -30,7 +30,7 @@ import type { PageId, PlantCode } from "./shell.tsx";
 // ------------------------------------------------------------------ the rail's own state
 
 const STORE_KEY = "day-one-feed";
-const WIDE = "(min-width: 1280px)";
+const WIDE = "(min-width: 1440px)";
 
 interface RailState {
   collapsed: boolean;
@@ -82,7 +82,7 @@ function useRail(): RailState {
   return useSyncExternalStore(subscribeRail, railState, railState);
 }
 
-/** Opens the feed: the drawer below 1280 px, the rail expanded wider. The header's Kevin chip calls it. */
+/** Opens the feed: the drawer below 1440 px, the rail expanded wider. The header's Kevin chip calls it. */
 export function openFeed(): void {
   const wide = typeof matchMedia === "undefined" || matchMedia(WIDE).matches;
   setRail(wide ? { collapsed: false } : { drawer: true });
@@ -163,6 +163,13 @@ export function ActivityFrame({
     return () => window.removeEventListener("keydown", onKey);
   }, [drawer]);
 
+  // With the curtain on, Kevin's activity and the evidence behind it are two tabs of one panel,
+  // not one long column above another (Astra's first pass, A2); turning the curtain on shows the
+  // evidence.
+  const [tab, setTab] = useState<"activity" | "evidence">("evidence");
+  useEffect(() => {
+    if (curtain) setTab("evidence");
+  }, [curtain]);
   const watcher = <Unread clock={props.clock} context={props.context} visible={visible} />;
   if (wide) {
     return (
@@ -170,8 +177,28 @@ export function ActivityFrame({
         {watcher}
         <div className="page-wrap">{children}</div>
         <aside className={curtain ? "feed-col curtain-on" : "feed-col"}>
-          {collapsed ? <FeedStrip /> : feed}
-          {curtain && !collapsed && <div className="feed-curtain">{curtainPanel}</div>}
+          {collapsed ? (
+            <FeedStrip />
+          ) : curtain ? (
+            <>
+              <fieldset className="seg feed-tabs" aria-label="Show">
+                {(["activity", "evidence"] as const).map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    aria-pressed={tab === k}
+                    className={tab === k ? "on" : undefined}
+                    onClick={() => setTab(k)}
+                  >
+                    {k === "activity" ? "Kevin's activity" : "Evidence"}
+                  </button>
+                ))}
+              </fieldset>
+              {tab === "activity" ? feed : <div className="feed-curtain">{curtainPanel}</div>}
+            </>
+          ) : (
+            feed
+          )}
         </aside>
       </div>
     );
@@ -245,7 +272,7 @@ function FeedStrip() {
   );
 }
 
-/** "Kevin's activity" with the unread count, for the step player below 1280 px. */
+/** "Kevin's activity" with the unread count, for the step player below 1440 px. */
 export function FeedButton() {
   const wide = useWide();
   const { unread } = useRail();

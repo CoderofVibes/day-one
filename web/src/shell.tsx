@@ -86,9 +86,7 @@ export const NAV: { group: string; items: NavItem[] }[] = [
   },
   {
     group: "Proof",
-    items: [
-      { id: "arena", label: "Attack arena", icon: "target" },
-    ],
+    items: [{ id: "arena", label: "Attack arena", icon: "target" }],
   },
 ];
 

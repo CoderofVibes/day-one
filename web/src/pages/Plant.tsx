@@ -818,17 +818,20 @@ export function SchedulePage({ plant, source }: PageProps) {
       n: inWeek.length,
     };
   });
+  const window14 = `${shortDay(from)} to ${shortDay(from + 13 * 86_400_000)}`;
   return (
     <>
-      <div className="tiles-4">
+      <p className="kevin-sentence small">{schedule.sentence}</p>
+      <Gantt schedule={schedule} />
+      <div className="tiles-4 tiles-compact">
         <StatTile
-          label="Batches, next 14 days"
+          label={`Batches, ${window14}`}
           value={in14.length}
           context={`${schedule.batches.length} in four weeks`}
           why={schedule.sentence}
         />
         <StatTile
-          label="Materials short for them"
+          label={`Short, ${window14}`}
           value={short.length}
           tone={short.length ? "waiting" : undefined}
           context={short.length ? short.join(", ") : "everything on hand"}
@@ -842,7 +845,7 @@ export function SchedulePage({ plant, source }: PageProps) {
         <StatTile
           label="Materials, at last price"
           value={compactDollars(cost14)}
-          context="for the next 14 days"
+          context={window14}
           why={`What the next 14 days' batches draw, at the last price paid: ${dollars(cost14)}.${schedule.unpriced.length ? ` ${schedule.unpriced.join(", ")} not yet bought on a PO.` : ""}`}
         />
         <StatTile
@@ -856,8 +859,6 @@ export function SchedulePage({ plant, source }: PageProps) {
           }
         />
       </div>
-      <p className="kevin-sentence small">{schedule.sentence}</p>
-      <Gantt schedule={schedule} />
       <div className="split-wide">
         <section className="card-v2" aria-label="The next four weeks">
           <div className="chart-head">

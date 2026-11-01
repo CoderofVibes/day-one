@@ -1,6 +1,6 @@
 // Money (docs/UPGRADE_BRIEF.md §2.4, §5.6): the plant's money over twelve months, every figure
 // from server/src/finance/money.ts at the sim clock's time, each with its formula, its window and
-// the records behind it. The hero is "Kevin paid for himself": realized savings since Day One
+// the records behind it. The hero is "Savings and cost": realized savings since Day One
 // over his cost, identified savings only when asked. Refused attacks are payments protected, a
 // separate figure. Riverside and Lakeview show their savings until their twelve-month worlds land.
 
@@ -235,19 +235,19 @@ function Hero({ filter, at, curtain }: { filter: MoneyPlant; at: string; curtain
   const protectedUsdc = filter === "all" || filter === "B" ? SAVINGS.protected.totalUsdc : 0;
   const span = Math.max(1, (Date.parse(at) - Date.parse(`${t0}T00:00:00.000Z`)) / 86_400_000);
   return (
-    <section className="panel money-hero" aria-label="Kevin paid for himself">
+    <section className="panel money-hero" aria-label="Savings and cost">
       <Ring
         value={paid.breakEven}
         label={`Break-even: ${Math.round(paid.breakEven * 100)}% of Kevin's cost covered`}
       >
         <b className="num">{paid.ratio === null ? "—" : `${paid.ratio}×`}</b>
-        <small>his cost</small>
+        <small>of cost</small>
       </Ring>
       <div className="hero-main">
         <div className="hero-eyebrow">
-          Kevin paid for himself
+          Savings and cost
           <Info
-            title="Kevin paid for himself"
+            title="Savings and cost"
             formula={`Value = Σ realized savings since Day One (${t0})${withIdentified ? " plus every identified saving" : ""}. Cost = the assumed fee ($${c.feeUsdPerMonth}/month per plant Kevin runs at, fictional), charged per month started since Day One since a subscription bills monthly + NEAR AI Cloud inference (each recorded answer's tokens × an assumed $${c.inputUsdPerMTok}/M in, $${c.outputUsdPerMTok}/M out) + testnet gas ≈ $0. Ratio = value ÷ cost; the ring fills to break-even.`}
             window={`${t0} to the clock`}
             records={[{ label: "the savings ledger below", page: "money" }]}
@@ -980,12 +980,8 @@ export function MoneyTile({ clock, plant }: { clock: Clock; plant: PlantCode }) 
   const minute = useClock(clock, (s) => Math.floor(s.simNow / MINUTE_MS));
   const { paid, savings } = tally(plant, atOf(minute * MINUTE_MS));
   return (
-    <a
-      className="stat money-tile overview-money"
-      href="?page=money"
-      aria-label="Kevin paid for himself"
-    >
-      <div className="stat-label">Kevin paid for himself</div>
+    <a className="stat money-tile overview-money" href="?page=money" aria-label="Savings and cost">
+      <div className="stat-label">Savings and cost</div>
       <div className="stat-value num">{dollars(paid.valueUsdc)}</div>
       <div className="stat-delta">
         {paid.ratio === null ? "Day One starts Nov 9" : `${paid.ratio}× his cost`} ·{" "}

@@ -88,26 +88,32 @@ export function JourneyMap({
         })}
       </ol>
       {plant && (
-        <figure className="jm-plant">
-          <div
-            className="jm-floor"
-            role="img"
-            aria-label={`${plant.name}: ${plant.online} of ${plant.departments.length} departments on Day One`}
-          >
-            {plant.departments.map((d) => (
-              <span
-                key={d.code}
-                className={`jm-dept ${d.status}`}
-                title={`${d.label}: ${d.status}`}
-              >
-                {d.label}
-              </span>
-            ))}
-          </div>
-          <figcaption className="small muted">
-            {plant.online} of {plant.departments.length} departments online
-          </figcaption>
-        </figure>
+        <details className="jm-coverage">
+          <summary>
+            Department coverage · {plant.online} of {plant.departments.length} online at the
+            program's end
+          </summary>
+          <figure className="jm-plant">
+            <div
+              className="jm-floor"
+              role="img"
+              aria-label={`${plant.name}: ${plant.online} of ${plant.departments.length} departments on Day One`}
+            >
+              {plant.departments.map((d) => (
+                <span
+                  key={d.code}
+                  className={`jm-dept ${d.status}`}
+                  title={`${d.label}: ${d.status}`}
+                >
+                  {d.label}
+                </span>
+              ))}
+            </div>
+            <figcaption className="small muted">
+              {plant.online} of {plant.departments.length} departments online
+            </figcaption>
+          </figure>
+        </details>
       )}
     </section>
   );

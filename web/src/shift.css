@@ -311,3 +311,52 @@ html[data-product-ui="shift"] .sidebar-bottom .trust {
   margin-bottom: var(--s-2);
   border-bottom: 1px solid var(--line);
 }
+
+/* ---------- Money: a working figure, not a billboard (Astra A2) ---------- */
+html[data-product-ui="shift"] .money-hero .hero-number {
+  font-size: var(--fs-hero);
+  line-height: var(--lh-hero);
+}
+html[data-product-ui="shift"] .money-hero .money-ring {
+  width: 88px;
+  height: 88px;
+}
+html[data-product-ui="shift"] .gh {
+  min-height: 52px;
+}
+
+/* A row of figures that supports the work above it, not a wall of cards (Astra A2: Purchasing,
+   Schedule). */
+html[data-product-ui="shift"] .tiles-compact .stat {
+  padding: 12px 14px;
+  gap: 4px;
+}
+html[data-product-ui="shift"] .tiles-compact .stat-value {
+  font-size: 24px;
+  line-height: 30px;
+}
+html[data-product-ui="shift"] .tiles-compact .tile-visual,
+html[data-product-ui="shift"] .tiles-compact .spark-wrap {
+  max-height: 44px;
+  overflow: hidden;
+}
+
+/* Your integration: one stage list (the stepper above), the selected stage full width, the
+   department floor plan folded away (Astra A2). */
+.journey.journey-one {
+  grid-template-columns: minmax(0, 1fr);
+}
+.jm-coverage > summary {
+  cursor: pointer;
+  color: var(--ink-2);
+  font-size: var(--fs-label);
+  padding: 4px 0;
+}
+.jm-coverage[open] > summary {
+  margin-bottom: var(--s-2);
+}
+
+/* The Plant twin page already says "Plant twin": the frame's own title goes (Astra A2). */
+html[data-product-ui="shift"] .twin-page-frame .twin-bar > h2 {
+  display: none;
+}

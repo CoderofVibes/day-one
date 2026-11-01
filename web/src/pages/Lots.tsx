@@ -154,66 +154,6 @@ export function LotsView({
 
   return (
     <>
-      <div className="cards-4">
-        <NumberCard label="Lots" value={lotCount.toLocaleString("en-US")}>
-          <small className="muted">every plant, bought in and made</small>
-        </NumberCard>
-        <NumberCard label="Batches" value={batchCount.toLocaleString("en-US")}>
-          <small className="muted">each with the lots it drew</small>
-        </NumberCard>
-        <NumberCard label="Lot-to-batch links" value={links.toLocaleString("en-US")}>
-          <small className="muted">from the batch records</small>
-        </NumberCard>
-        <NumberCard label="Traced as far as" value={tracedTo}>
-          <small className="muted">
-            {g.has.shipments
-              ? "lots, batches, finished goods, shipments"
-              : "no finished-goods lots or shipments recorded yet"}
-          </small>
-        </NumberCard>
-      </div>
-
-      <section className="card-v2 drill" aria-label="Recall drill">
-        <div className="drill-top">
-          <div>
-            <h3>Recall drill</h3>
-            <p className="small muted">
-              {target
-                ? `A mock supplier recall notice for ${target.code}, the ascorbic acid lot that went into the most batches. Kevin traces it; nothing in the records changes.`
-                : "No ascorbic acid lot has gone into a batch yet, so there is nothing to drill on."}
-            </p>
-          </div>
-          {drill ? (
-            <button type="button" className="btn" onClick={endDrill}>
-              End drill
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="btn primary"
-              onClick={runRecall}
-              disabled={!target?.vendorLot}
-            >
-              Run recall drill
-            </button>
-          )}
-        </div>
-        {drill && (
-          <DrillPanel
-            drill={drill}
-            g={g}
-            shown={shown}
-            held={held}
-            drafts={drafts}
-            anchor={anchor}
-            curtain={curtain}
-            onHold={() => setHeld(new Set(drill.hold.map((h) => h.lot)))}
-            onDrafts={() => setDrafts(true)}
-            onAnchor={anchorTrace}
-          />
-        )}
-      </section>
-
       <section className="card-v2 lineage-search" aria-label="Find a lot">
         <h3>
           <label htmlFor="lineage-q">Find a lot</label>
@@ -266,6 +206,42 @@ export function LotsView({
           ))}
       </section>
 
+      <section className="card-v2 drill" aria-label="Recall drill">
+        <div className="drill-top">
+          <div>
+            <h3>Recall drill</h3>
+            <p className="small muted">
+              {target
+                ? `A mock supplier recall notice for ${target.code}, the ascorbic acid lot that went into the most batches. Kevin traces it; nothing in the records changes.`
+                : "No ascorbic acid lot has gone into a batch yet, so there is nothing to drill on."}
+            </p>
+          </div>
+          {drill ? (
+            <button type="button" className="btn" onClick={endDrill}>
+              End drill
+            </button>
+          ) : (
+            <button type="button" className="btn" onClick={runRecall} disabled={!target?.vendorLot}>
+              Run recall drill
+            </button>
+          )}
+        </div>
+        {drill && (
+          <DrillPanel
+            drill={drill}
+            g={g}
+            shown={shown}
+            held={held}
+            drafts={drafts}
+            anchor={anchor}
+            curtain={curtain}
+            onHold={() => setHeld(new Set(drill.hold.map((h) => h.lot)))}
+            onDrafts={() => setDrafts(true)}
+            onAnchor={anchorTrace}
+          />
+        )}
+      </section>
+
       {t && start && (
         <div className="split-wide">
           <Tabs
@@ -296,6 +272,25 @@ export function LotsView({
           <NodePanel g={g} nodeKey={picked ?? t.start} lookOf={lookOf} />
         </div>
       )}
+
+      <section className="cards-4 tiles-compact lots-coverage" aria-label="Coverage">
+        <NumberCard label="Lots" value={lotCount.toLocaleString("en-US")}>
+          <small className="muted">every plant, bought in and made</small>
+        </NumberCard>
+        <NumberCard label="Batches" value={batchCount.toLocaleString("en-US")}>
+          <small className="muted">each with the lots it drew</small>
+        </NumberCard>
+        <NumberCard label="Lot-to-batch links" value={links.toLocaleString("en-US")}>
+          <small className="muted">from the batch records</small>
+        </NumberCard>
+        <NumberCard label="Traced as far as" value={tracedTo}>
+          <small className="muted">
+            {g.has.shipments
+              ? "lots, batches, finished goods, shipments"
+              : "no finished-goods lots or shipments recorded yet"}
+          </small>
+        </NumberCard>
+      </section>
     </>
   );
 }

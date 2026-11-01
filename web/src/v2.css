@@ -2359,3 +2359,18 @@ ul.plain {
     transition: none;
   }
 }
+
+/* The arena on a phone: the attack and its proof as two tabs (Astra's first pass, A2). */
+.arena-tabs {
+  display: none;
+}
+@container (max-width: 700px) {
+  .arena-tabs {
+    display: inline-flex;
+  }
+  .arena-grid.show-attack .arena-log,
+  .arena-grid.show-proof .arena-list,
+  .arena-grid.show-proof .arena-detail {
+    display: none;
+  }
+}

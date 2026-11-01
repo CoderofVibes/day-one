@@ -49,6 +49,7 @@ const clock = () =>
 export function ArenaConsole({ arena }: { arena: Arena }) {
   const first = arena.cases[0] as ArenaCase;
   const [selected, setSelected] = useState(first.n);
+  const [pane, setPane] = useState<"attack" | "proof">("attack");
   /** How many of each case's timeline lines are showing (0 = not fired this visit). */
   const [shown, setShown] = useState<Record<number, number>>({});
   const [tried, setTried] = useState<ReadonlySet<number>>(new Set());
@@ -104,6 +105,7 @@ export function ArenaConsole({ arena }: { arena: Arena }) {
   };
 
   const c = arena.cases.find((x) => x.n === selected) ?? first;
+  // On a phone the attack and its proof are two tabs; wider, they sit side by side.
   const t = tally(arena.cases, tried);
   const day = recordedDay(arena.recordedAt);
   return (
@@ -123,7 +125,20 @@ export function ArenaConsole({ arena }: { arena: Arena }) {
           {all ? "Running…" : `Try all ${arena.cases.length}`}
         </button>
       </div>
-      <div className="arena-grid">
+      <fieldset className="seg arena-tabs" aria-label="Show">
+        {(["attack", "proof"] as const).map((k) => (
+          <button
+            key={k}
+            type="button"
+            aria-pressed={pane === k}
+            className={pane === k ? "on" : undefined}
+            onClick={() => setPane(k)}
+          >
+            {k === "attack" ? "Attack" : "Proof"}
+          </button>
+        ))}
+      </fieldset>
+      <div className={`arena-grid show-${pane}`}>
         <section className="card-v2 arena-list" aria-label="Attacks">
           <div className="arena-list-head">
             <h3>
