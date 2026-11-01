@@ -229,7 +229,7 @@ A NetSuite adapter behind the existing connector interface; real SMS; a login pr
 
 ## Built with
 
-Built by DadMod (Tony Langford, solo entrant) with Claude Code; the code was written with Claude Code. Planning docs: `docs/`. Conventions for coding agents: `AGENTS.md`. License: MIT (`LICENSE`).
+Built by DadMod (Tony Langford, solo entrant) with Claude Code; the code was written with Claude Code. GPT-6 Astra (OpenAI's Codex CLI) is a second seat that proposes and critiques but does not write code: its first pass designed the product's look, Kevin's introduction and the first-shift walkthrough, which Claude built (`docs/astra/`, `docs/ASTRA.md`). Planning docs: `docs/`. Conventions for coding agents: `AGENTS.md`. License: MIT (`LICENSE`).
 
 DadMod is one human and two AI collaborators. Tony Langford is a chemical engineer with ten years on manufacturing floors, now a system engineer at an advanced nuclear reactor startup, building this between feedings of a newborn (hence the name: dad bod, but for shipping code). Muse, an AI project manager, keeps the plan honest. Claude, an AI engineer, writes the code. Kevin, the AI assistant in the product, does the paperwork. Tony runs the plant.
 
