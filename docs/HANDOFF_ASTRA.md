@@ -107,7 +107,7 @@ From `AGENTS.md` and the brief. These are hard, not preferences.
 11. **No stubs.** Nothing half-built ships; AI judges read the whole repo. A feature either works and is tested, or is absent.
 12. **Every command in AGENTS.md was run.** Add a row only on the day a command first works.
 
-Workflow: Claude commits to this repo (git is the single source of truth). Recommended for Astra: work on branches named `astra/<topic>` from `main`, keep `npm run check` green on every commit, and leave merging to Claude, so the proof-point test and the replays are re-run on the merged tree. Tony decides otherwise.
+Workflow (Tony, Nov 1; OPEN_QUESTIONS #44): Claude commits to this repo (git is the single source of truth). Astra is the second seat and does not implement: each pass is a proposal or an audit written to `docs/astra/`, under the seat brief in `docs/ASTRA.md`. Claude builds what Tony takes up, so the proof-point test and the replays are re-run on every change.
 
 ## 8. Known gaps and weak spots
 
