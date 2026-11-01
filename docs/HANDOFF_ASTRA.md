@@ -114,7 +114,7 @@ Workflow: Claude commits to this repo (git is the single source of truth). Recom
 Honest list, most important first. Each was found by a build run or by the merge checks on Oct 31.
 
 **Stale documentation**
-- `README.md` is the Oct 29 draft. It predates the whole upgrade: it says "Plant map" and a "3D switch" (now "Plant twin", 3D is the only map), describes the group buy as "three plants pool" (two plants paid, Lakeview declined), shows Oct 30 screenshots, and does not mention the clock, the twelve-month worlds, the Money page, the scorecards, Lots & recall, the arena, Talk to Kevin, judge mode or the tour. Its rewrite is planned for Nov 12–13 (`docs/README_TEMPLATE.md`).
+- `README.md` was rewritten Oct 31 for the build as it stands (Kevin's desk first, then the proof), with screenshots in `docs/readme/`. Re-check it against the code before submission.
 - `docs/UPGRADE_LOG.md` holds the recon and the cuts but not the per-branch record; this file is that record (§10). The brief asks for `UPGRADE_REPORT.md` (§6.7); not written.
 
 **Brief items not built** (beyond Tony's cuts)

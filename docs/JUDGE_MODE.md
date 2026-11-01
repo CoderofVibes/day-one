@@ -37,6 +37,6 @@ Every link comes from the recordings the pages already read (`web/src/data/demo-
 
 ## Not built
 
-- Talk to Kevin has no recorded answers yet (`web/src/data/ask.json`), so step 9 shows the curtain's attestation chips and the re-verification command, not a signed answer.
+- Step 9 shows the curtain's attestation chips and the re-verification command; the six recorded, signed answers on Talk to Kevin (`web/src/data/ask.json`, `npm run ask`, recorded Oct 31) are not yet linked from the step.
 - The spotlight is a dimmed page with a cut-out; it does not block clicks on the page.
 - Linda's phone in the replay shows only the recorded reply; NO says what the recording holds instead. Live mode keeps the existing Up next phone on the Overview.

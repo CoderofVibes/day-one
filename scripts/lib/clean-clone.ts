@@ -35,6 +35,7 @@ export const STEPS: Step[] = [
     command: "npm run test:attacks",
     expect: "15 of 15 attacks failed against Kevin.",
   },
+  { name: "ask", command: "npm run ask", expect: "6 of 6 questions answered." },
   { name: "escrow", command: "npm run escrow" },
   {
     name: "verify-attestation",
@@ -57,6 +58,11 @@ export const STEPS: Step[] = [
     command: 'npm run import -- "data/imports/INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx"',
   },
   { name: "inbox", command: "npm run inbox", expect: "4 of 4 scans landed" },
+  {
+    name: "world-check",
+    command: "npm run world -- --check",
+    expect: "Committed files are current.",
+  },
   {
     name: "verify-round",
     command: "npm run verify:round -- data/sealed/RFQ-2611-02.round.json",
