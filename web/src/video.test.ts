@@ -94,6 +94,28 @@ describe("the video timeline", () => {
   });
 });
 
+describe("Kevin's desk in the take", () => {
+  it("shows the desk for Ray's morning, the limit, Linda's approval and the payment", () => {
+    expect(BEATS.filter((b) => b.panel === "desk").map((b) => b.id)).toEqual([
+      "morning-review",
+      "refusal",
+      "approve",
+      "paid",
+    ]);
+    // The morning sits before Ray's first step; the limit, the approval and the payment on theirs.
+    const steps = (id: string) => BEATS.find((b) => b.id === id)?.shots.map((s) => s.step);
+    expect(steps("morning-review")).toEqual([0]);
+    expect(steps("refusal")).toEqual([6, 7]);
+    expect(steps("approve")).toEqual([8]);
+    expect(steps("paid")).toEqual([12, 13]);
+  });
+
+  it("keeps Linda's phone for her approval in the tour", () => {
+    expect(TOUR_BEATS.find((b) => b.id === "approve")?.panel).toBe("phone");
+    expect(TOUR_BEATS.find((b) => b.id === "paid")?.panel).toBe("desk");
+  });
+});
+
 describe("the tour", () => {
   it("plays the take's beats in order, with the three extra beats before the close", () => {
     const ids = TOUR_BEATS.map((b) => b.id);

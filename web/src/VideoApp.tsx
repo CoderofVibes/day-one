@@ -15,9 +15,11 @@ import batchRecordPhoto from "../../data/batch-records/BR-B-1045.jpg?url";
 import packingSlipPhoto from "../../data/packing-slips/NG-PS-60417.jpg?url";
 import { Curtain } from "./Curtain.tsx";
 import arena from "./data/arena.json";
+import { turnFromStep } from "./desk.ts";
 import { Pill, StepCard } from "./feed.tsx";
 import { UsdcCard } from "./JudgeMode.tsx";
 import { groupPurchase, usd } from "./judge.ts";
+import { Desk, ReplayDeskActions } from "./KevinDesk.tsx";
 import { reviewSnapshot } from "./mail.ts";
 import { LindaPhone } from "./Phone.tsx";
 import { fundingOf, HeldInvoiceCard, MassBalanceBlock } from "./panes.tsx";
@@ -134,7 +136,13 @@ export default function VideoApp() {
 
   return (
     <div
-      className={["video", curtain && "curtain-on", tour && "tour", capture && "capture"]
+      className={[
+        "video",
+        curtain && "curtain-on",
+        beat.panel === "desk" && "desk-on",
+        tour && "tour",
+        capture && "capture",
+      ]
         .filter(Boolean)
         .join(" ")}
       data-beat={beat.id}
@@ -162,6 +170,7 @@ export default function VideoApp() {
           />
         </div>
         <div className="video-panel" ref={panel}>
+          {beat.panel === "desk" && <DeskPanel data={data} at={step} />}
           {beat.panel === "review" && <Review curtain={curtain} />}
           {beat.panel === "feed" && <Feed data={data} upTo={step} beat={beat} />}
           {beat.panel === "invoice" && <Invoice data={data} />}
@@ -317,6 +326,28 @@ function Feed({ data, upTo, beat }: { data: RunData; upTo: number; beat: Beat })
         />
       ))}
     </section>
+  );
+}
+
+/**
+ * Kevin's desk at this step (docs/DESK.md), as Ray's Overview shows it in the replay: the decision
+ * that needs a person beside what Kevin handled, with the morning review's drafts among it. The
+ * buttons are the replay's own; the take never clicks, so the clock alone moves the run.
+ */
+function DeskPanel({ data, at }: { data: RunData; at: number }) {
+  const turn = turnFromStep(data.steps, at + 1);
+  const none = () => undefined;
+  return (
+    <Desk
+      run={data}
+      at={at}
+      turn={turn}
+      review={reviewSnapshot}
+      inbox={null}
+      inventory={plantsSnapshot.inventory}
+      actions={<ReplayDeskActions turn={turn} data={data} at={at} onNext={none} onReplay={none} />}
+      onShow={none}
+    />
   );
 }
 

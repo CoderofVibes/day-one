@@ -76,6 +76,10 @@ Only three moments move, and `prefers-reduced-motion` turns them off:
 
 A routine success, such as PO-1041 placed inside the limits, lands with the same slide-in and its check mark draws.
 
+## The video and the tour
+
+The take (`?video=1`) and the tour (`?video=1&tour=1`) show the desk on four beats: Ray's morning (what Kevin handled overnight beside the batch record that needs Ray), the order meeting Kevin's limit, Linda's approval landing in the history, and QC's release paying Northgate. So all three motions above play on the recorded steps. The desk gets the wider share of the frame there; the tour keeps Linda's phone for her approval (`docs/RECORDING.md` §5 and §7).
+
 ## Judge mode
 
 The first two steps now open on the desk. Step 1 is Kevin's handled work, at "Small PO", where PO-1041 links to its transaction. Step 2 is Linda's decision card at "Big PO", with the contract's verbatim refusal. The approval, the QC release in 3D, then the attacks, group buy, reconciliation, USDC, attestation and the recall drill follow as before (`docs/JUDGE_MODE.md`).

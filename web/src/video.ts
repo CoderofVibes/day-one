@@ -7,6 +7,7 @@
 export type Panel =
   | "before"
   | "title"
+  | "desk"
   | "review"
   | "feed"
   | "invoice"
@@ -41,7 +42,9 @@ export interface Beat {
  * The storyboard's shot list, timed against the recorded run (15 steps, 0–14). The voice-over
  * drafts are the captions, reworded where the product does something slightly different: Tommy
  * picks the slip on screen (reading the slip photo is not built), and the mass balance shows the
- * two batches the ledger holds (115.2 kg), not the storyboard's three.
+ * two batches the ledger holds (115.2 kg), not the storyboard's three. Four beats show Kevin's
+ * desk (docs/DESK.md) instead of the floor cards: Ray's morning, the order meeting Kevin's limit,
+ * Linda's approval landing in the history, and QC's release paying the supplier.
  */
 export const BEATS: Beat[] = [
   {
@@ -63,16 +66,16 @@ export const BEATS: Beat[] = [
     captions: ["This is Kevin. He's an AI assistant the new owners send in on day one."],
   },
   {
-    // Research 24 §2: Kevin's morning review of Ray's mailbox (web/src/mail.ts), read on the
-    // ledger the run begins with, so it sits on step 0 before Ray's day starts. Video-only:
-    // Ray signs in the live run; the take shows the drafts and signs nothing.
+    // Ray's morning on Kevin's desk (docs/DESK.md): what Kevin handled overnight, his morning
+    // review of the mailbox among it (research 24 §2, web/src/mail.ts), beside the one thing that
+    // needs Ray. Read on the ledger the run begins with, so it sits on step 0. Nothing is signed.
     id: "morning-review",
-    title: "Morning review",
-    panel: "review",
+    title: "Kevin's desk",
+    panel: "desk",
     shots: [{ step: 0, ms: 9_000 }],
     captions: [
-      "Overnight, Kevin read Ray's weekend mail and did the work: three drafts wait for his signature.",
-      "The email asking for new bank details? Refused, and flagged for Ray to see.",
+      "Ray starts his day on Kevin's desk: what Kevin already handled, and what needs Ray.",
+      "Overnight Kevin drafted replies for Ray to sign and refused a new-bank-details email.",
     ],
   },
   {
@@ -114,20 +117,20 @@ export const BEATS: Beat[] = [
   {
     id: "refusal",
     title: "The refusal",
-    panel: "feed",
+    panel: "desk",
     shots: [
       { step: 6, ms: 2_500 },
       { step: 7, ms: 7_500 },
     ],
     captions: [
       "Kevin isn't allowed to spend that much. Not by a setting in our app.",
-      "The rule lives on NEAR, and the chain itself said no.",
+      "The rule lives on NEAR, and the chain itself said no. So the order becomes one decision for Linda.",
     ],
   },
   {
     id: "approve",
     title: "Approve by text",
-    panel: "feed",
+    panel: "desk",
     shots: [{ step: 8, ms: 10_000 }],
     captions: [
       "Linda approves from her phone. That YES becomes a transaction signed by her own account.",
@@ -164,7 +167,7 @@ export const BEATS: Beat[] = [
   {
     id: "paid",
     title: "QC release → paid",
-    panel: "feed",
+    panel: "desk",
     shots: [
       { step: 12, ms: 5_000 },
       { step: 13, ms: 5_000 },

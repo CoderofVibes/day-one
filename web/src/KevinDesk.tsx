@@ -19,11 +19,14 @@ import {
   handledFromRun,
   type Need,
   needOf,
+  nextWords,
   type PoTrack,
   poTrack,
+  primaryLabel,
   type RunFacts,
   runFacts,
   type SourcingCheck,
+  secondaryLabel,
   sourcingCheck,
   type Turn,
   waitingBeside,
@@ -553,4 +556,54 @@ function Mark({ kind }: { kind: Handled["kind"] }) {
     default:
       return null;
   }
+}
+
+/**
+ * The desk's buttons in the replay: the decision in the person's words, which steps the recorded
+ * run on; the other answer is shown but off, since the recording took the first one.
+ */
+export function ReplayDeskActions({
+  turn,
+  data,
+  at,
+  onNext,
+  onReplay,
+}: {
+  turn: Turn;
+  data: RunData;
+  at: number;
+  onNext: () => void;
+  onReplay: () => void;
+}) {
+  const facts = runFacts(data, at);
+  const last = data.steps.length - 1;
+  const other = secondaryLabel(turn, facts);
+  const next = data.steps[at + 1];
+  const label =
+    turn.kind === "done" && at >= last
+      ? primaryLabel(turn, facts)
+      : turn.kind === "kevin" || turn.kind === "supplier" || turn.kind === "done"
+        ? nextWords(next?.title)
+        : primaryLabel(turn, facts);
+  return (
+    <>
+      <button
+        type="button"
+        className="primary"
+        onClick={turn.kind === "done" && at >= last ? onReplay : onNext}
+      >
+        {label}
+      </button>
+      {other && (
+        <button
+          type="button"
+          className="danger"
+          disabled
+          title={`The recorded run's answer was "${primaryLabel(turn, facts)}"`}
+        >
+          {other}
+        </button>
+      )}
+    </>
+  );
 }

@@ -68,16 +68,7 @@ import {
   storedClock,
   useClock,
 } from "./clock.ts";
-import {
-  friendlyAction,
-  nextWords,
-  primaryLabel,
-  runFacts,
-  secondaryLabel,
-  type Turn,
-  turnFromLive,
-  turnFromStep,
-} from "./desk.ts";
+import { friendlyAction, type Turn, turnFromLive, turnFromStep } from "./desk.ts";
 import { stepTimes } from "./engine.ts";
 import { initials, Pill, StaffFeed } from "./feed.tsx";
 import { GlobalHeader, type Person } from "./Header.tsx";
@@ -85,7 +76,7 @@ import { ImportPane } from "./ImportPane.tsx";
 import { InboxPane } from "./InboxPane.tsx";
 import { postDecision, postDropScans } from "./journey.ts";
 import { judgeStart } from "./judgeRoute.ts";
-import type { Where } from "./KevinDesk.tsx";
+import { ReplayDeskActions, type Where } from "./KevinDesk.tsx";
 import { type Action, actionsFor, actorOf, roleLabel } from "./live.ts";
 import { REVIEW_READ_ONLY, reviewSnapshot } from "./mail.ts";
 import ApproveApp from "./Phone.tsx";
@@ -1603,53 +1594,3 @@ function summaryLine(state: LiveState) {
 
 /** The phases whose buttons sit on the desk's decision card. */
 const DESK_PHASES = new Set(["upload", "confirm", "reply", "receive", "qc"]);
-
-/**
- * The desk's buttons in the replay: the decision in the person's words, which steps the recorded
- * run on; the other answer is shown but off, since the recording took the first one.
- */
-function ReplayDeskActions({
-  turn,
-  data,
-  at,
-  onNext,
-  onReplay,
-}: {
-  turn: Turn;
-  data: RunData;
-  at: number;
-  onNext: () => void;
-  onReplay: () => void;
-}) {
-  const facts = runFacts(data, at);
-  const last = data.steps.length - 1;
-  const other = secondaryLabel(turn, facts);
-  const next = data.steps[at + 1];
-  const label =
-    turn.kind === "done" && at >= last
-      ? primaryLabel(turn, facts)
-      : turn.kind === "kevin" || turn.kind === "supplier" || turn.kind === "done"
-        ? nextWords(next?.title)
-        : primaryLabel(turn, facts);
-  return (
-    <>
-      <button
-        type="button"
-        className="primary"
-        onClick={turn.kind === "done" && at >= last ? onReplay : onNext}
-      >
-        {label}
-      </button>
-      {other && (
-        <button
-          type="button"
-          className="danger"
-          disabled
-          title={`The recorded run's answer was "${primaryLabel(turn, facts)}"`}
-        >
-          {other}
-        </button>
-      )}
-    </>
-  );
-}

@@ -272,3 +272,13 @@
   fill: var(--refused);
   stroke: var(--refused);
 }
+
+/* Kevin's desk beats: the desk is the work, so it takes the wider share and the twin steps back
+   beside it. The desk's own container queries lay it out for the width it gets. */
+.video.desk-on .video-main {
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+}
+
+.video.desk-on .video-panel {
+  overflow: hidden;
+}
