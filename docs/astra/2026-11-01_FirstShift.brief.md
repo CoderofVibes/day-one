@@ -1,0 +1,44 @@
+# Brief: the first shift (Nov 1, 2026)
+
+From Claude, on Tony's instructions in Claude's chat. Seats 3 (product and visual direction) and 4 (divergent ideation), with seat 5 (consistency) on every line Kevin speaks. Effort: extra high. Write the pass to `docs/astra/2026-11-01_FirstShift.md` and add its row to `docs/astra/INDEX.md`. Tony wants Astra as the creative lead on this; Claude builds from the pass, so make it buildable: concrete enough that an engineer can implement it without guessing.
+
+## The goal
+
+Tony wants Day One to feel like a real program a person opens on their first shift, not a web page explaining itself. Three parts, in his words first:
+
+1. **Appearance.** "I'm interested in it improving the UI and overall appearance. Right now there are things like just a sentence at the top of the screen. That isn't something that you see in other programs, like the webpage narrating things." Every page has a sentence under its title (`PageHeader`'s `sentence` in `web/src/shell.tsx`), and several pages carry more narration: the Overview's "Day One. Kevin is an AI purchasing assistant…" card, the twin's "Click any area of any plant…", the arena's "Recorded mode: each attack replays…". Find all of it in the screenshots and decide where that information should live instead (or whether it should go). Then look past the narration at the overall look: what would make this read as a polished operations product (think Linear, Stripe Dashboard, a modern MES or ERP done well), and what in the current look holds it back.
+2. **The first-shift intro.** "The user opens the program as if they're actually clocking on for their first shift where they'll be using Day One, and they open it for the first time. They see a blank screen, with either a line across the middle that is Kevin, and moves as Kevin gives its introduction ('Welcome to Day One, I'm here to help your transition and integration to *Company's* Day One program'), or some Kevin avatar (need to make one) with the program faded in the background."
+3. **The walkthrough.** "After the intro, a scripted walk through the program with Kevin takes place: 'I've already gone through your email and have developed a to-do list, an attention list, and response drafts for you.' Or 'On this screen, you can see 12 months of historical data as I've integrated with the ERP system. In this section, batch records uploaded are automatically passed through the ERP and monitored in this program.'" Tony says these are examples to give the idea, not the script. Write the real one.
+
+## What to deliver
+
+A. **The appearance pass.** The rule for where explanation lives once it leaves the page body (Kevin's walkthrough, empty states, tooltips, a help panel, or nowhere), then page by page what changes. Then the overall look: typography, density, page header, sidebar, colour, surfaces, motion. Name the CSS tokens (`web/src/tokens.css`) and components to change and to what, in values, not adjectives. Rank by impact.
+B. **The intro.** At least three concepts for Kevin's presence (Tony's line that moves as Kevin speaks, an avatar, and at least one of your own), each in a few sentences, then pick one and design it fully: the beats with timings, what is on screen at each, how Kevin's form behaves while speaking, idle and finished, how the program fades in behind, Kevin's exact lines, how the person continues or skips, and how it is replayed later. If Kevin gets a form or avatar, specify it so it can be drawn in SVG or CSS with no image assets (shapes, sizes, colours from the tokens, its states and their motion). Text appears as captions; say whether sound or speech belongs (the demo runs in judges' browsers, often muted) and why.
+C. **The walkthrough.** Screen by screen: the page, what is highlighted or framed, Kevin's line, what the person does to go on, about how long. Seven to twelve stops. Start from what this person needs on day one (what Kevin did overnight, the one thing that needs them, where things are on the plant) before the product tour. Say how it relates to judge mode (`?judge=1`, `web/src/judge.ts`): one shared engine, two scripts, or merged.
+D. **The build plan.** In order, each step sized (small, medium, large) with what it touches, and what to cut first if it runs long. Mark which steps are the biggest visible gain for a judge's first minute.
+
+## Facts Kevin's lines must stay true to (seat 5)
+
+Kevin may only say what the build does. Check every line against these and the files below; if Tony's example overstates, write the true version and say what changed.
+
+- **Who clocks on.** Ray Delgado, purchaser at Hollow Pine Tablet Co., which Acme Holdings has just bought ("Plant B"). The app opens at Monday, Nov 9, 2026, 5:00 AM plant time, on the recorded run. The program is Acme's Day One program for the plant; Kevin is the AI assistant Acme sends in.
+- **The mail.** Kevin read Ray's weekend mail overnight: ten invented messages; three drafts ready for Ray to sign (BR-B-1049 moved to Thursday at Linda's request, BR-B-1048 resized, a note on Northgate's card about a price notice), one refused (an email asking to pay Northgate at new bank details, with a hidden line to an assistant), six need nothing. Signing changes the schedule or a vendor's note, never money. `npm run review`, `web/src/mail.ts`.
+- **What needs Ray at 5:00.** Kevin's desk asks him to hand over this week's batch record (BR-B-1045) from the binder or a photo; Kevin reads it against the recipe and nothing posts until Ray confirms. Two more wait beside it: the mail drafts, and Riverside's review of a correction Kevin drafted. `docs/DESK.md`.
+- **History.** Each plant has twelve months of history (Dec 1, 2025 to Dec 28, 2026 on the clock): generated from the plant's seed around its real records, recorded for the Nov 9–16 run, simulated after it; every screen labels which. `docs/WORLD.md` §1. Do not have Kevin say he "integrated twelve months from the ERP": the history is the plant's own records; the ERP is the acquirer's books.
+- **The ERP.** Acme's books live in a mock ERP shaped like NetSuite (`docs/ERP.md`): vendor master, bills, the three-way match, the general ledger. Day One owns lots, batch records and escrow; the connector moves records by PO number. Kevin pays only bills the ERP has matched. Batch records do not go to the ERP; they post to the plant's ledger after Ray confirms, and their fingerprint is recorded on chain. Check `docs/ERP.md` before writing any ERP line.
+- **The chain is invisible to staff.** Staff screens show dollars, POs and approvals; wallets, keys, gas, hashes and "NEAR" only behind the curtain, in the arena and in judge mode. Ray's intro and walkthrough never mention blockchain, tokens or wallets. "Spending rules Acme set that Kevin cannot go around" is the staff-facing way to say it.
+- **The limit.** Kevin may spend up to $2,500 on one order and $60,000 a month; over that, Linda Park (ops director) approves by text.
+- **Fiction.** Every company, person and number is invented. No compliance claims ("audit-friendly records", never GMP or 21 CFR Part 11).
+
+## Constraints
+
+- **Stack.** React 19.3 and Vite 8, plain CSS with tokens (`web/src/tokens.css`), light and dark themes, three.js for the twin. No new heavy dependencies and no external assets or fonts that need the network: the static build must run offline, and the hosted demo has a strict content policy.
+- **It must not get in the way.** Judges open the link and may click straight to anything. The intro runs on first open only, can be skipped at once and replayed from the header; it never blocks `?judge=1`, `?video=1` (the recorded video, which must stay frame-exact), `?page=approve` (Linda's phone) or a deep link to a page. Reduced motion turns movement into cuts. It works at 390 px.
+- **Keep what works.** Kevin's desk (`docs/DESK.md`) is the product's centre and its three questions (why you, what you decide, what happens next) stay. The twin, judge mode and the arena stay. Restyle freely; do not remove features.
+- **Honest data.** Every number on screen and in Kevin's lines comes from the recording, the ledger or the generated world, never made up for the intro.
+
+## Files
+
+Screenshots are attached (1280 px light and 390 px dark): Your integration, Overview at 5:00 AM and at Linda's decision, Plant twin, Purchasing, Inventory, Schedule, Lots & recall, Three plants, Money, Talk to Kevin, the attack arena, the end of the run with the curtain on.
+
+Read, in this order and no more unless you need a detail: `docs/HANDOFF_ASTRA.md` §1, §3, §5, §7 and §8; `docs/DESK.md`; `web/src/shell.tsx` (the shell and `PageHeader`); `web/src/tokens.css`; `web/src/Header.tsx`; `web/src/pages/Integration.tsx` (its stage 0 is "Meet Kevin"); `web/src/judge.ts` and `web/src/JudgeMode.tsx`; `docs/ERP.md` §1–3; `docs/WORLD.md` §1; `web/src/mail.ts`. Run nothing; this pass is design, not an audit.
