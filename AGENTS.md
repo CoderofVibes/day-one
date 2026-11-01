@@ -98,7 +98,7 @@ Muse and Claude talk through the **muse-claude-bridge**: a hosted relay with a l
 
 - **Unattended runs (Tony, Oct 25).** A scheduled Claude Code task runs the `continue-plan` skill back to back (checked every 15 minutes, Tony Oct 28) on Tony's PC. Permission guardrails live in `.claude/settings.json`: an allowlist for routine work and testnet, and deny rules for mainnet, force-pushes, remote changes and the submission API.
 - **Review on demand (Tony, Oct 28; schedule paused Oct 29, Tony runs it as needed).** A second scheduled task, `day-one-review` (Fable 5.1, Auto mode), reviews everything since the last `Review:` commit, queues verified fixes under "Review fixes" at the top of `docs/PLAN.md`, and sends Muse a signed status report for Tony. Builder runs take those fixes first.
-- **Autonomous by default.** Tony is on paternity leave and interrupted often. Work through `docs/PLAN.md` in priority order without asking permission between tasks; when a task finishes early, pull the next one forward. Idle time waiting for Tony is the main schedule risk.
+- **Autonomous by default.** Tony is on paternity leave and interrupted often. Work through `docs/PLAN.md` in priority order without asking permission between tasks; when a task finishes early, pull the next one forward.
 - **Check in only when needed, and keep working while you wait.** A question for Tony goes into `docs/OPEN_QUESTIONS.md` with a numbered recommendation and, when the bridge is up, a one-line note to Muse. Then continue on work that does not depend on the answer. If nothing can proceed without it, the recommendation is the default after 24 hours — except for the hard rules below, which have no default.
 - **Git is the single source of truth.** One writer: Claude commits every change to this repo. Muse proposes doc and plan changes through the bridge; Claude applies and commits them. The bridge's shared plan is a short status board (what is done, what is next, what is blocked), not a second copy of `PLAN.md`.
 - **Session start:** read the bridge inbox, `docs/PLAN.md` and `git log --oneline -15`. **Session end:** commit, then `post_status` with what landed, what is next and any blocker. Every message to Muse states where the repo stands in terms of PLAN.md items.
@@ -123,7 +123,6 @@ Muse and Claude talk through the **muse-claude-bridge**: a hosted relay with a l
 - **Spine first.** Do not start a Tier 1 or Tier 2 item while a Tier 0 item is broken. See `docs/PLAN.md` for the cut list.
 - **Enforced, not logged.** Spending limits and approvals are contract rules. Never add an off-chain check that duplicates or replaces a contract rule.
 - **Invisible chain in the UI.** Staff-facing screens show dollars, POs and approvals. Wallets, keys, gas and tokens appear only in the behind-the-curtain view.
-- **No stubs for unbuilt features.** If a feature is not built by Nov 13, delete its folder and any references. AI judges read the whole repo.
 - **Verify before you assume.** NEAR APIs change. Check `docs/research/` first, then current docs: the `near-docs` MCP server (https://docs.near.org/mcp, live docs search, read-only, added Oct 27) or https://docs.near.org/llms.txt. Never use the NEAR MCP Server (github.com/nearai/near-mcp): it holds private keys. Record any new finding in the relevant research file.
 
 ## README rules
