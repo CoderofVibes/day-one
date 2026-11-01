@@ -201,6 +201,23 @@ html[data-product-ui="shift"] .desk-card.need {
     --waiting: #f2c35c;
     --paid: #74c69d;
     --money: #e0b23a;
+    --cyan-ink: #7fd3e6;
+    --paper-inset: #2a3640;
+    --paper-rule: #43515c;
+    --paper-mark: #edf2f5;
+    --paper-dot: #202a32;
+    --paper-dot-line: #6b7d89;
+    --paper-chip: #2f3c46;
+    --paper-chip-ink: #c9d3da;
+    --paper-ok-bg: rgb(116 198 157 / 0.16);
+    --paper-ok-ink: #9fe0bd;
+    --paper-warn: #f2c35c;
+    --paper-warn-bg: rgb(242 195 92 / 0.14);
+    --paper-warn-ink: #f5d48a;
+    --paper-info-bg: rgb(156 192 245 / 0.14);
+    --paper-info-ink: #a9c8f5;
+    --paper-bad: #ff9a92;
+    --paper-bad-bg: rgb(255 154 146 / 0.14);
     background: #202a32;
   }
 }
@@ -218,6 +235,23 @@ html[data-product-ui="shift"][data-theme="dark"] .desk .paper {
   --waiting: #f2c35c;
   --paid: #74c69d;
   --money: #e0b23a;
+  --cyan-ink: #7fd3e6;
+  --paper-inset: #2a3640;
+  --paper-rule: #43515c;
+  --paper-mark: #edf2f5;
+  --paper-dot: #202a32;
+  --paper-dot-line: #6b7d89;
+  --paper-chip: #2f3c46;
+  --paper-chip-ink: #c9d3da;
+  --paper-ok-bg: rgb(116 198 157 / 0.16);
+  --paper-ok-ink: #9fe0bd;
+  --paper-warn: #f2c35c;
+  --paper-warn-bg: rgb(242 195 92 / 0.14);
+  --paper-warn-ink: #f5d48a;
+  --paper-info-bg: rgb(156 192 245 / 0.14);
+  --paper-info-ink: #a9c8f5;
+  --paper-bad: #ff9a92;
+  --paper-bad-bg: rgb(255 154 146 / 0.14);
   background: #202a32;
 }
 

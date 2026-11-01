@@ -155,12 +155,12 @@
   background: rgb(56 189 214 / 0.12);
 }
 .card-who .channel.working {
-  color: #545e6b;
-  background: #eef1f4;
+  color: var(--ink-2);
+  background: var(--paper-chip, #eef1f4);
 }
 .card-who .channel.ok {
   color: var(--paid);
-  background: #e2f3e8;
+  background: var(--paper-ok-bg, #e2f3e8);
 }
 .card-title {
   margin: 0;
@@ -314,13 +314,13 @@
   gap: 6px;
   padding: 12px 14px;
   border-radius: 12px;
-  background: #f6f7f9;
+  background: var(--paper-inset, #f6f7f9);
 }
 .lm-bar {
   position: relative;
   height: 10px;
   border-radius: 6px;
-  background: #e4e8ec;
+  background: var(--paper-rule, #e4e8ec);
   overflow: visible;
 }
 .lm-in,
@@ -353,7 +353,7 @@
   width: 2px;
   margin-left: -1px;
   border-radius: 1px;
-  background: #11151a;
+  background: var(--paper-mark, #11151a);
   animation: knock 420ms ease-out 1150ms both;
 }
 .lm-labels {
@@ -374,13 +374,13 @@
   position: absolute;
   right: 0;
   font-weight: 700;
-  color: #8a5a00;
+  color: var(--paper-warn, #8a5a00);
 }
 .lm-resolve {
   margin: 2px 0 0;
   font-size: 13px;
   font-weight: 600;
-  color: #8a5a00;
+  color: var(--paper-warn, #8a5a00);
   animation: rise 360ms ease-out 1300ms both;
 }
 
@@ -390,7 +390,7 @@
   gap: 10px;
   padding: 14px 14px 12px;
   border-radius: 12px;
-  background: #f6f7f9;
+  background: var(--paper-inset, #f6f7f9);
 }
 .track-head {
   display: flex;
@@ -421,7 +421,7 @@
   width: 100%;
   height: 2px;
   margin-right: 8px;
-  background: #dfe4e9;
+  background: var(--paper-rule, #dfe4e9);
   z-index: 0;
 }
 .track-stages li.st-done + li::before,
@@ -434,8 +434,8 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 2px solid #c6ced6;
-  background: #fff;
+  border: 2px solid var(--paper-dot-line, #c6ced6);
+  background: var(--paper-dot, #fff);
 }
 .st-done .st-dot {
   border-color: #2b8a63;
@@ -463,7 +463,7 @@
   color: var(--ink);
 }
 .st-stopped .st-label {
-  color: #8a5a00;
+  color: var(--paper-warn, #8a5a00);
 }
 .st-note {
   font-size: 11px;
@@ -492,8 +492,8 @@
   border-radius: 9px;
   font-size: 13px;
   line-height: 18px;
-  background: #fff6e1;
-  color: #5d4300;
+  background: var(--paper-warn-bg, #fff6e1);
+  color: var(--paper-warn-ink, #5d4300);
   animation: rise 360ms ease-out both;
 }
 .condition svg {
@@ -504,8 +504,41 @@
   fill: currentColor;
 }
 .condition.met {
-  background: #e3f3e9;
-  color: #1b5a33;
+  background: var(--paper-ok-bg, #e3f3e9);
+  color: var(--paper-ok-ink, #1b5a33);
+}
+/* On a phone seven stages in a row overprint each other: the track runs down instead, one stage
+   per line with its note at the end. */
+@media (max-width: 560px) {
+  .track-stages {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 8px;
+  }
+  .track-stages li {
+    grid-template-columns: 14px minmax(0, 1fr) auto;
+    align-items: center;
+    justify-items: start;
+    column-gap: 10px;
+    text-align: left;
+  }
+  .track-stages li + li::before {
+    top: -9px;
+    right: auto;
+    left: 6px;
+    width: 2px;
+    height: 10px;
+    margin-right: 0;
+  }
+  .st-label {
+    font-size: 13px;
+    line-height: 16px;
+  }
+  .st-note {
+    justify-self: end;
+    text-align: right;
+    font-size: 12px;
+    line-height: 16px;
+  }
 }
 
 /* ---------- before we buy ---------- */
@@ -554,16 +587,16 @@
   white-space: nowrap;
 }
 .verdict.v-no {
-  background: #eef1f4;
-  color: #4b5560;
+  background: var(--paper-chip, #eef1f4);
+  color: var(--paper-chip-ink, #4b5560);
 }
 .verdict.v-yes {
-  background: #e2f3e8;
-  color: #1b6b3a;
+  background: var(--paper-ok-bg, #e2f3e8);
+  color: var(--paper-ok-ink, #1b6b3a);
 }
 .verdict.v-worth-asking {
-  background: #e4eefb;
-  color: #1e5aa8;
+  background: var(--paper-info-bg, #e4eefb);
+  color: var(--paper-info-ink, #1e5aa8);
 }
 .sourcing-options {
   display: grid;
@@ -1050,20 +1083,20 @@
   background: rgb(255 154 146 / 0.12);
 }
 .paper .od-pill.t-wait {
-  color: #8a5a00;
-  background: #fff3d6;
+  color: var(--paper-warn, #8a5a00);
+  background: var(--paper-warn-bg, #fff3d6);
 }
 .paper .od-pill.t-held {
-  color: #1e5aa8;
-  background: #e4eefb;
+  color: var(--paper-info-ink, #1e5aa8);
+  background: var(--paper-info-bg, #e4eefb);
 }
 .paper .od-pill.t-ok {
-  color: #1b6b3a;
-  background: #e2f3e8;
+  color: var(--paper-ok-ink, #1b6b3a);
+  background: var(--paper-ok-bg, #e2f3e8);
 }
 .paper .od-pill.t-stop {
-  color: #a9261d;
-  background: #fbe9e7;
+  color: var(--paper-bad, #a9261d);
+  background: var(--paper-bad-bg, #fbe9e7);
 }
 .od-card {
   animation: rise 260ms ease-out both;
@@ -1102,13 +1135,13 @@
   gap: 8px;
   padding: 12px 14px;
   border-radius: 12px;
-  background: #f6f7f9;
+  background: var(--paper-inset, #f6f7f9);
 }
 .sg-bar {
   position: relative;
   height: 14px;
   border-radius: 7px;
-  background: #e4e8ec;
+  background: var(--paper-rule, #e4e8ec);
 }
 .sg-hand,
 .sg-order {
@@ -1140,7 +1173,7 @@
 }
 .sg-after {
   width: 0;
-  border-left: 2px dashed #11151a;
+  border-left: 2px dashed var(--paper-mark, #11151a);
   animation: rise 300ms ease-out 600ms both;
 }
 .sg-legend {
@@ -1170,7 +1203,7 @@
 }
 .sg-legend .k-after {
   width: 0;
-  border-left: 2px dashed #11151a;
+  border-left: 2px dashed var(--paper-mark, #11151a);
   border-radius: 0;
 }
 .md-history summary {

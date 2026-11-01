@@ -8,6 +8,8 @@
 // Prints console errors and whether the page scrolls sideways. QUERY= opens any address (Linda's
 // phone, judge mode at a step) and leaves the curtain to the page. PAGE=arena also fires three
 // attacks in the attack arena and checks each refusal shown against web/src/data/arena.json.
+// QUERY="?" opens the bare address, so a first visit gets Kevin's first-shift introduction;
+// WAIT=<ms> sets how long the page settles before the capture (the intro's captions are timed).
 
 import { existsSync, readFileSync } from "node:fs";
 import { extname, join } from "node:path";
@@ -97,7 +99,37 @@ for (const [name, width, scheme] of [
       await page.getByRole("region", { name: "Three plants" }).getByRole("table").first().waitFor();
     }
   } else {
-    for (let i = 0; i < steps; i++) await page.keyboard.press("ArrowRight");
+    // The arrows step the run on the Overview and the map only. Each press waits for the step
+    // to land: a press before React has re-rendered steps from the same place and is lost.
+    const panel = page.locator('[aria-label="Demo steps"]');
+    const stepping = await panel.waitFor({ timeout: 5_000 }).then(
+      () => true,
+      () => false,
+    );
+    for (let i = 0; stepping && i < steps; i++) {
+      const was = await panel
+        .locator(".step-count")
+        .textContent({ timeout: 1_000 })
+        .catch(() => null);
+      // "15 / 15 · Summary": the run's last step.
+      if (was === null || /^(\d+) \/ \1 /.test(was)) break;
+      await page.keyboard.press("ArrowRight");
+      const moved = await page
+        .waitForFunction(
+          (w) => document.querySelector('[aria-label="Demo steps"] .step-count')?.textContent !== w,
+          was,
+          { timeout: 5_000 },
+        )
+        .then(
+          () => true,
+          () => false,
+        );
+      // Kevin's introduction and walkthrough hold the arrows; the shot is taken where it stands.
+      if (!moved) {
+        console.error(`${name}: the run did not step past "${was}"`);
+        break;
+      }
+    }
   }
   if (process.env.PAGE === "arena") await fireThree(page, name);
   if (process.env.FEED) {
@@ -112,7 +144,7 @@ for (const [name, width, scheme] of [
   }
   const threeD = process.env.VIEW === "3d" || (await page.locator(".map-frame").count()) > 0;
   if (threeD) await page.locator(".t3-stage canvas").waitFor();
-  await page.waitForTimeout(threeD ? 2400 : 600);
+  await page.waitForTimeout(Number(process.env.WAIT ?? (threeD ? 2400 : 600)));
   await page.screenshot({ path: join(out, `${name}.png`), fullPage: Boolean(process.env.FULL) });
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth,
