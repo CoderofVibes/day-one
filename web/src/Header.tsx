@@ -196,6 +196,7 @@ export function GlobalHeader({
   upNext,
   saved,
   onJudge,
+  onFirstShift,
 }: {
   /** The page's short name, shown under 1024 px (wider, the page's own eyebrow says it). */
   title: string;
@@ -213,6 +214,8 @@ export function GlobalHeader({
   saved?: React.ReactNode;
   /** Judge mode (src/JudgeMode.tsx): the guided tour of the proof points. */
   onJudge?: () => void;
+  /** Kevin's introduction and the first-shift walkthrough again (src/FirstShift.tsx). */
+  onFirstShift?: () => void;
 }) {
   const [theme, setTheme] = useThemeChoice();
   return (
@@ -302,6 +305,18 @@ export function GlobalHeader({
                 }}
               >
                 Judge mode
+              </button>
+            )}
+            {onFirstShift && (
+              <button
+                type="button"
+                className="gh-judge gh-judge-menu gh-meet"
+                onClick={() => {
+                  onFirstShift();
+                  close();
+                }}
+              >
+                Meet Kevin · first shift
               </button>
             )}
             <fieldset className="gh-theme" aria-label="Theme">

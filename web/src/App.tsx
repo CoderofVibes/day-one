@@ -70,6 +70,7 @@ import {
 } from "./clock.ts";
 import { friendlyAction, type Turn, turnFromLive, turnFromStep } from "./desk.ts";
 import { stepTimes } from "./engine.ts";
+import { FirstShiftGuide, FirstShiftIntro } from "./FirstShift.tsx";
 import { initials, Pill, StaffFeed } from "./feed.tsx";
 import { GlobalHeader, type Person } from "./Header.tsx";
 import { ImportPane } from "./ImportPane.tsx";
@@ -101,6 +102,7 @@ import { audienceOf, type RunData, run as recorded, type Step, type Tone } from 
 import { SavedCounter } from "./SavedCounter.tsx";
 import type { Source } from "./series.ts";
 import { PageHeader, type PageId, type PlantCode, Shell, useRoute } from "./shell.tsx";
+import { opensByItself, remember } from "./shiftScript.ts";
 import { PlantView, type TwinFocus } from "./twin3d/PlantView.tsx";
 import { attachWorld, WORLD_INDEX, WORLD_SPAN } from "./worldEvents.ts";
 
@@ -116,6 +118,14 @@ const APPROVE = QUERY.get("page") === "approve";
 /** Judge mode (?judge=1, src/JudgeMode.tsx): recorded data only, so it always opens the replay. */
 const JudgeMode = lazy(() => import("./JudgeMode.tsx"));
 const JUDGE_AT = judgeStart(QUERY.toString());
+/** Kevin's introduction opens by itself on a bare first visit only (shiftScript.ts). */
+const FIRST_OPEN =
+  typeof location !== "undefined" &&
+  opensByItself(
+    location.search,
+    location.hash,
+    typeof localStorage === "undefined" ? null : localStorage,
+  );
 
 /**
  * The product look (shift.css, OPEN_QUESTIONS #46) is for the staff and judge pages only: the
@@ -609,6 +619,8 @@ function ReplayApp() {
   const [curtain, setCurtain] = useState(false);
   const route = useRoute();
   const [judge, setJudge] = useState<number | "summary" | null>(JUDGE_AT);
+  // The first shift: Kevin's introduction, then the walkthrough (FirstShift.tsx).
+  const [shift, setShift] = useState<"intro" | "guide" | null>(FIRST_OPEN ? "intro" : null);
 
   const go = useCallback(
     (to: number) => clock.seek(clock.range.steps[Math.max(0, Math.min(last, to))] ?? 0),
@@ -634,13 +646,15 @@ function ReplayApp() {
 
   useEffect(() => {
     if (route.page !== "overview" && route.page !== "map") return;
+    // While Kevin is showing Ray around, the arrows do not step the run.
+    if (shift !== null) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") go(at + 1);
       else if (e.key === "ArrowLeft") go(at - 1);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [at, go, route.page]);
+  }, [at, go, route.page, shift]);
 
   const current = data.steps[at] as Step;
   const turn = turnFromStep(data.steps, at + 1);
@@ -729,8 +743,21 @@ function ReplayApp() {
         />
       }
       onJudge={() => setJudge(0)}
+      onFirstShift={() => {
+        setJudge(null);
+        setShift("intro");
+      }}
     />
   );
+  /** Back to Ray's desk at the start of his morning, as the first shift leaves it. */
+  const toDesk = () => {
+    const q = new URLSearchParams(location.search);
+    q.delete("inspect");
+    history.replaceState(null, "", q.toString() ? `?${q.toString()}` : location.pathname);
+    setCurtain(false);
+    route.go({ page: "overview", plant: "B" });
+    go(0);
+  };
 
   return (
     <Shell
@@ -854,6 +881,39 @@ function ReplayApp() {
           />
         </RecordNav>
       </WithRail>
+      {shift === "intro" && (
+        <FirstShiftIntro
+          onTour={() => {
+            remember("walked");
+            toDesk();
+            setShift("guide");
+          }}
+          onDesk={() => {
+            remember("skipped");
+            toDesk();
+            setShift(null);
+          }}
+        />
+      )}
+      {shift === "guide" && (
+        <FirstShiftGuide
+          go={(page, step) => {
+            route.go({ page, plant: "B" });
+            go(step);
+          }}
+          setCurtain={setCurtain}
+          onEnd={(finished) => {
+            remember(finished ? "finished" : "walked");
+            toDesk();
+            setShift(null);
+          }}
+          onProof={() => {
+            remember("finished");
+            setShift(null);
+            setJudge(0);
+          }}
+        />
+      )}
       {judge !== null && (
         <Suspense fallback={null}>
           <JudgeMode

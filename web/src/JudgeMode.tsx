@@ -4,7 +4,7 @@
 // cuts a spotlight round what to look at, says what happened in a sentence or two and links the
 // recorded testnet transactions. Recorded data only: no wallet, no login, no network.
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { storedTheme } from "./chrome.ts";
 import usdc from "./data/usdc.json";
 import {
@@ -17,6 +17,7 @@ import {
   testCount,
 } from "./judge.ts";
 import { LindaPhone } from "./Phone.tsx";
+import { Spotlight } from "./Spotlight.tsx";
 import type { PageId } from "./shell.tsx";
 import "./judge.css";
 
@@ -43,59 +44,6 @@ function setJudgeParam(value: string | null) {
   else q.set("judge", value);
   const search = q.toString();
   history.replaceState(null, "", search ? `?${search}` : location.pathname);
-}
-
-/** A dimmed page with a cut-out round the first element matching `selector`, once it is there. */
-function Spotlight({ selector }: { selector: string }) {
-  const [box, setBox] = useState<DOMRect | null>(null);
-  const scrolled = useRef(false);
-  useEffect(() => {
-    scrolled.current = false;
-    setBox(null);
-    const measure = () => {
-      const el = [...document.querySelectorAll(selector)].find(
-        (e) => (e as HTMLElement).offsetParent !== null,
-      );
-      if (!el) return setBox(null);
-      if (!scrolled.current) {
-        scrolled.current = true;
-        // A tall subject (the attack list) shows its top under the sticky header, not its middle.
-        const top = el.getBoundingClientRect().top + window.scrollY;
-        if (el.getBoundingClientRect().height > window.innerHeight * 0.5)
-          window.scrollTo({ top: Math.max(0, top - 80) });
-        else el.scrollIntoView({ block: "center" });
-      }
-      const r = el.getBoundingClientRect();
-      setBox((was) =>
-        was && was.x === r.x && was.y === r.y && was.width === r.width && was.height === r.height
-          ? was
-          : r,
-      );
-    };
-    measure();
-    const timer = setInterval(measure, 250);
-    window.addEventListener("resize", measure);
-    window.addEventListener("scroll", measure, true);
-    return () => {
-      clearInterval(timer);
-      window.removeEventListener("resize", measure);
-      window.removeEventListener("scroll", measure, true);
-    };
-  }, [selector]);
-  if (!box) return null;
-  const pad = 6;
-  return (
-    <div
-      className="judge-spot"
-      aria-hidden="true"
-      style={{
-        left: box.x - pad,
-        top: box.y - pad,
-        width: box.width + 2 * pad,
-        height: box.height + 2 * pad,
-      }}
-    />
-  );
 }
 
 function ChainLinks({ step }: { step: JudgeStep }) {

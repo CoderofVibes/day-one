@@ -132,7 +132,7 @@ export function PurchasingPage({
   return (
     <>
       {desk && plant === "B" && <OrderDesk {...desk} orders={tables.orders} end={end} />}
-      <div className="tiles-4">
+      <div className="tiles-4" data-guide="purchasing-limits">
         <StatTile
           label={`Committed, ${monthName(month)}`}
           value={compactDollars(committed)}

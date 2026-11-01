@@ -14,6 +14,12 @@ Built Oct 31 on `upgrade/judge` (brief §5.12, §5.9 item 1, §5.6 "Plant map �
 
 The header's pine-green **Judge mode** button opens it from 1440 px; under that it is in the header's menu. On the live UI it reloads into `?judge=1`.
 
+## The first shift (Nov 1)
+
+The front door (OPEN_QUESTIONS #45 and #46; Astra's design, `docs/astra/2026-11-01_FirstShift.md`). On a bare first visit to the replay, Kevin introduces himself on a quiet screen: a green line that moves as each of three captions lands, Ray's desk fading in behind (`web/src/FirstShift.tsx`, `KevinPresence.tsx`). "Show me around" starts the walkthrough, "Open my desk", Skip or Escape go straight to the Overview at 5:00 AM; "Read introduction" shows all three captions at once. Any query or hash (a page, a plant, `?inspect=`, `?judge=1`, `?video=1`, `?page=approve`) skips it, and so does a returning visitor (`day-one:first-shift:v1`, the old guide's closed flag, or a saved clock); blocked storage counts as a first visit. "Meet Kevin · first shift" in the header menu replays it.
+
+The walkthrough uses judge mode's spotlight (`web/src/Spotlight.tsx`) and the same page-and-step routing, with its own script (`web/src/shiftScript.ts`): six stops of Ray's morning with the curtain off (the mail Kevin reviewed, the batch record that needs him, its place on the plant, the three drafts, his spending limits, Acme's books), then three behind the curtain with their testnet links (the refused PO-1042, Linda's own-key approval and the escrow paying on QC release, 15 of 15 attacks refused). About two minutes with the intro. It ends on "Start your shift" (the desk at 5:00 AM) or "See every proof" (judge mode below). It only opens pages: nothing is signed, confirmed or stepped. `web/src/shiftScript.test.ts` holds the first-open rule and keeps the chain out of Ray's stops.
+
 ## The steps
 
 `web/src/judge.ts` holds them as data; `web/src/JudgeMode.tsx` draws them.

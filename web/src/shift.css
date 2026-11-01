@@ -249,3 +249,31 @@ html[data-product-ui="shift"][data-theme="dark"] .desk .paper .card-actions > bu
   border-color: #edf2f5;
   color: #182126;
 }
+
+/* ---------- the morning review's counts above the desk ---------- */
+.morning-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card, 10px);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-variant-numeric: tabular-nums;
+}
+.morning-summary b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.morning-summary .ms-sign {
+  color: var(--waiting);
+  font-weight: 600;
+}
+.morning-summary .ms-refused {
+  color: var(--refused);
+}

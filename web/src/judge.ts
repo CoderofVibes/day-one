@@ -128,7 +128,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "kevin",
     title: "Kevin handled the paperwork",
-    body: "Before anyone needs to look: Kevin read the batch record, caught 12.55 kg missing from a transfer, forecast a shortfall, compared three quotes and placed PO-1041 inside his limits. Done work sits apart from drafts and suggestions. Behind the curtain shows the chain staff never see.",
+    body: "After Ray confirmed the batch record Kevin read, Kevin caught 12.55 kg missing from a transfer, forecast a shortfall, compared three quotes and placed PO-1041 inside his limits. Done work sits apart from drafts and suggestions. Behind the curtain shows the chain staff never see.",
     page: "overview",
     at: refusedAt - 1,
     spotlight: ".desk",
@@ -162,7 +162,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "paid",
     title: "Escrow released on QC",
-    body: "The truck arrives, lot ASC-261116-01 waits in quarantine, and Priya releases it. The contract pays Northgate from escrow in that call: paid on QC, not on an invoice. On the desk, the condition reads met and nothing needs anyone.",
+    body: "The truck arrives, lot ASC-261116-01 waits in quarantine, and Priya releases it. The contract pays Northgate from escrow in that call: paid on QC, not on an invoice. On the desk, the condition reads met; the desk still lists the other work waiting.",
     page: "map",
     at: releasedAt,
     spotlight: ".map-frame",

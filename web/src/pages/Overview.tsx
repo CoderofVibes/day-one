@@ -144,6 +144,7 @@ export function Overview({
       {error && (
         <ErrorCard what="The plant history" error={error} retry={() => location.reload()} />
       )}
+      {plant === "B" && review && <MorningSummary review={review} />}
       {plant === "B" && (
         <Desk
           run={run}
@@ -179,6 +180,26 @@ export function Overview({
       </div>
       {history && <Charts plant={plant} history={history} />}
     </main>
+  );
+}
+
+/**
+ * What Kevin's morning review of the mailbox came to, in one row above the desk (Astra's first
+ * pass, A2): read, drafts to sign, refused, nothing needed. The drafts open in Morning review.
+ */
+function MorningSummary({ review }: { review: ReviewState }) {
+  const read = review.proposals.length;
+  const c = review.counts;
+  return (
+    <p className="morning-summary" data-guide="morning-summary">
+      <b>Morning review</b>
+      <span>{read} read</span>
+      <span className="ms-sign">
+        {review.toSign} {review.toSign === 1 ? "draft" : "drafts"} to sign
+      </span>
+      <span className="ms-refused">{c.refused} refused</span>
+      <span>{c.none} need nothing</span>
+    </p>
   );
 }
 
