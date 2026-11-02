@@ -1,4 +1,4 @@
-import { appendFileSync, mkdtempSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { appendFileSync, mkdirSync, mkdtempSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
@@ -85,6 +85,35 @@ describe("the watched folder", () => {
     start(30);
     writeFileSync(join(dir, "scan-0001.jpg"), "scan");
     expect(await handedCount(1)).toBe(1);
+  });
+
+  it("reports a folder deleted under it once, backs off, and carries on when it is back", async () => {
+    const inbox = join(dir, "inbox");
+    const errors: string[] = [];
+    let recovered = 0;
+    watch = watchFolder({
+      dir: inbox,
+      stableMs: 50,
+      pollMs: 20,
+      maxPollMs: 200,
+      onFile: (_path, name) => {
+        handed.push({ name, size: 0 });
+      },
+      onError: (error) => errors.push((error as NodeJS.ErrnoException).code ?? ""),
+      onRecover: () => recovered++,
+    });
+    rmSync(inbox, { recursive: true, force: true });
+    // Windows' fs.watch fires without end on a deleted folder; this ran 150,000 looks a second.
+    await sleep(1_000);
+    expect(errors).toEqual(["ENOENT"]);
+    expect(recovered).toBe(0);
+
+    mkdirSync(inbox);
+    writeFileSync(join(inbox, "BR-B-1047.jpg"), "scan");
+    for (let i = 0; i < 80 && handed.length < 1; i++) await sleep(25);
+    expect(recovered).toBe(1);
+    expect(handed.map((h) => h.name)).toEqual(["BR-B-1047.jpg"]);
+    expect(errors).toEqual(["ENOENT"]);
   });
 
   it("creates the folder when it does not exist yet", async () => {

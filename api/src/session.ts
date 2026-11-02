@@ -174,6 +174,8 @@ export interface SessionExtras {
     /** Each file Kevin read, as it lands. */
     onRead?: (read: InboxRead) => void;
     onError?: (error: unknown, name: string) => void;
+    /** The folder reads again after an error, which was reported once. */
+    onRecover?: (dir: string) => void;
   };
 }
 
@@ -237,6 +239,7 @@ export class DemoSession {
         if (env === this.env) inbox.onRead?.(read);
       },
       ...(inbox.onError ? { onError: inbox.onError } : {}),
+      ...(inbox.onRecover ? { onRecover: inbox.onRecover } : {}),
     });
   }
 

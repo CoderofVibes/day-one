@@ -2,6 +2,10 @@
 // Windows and network drives drop events. A file is handed over once, when its size and time
 // have held still for `stableMs` (a scanner or a copy still writing it is left alone), and
 // again only if it changes. Kevin dedupes by content, so a rename or a second copy is harmless.
+// A folder deleted under a running watch (a worktree removed while its API ran, Oct 31) is
+// waited for, not recreated: on Windows fs.watch then fires without end and with no error, so
+// the watch is dropped, the poll backs off to `maxPollMs`, and the error is reported once until
+// the folder reads again. That loop wrote one line about 150,000 times a second, 92 GB of log.
 
 import { type FSWatcher, mkdirSync, readdirSync, statSync, watch } from "node:fs";
 import { join } from "node:path";
@@ -11,10 +15,14 @@ export interface FolderWatchOptions {
   /** Called once per settled file, with its full path and name. Errors go to `onError`. */
   onFile: (path: string, name: string) => Promise<unknown> | unknown;
   onError?: (error: unknown, name: string) => void;
+  /** Called once when the folder reads again after an error. */
+  onRecover?: (dir: string) => void;
   /** How long a file's size and time must hold still. */
   stableMs?: number;
   /** The poll that catches what fs.watch drops. */
   pollMs?: number;
+  /** The slowest poll while the folder cannot be read; the wait doubles up to it. */
+  maxPollMs?: number;
 }
 
 export interface FolderWatch {
@@ -29,6 +37,7 @@ const IGNORED = /^(\.|~\$)|\.(tmp|part|crdownload|partial)$|^readme\.md$/i;
 export function watchFolder(options: FolderWatchOptions): FolderWatch {
   const stableMs = options.stableMs ?? 1_000;
   const pollMs = options.pollMs ?? 2_000;
+  const maxPollMs = Math.max(pollMs, options.maxPollMs ?? 30_000);
   mkdirSync(options.dir, { recursive: true });
 
   /** Last size and time seen per name, and since when it has held. */
@@ -38,6 +47,34 @@ export function watchFolder(options: FolderWatchOptions): FolderWatch {
   const running = new Set<Promise<unknown>>();
   let stopped = false;
   let settle: NodeJS.Timeout | null = null;
+  let watcher: FSWatcher | null = null;
+  let poll: NodeJS.Timeout | null = null;
+  let wait = pollMs;
+  /** The error last reported for the folder, until it reads again. */
+  let failing: string | null = null;
+  /** fs.watch can fire many times per change; one look covers them all. */
+  let queued = false;
+
+  const unwatch = () => {
+    watcher?.close();
+    watcher = null;
+  };
+  const queueLook = () => {
+    if (queued) return;
+    queued = true;
+    setImmediate(() => {
+      queued = false;
+      look();
+    });
+  };
+  const rewatch = () => {
+    try {
+      watcher = watch(options.dir, queueLook);
+      watcher.on("error", unwatch); // the poll carries on alone
+    } catch {
+      watcher = null;
+    }
+  };
 
   const look = () => {
     if (stopped) return;
@@ -45,9 +82,21 @@ export function watchFolder(options: FolderWatchOptions): FolderWatch {
     try {
       names = readdirSync(options.dir);
     } catch (error) {
-      options.onError?.(error, options.dir);
+      unwatch();
+      wait = Math.min(wait * 2, maxPollMs);
+      const code = (error as NodeJS.ErrnoException).code ?? String(error);
+      if (code !== failing) {
+        failing = code;
+        options.onError?.(error, options.dir);
+      }
       return;
     }
+    if (failing !== null) {
+      failing = null;
+      wait = pollMs;
+      options.onRecover?.(options.dir);
+    }
+    if (!watcher) rewatch();
     const now = Date.now();
     let unsettled = false;
     for (const name of names) {
@@ -89,17 +138,14 @@ export function watchFolder(options: FolderWatchOptions): FolderWatch {
     }
   };
 
-  let watcher: FSWatcher | null = null;
-  try {
-    watcher = watch(options.dir, () => look());
-    watcher.on("error", () => {
-      watcher?.close();
-      watcher = null; // the poll carries on alone
-    });
-  } catch {
-    watcher = null;
-  }
-  const poll = setInterval(look, pollMs);
+  const tick = () => {
+    poll = setTimeout(() => {
+      look();
+      if (!stopped) tick();
+    }, wait);
+  };
+  rewatch();
+  tick();
   look();
 
   return {
@@ -109,8 +155,8 @@ export function watchFolder(options: FolderWatchOptions): FolderWatch {
     },
     stop() {
       stopped = true;
-      watcher?.close();
-      clearInterval(poll);
+      unwatch();
+      if (poll) clearTimeout(poll);
       if (settle) clearTimeout(settle);
     },
   };
