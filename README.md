@@ -2,9 +2,9 @@
 
 The ops lead sets Kevin's purchasing limits once. Kevin does the paperwork and buys within those limits; larger orders wait for the plant director's approval. Day One is a purchasing and inventory assistant, Kevin, for a small manufacturing plant its new owner has just acquired.
 
-Kevin reads batch records, tracks stock and lots across plants, compares quotes, prepares orders, matches invoices and writes the morning brief. A NEAR testnet contract enforces his limits, holds each funded order's money in escrow and pays the order's fixed supplier after receipt and QC release. Plant staff see dollars, POs and decisions, never wallets or gas.
+Kevin reads batch records, tracks stock and lots across plants, compares quotes, prepares orders, matches invoices and writes the morning brief. A NEAR testnet contract enforces his limits, holds each funded order's money in escrow and pays the order's fixed supplier after receipt and QC release. Plant staff see dollars, POs and decisions, never wallets or gas. Day One plugs into the acquirer's ERP: POs, receipts and payments flow into its books and reconcile against the contract.
 
-This is a working prototype with fictional plant data and replayable testnet transactions. The director's text reply is simulated and staff keys are held by the server. The main run settles in DTUSD, our labeled test token; a separate $19.00 order settles in Circle testnet USDC.
+This is a working prototype with fictional plant data and replayable testnet transactions. The director's text reply is simulated, staff keys are held by the server, and the ERP is a mock shaped like NetSuite. The main run settles in DTUSD, our labeled test token; a separate $19.00 order settles in Circle testnet USDC.
 
 Built at NEAR HACKATHON (Oct 19 – Nov 14, 2026). Tracks: `realworld`, `business`, `security`, `agents`.
 
