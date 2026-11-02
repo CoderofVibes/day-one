@@ -26,16 +26,19 @@ The walkthrough uses judge mode's spotlight (`web/src/Spotlight.tsx`) and the sa
 
 | # | Step | Page, recorded step | Proof links |
 |---|---|---|---|
-| 1 | Kevin handled the paperwork | Overview at "Small PO", Kevin's desk spotlit; the curtain flips on after 1.5 s | PO-1041's `submit_po` |
-| 2 | One decision needs Linda | Overview at "Big PO", the decision card spotlit (the limit meter, why her, what she decides, what happens after) | refused `submit_po` |
-| 3 | Linda approves by text | Overview at "Linda texts", her phone over it | `approve_po`, funded `submit_po` |
-| 4 | Escrow released on QC | Plant twin at "QC release" | `confirm_receipt`, `qc_release` |
-| 5 | 15 of 15 attacks refused | Attack arena | three refused transactions; the summary lists all |
-| 6 | Group buy PO-G-2001 | Group purchasing | both directors' `approve_po`, `submit_pooled_po`, `qc_release` |
-| 7 | 7 of 7 reconciliation | Reconciliation | none: the checks read contract views |
-| 8 | Real USDC, PO-1047 | Spending limits, PO-1047's card over it | the five calls on `spend-policy-usdc` |
-| 9 | Attested answers | Talk to Kevin, the curtain's enclave block; a card with `npm run verify:attestation` | none |
-| 10 | Recall drill, and the tour | Lots & recall; Play the tour (T) | none |
+| 1 | Day One at the plant Acme just bought | Spreadsheets, the inventory workbook spotlit, curtain off: `INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx`, 19 rows read, 9 asked about before posting | none |
+| 2 | Acme HQ sets Kevin's limits once | Spending limits, curtain off; a card with the limits as the recorded run read them from the contract, HQ's request "raise Kevin's per-PO limit to $3,000" and Kevin's draft of the owner call (`draftPolicyChange`, the grammar `npm run policy` uses, no model) | none: a draft is not signed |
+| 3 | Kevin handled the paperwork | Overview at "Small PO", Kevin's desk spotlit; the curtain flips on after 1.5 s | PO-1041's `submit_po` |
+| 4 | One decision needs Linda | Overview at "Big PO", the decision card spotlit (the limit meter, why her, what she decides, what happens after) | refused `submit_po` |
+| 5 | Linda approves by text | Overview at "Linda texts", her phone over it | `approve_po`, funded `submit_po` |
+| 6 | Escrow released on QC | Plant twin at "QC release" | `confirm_receipt`, `qc_release` |
+| 7 | 15 of 15 attacks refused | Attack arena, open on "New bank details by email" (`?attack=15`), the case spotlit, with Kevin's words | three refused transactions; the summary lists all |
+| 8 | Group buy PO-G-2001 | Group purchasing | both directors' `approve_po`, `submit_pooled_po`, `qc_release` |
+| 9 | 7 of 7 reconciliation checks agree | Reconciliation, PO-1047's USDC card over it | the five calls on `spend-policy-usdc` |
+| 10 | Attested answers | Talk to Kevin, the curtain's enclave block; a card with `npm run verify:attestation` | none |
+| 11 | Recall drill, and the tour | Lots & recall; Play the tour (T) | none |
+
+Steps 1 and 2 were added Nov 1 (Tony): judge mode had shown the proof and not the premise, a plant Acme just bought and the limits HQ sets. Reconciliation and USDC became one step to keep it near five minutes. The summary card also says whether Kevin pays for himself: the realized saving at Hollow Pine against his assumed fee, from the Money page's own tally.
 
 Every link comes from the recordings the pages already read (`web/src/data/demo-run.json`, `arena.json`, `group-buy.json`, and `usdc.json`, which `npm run web:data` exports from `data/usdc/`). `web/src/judge.test.ts` checks each one is a well-formed testnet explorer URL whose hash appears in a recording under `data/`, and that the titles carry the proof points as recorded.
 
@@ -43,6 +46,6 @@ Every link comes from the recordings the pages already read (`web/src/data/demo-
 
 ## Not built
 
-- Step 9 shows the curtain's attestation chips and the re-verification command; the six recorded, signed answers on Talk to Kevin (`web/src/data/ask.json`, `npm run ask`, recorded Oct 31) are not yet linked from the step.
+- Step 10 shows the curtain's attestation chips and the re-verification command; the six recorded, signed answers on Talk to Kevin (`web/src/data/ask.json`, `npm run ask`, recorded Oct 31) are not yet linked from the step.
 - The spotlight is a dimmed page with a cut-out; it does not block clicks on the page.
 - Linda's phone in the replay shows only the recorded reply; NO says what the recording holds instead. Live mode keeps the existing Up next phone on the Overview.

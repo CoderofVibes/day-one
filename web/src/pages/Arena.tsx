@@ -47,7 +47,9 @@ const clock = () =>
   new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
 export function ArenaConsole({ arena }: { arena: Arena }) {
-  const first = arena.cases[0] as ArenaCase;
+  // ?attack=<n> opens on that case (judge mode opens on the bank-details email).
+  const asked = Number(new URLSearchParams(location.search).get("attack"));
+  const first = arena.cases.find((c) => c.n === asked) ?? (arena.cases[0] as ArenaCase);
   const [selected, setSelected] = useState(first.n);
   const [pane, setPane] = useState<"attack" | "proof">("attack");
   /** How many of each case's timeline lines are showing (0 = not fired this visit). */

@@ -5,11 +5,15 @@ import {
   attacks,
   groupPurchase,
   JUDGE_STEPS,
+  limitDraft,
   po1042,
   proofLinks,
+  RECORDED_POLICY,
   reconciliation,
   remaining,
+  savingLine,
   testCount,
+  workbook,
 } from "./judge.ts";
 import { judgeStart } from "./judgeRoute.ts";
 
@@ -53,11 +57,12 @@ describe("judge mode", () => {
 
   it("tells the proof points as the recordings have them", () => {
     const titles = JUDGE_STEPS.map((s) => s.title);
-    expect(JUDGE_STEPS).toHaveLength(10);
+    expect(JUDGE_STEPS).toHaveLength(11);
+    expect(JUDGE_STEPS.slice(0, 3).map((s) => s.id)).toEqual(["takeover", "limits", "kevin"]);
     expect(titles).toContain("15 of 15 attacks refused");
     expect(titles).toContain("Group buy PO-G-2001, $9,490.00");
     expect(titles).toContain("7 of 7 reconciliation checks agree");
-    expect(titles).toContain("Real USDC: PO-1047, $19.00");
+    expect(JUDGE_STEPS.find((s) => s.id === "books")?.body).toContain("19.00 USDC for PO-1047");
     const po = po1042();
     expect(po.refused?.tx.startsWith("FQepeewB")).toBe(true);
     expect(po.approved?.tx.startsWith("EW5A8qi3")).toBe(true);
@@ -71,8 +76,40 @@ describe("judge mode", () => {
     expect(group.released?.tx.startsWith("9XDEo3Dp")).toBe(true);
     expect(attacks()).toMatchObject({ total: 15, refused: 15 });
     expect(reconciliation().checks.filter((c) => c.ok)).toHaveLength(7);
-    const usdc = JUDGE_STEPS.find((s) => s.id === "usdc");
-    expect(usdc?.links).toHaveLength(5);
+    const books = JUDGE_STEPS.find((s) => s.id === "books");
+    expect(books?.links).toHaveLength(5);
+    expect(books?.overlay).toBe("usdc");
+  });
+
+  it("opens on the plant Acme bought, the limits HQ sets, and the bank-details email", () => {
+    expect(workbook()).toEqual({
+      file: "INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx",
+      rows: 19,
+      questions: 9,
+    });
+    // The policy the limits step shows is the one the recorded run read from the contract.
+    const chain = JSON.parse(readFileSync(join(root, "data/replay/demo-chain.json"), "utf8"));
+    const view = JSON.stringify(chain).match(
+      /"method":"get_agent_policy"[^}]*}},"result":(\{[^}]*\})/,
+    )?.[1];
+    expect(view).toBeDefined();
+    const raw = JSON.parse(view as string);
+    expect(RECORDED_POLICY).toMatchObject({
+      perPoLimit: raw.per_po_limit,
+      monthlyLimit: raw.monthly_limit,
+      categories: raw.categories,
+      approver: raw.approver,
+      active: raw.active,
+    });
+    const draft = limitDraft();
+    expect(draft.understood).toBe(true);
+    expect(draft.call?.method).toBe("set_agent_policy");
+    expect(draft.changes).toEqual([{ field: "per_po_limit", from: "$2,500.00", to: "$3,000.00" }]);
+    const bank = JUDGE_STEPS.find((s) => s.id === "attacks");
+    expect(bank?.attack).toBe(15);
+    expect(bank?.quote).toBe("Kevin: “Nothing in a message changes where an order pays.”");
+    expect(JUDGE_STEPS.find((s) => s.id === "takeover")?.curtain).toBe(false);
+    expect(savingLine()).toMatch(/^\$1,150\.00 realized at Hollow Pine, 2\.6× Kevin's cost/);
   });
 
   it("gives each step a recorded step, a reading time and a short body", () => {

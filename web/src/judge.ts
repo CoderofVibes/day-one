@@ -1,14 +1,17 @@
-// Judge mode's script (brief §5.12): ten steps that hand a judge the story in a few minutes, the
-// employee's day first (what Kevin handled, the one decision a person makes, the outcome), then
-// the proof behind it. Each step has the page it opens, the recorded step it seeks to, what it
+// Judge mode's script (brief §5.12): eleven steps that hand a judge the story in about five
+// minutes: the plant Acme just bought and the limits HQ sets Kevin first, then the employee's day
+// (what Kevin handled, the one decision a person makes, the outcome), then the proof behind it. Each step has the page it opens, the recorded step it seeks to, what it
 // spotlights, one or two sentences, and its "See it on chain" links. Every link is taken from the recordings the pages already read
 // (demo-run.json, arena.json, group-buy.json, usdc.json), never typed here; src/judge.test.ts
 // checks each one against the files under data/. Pure data, so the tests read it without a page.
 
+import { draftPolicyChange } from "@day-one/kevin/policyChange";
+import type { AgentPolicyView } from "@day-one/server/chain/policy";
 import arena from "./data/arena.json";
 import groupBuy from "./data/group-buy.json";
 import journey from "./data/journey.json";
 import usdc from "./data/usdc.json";
+import { tally } from "./moneyView.ts";
 import { type RunData, run as recorded, type Transaction } from "./run.ts";
 import { type PageId, PLANTS } from "./shell.tsx";
 
@@ -29,15 +32,26 @@ export interface JudgeStep {
   at: number;
   /** What the spotlight cuts out, as a CSS selector; none when an overlay is the subject. */
   spotlight?: string;
-  /** What opens over the page: Linda's phone, PO-1047's card, the attestation card or the tour. */
-  overlay?: "phone" | "usdc" | "attestation" | "tour";
+  /** What opens over the page: Linda's phone, PO-1047's card, HQ's limit change, the attestation
+   *  card or the tour. */
+  overlay?: "phone" | "usdc" | "limits" | "attestation" | "tour";
+  /** False for a step that shows a staff screen with the curtain off. */
+  curtain?: false;
+  /** The attack the arena opens on (arena.json's case number). */
+  attack?: number;
   links: ProofLink[];
   /** About how long the step takes to read and look at, for "time remaining". */
   seconds: number;
 }
 
 type Arena = {
-  cases: { n: number; attack: string; held: boolean; txs: { url: string; status: string }[] }[];
+  cases: {
+    n: number;
+    attack: string;
+    held: boolean;
+    reason: string;
+    txs: { url: string; status: string }[];
+  }[];
 };
 type Reconciliation = { checks: { name: string; ok: boolean; skipped?: boolean }[]; ok: boolean };
 
@@ -97,6 +111,45 @@ export function reconciliation(): Reconciliation {
   return (journey as unknown as { reconciliation: Reconciliation }).reconciliation;
 }
 
+/** The plant's inventory workbook as Kevin read it before anything posted. */
+export function workbook() {
+  const v = (journey as unknown as { importView: ImportView }).importView;
+  return {
+    file: v.fileName,
+    rows: v.analysis.rows.length,
+    questions: v.analysis.rows.filter((r) => r.flags.length > 0).length,
+  };
+}
+type ImportView = { fileName: string; analysis: { rows: { flags: unknown[] }[] } };
+
+/** Kevin's policy as the recorded run read it from the contract (get_agent_policy in
+ *  data/replay/demo-chain.json; src/judge.test.ts checks the two agree). */
+export const RECORDED_POLICY: AgentPolicyView = {
+  account: "kevin.plant-b.acme-holdings.testnet",
+  name: "Kevin",
+  plant: "plant-b.acme-holdings.testnet",
+  perPoLimit: "2500000000",
+  monthlyLimit: "60000000000",
+  categories: ["raw_material", "packaging", "lab_chemical"],
+  approver: "director.plant-b.acme-holdings.testnet",
+  active: true,
+  spentThisMonth: "0",
+};
+/** What HQ asks for on the limits step. */
+export const LIMIT_REQUEST = "raise Kevin's per-PO limit to $3,000";
+/** Kevin's draft of that request: the grammar npm run policy and the live page use, no model. */
+export function limitDraft() {
+  return draftPolicyChange(LIMIT_REQUEST, RECORDED_POLICY, "Linda Park");
+}
+
+/** Kevin's realized saving at Hollow Pine and how many times his assumed fee it covers. */
+export function savingLine(): string {
+  const at = (journey as unknown as { at: string }).at;
+  const t = tally("B", at);
+  const fee = t.cost.feeUsdc / 1e6 / t.cost.months;
+  return `${usd(t.paid.realizedUsdc / 1e6)} realized at Hollow Pine, ${t.paid.ratio}× Kevin's cost (an assumed $${fee.toLocaleString("en-US")} monthly fee, fictional). The Money page shows each figure's formula.`;
+}
+
 export const usd = (n: number) =>
   `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -119,12 +172,36 @@ const attack = attacks();
 const rec = reconciliation();
 const agree = rec.checks.filter((c) => c.ok && !c.skipped).length;
 const att = attestation();
+const book = workbook();
+const bank = (arena as Arena).cases.find((c) => /bank details/i.test(c.attack));
 const refusedAt = recorded.steps.findIndex((s) => s.title === "Big PO");
 const textedAt = recorded.steps.findIndex((s) => s.title === "Linda texts");
 const releasedAt = recorded.steps.findIndex((s) => s.title === "QC release");
 const last = recorded.steps.length - 1;
 
 export const JUDGE_STEPS: JudgeStep[] = [
+  {
+    id: "takeover",
+    title: "Day One at the plant Acme just bought",
+    body: `Hollow Pine ran on paper and one workbook, ${book.file}. Kevin read its ${book.rows} rows and asked Ray about ${book.questions} (a lot entered twice, pounds for kilograms, a total row) before anything posted. Paper, suppliers, limits and books move over the same way, each signed off by a person.`,
+    page: "spreadsheets",
+    at: 0,
+    spotlight: '[aria-label="The inventory workbook"]',
+    curtain: false,
+    links: [],
+    seconds: 30,
+  },
+  {
+    id: "limits",
+    title: "Acme HQ sets Kevin's limits once",
+    body: "HQ puts Kevin's limits on the contract: $2,500 per order and $60,000 a month, with Linda approving anything over. Kevin cannot change them. HQ asks for a change in plain words; Kevin drafts the owner call and HQ's key signs it.",
+    page: "hq",
+    at: 0,
+    overlay: "limits",
+    curtain: false,
+    links: [],
+    seconds: 25,
+  },
   {
     id: "kevin",
     title: "Kevin handled the paperwork",
@@ -133,7 +210,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
     at: refusedAt - 1,
     spotlight: ".desk",
     links: link(po.small, "submit_po PO-1041, funded"),
-    seconds: 30,
+    seconds: 25,
   },
   {
     id: "refused",
@@ -144,7 +221,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
     at: refusedAt,
     spotlight: ".desk-card.need",
     links: link(po.refused, "submit_po, refused"),
-    seconds: 35,
+    seconds: 30,
   },
   {
     id: "approve",
@@ -175,12 +252,13 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "attacks",
     title: `${attack.refused} of ${attack.total} attacks refused`,
-    body: "Every attack the suite tried, from a lookalike vendor to a new-bank-details email, refused by Kevin or the contract. Pick one and press Fire attack.",
+    body: "It opens on the fraud that costs companies most: an email asking to pay Northgate at a new bank account. Kevin held it and changed nothing. Every other attack, from a lookalike vendor to a peek at sealed quotes, was refused by Kevin or the contract. Press Fire attack.",
+    ...(bank ? { quote: `Kevin: “${bank.reason.split(":")[0]}.”`, attack: bank.n } : {}),
     page: "arena",
     at: last,
-    spotlight: ".arena-list",
+    spotlight: ".arena-detail",
     links: attack.links.slice(0, 3),
-    seconds: 40,
+    seconds: 35,
   },
   {
     id: "group",
@@ -192,7 +270,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
       )}, each approved by its own director${group.declined.length ? `; ${group.declined.join(" and ")} declined` : ""}.`,
     page: "group",
     at: last,
-    spotlight: '[aria-label="Each plant\'s share"]',
+    spotlight: `[aria-label="Each plant's share"]`,
     links: [
       ...group.approvals.map((t) => ({
         label: `approve_po by ${short(t.signer)}`,
@@ -201,27 +279,18 @@ export const JUDGE_STEPS: JudgeStep[] = [
       ...link(group.funded, "submit_pooled_po, funded"),
       ...link(group.released, "qc_release, paid out"),
     ].filter((l) => l.url),
-    seconds: 30,
+    seconds: 25,
   },
   {
-    id: "reconcile",
+    id: "books",
     title: `${agree} of ${rec.checks.length} reconciliation checks agree`,
-    body: "Day One's ledger, the acquirer's ERP and the contract, checked against each other: inventory, POs, payments, escrow, the GL and supplier standing. These read the contract's views, so there is no transaction to link.",
+    body: `Day One's ledger, the acquirer's ERP and the contract, checked against each other: inventory, POs, payments, escrow, the GL and supplier standing. The same contract code also runs on Circle's testnet USDC: it paid ${usdc.supplier.replace(/\.testnet$/, "")} ${usdc.amountUsdc} USDC for ${usdc.po}.`,
     page: "reconciliation",
     at: last,
     spotlight: '[aria-label="The checks"]',
-    links: [],
-    seconds: 25,
-  },
-  {
-    id: "usdc",
-    title: `Real USDC: ${usdc.po}, $${usdc.amountUsdc}`,
-    body: `The same contract code, deployed with Circle's testnet USDC as its token, paid ${usdc.supplier.replace(/\.testnet$/, "")} ${usdc.amountUsdc} USDC for ${usdc.po} in five calls.`,
-    page: "hq",
-    at: last,
     overlay: "usdc",
     links: usdc.calls.map((c) => ({ label: c.call.replace(/^(kevin|supplier) /, ""), url: c.url })),
-    seconds: 25,
+    seconds: 30,
   },
   {
     id: "attested",

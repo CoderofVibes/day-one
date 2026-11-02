@@ -1,6 +1,6 @@
 // Judge mode (brief §5.12): the header's "Judge mode" button or ?judge=1. Dark theme, the curtain
 // on, the recorded run from its start, and a stepper docked at the bottom (a bottom sheet on a
-// phone) that walks the ten steps of src/judge.ts: each opens its page at its recorded step,
+// phone) that walks the eleven steps of src/judge.ts: each opens its page at its recorded step,
 // cuts a spotlight round what to look at, says what happened in a sentence or two and links the
 // recorded testnet transactions. Recorded data only: no wallet, no login, no network.
 
@@ -11,10 +11,15 @@ import {
   attestation,
   JUDGE_STEPS,
   type JudgeStep,
+  LIMIT_REQUEST,
+  limitDraft,
   proofLinks,
+  RECORDED_POLICY,
   remaining,
+  savingLine,
   TOUR_URL,
   testCount,
+  usd,
 } from "./judge.ts";
 import { LindaPhone } from "./Phone.tsx";
 import { Spotlight } from "./Spotlight.tsx";
@@ -38,13 +43,14 @@ function useDarkWhileOpen() {
   }, []);
 }
 
-function setJudgeParam(value: string | null) {
+function setParam(name: string, value: string | null) {
   const q = new URLSearchParams(location.search);
-  if (value === null) q.delete("judge");
-  else q.set("judge", value);
+  if (value === null) q.delete(name);
+  else q.set(name, value);
   const search = q.toString();
   history.replaceState(null, "", search ? `?${search}` : location.pathname);
 }
+const setJudgeParam = (value: string | null) => setParam("judge", value);
 
 function ChainLinks({ step }: { step: JudgeStep }) {
   if (step.links.length === 0) return null;
@@ -83,6 +89,27 @@ export function UsdcCard() {
           </li>
         ))}
       </ol>
+    </section>
+  );
+}
+
+/** HQ's request in plain words and Kevin's draft of the owner call, from the recorded policy. */
+function LimitsCard() {
+  const p = RECORDED_POLICY;
+  const draft = limitDraft();
+  const units = (u: string) => usd(Number(u) / 1e6);
+  return (
+    <section className="judge-card" aria-label="Kevin's limits">
+      <h3>Kevin's limits, on the contract</h3>
+      <p className="judge-chips">
+        <span>{units(p.perPoLimit)} per order</span>
+        <span>{units(p.monthlyLimit)} a month</span>
+        <span>over that: Linda approves</span>
+      </p>
+      <p className="small">HQ asks: “{LIMIT_REQUEST}”</p>
+      <p className="small">Kevin's draft: {draft.sentence}</p>
+      <p className="small">Try other wording:</p>
+      <pre>npm run policy -- "{LIMIT_REQUEST}"</pre>
     </section>
   );
 }
@@ -134,6 +161,7 @@ function Summary({ onBack, onExit }: { onBack: () => void; onExit: () => void })
           ? `${tests.tests.toLocaleString("en-US")} automated tests passed in the last full run (${tests.at.slice(0, 10)}): npm run check.`
           : "The automated tests run with npm run check; the attacks alone with npm run test:attacks."}
       </p>
+      <p className="small">Does Kevin pay for himself? {savingLine()}</p>
       <ol className="judge-proofs">
         {links.map((l) => (
           <li key={l.url}>
@@ -187,7 +215,12 @@ export default function JudgeMode({
       setCurtain(true);
       return;
     }
+    setParam("attack", step.attack ? String(step.attack) : null);
     go(step.page, step.at);
+    if (step.curtain === false) {
+      setCurtain(false);
+      return;
+    }
     if (step.id !== "kevin") {
       setCurtain(true);
       return;
@@ -199,6 +232,7 @@ export default function JudgeMode({
 
   const exit = () => {
     setJudgeParam(null);
+    setParam("attack", null);
     onExit();
   };
   useEffect(() => {
@@ -218,6 +252,7 @@ export default function JudgeMode({
         <div className={`judge-overlay ${step.overlay}`}>
           {step.overlay === "phone" && <LindaPhone curtain replied />}
           {step.overlay === "usdc" && <UsdcCard />}
+          {step.overlay === "limits" && <LimitsCard />}
           {step.overlay === "attestation" && <AttestationCard />}
           {step.overlay === "tour" && <TourCard />}
         </div>
