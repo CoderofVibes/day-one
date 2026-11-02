@@ -44,3 +44,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.tsbuildinfo
+
+# Astra's screenshot sets (docs/ASTRA.md); regenerate, never commit
+docs/astra/shots/
