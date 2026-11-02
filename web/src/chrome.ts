@@ -29,14 +29,26 @@ export function nextTurn(steps: Step[], at: number, name: string): number | null
 export type ThemeChoice = "system" | "light" | "dark";
 const THEME_KEY = "day-one-theme";
 
-/** The theme this viewer picked; System when nothing is stored or storage is blocked. */
+/**
+ * The theme this viewer picked. Dark is the default for a first visit (Tony, Nov 2), so the intro
+ * and the tour open dark; the video and Linda's phone keep following the device. System is stored
+ * as a choice, so someone who picks it keeps it.
+ */
 export function storedTheme(): ThemeChoice {
   try {
     const v = localStorage.getItem(THEME_KEY);
-    return v === "light" || v === "dark" ? v : "system";
+    if (v === "light" || v === "dark" || v === "system") return v;
   } catch {
-    return "system";
+    // Blocked storage: the default below.
   }
+  const q = new URLSearchParams(typeof location === "undefined" ? "" : location.search);
+  return q.get("video") === "1" || q.get("page") === "approve" ? "system" : "dark";
+}
+
+/** Sets the stored (or default) theme before the first paint, without remembering it. */
+export function initTheme(): void {
+  const choice = storedTheme();
+  if (choice !== "system") document.documentElement.setAttribute("data-theme", choice);
 }
 
 /** Set the page's theme (System follows the device) and remember it where storage allows. */
@@ -45,8 +57,7 @@ export function applyTheme(choice: ThemeChoice): void {
   if (choice === "system") root.removeAttribute("data-theme");
   else root.setAttribute("data-theme", choice);
   try {
-    if (choice === "system") localStorage.removeItem(THEME_KEY);
-    else localStorage.setItem(THEME_KEY, choice);
+    localStorage.setItem(THEME_KEY, choice);
   } catch {
     // Private windows and blocked storage: the theme holds for this visit.
   }

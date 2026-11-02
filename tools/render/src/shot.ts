@@ -38,6 +38,7 @@ for (const [name, width, scheme] of [
   ["phone", 390, "dark"],
 ] as const) {
   const page = await browser.newPage({ viewport: { width, height: 900 }, colorScheme: scheme });
+  await page.addInitScript((t) => localStorage.setItem("day-one-theme", t), scheme);
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
