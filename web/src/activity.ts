@@ -521,7 +521,7 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 
 // ------------------------------------------------------------------ Kevin's status
 
-export type KevinState = "idle" | "reading" | "drafting" | "waiting" | "paying" | "signed";
+export type KevinState = "idle" | "reading" | "drafting" | "waiting" | "paying" | "paid" | "signed";
 export interface KevinStatus {
   state: KevinState;
   /** "waiting on Linda", "drafting": what the header chip says. */
@@ -546,7 +546,7 @@ const STATE_OF: Partial<Record<FeedType, KevinState>> = {
   price_drift: "drafting",
   transfer_suggested: "drafting",
   escrow_funded: "paying",
-  paid: "paying",
+  paid: "paid",
   approval_received: "signed",
   qc_released: "signed",
 };
@@ -560,5 +560,5 @@ export function kevinStatus(items: readonly FeedItem[], now: number): KevinStatu
   }
   const state = latest && now - latest.at < IDLE_AFTER_MS ? STATE_OF[latest.type] : undefined;
   if (!state || state === "waiting") return { state: "idle", label: "idle", working: false };
-  return { state, label: state, working: state !== "signed" };
+  return { state, label: state, working: state !== "signed" && state !== "paid" };
 }

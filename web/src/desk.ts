@@ -195,6 +195,17 @@ export function runFacts(run: Pick<RunData, "steps" | "approvals">, at: number):
   return f;
 }
 
+/** The freight in the big order: its total less the quoted price times the kilograms ordered,
+ *  so "$5,150.00" for 700 kg at $7.10/kg reads "$180.00"; null when the figures do not give it. */
+export function freightOf(f: RunFacts): string | null {
+  const num = (s: string | undefined) => Number((s ?? "").replace(/[^\d.]/g, ""));
+  const total = num(f.big?.amount);
+  const goods = num(f.quotes?.price) * num(f.forecast?.orderKg);
+  const cents = Math.round((total - goods) * 100);
+  if (!total || !goods || cents <= 0) return null;
+  return `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+}
+
 /** "700 kg ascorbic acid", from the approval text when the forecast's line does not name it. */
 function orderLine(f: RunFacts): string | null {
   const fromRequest = f.request ? /for ([\d,]+ kg [a-z ]+?)\./.exec(f.request)?.[1] : undefined;
@@ -641,7 +652,7 @@ export function needOf(
         subtitle: [what, `from ${big.supplier}`, big.amount].filter(Boolean).join(" · "),
         why: `${big.po} is ${big.amount}, over the ${big.limit.replace(".00", "")} Kevin may spend on one order. The spending rules send it to you, and Kevin cannot go around them.`,
         deciding: q
-          ? `Whether to spend ${big.amount} with ${big.supplier} at ${q.price}/kg, delivered in ${q.days} days. Kevin compared ${q.count} quotes and checked the other plants first.`
+          ? `Whether to spend ${big.amount} with ${big.supplier} at ${q.price}/kg${freightOf(f) ? ` plus ${freightOf(f)} freight` : ""}, delivered in ${q.days} days. Kevin compared ${q.count} quotes and checked the other plants first.`
           : `Whether to spend ${big.amount} with ${big.supplier}.`,
         after: `Approve, and the money is set aside, not paid: ${big.supplier} is paid only after the delivery passes QC. Decline, and nothing is ordered.`,
         where: {

@@ -133,8 +133,8 @@ export const BEATS: Beat[] = [
     panel: "desk",
     shots: [{ step: 8, ms: 10_000 }],
     captions: [
-      "Linda approves from her phone. That YES becomes a transaction signed by her own account.",
-      "Kevin can't fake it, and Linda never touches a wallet.",
+      "Linda approves from her phone. That YES becomes a transaction signed by the director's account.",
+      "Kevin's account can't approve it, and Linda never touches a wallet.",
     ],
   },
   {
@@ -261,7 +261,7 @@ const TOUR_EXTRA: Beat[] = [
     shots: [{ step: 14, ms: 10_000 }],
     captions: [
       "Then we attacked it: lookalike vendors, fake invoices, new bank details, peeks at sealed bids.",
-      "Fifteen attacks, fifteen refusals, by Kevin or by the contract.",
+      "Fifteen attacks, fifteen refusals: by Kevin, the ERP or the contract.",
     ],
   },
 ];

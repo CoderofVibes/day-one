@@ -2131,6 +2131,7 @@ ul.plain {
 .gh-kevin.paying .dot {
   background: var(--money);
 }
+.gh-kevin.paid .dot,
 .gh-kevin.signed .dot {
   background: var(--ok);
 }

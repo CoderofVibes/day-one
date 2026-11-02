@@ -147,7 +147,7 @@ export function savingLine(): string {
   const at = (journey as unknown as { at: string }).at;
   const t = tally("B", at);
   const fee = t.cost.feeUsdc / 1e6 / t.cost.months;
-  return `${usd(t.paid.realizedUsdc / 1e6)} realized at Hollow Pine, ${t.paid.ratio}× Kevin's cost (an assumed $${fee.toLocaleString("en-US")} monthly fee, fictional). The Money page shows each figure's formula.`;
+  return `In the fictional ledger, Kevin's realized savings at Hollow Pine (${usd(t.paid.realizedUsdc / 1e6)}) cover ${t.paid.ratio}× his modeled cost, including an assumed $${fee.toLocaleString("en-US")} monthly fee. The Money page shows each formula.`;
 }
 
 export const usd = (n: number) =>
@@ -183,7 +183,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "takeover",
     title: "Day One at the plant Acme just bought",
-    body: `Hollow Pine ran on paper and one workbook, ${book.file}. Kevin read its ${book.rows} rows and asked Ray about ${book.questions} (a lot entered twice, pounds for kilograms, a total row) before anything posted. Paper, suppliers, limits and books move over the same way, each signed off by a person.`,
+    body: `Acme has just bought Hollow Pine, where stock lives in paper records and one workbook. Kevin read its ${book.rows} rows and stopped for Ray's answer on ${book.questions} before posting the opening stock. The plant's records, suppliers, limits and books move into Day One the same way, through steps a person reviews.`,
     page: "spreadsheets",
     at: 0,
     spotlight: '[aria-label="The inventory workbook"]',
@@ -194,7 +194,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "limits",
     title: "Acme HQ sets Kevin's limits once",
-    body: "HQ puts Kevin's limits on the contract: $2,500 per order and $60,000 a month, with Linda approving anything over. Kevin cannot change them. HQ asks for a change in plain words; Kevin drafts the owner call and HQ's key signs it.",
+    body: "HQ sets Kevin's limits on the contract: $2,500 per order and $60,000 a month, and an order over them needs Linda's approval. Kevin's account cannot change them. The card drafts a change to $3,000; nothing changes until HQ's own key signs it.",
     page: "hq",
     at: 0,
     overlay: "limits",
@@ -205,7 +205,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "kevin",
     title: "Kevin handled the paperwork",
-    body: "After Ray confirmed the batch record Kevin read, Kevin caught 12.55 kg missing from a transfer, forecast a shortfall, compared three quotes and placed PO-1041 inside his limits. Done work sits apart from drafts and suggestions. Behind the curtain shows the chain staff never see.",
+    body: "Ray confirmed the batch record Kevin read. Kevin flagged 12.55 kg missing from a transfer, forecast a shortfall, compared three quotes and funded the $612.00 PO-1041 inside his limits. Drafts and suggestions still wait for a person.",
     page: "overview",
     at: refusedAt - 1,
     spotlight: ".desk",
@@ -215,7 +215,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "refused",
     title: "One decision needs Linda",
-    body: "PO-1042 is $5,150.00, over Kevin's $2,500 limit, and the contract refused it. The desk hands Linda one decision with why her, what she decides and what happens after. Kevin first checked that no other plant could spare the stock.",
+    body: "The contract refused PO-1042: $5,150.00 against Kevin's $2,500 limit. Linda decides on 700 kg at $7.10/kg plus $180.00 freight; Kevin first checked that no other plant could spare it. Approval funds escrow; payment waits for receipt and QC.",
     ...(po.refused?.error ? { quote: `Contract: “${po.refused.error}”` } : {}),
     page: "overview",
     at: refusedAt,
@@ -226,7 +226,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "approve",
     title: "Linda approves by text",
-    body: "Linda Park replies YES 1042 from her phone. The reply becomes approve_po signed by her own account, gas paid by Day One; Kevin cannot fake it, and Linda never sees a wallet. Her approval files under what was handled; the payment's condition stays in view.",
+    body: "In this demo Linda's YES 1042 is simulated: her reply is signed with the director account's key, which the server holds, and Day One pays the gas. Kevin's own account cannot approve his order. Her approval lets his unchanged retry fund escrow.",
     page: "overview",
     at: textedAt,
     overlay: "phone",
@@ -239,7 +239,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "paid",
     title: "Escrow released on QC",
-    body: "The truck arrives, lot ASC-261116-01 waits in quarantine, and Priya releases it. The contract pays Northgate from escrow in that call: paid on QC, not on an invoice. On the desk, the condition reads met; the desk still lists the other work waiting.",
+    body: "Tommy confirms the delivery of lot ASC-261116-01 and Priya releases it from quarantine. That release has the contract pay Northgate $5,150.00 from escrow, to the account fixed on the PO when it was funded.",
     page: "map",
     at: releasedAt,
     spotlight: ".map-frame",
@@ -252,12 +252,12 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "attacks",
     title: `${attack.refused} of ${attack.total} attacks refused`,
-    body: "It opens on the fraud that costs companies most: an email asking to pay Northgate at a new bank account. Kevin held it and changed nothing. Every other attack, from a lookalike vendor to a peek at sealed quotes, was refused by Kevin or the contract. Press Fire attack.",
+    body: "An email asks to send Northgate's payments to a new account. Kevin set it aside and changed nothing; it never reached the chain. All 15 recorded attacks were stopped by Kevin, the mock ERP or the contract. Press Fire attack to replay this one.",
     ...(bank ? { quote: `Kevin: “${bank.reason.split(":")[0]}.”`, attack: bank.n } : {}),
     page: "arena",
     at: last,
     spotlight: ".arena-detail",
-    links: attack.links.slice(0, 3),
+    links: attack.links.slice(0, 3).map((l) => ({ ...l, label: `another case: ${l.label}` })),
     seconds: 35,
   },
   {
@@ -284,7 +284,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "books",
     title: `${agree} of ${rec.checks.length} reconciliation checks agree`,
-    body: `Day One's ledger, the acquirer's ERP and the contract, checked against each other: inventory, POs, payments, escrow, the GL and supplier standing. The same contract code also runs on Circle's testnet USDC: it paid ${usdc.supplier.replace(/\.testnet$/, "")} ${usdc.amountUsdc} USDC for ${usdc.po}.`,
+    body: `${agree} recorded checks agree across Day One's ledger, Acme's mock ERP and the contract: inventory, POs, payments, escrow, the general ledger and supplier standing. Separately, the same contract code settled ${usdc.po} on Circle's testnet USDC, ${usdc.amountUsdc} USDC to ${usdc.supplier.replace(/\.testnet$/, "")}.`,
     page: "reconciliation",
     at: last,
     spotlight: '[aria-label="The checks"]',
@@ -295,7 +295,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "attested",
     title: "Attested answers",
-    body: `Kevin's model (${att.model}) ran in a hardware enclave on NEAR AI Cloud: ${att.checks} of ${att.of} enclave checks verified and each recorded answer signed. Re-check it yourself with npm run verify:attestation.`,
+    body: `Kevin's model (${att.model}) ran in a hardware enclave on NEAR AI Cloud: ${att.checks} of ${att.of} enclave checks verified, and each of this run's ${att.answers} recorded answers carries a verified signature. That proves where an answer came from, not that it is right. Re-check with npm run verify:attestation.`,
     page: "ask",
     at: last,
     spotlight: ".rail-v2 .attest",
@@ -305,8 +305,8 @@ export const JUDGE_STEPS: JudgeStep[] = [
   },
   {
     id: "tour",
-    title: "Recall drill, and the tour",
-    body: "Run the recall drill to trace a mock supplier recall notice through every batch, or play the tour: the whole run in 3D with captions.",
+    title: "Explore a recall, or finish",
+    body: "The recall drill traces a fictional supplier recall through the recorded lot history without changing the ledger. Try it, or open the summary. The captioned tour of the whole run takes another 2:40.",
     page: "lots",
     at: last,
     spotlight: '[aria-label="Recall drill"]',

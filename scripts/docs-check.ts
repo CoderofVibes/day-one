@@ -37,7 +37,11 @@ const problems = docProblems(files, {
   ignored: (p) => {
     let v = ignoredCache.get(p);
     if (v === undefined) {
-      v = git("check-ignore", "-q", "--", p).status === 0;
+      // A folder rule ("data/runtime/") matches a folder a fresh clone does not have only when
+      // the path ends in "/".
+      v =
+        git("check-ignore", "-q", "--", p).status === 0 ||
+        (!p.endsWith("/") && git("check-ignore", "-q", "--", `${p}/`).status === 0);
       ignoredCache.set(p, v);
     }
     return v;

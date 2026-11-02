@@ -120,7 +120,7 @@ export function FirstShiftGuide({
   setCurtain: (on: boolean) => void;
   /** End or "Start your shift": back to Ray's desk at the start of the morning. */
   onEnd: (finished: boolean) => void;
-  /** "See every proof": judge mode. */
+  /** "Review the evidence": judge mode. */
   onProof: () => void;
 }) {
   const [i, setI] = useState(0);
@@ -225,7 +225,7 @@ export function FirstShiftGuide({
             </p>
             <div className="fs-controls">
               <button type="button" onClick={onProof}>
-                See every proof
+                Review the evidence
               </button>
               <button type="button" className="fs-primary" onClick={() => onEnd(true)}>
                 Start your shift

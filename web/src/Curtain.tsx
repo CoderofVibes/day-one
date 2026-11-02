@@ -64,7 +64,7 @@ function Attested({ result }: { result: Attestation }) {
             {unverified ? "✗" : "✓"} {result.enclave.length} enclave checks
           </span>
           <span className={unverified ? "chip bad" : "chip"}>
-            {unverified ? "✗" : "✓"} {result.answers.length} signed answers
+            {unverified ? "✗" : "✓"} {result.answers.length} signed answers in this run
           </span>
         </span>
       </summary>

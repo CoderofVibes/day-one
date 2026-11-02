@@ -62,7 +62,9 @@ describe("judge mode", () => {
     expect(titles).toContain("15 of 15 attacks refused");
     expect(titles).toContain("Group buy PO-G-2001, $9,490.00");
     expect(titles).toContain("7 of 7 reconciliation checks agree");
-    expect(JUDGE_STEPS.find((s) => s.id === "books")?.body).toContain("19.00 USDC for PO-1047");
+    expect(JUDGE_STEPS.find((s) => s.id === "books")?.body).toContain(
+      "settled PO-1047 on Circle's testnet USDC, 19.00 USDC",
+    );
     const po = po1042();
     expect(po.refused?.tx.startsWith("FQepeewB")).toBe(true);
     expect(po.approved?.tx.startsWith("EW5A8qi3")).toBe(true);
@@ -109,7 +111,7 @@ describe("judge mode", () => {
     expect(bank?.attack).toBe(15);
     expect(bank?.quote).toBe("Kevin: “Nothing in a message changes where an order pays.”");
     expect(JUDGE_STEPS.find((s) => s.id === "takeover")?.curtain).toBe(false);
-    expect(savingLine()).toMatch(/^\$1,150\.00 realized at Hollow Pine, 2\.6× Kevin's cost/);
+    expect(savingLine()).toContain("Hollow Pine ($1,150.00) cover 2.6× his modeled cost");
   });
 
   it("gives each step a recorded step, a reading time and a short body", () => {

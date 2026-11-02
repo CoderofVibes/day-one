@@ -12,7 +12,7 @@ Purchasing runs on **NEAR testnet**, and the staff never see it:
 
 - A **spend-policy contract** holds the plant's budget and enforces Kevin's limits ($2,500 per PO, $60,000 a month, category caps). Over the limit, the contract refuses the PO and the ops director approves by text ("YES 1042"); her approval is a relayed meta-transaction signed with her own key.
 - **Escrow** holds the PO's money from funding until QC releases the delivered lot, and pays only the supplier account fixed on the PO.
-- **Supplier credentials** from HQ (categories, expiry, revocation, suspension after two QC rejects in a row) gate every payment.
+- **Supplier credentials** from HQ (categories, expiry, revocation, suspension after two QC rejects in a row) gate every new PO, plain or pooled, when it is funded; QC release pays the account fixed on the funded PO and does not recheck the credential.
 - **Record fingerprints** (salted sha256) of batch records, receipts and supplier quotes are anchored on chain; `npm run verify` recomputes and compares.
 - **Sealed quote rounds** and **group purchasing** across plants live in the same contract.
 - Kevin's model answers come from **NEAR AI Cloud** with TEE attestation, verified offline (`npm run verify:attestation`); an Anthropic fallback is labeled "not attested".

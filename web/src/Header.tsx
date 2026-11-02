@@ -236,7 +236,7 @@ export function GlobalHeader({
           type="button"
           className="gh-judge"
           onClick={onJudge}
-          title="A guided tour of every proof, with its testnet links"
+          title="A guided walk through the premise and the proof, with testnet links"
         >
           Judge mode
         </button>

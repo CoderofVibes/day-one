@@ -155,7 +155,7 @@ describe("what needs a person", () => {
       subtitle: "700 kg ascorbic acid · from Northgate Ingredients · $5,150.00",
     });
     expect(n?.why).toContain("over the $2,500 Kevin may spend on one order");
-    expect(n?.deciding).toContain("at $7.10/kg, delivered in 7 days");
+    expect(n?.deciding).toContain("at $7.10/kg plus $180.00 freight, delivered in 7 days");
     expect(n?.after).toContain("paid only after the delivery passes QC");
     expect(primaryLabel(turnFromStep(run.steps, LINDA), runFacts(run, BIG))).toBe(
       "Approve PO-1042",

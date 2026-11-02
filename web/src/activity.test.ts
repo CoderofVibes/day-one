@@ -241,7 +241,7 @@ describe("Kevin's status", () => {
     expect(status(7)).toBe("waiting on Linda");
     expect(status(8)).toBe("signed");
     expect(status(9)).toBe("paying");
-    expect(status(13)).toBe("paying");
+    expect(status(13)).toBe("paid");
   });
 
   it("goes idle a while after his last item, but keeps waiting on a person", () => {

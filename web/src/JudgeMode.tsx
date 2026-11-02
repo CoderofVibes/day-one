@@ -101,6 +101,7 @@ function LimitsCard() {
   return (
     <section className="judge-card" aria-label="Kevin's limits">
       <h3>Kevin's limits, on the contract</h3>
+      <p className="small">Recorded limits · an unsigned example change</p>
       <p className="judge-chips">
         <span>{units(p.perPoLimit)} per order</span>
         <span>{units(p.monthlyLimit)} a month</span>
@@ -154,14 +155,15 @@ function Summary({ onBack, onExit }: { onBack: () => void; onExit: () => void })
   const tests = testCount();
   return (
     <div className="judge-summary">
-      <h2>Every proof, in one list</h2>
+      <h2>Selected transaction proofs</h2>
       <p className="small">
-        {links.length} recorded testnet transactions, each opening on the explorer.{" "}
+        {links.length} recorded testnet transactions from this walkthrough, each opening on the
+        explorer. The replays, the reconciliation and the signed answers are evidence too.{" "}
         {tests
           ? `${tests.tests.toLocaleString("en-US")} automated tests passed in the last full run (${tests.at.slice(0, 10)}): npm run check.`
           : "The automated tests run with npm run check; the attacks alone with npm run test:attacks."}
       </p>
-      <p className="small">Does Kevin pay for himself? {savingLine()}</p>
+      <p className="small">{savingLine()}</p>
       <ol className="judge-proofs">
         {links.map((l) => (
           <li key={l.url}>
