@@ -47,3 +47,6 @@ Thumbs.db
 
 # Astra's screenshot sets (docs/ASTRA.md); regenerate, never commit
 docs/astra/shots/
+
+# Public hackathon material Tony collects and our analysis of it (hackathon-intel/README.md); never commit
+hackathon-intel/
