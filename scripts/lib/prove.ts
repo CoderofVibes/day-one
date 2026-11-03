@@ -76,6 +76,25 @@ export const CLAIMS: Claim[] = [
     steps: [cleanCloneStep("review")],
   },
   {
+    id: "lots",
+    claim:
+      "Every lot's story, from the supplier and the payment to each batch and customer shipment, is anchored on chain as one Merkle root per plant per day, and one lot's records can be proved without disclosing the rest.",
+    evidence:
+      "The lot book (data/lots/lot-book.json) is checked against the genealogy, then PO-1042's lot is proved record by record against the roots the contract holds on testnet.",
+    steps: [
+      {
+        name: "lot-book",
+        command: "npm run lots",
+        expect: "every root matches its records and the genealogy.",
+      },
+      {
+        name: "verify-lot",
+        command: "npm run verify:lot -- ASC-261116-01",
+        expect: "3 of 3 records proved against the roots anchored on chain.",
+      },
+    ],
+  },
+  {
     id: "erp",
     claim:
       "Day One, the acquirer's ERP and the contract agree on every PO, bill, payment and supplier.",

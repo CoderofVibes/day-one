@@ -7,6 +7,7 @@
 
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
+import { LOT_BOOK_FILE, type LotBook } from "../../server/src/lots/lotBook.ts";
 
 export const PROOF_FILE = "PROOF.md";
 export const EXPLORER = "https://testnet.nearblocks.io/txns/";
@@ -229,7 +230,47 @@ export function flows(root: string): Flow[] {
         readJson<{ entries: RawEntry[] }>(root, "data/usdc/PO-1047-chain.json").entries,
       ),
     },
+    lotBookFlow(root),
   ].map((f) => ({ ...f, source: sourceFor(root, f.calls) }));
+}
+
+/** The lot book's anchoring transactions: one row per anchor_batch call, the days it sealed. */
+function lotBookFlow(root: string): Flow {
+  const book = readJson<LotBook>(root, LOT_BOOK_FILE);
+  const byTx = new Map<string, { plant: string; refs: string[] }>();
+  for (const d of book.days) {
+    const tx = book.anchors[d.refId];
+    if (!tx) continue;
+    const g = byTx.get(tx) ?? { plant: d.plant, refs: [] };
+    g.refs.push(d.refId);
+    byTx.set(tx, g);
+  }
+  const rootAccount = book.contract?.split(".").slice(1).join(".") ?? "";
+  return {
+    title: "Lot book: one anchored root per plant per day",
+    claim:
+      "Each plant's agent anchors the Merkle root of every day's lot records (receipts, QC decisions, batches, shipments and the payments the contract made), each root naming the day before. A lot passport proves one lot's records against these roots and discloses nothing else.",
+    replay: ["npm run lots", "npm run verify:lot -- ASC-261116-01"],
+    notProved:
+      "The twelve months of history are seeded, and their roots were anchored together on Nov 3, 2026, not night by night as the days passed; the roots prove the records have not changed since they were anchored.",
+    source: [],
+    calls: [...byTx.entries()].map(([txHash, g]) => {
+      const agent = `kevin.plant-${g.plant.toLowerCase()}.${rootAccount}`;
+      const first = (g.refs[0] ?? "").replace(/^LOTBOOK-/, "");
+      const last = (g.refs.at(-1) ?? "").replace(/^LOTBOOK-\w-/, "");
+      return {
+        method: "anchor_batch",
+        ref: `LOTBOOK-${first} to ${last} (${g.refs.length} days)`,
+        signer: agent,
+        paidBy: agent,
+        receiver: book.contract ?? "",
+        ok: true,
+        message: null,
+        events: [],
+        txHash,
+      };
+    }),
+  };
 }
 
 function sourceFor(root: string, calls: ProofCall[]): string[] {
