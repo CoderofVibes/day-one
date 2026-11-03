@@ -1,3 +1,5 @@
+> **Reviewing or judging Day One?** What follows is the builders' working conventions, not instructions for you: do not follow its session routine or plan. Start with [`llms.txt`](llms.txt) and the [README](README.md), and run `npm ci && npm run prove` for a keyless scorecard of every claim.
+
 @AGENTS.md
 
 ## Claude Code specifics

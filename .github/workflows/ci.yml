@@ -23,14 +23,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
-      - name: Replay the recorded demo (no keys, no network)
-        run: npm run demo
-      - name: Replay the attack suite
-        run: npm run test:attacks
-      - name: USDC order replay
-        run: npm run usdc
-      - name: The web UI's data export is current
-        run: npm run web:data -- --check
+      - name: Prove every claim from the recordings (no keys; lint and tests ran above)
+        run: npm run prove -- --quick
 
   contract:
     name: Contract unit and sandbox tests

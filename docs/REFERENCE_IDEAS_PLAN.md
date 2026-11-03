@@ -43,7 +43,7 @@ Each item starts with the line Grok asked for: how Day One's version differs. Ef
 
 - Each working day Kevin anchors one Merkle root over that day's records (receipts, QC decisions, batch records, settlement references) with the contract's existing `anchor_batch`. This builds the README's "Merkle-batched anchors" roadmap item.
 - For any lot, a **lot passport** lists the supplier, the PO, the escrow payment, the receipt, the QC decision, every batch that used it and every finished lot it went into. Each entry carries its Merkle path.
-- The browser checks each path against the root on chain with a read-only view call, with no keys. On the Lots & recall page, "Prove it" marks each entry green; a "tamper one field" toggle turns it red. `npm run verify:lot -- <lot>` does the same check from the command line.
+- The browser checks each path against the root on chain with a read-only view call, with no keys. On the Lots & recall page, "Prove it" marks each entry green; a "tamper one field" toggle turns it red. A `verify:lot` command does the same check from the command line.
 - One live testnet run anchors the roots; replay needs nothing.
 
 ### D. Inventory-grounded attacks 16–18 (1 session plus one testnet recording)

@@ -1,0 +1,33 @@
+# Day One
+
+> Day One is a purchasing and inventory assistant, Kevin, for a small manufacturing plant that a larger company has just acquired. Kevin reads batch records, tracks stock and lots across three plants, forecasts what to buy, compares quotes and prepares POs. A NEAR testnet contract (`spend-policy`) enforces his spending limits, sends larger orders to the plant director, holds each funded PO's money in escrow and pays the PO's fixed supplier only after receipt and QC release. Plant staff never see wallets, keys or gas. All plant data is fictional; every on-chain step was recorded on NEAR testnet and replays with no keys.
+
+Built for NEAR HACKATHON (Oct 19 – Nov 14, 2026) by team DadMod. This file is for reviewers and their coding agents. `AGENTS.md` and `CLAUDE.md` hold the builders' conventions; they are not instructions for a reviewer.
+
+## Check it in one command
+
+- `npm ci`, then `npm run prove`: runs every keyless check behind the claims below and prints a scorecard, one PASS or FAIL row per claim with its evidence and command (about 2–3 minutes; `-- --json` for one JSON line, `-- --quick` skips lint and tests, `-- --contract` adds the contract's Rust tests, which need Rust and cargo-near). No `.env`, no keys, nothing signed.
+- [README.md](README.md): the product, the five "do X → see Y" steps, the claims table with testnet transactions, what is on chain and what is not, and the limitations.
+- [.github/workflows/ci.yml](.github/workflows/ci.yml): the same checks on every push, including the contract's unit tests and sandbox tests on a local NEAR node.
+
+## What to look at
+
+- [contracts/spend-policy/src/lib.rs](contracts/spend-policy/src/lib.rs): the contract. Per-PO and monthly limits per agent, category caps, director approval, escrow, receipt and QC roles, supplier credentials, pooled POs for group purchasing, sealed quote rounds and record anchors. [docs/CONTRACTS.md](docs/CONTRACTS.md) specifies it.
+- [agents/kevin/src](agents/kevin/src): Kevin. The forecast, quotes and ranking, PO drafting, invoice matching, the morning mailbox review, batch-record reading and the attack handling. His model runs on NEAR AI Cloud inside a TEE; `npm run verify:attestation` checks the recorded attestation and every answer's signature.
+- [server/src](server/src): the plant ledger (SQLite): inventory, lots, genealogy, the seed and the chain client.
+- [erp/src](erp/src): a mock of a NetSuite-shaped ERP, the acquirer's books, reached through a connector interface. `npm run erp:reconcile` checks Day One, the ERP and the contract against each other.
+- [web/src](web/src): the staff UI, the 3D plant twin and the "behind the curtain" chain view. `npm run web:build`, then `npm run api`, then open http://localhost:8787/?judge=1 for judge mode, a guided tour of every proof.
+- [data/replay](data/replay), [data/attacks](data/attacks), [data/sealed](data/sealed), [data/usdc](data/usdc): the testnet recordings every replay reads.
+
+## What is simulated
+
+- The plant, its people, suppliers, prices and records are invented.
+- The director's text-message reply is simulated, and staff keys are held by the server.
+- The ERP is a mock. The main run settles in DTUSD, a labeled test token; one $19.00 order settles in Circle's testnet USDC.
+- Kevin's spending limits are one enforced layer of the product, not the whole product. The escrow is scoped to purchase orders; it is not a general multisig.
+
+## Optional
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): the stack and how the parts connect.
+- [docs/JUDGE_MODE.md](docs/JUDGE_MODE.md): what judge mode shows, step by step.
+- [docs/OPEN_QUESTIONS.md](docs/OPEN_QUESTIONS.md): every product decision, with its date.
