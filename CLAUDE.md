@@ -2,8 +2,9 @@
 
 ## Claude Code specifics
 
-- Start each session by calling `read_my_inbox` (Muse bridge), then reading `docs/PLAN.md` and `git log --oneline -15` to find where the last session stopped. Then continue the plan; do not wait for instructions unless a hard-rule confirmation is needed.
-- End each session with a commit and a `post_status` to Muse: what landed, what is next, any blocker.
+- **Never use the Muse bridge (Tony, Nov 3, OPEN_QUESTIONS #49).** No `read_my_inbox`, `send_to_muse`, `post_status` or shared-plan calls, in any session or scheduled run, until Tony lifts this in chat.
+- Start each session by reading `docs/PLAN.md` and `git log --oneline -15` to find where the last session stopped. Then continue the plan; do not wait for instructions unless a hard-rule confirmation is needed.
+- End each session with a commit and a short plain status for Tony as the last message: what landed, what is next, any blocker.
 - Model routing (Tony's guidance): Opus for routine engineering; Fable 5.1 for creative planning, hard troubleshooting and visual/spatial work such as the twin. Fable is expensive; use it where it is strong, not by default.
 - Size each task to finish and commit within one session. If a task is interrupted, leave a one-line note at the top of `docs/PLAN.md` under "In progress".
 - The dev machine is Windows 11 with a tight disk budget (15–25 GB for this project). Run `cargo clean` on contracts after a deploy; never install a local NEAR node or local LLM.

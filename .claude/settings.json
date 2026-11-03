@@ -9,7 +9,6 @@
       "WebSearch",
       "WebFetch",
       "Skill(continue-plan)",
-      "mcp__muse-bridge",
       "Bash(git status *)",
       "Bash(git diff *)",
       "Bash(git log *)",
@@ -56,6 +55,7 @@
       "PowerShell(Get-Content *)"
     ],
     "deny": [
+      "mcp__muse-bridge",
       "Bash(*mainnet*)",
       "Bash(*.near *network-config*)",
       "Bash(git push --force*)",
