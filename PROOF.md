@@ -23,7 +23,7 @@ Kevin anchors the batch record, places PO-1041 inside his limits, is refused on 
 
 - **Replay (no keys):** `npm run demo`
 - **Contract:** `spend-policy.acme-holdings.testnet`
-- **Enforced in:** [`anchor_batch`](contracts/spend-policy/src/lib.rs#L814) (lib.rs:814), [`anchor`](contracts/spend-policy/src/lib.rs#L804) (lib.rs:804), [`submit_po`](contracts/spend-policy/src/lib.rs#L444) (lib.rs:444), [`approve_po`](contracts/spend-policy/src/lib.rs#L606) (lib.rs:606), [`accept_po`](contracts/spend-policy/src/lib.rs#L662) (lib.rs:662), [`mark_shipped`](contracts/spend-policy/src/lib.rs#L677) (lib.rs:677), [`confirm_receipt`](contracts/spend-policy/src/lib.rs#L699) (lib.rs:699), [`qc_release`](contracts/spend-policy/src/lib.rs#L714) (lib.rs:714)
+- **Enforced in:** [`anchor_batch`](contracts/spend-policy/src/lib.rs#L1007) (lib.rs:1007), [`anchor`](contracts/spend-policy/src/lib.rs#L997) (lib.rs:997), [`submit_po`](contracts/spend-policy/src/lib.rs#L519) (lib.rs:519), [`approve_po`](contracts/spend-policy/src/lib.rs#L709) (lib.rs:709), [`accept_po`](contracts/spend-policy/src/lib.rs#L765) (lib.rs:765), [`mark_shipped`](contracts/spend-policy/src/lib.rs#L780) (lib.rs:780), [`confirm_receipt`](contracts/spend-policy/src/lib.rs#L804) (lib.rs:804), [`qc_release`](contracts/spend-policy/src/lib.rs#L892) (lib.rs:892)
 - **Does not prove:** The director's text reply is simulated and her key is held by the server; the run settles in DTUSD, a labeled test token.
 
 | # | Call | Record | Signed by | Gas paid by | Contract's answer | Events | Transaction |
@@ -48,7 +48,7 @@ A look-alike supplier, a re-sent PO, a split purchase and a ghost vendor reach t
 
 - **Replay (no keys):** `npm run test:attacks`
 - **Contract:** `spend-policy.acme-holdings.testnet`
-- **Enforced in:** [`submit_po`](contracts/spend-policy/src/lib.rs#L444) (lib.rs:444)
+- **Enforced in:** [`submit_po`](contracts/spend-policy/src/lib.rs#L519) (lib.rs:519)
 - **Does not prove:** The suite's other attacks (inflated, hidden-text and duplicate invoices, the payment-failed and bank-details messages) are stopped by Kevin or the ERP before any transaction; `npm run test:attacks` replays them from their recorded answers.
 
 | # | Call | Record | Signed by | Gas paid by | Contract's answer | Events | Transaction |
@@ -65,7 +65,7 @@ HQ issues, revokes and lets lapse supplier credentials; POs to a revoked, expire
 
 - **Replay (no keys):** `npm run test:attacks`
 - **Contract:** `spend-policy.acme-holdings.testnet`
-- **Enforced in:** [`issue_credential`](contracts/spend-policy/src/credentials.rs#L327) (credentials.rs:327), [`revoke_credential`](contracts/spend-policy/src/credentials.rs#L403) (credentials.rs:403), [`submit_po`](contracts/spend-policy/src/lib.rs#L444) (lib.rs:444), [`accept_po`](contracts/spend-policy/src/lib.rs#L662) (lib.rs:662), [`mark_shipped`](contracts/spend-policy/src/lib.rs#L677) (lib.rs:677), [`confirm_receipt`](contracts/spend-policy/src/lib.rs#L699) (lib.rs:699), [`qc_reject`](contracts/spend-policy/src/lib.rs#L760) (lib.rs:760), [`approve_po`](contracts/spend-policy/src/lib.rs#L606) (lib.rs:606)
+- **Enforced in:** [`issue_credential`](contracts/spend-policy/src/credentials.rs#L327) (credentials.rs:327), [`revoke_credential`](contracts/spend-policy/src/credentials.rs#L403) (credentials.rs:403), [`submit_po`](contracts/spend-policy/src/lib.rs#L519) (lib.rs:519), [`accept_po`](contracts/spend-policy/src/lib.rs#L765) (lib.rs:765), [`mark_shipped`](contracts/spend-policy/src/lib.rs#L780) (lib.rs:780), [`confirm_receipt`](contracts/spend-policy/src/lib.rs#L804) (lib.rs:804), [`qc_reject`](contracts/spend-policy/src/lib.rs#L953) (lib.rs:953), [`approve_po`](contracts/spend-policy/src/lib.rs#L709) (lib.rs:709)
 - **Does not prove:** The credentials are issued by the acquirer's own account; there is no outside supplier-verification service behind them.
 
 | # | Call | Record | Signed by | Gas paid by | Contract's answer | Events | Transaction |
@@ -97,7 +97,7 @@ Kevin's key sends an order seven times what the plan can use and the contract re
 
 - **Replay (no keys):** `npm run test:attacks`
 - **Contract:** `spend-policy.acme-holdings.testnet`
-- **Enforced in:** [`submit_po`](contracts/spend-policy/src/lib.rs#L444) (lib.rs:444), [`qc_release`](contracts/spend-policy/src/lib.rs#L714) (lib.rs:714), [`accept_po`](contracts/spend-policy/src/lib.rs#L662) (lib.rs:662), [`mark_shipped`](contracts/spend-policy/src/lib.rs#L677) (lib.rs:677), [`confirm_receipt`](contracts/spend-policy/src/lib.rs#L699) (lib.rs:699)
+- **Enforced in:** [`submit_po`](contracts/spend-policy/src/lib.rs#L519) (lib.rs:519), [`qc_release`](contracts/spend-policy/src/lib.rs#L892) (lib.rs:892), [`accept_po`](contracts/spend-policy/src/lib.rs#L765) (lib.rs:765), [`mark_shipped`](contracts/spend-policy/src/lib.rs#L780) (lib.rs:780), [`confirm_receipt`](contracts/spend-policy/src/lib.rs#L804) (lib.rs:804)
 - **Does not prove:** The suite's other plant attacks (a recalled lot written into a batch record, a price spike, an over-delivery on the packing slip) are Kevin's own checks on the ledger and send no transaction.
 
 | # | Call | Record | Signed by | Gas paid by | Contract's answer | Events | Transaction |
@@ -118,7 +118,7 @@ Three plants pool their ascorbic acid demand into one pooled PO; each plant's sh
 
 - **Replay (no keys):** `npm run demo:group`
 - **Contract:** `spend-policy.acme-holdings.testnet`
-- **Enforced in:** [`open_pool`](contracts/spend-policy/src/lib.rs#L830) (lib.rs:830), [`join_pool`](contracts/spend-policy/src/lib.rs#L883) (lib.rs:883), [`anchor`](contracts/spend-policy/src/lib.rs#L804) (lib.rs:804), [`submit_pooled_po`](contracts/spend-policy/src/lib.rs#L925) (lib.rs:925), [`approve_po`](contracts/spend-policy/src/lib.rs#L606) (lib.rs:606), [`accept_po`](contracts/spend-policy/src/lib.rs#L662) (lib.rs:662), [`mark_shipped`](contracts/spend-policy/src/lib.rs#L677) (lib.rs:677), [`confirm_receipt`](contracts/spend-policy/src/lib.rs#L699) (lib.rs:699), [`qc_release`](contracts/spend-policy/src/lib.rs#L714) (lib.rs:714)
+- **Enforced in:** [`open_pool`](contracts/spend-policy/src/lib.rs#L1023) (lib.rs:1023), [`join_pool`](contracts/spend-policy/src/lib.rs#L1076) (lib.rs:1076), [`anchor`](contracts/spend-policy/src/lib.rs#L997) (lib.rs:997), [`submit_pooled_po`](contracts/spend-policy/src/lib.rs#L1118) (lib.rs:1118), [`approve_po`](contracts/spend-policy/src/lib.rs#L709) (lib.rs:709), [`accept_po`](contracts/spend-policy/src/lib.rs#L765) (lib.rs:765), [`mark_shipped`](contracts/spend-policy/src/lib.rs#L780) (lib.rs:780), [`confirm_receipt`](contracts/spend-policy/src/lib.rs#L804) (lib.rs:804), [`qc_release`](contracts/spend-policy/src/lib.rs#L892) (lib.rs:892)
 - **Does not prove:** Plants A and C are seeded plants with the same fictional data as Plant B.
 
 | # | Call | Record | Signed by | Gas paid by | Contract's answer | Events | Transaction |
@@ -166,7 +166,7 @@ The same contract code, deployed with Circle's testnet USDC as its token, takes 
 
 - **Replay (no keys):** `npm run usdc`
 - **Contract:** `spend-policy-usdc.acme-holdings.testnet`
-- **Enforced in:** [`submit_po`](contracts/spend-policy/src/lib.rs#L444) (lib.rs:444), [`accept_po`](contracts/spend-policy/src/lib.rs#L662) (lib.rs:662), [`mark_shipped`](contracts/spend-policy/src/lib.rs#L677) (lib.rs:677), [`confirm_receipt`](contracts/spend-policy/src/lib.rs#L699) (lib.rs:699), [`qc_release`](contracts/spend-policy/src/lib.rs#L714) (lib.rs:714)
+- **Enforced in:** [`submit_po`](contracts/spend-policy/src/lib.rs#L519) (lib.rs:519), [`accept_po`](contracts/spend-policy/src/lib.rs#L765) (lib.rs:765), [`mark_shipped`](contracts/spend-policy/src/lib.rs#L780) (lib.rs:780), [`confirm_receipt`](contracts/spend-policy/src/lib.rs#L804) (lib.rs:804), [`qc_release`](contracts/spend-policy/src/lib.rs#L892) (lib.rs:892)
 - **Does not prove:** A $19.00 order on testnet; the main run uses DTUSD.
 
 | # | Call | Record | Signed by | Gas paid by | Contract's answer | Events | Transaction |
@@ -183,7 +183,7 @@ Each plant's agent anchors the Merkle root of every day's lot records (receipts,
 
 - **Replay (no keys):** `npm run lots`, then `npm run verify:lot -- ASC-261116-01`
 - **Contract:** `spend-policy.acme-holdings.testnet`
-- **Enforced in:** [`anchor_batch`](contracts/spend-policy/src/lib.rs#L814) (lib.rs:814)
+- **Enforced in:** [`anchor_batch`](contracts/spend-policy/src/lib.rs#L1007) (lib.rs:1007)
 - **Does not prove:** The twelve months of history are seeded, and their roots were anchored together on Nov 3, 2026, not night by night as the days passed; the roots prove the records have not changed since they were anchored.
 
 | # | Call | Record | Signed by | Gas paid by | Contract's answer | Events | Transaction |
