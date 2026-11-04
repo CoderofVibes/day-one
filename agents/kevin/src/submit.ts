@@ -47,6 +47,14 @@ export interface SubmitContext {
   qtyBase?: number;
   /** An enclave-signed decision approving this PO (§11 F), when Kevin has one. */
   decision?: { text: string; signature: string; response: string };
+  /**
+   * Per-PO arguments for a contract with §11, worked out at submit time (contractExtras in
+   * settlementExtras.ts); the approval retry carries the same hook, so both sends agree.
+   */
+  extras?: (po: SubmittablePo) => Promise<{
+    qtyBase?: number;
+    decision?: { text: string; signature: string; response: string };
+  }>;
 }
 
 const usd = (units: number | bigint) => formatUsd(BigInt(units));
@@ -60,6 +68,9 @@ export async function submitPo(
   ctx: SubmitContext,
 ): Promise<SubmitResult> {
   if (!po.vendor.account) throw new Error(`${po.poNo}: ${po.vendor.name} has no NEAR account`);
+  const extra = ctx.extras ? await ctx.extras(po) : {};
+  const qtyBase = ctx.qtyBase ?? extra.qtyBase;
+  const decision = ctx.decision ?? extra.decision;
   const outcome = await chain.call({
     kind: "submit_po",
     signerId: ctx.kevin,
@@ -71,8 +82,8 @@ export async function submitPo(
       amount: String(po.totalUsdc),
       category: po.category,
       po_hash: po.poHash,
-      ...(ctx.qtyBase !== undefined && { qty: String(ctx.qtyBase) }),
-      ...(ctx.decision && { decision: ctx.decision }),
+      ...(qtyBase !== undefined && { qty: String(qtyBase) }),
+      ...(decision && { decision }),
     },
     related: { type: "purchase_order", id: po.id },
   });
