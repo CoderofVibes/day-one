@@ -216,6 +216,7 @@ results.push(
     signingKey,
     batchRecord: BR_1045_EXTRACTION,
     priceHistory: bookPricePoints(readWorlds(root)),
+    features: (ACCOUNTS as { contractFeatures?: { receiptSettlement?: boolean } }).contractFeatures,
     now: NOW,
   })),
 );

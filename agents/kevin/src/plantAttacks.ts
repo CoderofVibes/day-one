@@ -59,6 +59,8 @@ export interface PlantAttackDeps {
   signingKey: SigningKeyView;
   /** BR-B-1045 as Kevin read it, for the next batch record in attack 17. */
   batchRecord: BatchRecordExtraction;
+  /** What the deployed contract takes beyond §1–§10; attack 19 needs receipt settlement. */
+  features?: { receiptSettlement?: boolean };
   /** Prices from the plants' own books (bookPricePoints), for the price check in attack 20. */
   priceHistory: readonly PricePoint[];
   now: string;
@@ -78,6 +80,7 @@ export async function runPlantAttacks(deps: PlantAttackDeps): Promise<AttackResu
     await overOrder(deps),
     recalledLotIntoBatch(deps),
     await supplierPaysItself(deps),
+    ...(deps.features?.receiptSettlement ? [await shortDeliveryInvoicedInFull(deps)] : []),
     priceSpike(deps),
     overDeliveryOnPaper(deps),
   ];
@@ -207,6 +210,81 @@ async function supplierPaysItself(deps: PlantAttackDeps): Promise<AttackResult> 
       `…and releases its own payment: "${refusal(selfRelease)}"`,
       `Kevin's key cannot try either: it reaches only ${methods.join(", ")}.`,
       `Tommy confirms the delivery and Priya releases it: ${released.status === "success" ? `${SELF_PAY.supplierName} is paid ${usd(amount)} by the contract in that call` : refusal(released)}.`,
+    ],
+    txHashes: all.flatMap((o) => (o.txHash ? [o.txHash] : [])),
+  };
+}
+
+// 19 ----------------------------------------------------------------------------------------
+/** The short delivery's PO: 100 kg ordered, 50 kg arrive, the invoice asks for all 100. */
+export const SHORT_PO = "PO-T9601";
+
+async function shortDeliveryInvoicedInFull(deps: PlantAttackDeps): Promise<AttackResult> {
+  const { db, chain, kevin, policyContract } = deps;
+  const tommy = person(db, "Tommy Reyes");
+  const priya = person(db, "Priya Natarajan");
+  const supplier = "northgate-ingredients.testnet";
+  const amount = 710 * USD;
+  const call = (signerId: string, method: string, args: Record<string, unknown>, relayed = false) =>
+    chain.call({
+      kind: method as "submit_po",
+      signerId,
+      receiverId: policyContract,
+      method,
+      args: { po_id: SHORT_PO, ...args },
+      ...(relayed ? { predecessorId: signerId, viaRelayer: true } : {}),
+    });
+  const placed = await call(kevin, "submit_po", {
+    supplier,
+    amount: String(amount),
+    category: "raw_material",
+    po_hash: sha256Hex(canonicalJson({ attack: "short delivery", po: SHORT_PO })),
+    qty: String(100 * KG),
+  });
+  const accepted = await call(supplier, "accept_po", {});
+  const shipped = await call(supplier, "mark_shipped", { supplier_lot: "NG-24-9115" });
+  const invoiced = await call(kevin, "record_invoice", {
+    invoice_hash: sha256Hex("NG-INV-24233: 100 kg ascorbic acid, $710.00"),
+    amount: String(amount),
+  });
+  const overCount = await call(
+    tommy.account,
+    "confirm_receipt",
+    { received_qty: String(1_000 * KG) },
+    true,
+  );
+  const counted = await call(
+    tommy.account,
+    "confirm_receipt",
+    {
+      received_qty: String(50 * KG),
+      receipt_hash: sha256Hex(canonicalJson({ po: SHORT_PO, received: 50 * KG })),
+      lots: ["ASC-261116-02"],
+    },
+    true,
+  );
+  const released = await call(priya.account, "qc_release", {}, true);
+  const adjusted = released.events.find((e) => e.event === "settlement_adjusted")?.data as
+    | { paid: string; returned: string; reason: string }
+    | undefined;
+  const all = [placed, accepted, shipped, invoiced, overCount, counted, released];
+  return {
+    attack: "Short delivery invoiced in full",
+    held:
+      placed.status === "success" &&
+      invoiced.status === "success" &&
+      overCount.status === "refused" &&
+      /more than the/.test(overCount.errorMessage ?? "") &&
+      counted.status === "success" &&
+      released.status === "success" &&
+      adjusted?.paid === String(amount / 2) &&
+      adjusted?.returned === String(amount / 2),
+    evidence: [
+      `${SHORT_PO}: Kevin orders 100 kg of ascorbic acid from Northgate, ${usd(amount)}, inside his limits; escrow funded.`,
+      `Northgate ships 50 kg and invoices all 100 kg, ${usd(amount)}; Kevin records the invoice.`,
+      `Someone keys 1,000 kg received: "${overCount.errorMessage ?? overCount.status}"`,
+      `Tommy counts 50 kg into stock and takes the short delivery; Priya releases it.`,
+      `Contract: paid ${adjusted ? usd(BigInt(adjusted.paid)) : "?"} for what reached stock and returned ${adjusted ? usd(BigInt(adjusted.returned)) : "?"} to the budget (${adjusted?.reason ?? "no adjustment"}).`,
     ],
     txHashes: all.flatMap((o) => (o.txHash ? [o.txHash] : [])),
   };
