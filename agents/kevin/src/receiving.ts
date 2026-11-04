@@ -5,6 +5,7 @@
 // release pays the supplier from escrow, a rejection returns the money to the plant budget.
 // The contract decides who may do what; Kevin only reads the outcome.
 
+import { canonicalJson, sha256Hex } from "@day-one/server/canonical";
 import type { ChainClient, LoggedOutcome } from "@day-one/server/chain/client";
 import type { Ledger } from "@day-one/server/ledger/db";
 import { appendLotEvent, type LedgerDb } from "@day-one/server/ledger/events";
@@ -48,6 +49,11 @@ interface OnChainPo {
 export interface ChainContext {
   policyContract: string;
   now: string;
+  /**
+   * The contract settles by what reached stock (CONTRACTS.md §11 E): the receipt sends the
+   * quantity counted in, the receipt's fingerprint and the lots it posts.
+   */
+  receiptSettlement?: boolean;
 }
 
 export interface ReceiveResult {
@@ -160,7 +166,15 @@ export function matchPackingSlip(
 export async function receiveDelivery(
   db: Ledger,
   chain: ChainClient,
-  input: { slip: PackingSlip; receiverStaffId: number },
+  input: {
+    slip: PackingSlip;
+    receiverStaffId: number;
+    /**
+     * The receiving lead takes a short delivery as it is: the lot is posted with what arrived,
+     * and a contract that settles by receipt pays pro rata (§11 E).
+     */
+    acceptShort?: boolean;
+  },
   ctx: ChainContext,
 ): Promise<ReceiveResult> {
   const { slip } = input;
@@ -180,7 +194,10 @@ export async function receiveDelivery(
     receivedBy: receiver.id,
     receivedAt: ctx.now,
   };
-  const problems = matchPackingSlip(po, slip, onChain);
+  const acceptingShort = Boolean(input.acceptShort && ctx.receiptSettlement);
+  const problems = matchPackingSlip(po, slip, onChain).filter(
+    (p) => !(acceptingShort && p.startsWith("Short ")),
+  );
   if (problems.length) {
     const row = db
       .insert(receipts)
@@ -195,13 +212,45 @@ export async function receiveDelivery(
     };
   }
 
+  // What reached stock, line by line: the slip's quantity once a short delivery is accepted.
+  const arrived = po.lines.map(({ line, material }) => {
+    const slipLine = slip.lines.find((l) =>
+      l.description.trim().toLowerCase().startsWith(material.name.toLowerCase()),
+    );
+    return acceptingShort && slipLine ? Math.min(slipLine.shippedBase, line.qtyBase) : line.qtyBase;
+  });
+  const plannedLots = po.lines.map(({ material }, i) =>
+    nextLotCode(db, material.code, ctx.now).replace(
+      /-(\d+)$/,
+      (_m, n: string) =>
+        `-${String(Number(n) + po.lines.slice(0, i).filter((l) => l.material.code === material.code).length).padStart(2, "0")}`,
+    ),
+  );
+  const settlement =
+    ctx.receiptSettlement && po.lines.length === 1
+      ? {
+          received_qty: String(arrived[0]),
+          receipt_hash: sha256Hex(
+            canonicalJson({
+              po: po.po.poNo,
+              slip: slip.slipNo,
+              photo: slip.sha256 ?? null,
+              received: arrived,
+              lots: plannedLots,
+              by: receiver.nearAccountId,
+              at: ctx.now,
+            }),
+          ),
+          lots: plannedLots,
+        }
+      : {};
   const outcome = await chain.call({
     kind: "confirm_receipt",
     signerId: receiver.nearAccountId,
     predecessorId: receiver.nearAccountId,
     receiverId: ctx.policyContract,
     method: "confirm_receipt",
-    args: { po_id: po.po.poNo },
+    args: { po_id: po.po.poNo, ...settlement },
     viaRelayer: true,
     related: { type: "purchase_order", id: po.po.id },
   });
@@ -224,10 +273,11 @@ export async function receiveDelivery(
       .values({ ...receipt, matchStatus: "matched" })
       .returning()
       .get();
-    const posted = po.lines.map(({ line, material }) => {
+    const posted = po.lines.map(({ line, material }, i) => {
       const slipLine = slip.lines.find((l) =>
         l.description.trim().toLowerCase().startsWith(material.name.toLowerCase()),
       );
+      const receivedBase = arrived[i] ?? line.qtyBase;
       const lotCode = nextLotCode(tx, material.code, ctx.now);
       const lot = tx
         .insert(lots)
@@ -249,9 +299,14 @@ export async function receiveDelivery(
         actorId: receiver.id,
         occurredAt: ctx.now,
       };
-      appendLotEvent(tx, { ...event, kind: "received", qtyDeltaBase: line.qtyBase });
+      appendLotEvent(tx, { ...event, kind: "received", qtyDeltaBase: receivedBase });
       appendLotEvent(tx, { ...event, kind: "quarantined", qtyDeltaBase: 0 });
-      return { lotCode, line, material, supplierLot: slipLine?.supplierLot ?? "" };
+      return {
+        lotCode,
+        line: { ...line, qtyBase: receivedBase },
+        material,
+        supplierLot: slipLine?.supplierLot ?? "",
+      };
     });
     tx.update(purchaseOrders)
       .set({ status: "received" })

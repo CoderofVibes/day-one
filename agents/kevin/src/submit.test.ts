@@ -118,6 +118,21 @@ describe("submitPo", () => {
     });
   });
 
+  it("sends the ordered quantity and a signed decision only when given (CONTRACTS.md §11)", async () => {
+    const fake = new FakeChain([outcome("success"), outcome("success")]);
+    const chain = new ChainClient(db, fake);
+    await submitPo(db, chain, po1041(), ctx("lab chemicals"));
+    expect(fake.calls[0]?.args).not.toHaveProperty("qty");
+    expect(fake.calls[0]?.args).not.toHaveProperty("decision");
+    const decision = { text: "m:a:b", signature: "0x01", response: "{}" };
+    await submitPo(db, chain, po1042(), {
+      ...ctx("ascorbic acid"),
+      qtyBase: 700_000_000,
+      decision,
+    });
+    expect(fake.calls[1]?.args).toMatchObject({ qty: "700000000", decision });
+  });
+
   it("turns the over-limit refusal into Linda's approval request (DEMO_SCRIPT step 7)", async () => {
     const po = po1042();
     const refusal =

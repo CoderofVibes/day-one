@@ -279,3 +279,69 @@ describe("QC", () => {
     expect(fake.calls).toHaveLength(0);
   });
 });
+
+describe("receiving for a contract that settles by what reached stock (CONTRACTS.md §11 E)", () => {
+  const settle = { policyContract: POLICY, now: RECEIVED_AT, receiptSettlement: true };
+
+  it("sends the quantity counted in, the receipt's fingerprint and the lot it posts", async () => {
+    const fake = new FakeChain([result("success", "ReceiptHash")]);
+    const r = await receiveDelivery(
+      db,
+      new ChainClient(db, fake),
+      { slip: slip(), receiverStaffId: tommy },
+      settle,
+    );
+    expect(r.lotCodes).toEqual(["ASC-261116-01"]);
+    const args = fake.calls[0]?.args as Record<string, unknown>;
+    expect(args).toMatchObject({
+      po_id: "PO-1042",
+      received_qty: String(700 * KG),
+      lots: ["ASC-261116-01"],
+    });
+    expect(args.receipt_hash).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it("holds a short delivery unless Tommy accepts it, then posts what arrived", async () => {
+    const short = slip({ shippedBase: 350 * KG, backorderedBase: 350 * KG });
+    const held = await receiveDelivery(
+      db,
+      new ChainClient(db, new FakeChain([])),
+      { slip: short, receiverStaffId: tommy },
+      settle,
+    );
+    expect(held.status).toBe("mismatch");
+
+    const fake = new FakeChain([result("success", "ReceiptHash")]);
+    const taken = await receiveDelivery(
+      db,
+      new ChainClient(db, fake),
+      { slip: short, receiverStaffId: tommy, acceptShort: true },
+      settle,
+    );
+    expect(taken.status).toBe("received");
+    expect(taken.sentences[0]).toContain("350 kg ascorbic acid");
+    expect((fake.calls[0]?.args as Record<string, unknown>).received_qty).toBe(String(350 * KG));
+    const lot = db.select().from(lots).where(eq(lots.lotCode, "ASC-261116-01")).get();
+    const received = db
+      .select()
+      .from(lotEvents)
+      .where(eq(lotEvents.lotId, lot?.id ?? 0))
+      .all()
+      .find((e) => e.kind === "received");
+    expect(received?.qtyDeltaBase).toBe(350 * KG);
+  });
+
+  it("never takes a short delivery without the contract feature", async () => {
+    const r = await receiveDelivery(
+      db,
+      new ChainClient(db, new FakeChain([])),
+      {
+        slip: slip({ shippedBase: 350 * KG }),
+        receiverStaffId: tommy,
+        acceptShort: true,
+      },
+      ctx(RECEIVED_AT),
+    );
+    expect(r.status).toBe("mismatch");
+  });
+});

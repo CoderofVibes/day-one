@@ -40,6 +40,13 @@ export interface SubmitContext {
   /** What the approval request says was ordered, e.g. "700 kg ascorbic acid". */
   summary: string;
   now: string;
+  /**
+   * The ordered quantity in base units, for a contract that settles by what reached stock
+   * (CONTRACTS.md §11 E); only for a one-line PO, and only once the contract has the feature.
+   */
+  qtyBase?: number;
+  /** An enclave-signed decision approving this PO (§11 F), when Kevin has one. */
+  decision?: { text: string; signature: string; response: string };
 }
 
 const usd = (units: number | bigint) => formatUsd(BigInt(units));
@@ -64,6 +71,8 @@ export async function submitPo(
       amount: String(po.totalUsdc),
       category: po.category,
       po_hash: po.poHash,
+      ...(ctx.qtyBase !== undefined && { qty: String(ctx.qtyBase) }),
+      ...(ctx.decision && { decision: ctx.decision }),
     },
     related: { type: "purchase_order", id: po.id },
   });
