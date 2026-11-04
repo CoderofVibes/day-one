@@ -1,0 +1,77 @@
+{
+  "contract": "spend-policy-v2.acme-holdings.testnet",
+  "anchored": [
+    {
+      "plant": "A",
+      "from": "2025-12-04",
+      "to": "2026-03-03",
+      "days": 50,
+      "tx": "AYBte6o5iCeKUp9YePdKhZZsV9o6V3drwpHtGdpAqEZh",
+      "url": "https://testnet.nearblocks.io/txns/AYBte6o5iCeKUp9YePdKhZZsV9o6V3drwpHtGdpAqEZh"
+    },
+    {
+      "plant": "A",
+      "from": "2026-03-05",
+      "to": "2026-05-27",
+      "days": 50,
+      "tx": "APfQnm3gKvRmBFQMY8zPaw4DKwsLe6eXpRWxqZnf8tTx",
+      "url": "https://testnet.nearblocks.io/txns/APfQnm3gKvRmBFQMY8zPaw4DKwsLe6eXpRWxqZnf8tTx"
+    },
+    {
+      "plant": "A",
+      "from": "2026-05-28",
+      "to": "2026-09-14",
+      "days": 50,
+      "tx": "2semkGYUvveJB3Qm58cJ9w3CHaUCNb4i5jQ7BDzFP8R1",
+      "url": "https://testnet.nearblocks.io/txns/2semkGYUvveJB3Qm58cJ9w3CHaUCNb4i5jQ7BDzFP8R1"
+    },
+    {
+      "plant": "A",
+      "from": "2026-09-15",
+      "to": "2026-11-12",
+      "days": 22,
+      "tx": "PyLpJRDDt5iFKzwfUqKqZLN5W7xPmeiYFmf3VcU8KXK",
+      "url": "https://testnet.nearblocks.io/txns/PyLpJRDDt5iFKzwfUqKqZLN5W7xPmeiYFmf3VcU8KXK"
+    },
+    {
+      "plant": "B",
+      "from": "2025-12-04",
+      "to": "2026-02-25",
+      "days": 50,
+      "tx": "54tVVHFdcxv4hqJwH8jKUhnbw9VhEujUY4wZRoFGs6hq",
+      "url": "https://testnet.nearblocks.io/txns/54tVVHFdcxv4hqJwH8jKUhnbw9VhEujUY4wZRoFGs6hq"
+    },
+    {
+      "plant": "B",
+      "from": "2026-02-26",
+      "to": "2026-05-13",
+      "days": 50,
+      "tx": "AkjuqDDdVJBd6KAaAcSx5b878CNnwHHjxTZRksc2fAE7",
+      "url": "https://testnet.nearblocks.io/txns/AkjuqDDdVJBd6KAaAcSx5b878CNnwHHjxTZRksc2fAE7"
+    },
+    {
+      "plant": "B",
+      "from": "2026-05-14",
+      "to": "2026-08-17",
+      "days": 50,
+      "tx": "6AgMLUmW3egWGjyoZ9ZDMnrAe1hJAzFPvZcVJWMwWu5u",
+      "url": "https://testnet.nearblocks.io/txns/6AgMLUmW3egWGjyoZ9ZDMnrAe1hJAzFPvZcVJWMwWu5u"
+    },
+    {
+      "plant": "B",
+      "from": "2026-08-19",
+      "to": "2026-11-16",
+      "days": 45,
+      "tx": "7ioGtdSz5V9bZuh7R67F5iZs9jX5Tb1uQ9Nq78FXfcK4",
+      "url": "https://testnet.nearblocks.io/txns/7ioGtdSz5V9bZuh7R67F5iZs9jX5Tb1uQ9Nq78FXfcK4"
+    },
+    {
+      "plant": "C",
+      "from": "2026-01-05",
+      "to": "2026-10-09",
+      "days": 49,
+      "tx": "DpL6d2R1QBTWpx1KxuNxYRNEGnwhq7FHLp69wspAShy8",
+      "url": "https://testnet.nearblocks.io/txns/DpL6d2R1QBTWpx1KxuNxYRNEGnwhq7FHLp69wspAShy8"
+    }
+  ]
+}

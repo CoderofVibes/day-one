@@ -74,6 +74,9 @@ const GENEALOGY = join(root, "web/src/data/genealogy.json");
 // The lot book Kevin anchored (data/lots/lot-book.json, npm run lots), copied for the Lots page's
 // "Prove it": the browser builds a lot's passport from it and checks the roots on testnet.
 const LOT_BOOK = join(root, "web/src/data/lot-book.json");
+// The lot book's anchor transactions, one row per anchor_batch call, small enough for judge mode's
+// lot-passport step to link (the book itself is loaded only by the Lots page).
+const LOT_ANCHORS = join(root, "web/src/data/lot-anchors.json");
 const ASK = join(root, "web/src/data/ask.json");
 const SUPPLIERS = join(root, "web/src/data/suppliers.json");
 const WORLD_EVENTS = join(root, "web/src/data/world");
@@ -391,6 +394,41 @@ const suppliers = {
   },
 };
 
+type LotBookFile = {
+  contract: string;
+  anchors: Record<string, string>;
+  days: { refId: string; plant: string; date: string }[];
+};
+
+/** One row per anchor_batch transaction in the lot book: the plant, the days it covers, the link. */
+function lotAnchors(book: LotBookFile) {
+  const rows = new Map<
+    string,
+    { plant: string; from: string; to: string; days: number; tx: string; url: string }
+  >();
+  const byRef = new Map(book.days.map((d) => [d.refId, d]));
+  for (const [ref, tx] of Object.entries(book.anchors)) {
+    const day = byRef.get(ref);
+    if (!day) continue;
+    const row = rows.get(tx) ?? {
+      plant: day.plant,
+      from: day.date,
+      to: day.date,
+      days: 0,
+      tx,
+      url: `https://testnet.nearblocks.io/txns/${tx}`,
+    };
+    if (day.date < row.from) row.from = day.date;
+    if (day.date > row.to) row.to = day.date;
+    row.days += 1;
+    rows.set(tx, row);
+  }
+  const anchored = [...rows.values()].sort(
+    (a, b) => a.plant.localeCompare(b.plant) || a.from.localeCompare(b.from),
+  );
+  return { contract: book.contract, anchored };
+}
+
 /**
  * The supplier-credential transactions recorded on testnet (npm run record:credentials): HQ's
  * issues and revocations, the deliveries QC rejected until the contract suspended Pacific, the
@@ -574,6 +612,10 @@ const files: [string, string][] = [
   [ARENA, `${JSON.stringify(arena, null, 2)}\n`],
   [GENEALOGY, `${JSON.stringify(lineage)}\n`],
   [LOT_BOOK, readFileSync(join(root, "data/lots/lot-book.json"), "utf8")],
+  [
+    LOT_ANCHORS,
+    `${JSON.stringify(lotAnchors(JSON.parse(readFileSync(join(root, "data/lots/lot-book.json"), "utf8")) as LotBookFile), null, 2)}\n`,
+  ],
   [ASK, `${JSON.stringify(ask, null, 2)}\n`],
   [SUPPLIERS, `${JSON.stringify(suppliers)}\n`],
   ...worldEventFiles(worlds).map(

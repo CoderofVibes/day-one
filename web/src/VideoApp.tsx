@@ -282,7 +282,7 @@ function GroupPanel({ curtain }: { curtain: boolean }) {
   );
 }
 
-/** Twenty recorded attacks, one shield turning red per tick, and the count. */
+/** The recorded attacks (arena.json), one shield turning red per tick, and the count. */
 function Montage({ u }: { u: number }) {
   const cases = arena.cases;
   const lit = Math.min(cases.length, Math.floor(u * (cases.length + 1)));

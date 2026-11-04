@@ -39,7 +39,7 @@ node -e 'const fs=require("fs");const s=fs.readFileSync(process.argv[1],"utf8");
 npm run verify -- "$LOGS/tampered.json" >"$LOGS/tamper" 2>&1
 [ $? -eq 1 ] && grep -q MISMATCH "$LOGS/tamper"; report tamper $?
 
-expect test-attacks "14 of 14 attacks failed against Kevin." npm run test:attacks
+expect test-attacks "21 of 21 attacks failed against Kevin." npm run test:attacks
 run escrow npm run escrow
 expect verify-attestation "Every check verified." npm run verify:attestation
 expect erp-reconcile "7 of 7 checks match." npm run erp:reconcile
@@ -51,6 +51,8 @@ run brief npm run brief
 run import npm run import -- "data/imports/INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx"
 expect inbox "4 of 4 scans landed" npm run inbox
 expect verify-round "VALID" npm run verify:round -- data/sealed/RFQ-2611-02.round.json
+expect lots "every root matches its records and the genealogy." npm run lots
+expect verify-lot "3 of 3 records proved against the roots anchored on chain." npm run verify:lot -- ASC-261116-01
 run web-build npm run web:build
 run web-data-check npm run web:data -- --check
 expect repo-check "The repo is ready to freeze." npm run repo:check

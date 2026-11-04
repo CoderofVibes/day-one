@@ -1,6 +1,6 @@
 // Judge mode (brief §5.12): the header's "Judge mode" button or ?judge=1. Dark theme, the curtain
 // on, the recorded run from its start, and a stepper docked at the bottom (a bottom sheet on a
-// phone) that walks the eleven steps of src/judge.ts: each opens its page at its recorded step,
+// phone) that walks the thirteen steps of src/judge.ts: each opens its page at its recorded step,
 // cuts a spotlight round what to look at, says what happened in a sentence or two and links the
 // recorded testnet transactions. Recorded data only: no wallet, no login, no network.
 
@@ -53,7 +53,7 @@ function setParam(name: string, value: string | null) {
 const setJudgeParam = (value: string | null) => setParam("judge", value);
 
 function ChainLinks({ step }: { step: JudgeStep }) {
-  if (step.links.length === 0) return null;
+  if (step.links.length === 0 && !step.open) return null;
   return (
     <ul className="judge-links">
       {step.links.map((l) => (
@@ -64,6 +64,14 @@ function ChainLinks({ step }: { step: JudgeStep }) {
           <small>{l.label}</small>
         </li>
       ))}
+      {step.open && (
+        <li key={step.open.url}>
+          <a href={step.open.url} target="_blank" rel="noreferrer">
+            Open it ↗
+          </a>{" "}
+          <small>{step.open.label}</small>
+        </li>
+      )}
     </ul>
   );
 }

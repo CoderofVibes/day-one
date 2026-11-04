@@ -1,15 +1,18 @@
-// Judge mode's script (brief §5.12): eleven steps that hand a judge the story in about five
+// Judge mode's script (brief §5.12): thirteen steps that hand a judge the story in about six
 // minutes: the plant Acme just bought and the limits HQ sets Kevin first, then the employee's day
-// (what Kevin handled, the one decision a person makes, the outcome), then the proof behind it. Each step has the page it opens, the recorded step it seeks to, what it
-// spotlights, one or two sentences, and its "See it on chain" links. Every link is taken from the recordings the pages already read
-// (demo-run.json, arena.json, group-buy.json, usdc.json), never typed here; src/judge.test.ts
-// checks each one against the files under data/. Pure data, so the tests read it without a page.
+// (what Kevin handled, the one decision a person makes, the outcome, how the payment was settled),
+// then the proof behind it. Each step has the page it opens, the recorded step it seeks to, what it
+// spotlights, one or two sentences, and its "See it on chain" links. Every link is taken from the
+// recordings the pages already read (demo-run.json, arena.json, group-buy.json, usdc.json,
+// lot-anchors.json), never typed here; src/judge.test.ts checks each one against the files under
+// data/. Pure data, so the tests read it without a page.
 
 import { draftPolicyChange } from "@day-one/kevin/policyChange";
 import type { AgentPolicyView } from "@day-one/server/chain/policy";
 import arena from "./data/arena.json";
 import groupBuy from "./data/group-buy.json";
 import journey from "./data/journey.json";
+import lotAnchors from "./data/lot-anchors.json";
 import usdc from "./data/usdc.json";
 import { tally } from "./moneyView.ts";
 import { type RunData, run as recorded, type Transaction } from "./run.ts";
@@ -40,6 +43,8 @@ export interface JudgeStep {
   /** The attack the arena opens on (arena.json's case number). */
   attack?: number;
   links: ProofLink[];
+  /** A page of this site to open in a new tab (a check the judge can run), beside the chain links. */
+  open?: ProofLink;
   /** About how long the step takes to read and look at, for "time remaining". */
   seconds: number;
 }
@@ -50,7 +55,7 @@ type Arena = {
     attack: string;
     held: boolean;
     reason: string;
-    txs: { url: string; status: string }[];
+    txs: { url: string; status: string; method?: string; events?: string[] }[];
   }[];
 };
 type Reconciliation = { checks: { name: string; ok: boolean; skipped?: boolean }[]; ok: boolean };
@@ -72,7 +77,35 @@ export function po1042(data: RunData = recorded) {
     approved: data.transactions.find((t) => t.method === "approve_po" && t.status === "success"),
     funded: stepTx("Kevin retries"),
     received: data.transactions.find((t) => t.method === "confirm_receipt"),
+    invoiced: data.transactions.find((t) => t.method === "record_invoice"),
     released: data.transactions.find((t) => t.method === "qc_release"),
+  };
+}
+
+/**
+ * The short delivery invoiced in full (arena case 19): the release that paid pro rata, with the
+ * contract's settlement line as recorded. Judge mode quotes it on the settlement step.
+ */
+export function shortDelivery() {
+  const c = (arena as Arena).cases.find((x) => /short delivery/i.test(x.attack));
+  const release = c?.txs.filter((t) => t.status === "success").at(-1);
+  const settled = (c as { evidence?: string[] } | undefined)?.evidence?.find((e) =>
+    /^Contract: paid/.test(e),
+  );
+  return { n: c?.n, release, settled };
+}
+
+/** The lot book's anchors: how many days each plant anchored, and the last anchor per plant. */
+export function lotBook() {
+  const rows = lotAnchors.anchored;
+  const last = PLANTS.map((p) => rows.filter((r) => r.plant === p.code).at(-1)).filter(
+    (r): r is (typeof rows)[number] => r !== undefined,
+  );
+  return {
+    contract: lotAnchors.contract,
+    days: rows.reduce((sum, r) => sum + r.days, 0),
+    transactions: rows.length,
+    last,
   };
 }
 
@@ -174,10 +207,20 @@ const agree = rec.checks.filter((c) => c.ok && !c.skipped).length;
 const att = attestation();
 const book = workbook();
 const bank = (arena as Arena).cases.find((c) => /bank details/i.test(c.attack));
+const short19 = shortDelivery();
+const lots = lotBook();
 const refusedAt = recorded.steps.findIndex((s) => s.title === "Big PO");
 const textedAt = recorded.steps.findIndex((s) => s.title === "Linda texts");
 const releasedAt = recorded.steps.findIndex((s) => s.title === "QC release");
+const paidAt = recorded.steps.findIndex((s) => s.title === "Paid");
 const last = recorded.steps.length - 1;
+const plantName = (code: string) => PLANTS.find((p) => p.code === code)?.name ?? code;
+const monthDay = (iso: string) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
 
 export const JUDGE_STEPS: JudgeStep[] = [
   {
@@ -250,9 +293,31 @@ export const JUDGE_STEPS: JudgeStep[] = [
     seconds: 30,
   },
   {
+    id: "settled",
+    title: "Paid for what reached stock, on a signed decision",
+    body: "Over $2,500 the contract also required Kevin's decision, signed by his model in NEAR AI Cloud's enclave for this exact PO, and checked the signer before funding. At release it paid the smallest of escrow, escrow pro rata to the 700 kg counted in, and the invoice: all $5,150.00 here; a short delivery pays pro rata.",
+    ...(short19.settled ? { quote: `Attack ${short19.n}: “${short19.settled}”` } : {}),
+    page: "overview",
+    at: paidAt,
+    spotlight: ".desk",
+    links: [
+      ...link(po.funded, "submit_po, funded; its decision argument is the signed text"),
+      ...link(po.invoiced, "record_invoice"),
+      ...(short19.release
+        ? [
+            {
+              label: "qc_release on the short delivery, settlement_adjusted",
+              url: short19.release.url,
+            },
+          ]
+        : []),
+    ],
+    seconds: 35,
+  },
+  {
     id: "attacks",
     title: `${attack.refused} of ${attack.total} attacks refused`,
-    body: "An email asks to send Northgate's payments to a new account. Kevin set it aside and changed nothing; it never reached the chain. All 15 recorded attacks were stopped by Kevin, the mock ERP or the contract. Press Fire attack to replay this one.",
+    body: `An email asks to send Northgate's payments to a new account. Kevin set it aside and changed nothing; it never reached the chain. All ${attack.total} recorded attacks were stopped by Kevin, the mock ERP or the contract. Press Fire attack to replay this one.`,
     ...(bank ? { quote: `Kevin: “${bank.reason.split(":")[0]}.”`, attack: bank.n } : {}),
     page: "arena",
     at: last,
@@ -302,6 +367,20 @@ export const JUDGE_STEPS: JudgeStep[] = [
     overlay: "attestation",
     links: [],
     seconds: 25,
+  },
+  {
+    id: "passport",
+    title: "Prove one lot's story",
+    body: `Each receipt, QC decision, batch, shipment and payment is hashed into one root per plant and day: ${lots.days} days anchored in ${lots.transactions} transactions. Prove it checks this trace against those roots in your browser; Change one record shows a tampered record fail. Each record has its own salt, so a passport discloses nothing else.`,
+    page: "lots",
+    at: last,
+    spotlight: '[aria-label="Prove it"]',
+    links: lots.last.map((r) => ({
+      label: `anchor_batch, ${r.days} daily roots for ${plantName(r.plant)} (${monthDay(r.from)} – ${monthDay(r.to)})`,
+      url: r.url,
+    })),
+    open: { label: "Lots & recall with the check already running", url: "?page=lots&prove=1" },
+    seconds: 35,
   },
   {
     id: "tour",

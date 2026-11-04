@@ -6,12 +6,14 @@ import {
   groupPurchase,
   JUDGE_STEPS,
   limitDraft,
+  lotBook,
   po1042,
   proofLinks,
   RECORDED_POLICY,
   reconciliation,
   remaining,
   savingLine,
+  shortDelivery,
   testCount,
   workbook,
 } from "./judge.ts";
@@ -30,7 +32,7 @@ function recordings(): string {
         out.push(readFileSync(path, "utf8"));
     }
   };
-  for (const dir of ["replay", "usdc", "attacks", "sealed"]) walk(join(root, "data", dir));
+  for (const dir of ["replay", "usdc", "attacks", "sealed", "lots"]) walk(join(root, "data", dir));
   return out.join("\n");
 }
 
@@ -57,8 +59,10 @@ describe("judge mode", () => {
 
   it("tells the proof points as the recordings have them", () => {
     const titles = JUDGE_STEPS.map((s) => s.title);
-    expect(JUDGE_STEPS).toHaveLength(11);
+    expect(JUDGE_STEPS).toHaveLength(13);
     expect(JUDGE_STEPS.slice(0, 3).map((s) => s.id)).toEqual(["takeover", "limits", "kevin"]);
+    expect(JUDGE_STEPS.map((s) => s.id).slice(5, 8)).toEqual(["paid", "settled", "attacks"]);
+    expect(JUDGE_STEPS.at(-2)?.id).toBe("passport");
     expect(titles).toContain("21 of 21 attacks refused");
     expect(titles).toContain("Group buy PO-G-2001, $9,490.00");
     expect(titles).toContain("7 of 7 reconciliation checks agree");
@@ -81,6 +85,41 @@ describe("judge mode", () => {
     const books = JUDGE_STEPS.find((s) => s.id === "books");
     expect(books?.links).toHaveLength(5);
     expect(books?.overlay).toBe("usdc");
+  });
+
+  it("shows the settlement and the signed decision on PO-1042, and the lot book's anchors", () => {
+    const po = po1042();
+    expect(po.invoiced?.method).toBe("record_invoice");
+    expect(po.invoiced?.tx.startsWith("HACySJzX")).toBe(true);
+    const short = shortDelivery();
+    expect(short.n).toBe(19);
+    expect(short.release?.method).toBe("qc_release");
+    expect(short.release?.events).toContain("settlement_adjusted");
+    expect(short.settled).toMatch(/^Contract: paid \$355\.00 for what reached stock/);
+    const settled = JUDGE_STEPS.find((s) => s.id === "settled");
+    expect(settled?.links.map((l) => l.url.slice(-44, -36))).toEqual([
+      "3TzgR7iY",
+      "HACySJzX",
+      "7At9Ynuw",
+    ]);
+    expect(settled?.quote).toContain("Attack 19");
+    expect(settled?.body).toContain("$5,150.00");
+    // The lot book: 416 days in nine anchor_batch calls, read back from the export of
+    // data/lots/lot-book.json; the step links the last anchor of each plant.
+    expect(lotBook()).toMatchObject({
+      contract: "spend-policy-v2.acme-holdings.testnet",
+      days: 416,
+      transactions: 9,
+    });
+    const passport = JUDGE_STEPS.find((s) => s.id === "passport");
+    expect(passport?.page).toBe("lots");
+    expect(passport?.open?.url).toBe("?page=lots&prove=1");
+    expect(passport?.links.map((l) => l.label)).toEqual([
+      "anchor_batch, 45 daily roots for Hollow Pine Tablet Co. (Aug 19 – Nov 16)",
+      "anchor_batch, 22 daily roots for Acme Riverside (Sep 15 – Nov 12)",
+      "anchor_batch, 49 daily roots for Acme Lakeview (Jan 5 – Oct 9)",
+    ]);
+    expect(passport?.body).toContain("416 days anchored in 9 transactions");
   });
 
   it("opens on the plant Acme bought, the limits HQ sets, and the bank-details email", () => {

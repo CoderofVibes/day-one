@@ -68,6 +68,16 @@ export const STEPS: Step[] = [
     command: "npm run verify:round -- data/sealed/RFQ-2611-02.round.json",
     expect: "VALID",
   },
+  {
+    name: "lots",
+    command: "npm run lots",
+    expect: "every root matches its records and the genealogy.",
+  },
+  {
+    name: "verify-lot",
+    command: "npm run verify:lot -- ASC-261116-01",
+    expect: "3 of 3 records proved against the roots anchored on chain.",
+  },
   { name: "web-build", command: "npm run web:build" },
   { name: "web-data-check", command: "npm run web:data -- --check" },
   { name: "repo-check", command: "npm run repo:check", expect: "The repo is ready to freeze." },
