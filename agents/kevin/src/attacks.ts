@@ -81,6 +81,7 @@ export const KEVIN_KEY_METHODS: readonly string[] = [
   "anchor_batch",
   "open_sealed_round",
   "award_sealed_round",
+  "record_invoice",
 ];
 
 /** What the chain says about the key Kevin's server signs with (public data only). */

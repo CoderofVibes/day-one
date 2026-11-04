@@ -27,7 +27,9 @@
     "./transferSuggestions": "./src/transferSuggestions.ts",
     "./schedule": "./src/schedule.ts",
     "./facts": "./src/facts.ts",
-    "./ask": "./src/ask.ts"
+    "./ask": "./src/ask.ts",
+    "./decision": "./src/decision.ts",
+    "./settlementExtras": "./src/settlementExtras.ts"
   },
   "dependencies": {
     "@day-one/server": "*",

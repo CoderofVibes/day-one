@@ -10,7 +10,7 @@
 
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -40,6 +40,22 @@ const SUPPLIER_CREDENTIALS = [
   { supplier: "bayfront-labsupply.testnet", categories: ["lab_chemical"] },
 ] as const;
 /** 2027-10-31T00:00:00Z in nanoseconds: one year of approval, renewed by re-running deploy. */
+/** Plant B's POs above this many dollars carry Kevin's enclave-signed decision (§11 F). */
+const SIGNED_ABOVE_USD = 2_500;
+
+/** The enclave signing address the recorded attestation verified (every answer's signer). */
+function enclaveSigner(): string {
+  const att = JSON.parse(readFileSync(join(repo, "data/replay/attestation.json"), "utf8")) as {
+    signatures: Record<string, { signing_address: string }>;
+  };
+  const signers = [
+    ...new Set(Object.values(att.signatures).map((s) => s.signing_address.toLowerCase())),
+  ];
+  if (signers.length !== 1)
+    throw new Error(`expected one enclave signer, found ${signers.join(", ")}`);
+  return signers[0] as string;
+}
+
 const CREDENTIAL_EXPIRY = (BigInt(Date.UTC(2027, 9, 31)) * 1_000_000n).toString();
 /** NEP-145 storage deposit per token holder (CONTRACTS.md §2). */
 const STORAGE_DEPOSIT = "0.00125 NEAR";
@@ -173,11 +189,27 @@ async function main() {
       categories: p.categories,
       approver: directorOf(p.code, ROOT),
     };
-    if (
-      !same(await view(POLICY, "get_agent_policy", { agent: kevin }), { ...policy, active: true })
-    ) {
+    const current = await view<Record<string, unknown> | null>(POLICY, "get_agent_policy", {
+      agent: kevin,
+    });
+    const { signed_above: _above, ...currentTerms } = current ?? {};
+    if (!same(currentTerms, { ...policy, active: true })) {
       asAcme(POLICY, "set_agent_policy", { agent: kevin, ...policy }, oneYocto);
     }
+    // CONTRACTS.md §11 F: Plant B's POs above the threshold need Kevin's enclave-signed decision.
+    const above = p.code === "b" ? (BigInt(SIGNED_ABOVE_USD) * DOLLAR).toString() : null;
+    const now = await view<{ signed_above: string | null } | null>(POLICY, "get_agent_policy", {
+      agent: kevin,
+    });
+    if ((now?.signed_above ?? null) !== above) {
+      asAcme(POLICY, "set_signed_decision_threshold", { agent: kevin, above }, oneYocto);
+    }
+  }
+  // §11 F: the enclave key npm run attest verified (data/replay/attestation.json) signs decisions.
+  const signer = enclaveSigner();
+  const attested = await view<string[]>(POLICY, "get_attested_signers");
+  if (!attested.includes(signer)) {
+    asAcme(POLICY, "set_attested_signer", { address: signer, active: true }, oneYocto);
   }
   const labCap = (2_000n * DOLLAR).toString();
   if ((await view(POLICY, "get_category_cap", { category: "lab_chemical" })) !== labCap) {
@@ -231,6 +263,20 @@ async function main() {
   if (BigInt(balance) !== BigInt(after.budget) + BigInt(after.escrowed)) {
     throw new Error("token balance does not equal budget + escrowed");
   }
+  // Kevin, the API and the demo send the §11 arguments only once the contract has them.
+  const configFile = join(repo, "config/testnet-accounts.json");
+  const config = JSON.parse(readFileSync(configFile, "utf8")) as Record<string, unknown>;
+  config.contractFeatures = {
+    receiptSettlement: true,
+    signedDecisions: true,
+    signedAboveUsd: SIGNED_ABOVE_USD,
+  };
+  writeFileSync(
+    configFile,
+    `${JSON.stringify(config, null, 2)}
+`,
+  );
+  console.log("contract features: receipt settlement, signed decisions above $" + SIGNED_ABOVE_USD);
 }
 
 await main();

@@ -6,6 +6,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
+import { recordedSignatures } from "@day-one/kevin/decision";
 import {
   type BatchRecordPage,
   DEMO_CLOCK,
@@ -13,6 +14,8 @@ import {
   type DemoSalts,
 } from "@day-one/kevin/demo";
 import type { PackingSlip } from "@day-one/kevin/receiving";
+import { type ContractFeatures, contractExtras } from "@day-one/kevin/settlementExtras";
+import { AttestationClient } from "@day-one/server/attestation/fetch";
 import { ChainClient } from "@day-one/server/chain/client";
 import { LiveTransport } from "@day-one/server/chain/live";
 import {
@@ -62,6 +65,12 @@ export interface TestnetAccounts {
   network: string;
   root: string;
   spendPolicy: string;
+  /** Set by deploy:testnet once the contract has CONTRACTS.md §11; absent before. */
+  contractFeatures?: {
+    receiptSettlement?: boolean;
+    signedDecisions?: boolean;
+    signedAboveUsd?: number;
+  };
 }
 
 export function fixtureFiles(root = REPO_ROOT) {
@@ -223,6 +232,24 @@ export async function openDemoEnv(options: DemoEnvOptions = {}): Promise<DemoEnv
     ship: (shipment) => acceptAndShip(chain, shipment, { policyContract: accounts.spendPolicy }),
     salts,
   };
+  // What the deployed contract takes beyond CONTRACTS.md §1–§10 (§11), as deploy:testnet wrote it.
+  const features: ContractFeatures & { signedAboveUsd?: number } = accounts.contractFeatures ?? {};
+  if (features.receiptSettlement || features.signedDecisions) {
+    const attestationFile = join(root, "data/replay/attestation.json");
+    const signatures = live
+      ? (chatId: string) =>
+          new AttestationClient(process.env.NEARAI_API_KEY ?? "").signature(chatId)
+      : existsSync(attestationFile)
+        ? recordedSignatures(JSON.parse(readFileSync(attestationFile, "utf8")))
+        : null;
+    deps.features = features;
+    deps.extras = contractExtras(db, {
+      features,
+      llm,
+      signatures,
+      signedAboveUsdc: (features.signedAboveUsd ?? 2_500) * 1_000_000,
+    });
+  }
   const inboxLlm = live ? llm : inboxReplay(fixtures.llm, fixtures.inboxLlm);
   return { root, live, accounts, db, transport, llm, inboxLlm, salts, deps, clock: () => clock };
 }

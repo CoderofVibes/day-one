@@ -23,14 +23,17 @@ import {
   recordQuotes,
 } from "../agents/kevin/src/purchasing.ts";
 import { decideQc, type PackingSlip, receiveDelivery } from "../agents/kevin/src/receiving.ts";
+import { type ContractFeatures, contractExtras } from "../agents/kevin/src/settlementExtras.ts";
 import { submitPo } from "../agents/kevin/src/submit.ts";
 import { demoBus } from "../agents/suppliers/src/bus.ts";
 import { acceptAndShip } from "../agents/suppliers/src/shipping.ts";
+import { AttestationClient } from "../server/src/attestation/fetch.ts";
 import { ChainClient, explorerUrl, type LoggedOutcome } from "../server/src/chain/client.ts";
 import { LiveTransport } from "../server/src/chain/live.ts";
 import type { ContractStanding } from "../server/src/erp-connector/credentials.ts";
 import { openLedger } from "../server/src/ledger/db.ts";
 import { chainTx, materials, poLines, staff } from "../server/src/ledger/schema.ts";
+import { createLlm } from "../server/src/llm/client.ts";
 import { quoteProof } from "../server/src/quotes.ts";
 import { plantBStaff } from "../server/src/relayer/relayer.ts";
 import { seedLedger } from "../server/src/seed/index.ts";
@@ -101,7 +104,30 @@ seedLedger(db);
 // Ledger time is the demo clock: the forecast and quotes read the seeded history.
 const now = DEMO_CLOCK.start;
 const chain = new ChainClient(db, transport, () => now);
-const ctx = { kevin: KEVIN, policyContract: ACCOUNTS.spendPolicy, now };
+// CONTRACTS.md §11, once deploy:testnet has turned it on: quantities, receipts and, above the
+// threshold, Kevin's decision signed in NEAR AI Cloud's enclave (a live call, a few cents).
+const features =
+  (ACCOUNTS as { contractFeatures?: ContractFeatures & { signedAboveUsd?: number } })
+    .contractFeatures ?? {};
+if (features.signedDecisions && existsSync(at(".env"))) process.loadEnvFile(at(".env"));
+const extras =
+  features.receiptSettlement || features.signedDecisions
+    ? contractExtras(db, {
+        features,
+        llm: features.signedDecisions
+          ? createLlm(at("data/replay/rehearse-llm.json"), {
+              ...process.env,
+              DAYONE_MODE: "live",
+              LLM_RECORD_FIXTURES: "false",
+            })
+          : undefined,
+        signatures: (chatId) =>
+          new AttestationClient(process.env.NEARAI_API_KEY ?? "").signature(chatId),
+        signedAboveUsdc: (features.signedAboveUsd ?? 2_500) * 1_000_000,
+        onDecision: (po, d) => console.log(`  decision on ${po.poNo}: ${d.line}`),
+      })
+    : undefined;
+const ctx = { kevin: KEVIN, policyContract: ACCOUNTS.spendPolicy, now, ...(extras && { extras }) };
 const person = (name: string) => {
   const row = db.select().from(staff).where(eq(staff.name, name)).get();
   if (!row) throw new Error(`${name} is missing from the seed`);
@@ -168,7 +194,11 @@ try {
     db,
     chain,
     { slip, receiverStaffId: person("Tommy Reyes").id },
-    { policyContract: ACCOUNTS.spendPolicy, now },
+    {
+      policyContract: ACCOUNTS.spendPolicy,
+      now,
+      receiptSettlement: Boolean(features.receiptSettlement),
+    },
   );
   log("confirm_receipt (relayed)", received.status, received.outcome);
   if (received.status !== "received") throw new Stop(received.sentences.join(" "));

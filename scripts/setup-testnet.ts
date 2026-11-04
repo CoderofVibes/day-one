@@ -61,7 +61,7 @@ const ROOT_CHILDREN = [
   { id: "sierra-mineral.testnet", near: 0.1 },
 ] as const;
 
-/** What a plant's Kevin may call: plain and pooled POs, pools, anchors and sealed rounds. */
+/** What a plant's Kevin may call: plain and pooled POs, pools, anchors, sealed rounds, invoices. */
 const AGENT_METHODS = [
   "submit_po",
   "submit_pooled_po",
@@ -71,6 +71,8 @@ const AGENT_METHODS = [
   "anchor_batch",
   "open_sealed_round",
   "award_sealed_round",
+  // CONTRACTS.md §11 E: Kevin records the supplier's invoice he matched.
+  "record_invoice",
 ];
 const DIRECTOR_METHODS = ["approve_po", "reject_po"];
 

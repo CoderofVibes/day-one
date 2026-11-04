@@ -14,6 +14,7 @@
 // Step 5's quotes come over the bus from whoever `deps.quotes` asks: the supplier agents, which
 // anchor their quote fingerprints from their own accounts, or a plain answer set.
 
+import { sha256Hex } from "@day-one/server/canonical";
 import { type ChainClient, explorerUrl, type LoggedOutcome } from "@day-one/server/chain/client";
 import { summarizeChainTx } from "@day-one/server/chain/summary";
 import type { BatchRecordExtraction } from "@day-one/server/extraction/schema";
@@ -60,7 +61,8 @@ import {
   receiptAnchorItem,
   receiveDelivery,
 } from "./receiving.ts";
-import { submitPo } from "./submit.ts";
+import type { ContractFeatures } from "./settlementExtras.ts";
+import { type SubmitContext, submitPo } from "./submit.ts";
 
 /** The demo clock (DEMO_SCRIPT §2) for each step. */
 export const DEMO_CLOCK = {
@@ -129,6 +131,10 @@ export interface DemoDeps {
   salts: DemoSalts;
   /** The acquirer's ERP, when the run is integrated with it (docs/ERP.md); its lines go to `erp`. */
   erp?: KevinErp;
+  /** What the deployed contract takes beyond §1–§10 (CONTRACTS.md §11); absent: nothing. */
+  features?: ContractFeatures;
+  /** The per-PO §11 arguments (contractExtras), sent by every submit and the approval retry. */
+  extras?: SubmitContext["extras"];
 }
 
 export interface DemoStep {
@@ -258,6 +264,7 @@ class Demo implements DemoMachine {
   private rfq: Rfq | null = null;
   private received: ReceiveResult | null = null;
   private invoice: ReturnType<typeof matchInvoice> | null = null;
+  private invoiceRecorded: LoggedOutcome | null = null;
   private result: DemoResult | null = null;
 
   constructor(private readonly deps: DemoDeps) {}
@@ -269,7 +276,11 @@ class Demo implements DemoMachine {
     return this.deps.chain;
   }
   private get ctx() {
-    return { kevin: this.deps.kevin, policyContract: this.deps.policyContract };
+    return {
+      kevin: this.deps.kevin,
+      policyContract: this.deps.policyContract,
+      ...(this.deps.extras && { extras: this.deps.extras }),
+    };
   }
 
   private add(
@@ -609,7 +620,11 @@ class Demo implements DemoMachine {
         this.db,
         this.chain,
         { slip, receiverStaffId: receiver.id },
-        { policyContract: this.deps.policyContract, now: DEMO_CLOCK.receive },
+        {
+          policyContract: this.deps.policyContract,
+          now: DEMO_CLOCK.receive,
+          receiptSettlement: Boolean(this.deps.features?.receiptSettlement),
+        },
       );
       this.received = received;
       this.quarantined = received.lotCodes[0] ?? null;
@@ -619,6 +634,22 @@ class Demo implements DemoMachine {
         // match it to the PO and the receipt before QC's release pays the escrow (ERP.md §3.7).
         const reading = await readInvoice(this.deps.llm, this.deps.invoiceText);
         this.invoice = matchInvoice(this.db, reading, this.deps.invoiceText);
+        // §11 E: Kevin records the invoice he matched; the release pays no more than it.
+        if (this.deps.features?.receiptSettlement && this.invoice.status === "matched") {
+          const recorded = await this.chain.call({
+            kind: "anchor",
+            signerId: this.deps.kevin,
+            receiverId: this.deps.policyContract,
+            method: "record_invoice",
+            args: {
+              po_id: po1042.poNo,
+              invoice_hash: sha256Hex(this.deps.invoiceText),
+              amount: String(po1042.totalUsdc),
+            },
+            related: { type: "purchase_order", id: po1042.id },
+          });
+          this.invoiceRecorded = recorded;
+        }
         if (this.deps.erp && received.receiptId) {
           erpDelivery.push(await this.deps.erp.received(this.db, received.receiptId));
           erpDelivery.push((await this.deps.erp.invoiceRead(this.db, reading)).line);
@@ -628,15 +659,20 @@ class Demo implements DemoMachine {
         10,
         "Delivery",
         received.sentences,
-        received.outcome
-          ? [
-              chainLine(
-                `confirm_receipt ${po1042.poNo}`,
-                received.outcome,
-                this.relayed(receiver.nearAccountId),
-              ),
-            ]
-          : [],
+        [
+          ...(received.outcome
+            ? [
+                chainLine(
+                  `confirm_receipt ${po1042.poNo}`,
+                  received.outcome,
+                  this.relayed(receiver.nearAccountId),
+                ),
+              ]
+            : []),
+          ...(this.invoiceRecorded
+            ? [chainLine(`record_invoice ${po1042.poNo}`, this.invoiceRecorded)]
+            : []),
+        ],
         erpDelivery,
       );
       // A slip that does not match the PO holds the receipt for ${receiverName} to sort out;
