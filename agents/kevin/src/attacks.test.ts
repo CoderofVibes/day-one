@@ -25,7 +25,7 @@ import { confirmBr1045 } from "./test/br-b-1045.ts";
 
 const NOW = "2026-11-09T13:00:00.000Z";
 const KEVIN = "kevin.plant-b.acme-holdings.testnet";
-const POLICY = "spend-policy.acme-holdings.testnet";
+const POLICY = "spend-policy-v2.acme-holdings.testnet";
 const USD = 1_000_000;
 const file = (path: string) => new URL(`../../../${path}`, import.meta.url);
 const INVOICES = JSON.parse(readFileSync(file("data/attacks/invoices.json"), "utf8")).invoices as {

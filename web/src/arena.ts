@@ -1,4 +1,4 @@
-// The attack arena (docs/UPGRADE_BRIEF.md §3.1), recorded mode: the twenty cases of
+// The attack arena (docs/UPGRADE_BRIEF.md §3.1), recorded mode: the twenty-one cases of
 // `npm run test:attacks` as npm run web:data exported them (scripts/lib/arena.ts), replayed one
 // at a time in the browser. Firing a case plays its recorded refusal; nothing here touches the
 // run, the ledger or the chain.

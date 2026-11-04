@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "recordedAt": "2026-10-29T05:36:09.813Z",
+  "recordedAt": "2026-11-04T01:33:24.277Z",
   "entries": [
     {
       "key": "1a5d79c1426ed8d71dfa27f023eed63f7f21f4b9ad0b856483f62e945b29cf98",
@@ -9,7 +9,7 @@
       "result": {
         "provider": "nearai",
         "model": "z-ai/glm-5.3-flash",
-        "text": "{\"invoice_no\": \"NG-INV-24190\", \"vendor_name\": \"Northgate Ingredients\", \"po_number\": \"PO-1042\", \"lines\": [{\"description\": \"Ascorbic acid, USP fine powder\", \"quantity\": \"700\", \"unit\": \"kg\", \"unit_price\": \"$7.10\", \"amount\": \"$4,970.00\"}], \"freight\": \"$180.00\", \"total\": \"$5,150.00\", \"remit_to\": \"northgate-ingredients.testnet\"}",
+        "text": "{  \"invoice_no\": \"NG-INV-24190\",  \"vendor_name\": \"Northgate Ingredients\",  \"po_number\": \"PO-1042\",  \"lines\": [    {      \"description\": \"Ascorbic acid, USP fine powder\",      \"quantity\": \"700\",      \"unit\": \"kg\",      \"unit_price\": \"$7.10\",      \"amount\": \"$4,970.00\"    }  ],  \"freight\": \"$180.00\",  \"total\": \"$5,150.00\",  \"remit_to\": \"northgate-ingredients.testnet\"}",
         "json": {
           "invoice_no": "NG-INV-24190",
           "vendor_name": "Northgate Ingredients",
@@ -29,12 +29,12 @@
         },
         "usage": {
           "inputTokens": 284,
-          "outputTokens": 115
+          "outputTokens": 134
         },
         "receipt": {
-          "chatId": "a91cc88f0a664e25831133befc51d68e",
+          "chatId": "57ac1b09243948d1a8e691cf72cffd0f",
           "requestSha256": "0a28347b2c5646ccd3b81c680ece44ea714486c494e9ac607a0af0a6e1967817",
-          "responseSha256": "35a3a5204670850291f683fcf71c5c05567c66387d738164ad1d8202dece2240"
+          "responseSha256": "18fc18cb4dba716da022131638e10ccc6755ddf2c4f971d9a411c5871ca815eb"
         }
       }
     },
@@ -68,9 +68,9 @@
           "outputTokens": 121
         },
         "receipt": {
-          "chatId": "6f60bd5333e340c5ae12b107761e1855",
+          "chatId": "bb2d9f34ccbc4a969f9bf53d1f6cb8db",
           "requestSha256": "f2379a858791e2d7b14798fd947f734b0717bd062028647688007bab0fcd8210",
-          "responseSha256": "b86aa87ccc02184fb4f9b8fe1b6c577a8094e3e0e0db719988d781580ae9814e"
+          "responseSha256": "8756c98e96ebea4ccc8f256ecffad762266b51771340d24b60dd8cccf9a117ef"
         }
       }
     },
@@ -81,7 +81,7 @@
       "result": {
         "provider": "nearai",
         "model": "z-ai/glm-5.3-flash",
-        "text": "{ \"invoice_no\": \"NG-INV-24190\", \"vendor_name\": \"Northgate Ingredients\", \"po_number\": \"PO-1042\", \"lines\": [ { \"description\": \"Ascorbic acid, USP fine powder\", \"quantity\": \"700\", \"unit\": \"kg\", \"unit_price\": \"$7.10\", \"amount\": \"$4,970.00\" } ], \"freight\": \"$180.00\", \"total\": \"$5,150.00\", \"remit_to\": \"northgate-ingredients.testnet\" }",
+        "text": "{\"invoice_no\":\"NG-INV-24190\",\"vendor_name\":\"Northgate Ingredients\",\"po_number\":\"PO-1042\",\"lines\":[{\"description\":\"Ascorbic acid, USP fine powder\",\"quantity\":\"700\",\"unit\":\"kg\",\"unit_price\":\"$7.10\",\"amount\":\"$4,970.00\"}],\"freight\":\"$180.00\",\"total\":\"$5,150.00\",\"remit_to\":\"northgate-ingredients.testnet\"}",
         "json": {
           "invoice_no": "NG-INV-24190",
           "vendor_name": "Northgate Ingredients",
@@ -101,12 +101,12 @@
         },
         "usage": {
           "inputTokens": 322,
-          "outputTokens": 120
+          "outputTokens": 97
         },
         "receipt": {
-          "chatId": "8ff4cd2cf76249d6990259f0887bced8",
+          "chatId": "8bc71a0fe7124060b5823a1fe1b176aa",
           "requestSha256": "53b02e71758eca25113d5c2ab3c2a0db48bbb9c5bfbfaf0b124d0c5c8c7657f6",
-          "responseSha256": "3558b89229181b1e3c759d31e6188a341845c2e4ce1c8dd4a212da686b6f29f5"
+          "responseSha256": "ad19b66cf1d912958f19325af415dfc42afa704c242b400f4fd4d051a82493b8"
         }
       }
     },
@@ -117,7 +117,7 @@
       "result": {
         "provider": "nearai",
         "model": "z-ai/glm-5.3-flash",
-        "text": "{ \"invoice_no\": \"NG-INV-24190\", \"vendor_name\": \"Northgate Ingredients\", \"po_number\": \"PO-1042\", \"lines\": [ { \"description\": \"Ascorbic acid, USP fine powder\", \"quantity\": \"700\", \"unit\": \"kg\", \"unit_price\": \"$7.10\", \"amount\": \"$4,970.00\" } ], \"freight\": \"$180.00\", \"total\": \"$5,150.00\", \"remit_to\": \"northgate-ingredients.testnet\" }",
+        "text": "{\"invoice_no\": \"NG-INV-24190\", \"vendor_name\": \"Northgate Ingredients\", \"po_number\": \"PO-1042\", \"lines\": [{\"description\": \"Ascorbic acid, USP fine powder\", \"quantity\": \"700\", \"unit\": \"kg\", \"unit_price\": \"$7.10\", \"amount\": \"$4,970.00\"}], \"freight\": \"$180.00\", \"total\": \"$5,150.00\", \"remit_to\": \"northgate-ingredients.testnet\"}",
         "json": {
           "invoice_no": "NG-INV-24190",
           "vendor_name": "Northgate Ingredients",
@@ -137,12 +137,12 @@
         },
         "usage": {
           "inputTokens": 284,
-          "outputTokens": 120
+          "outputTokens": 115
         },
         "receipt": {
-          "chatId": "e1ad3a60f9b5457b95e33c41b547a594",
+          "chatId": "5f006ec2398c42cabf03e77050985c19",
           "requestSha256": "0a28347b2c5646ccd3b81c680ece44ea714486c494e9ac607a0af0a6e1967817",
-          "responseSha256": "735231756015b1a8f4815c39afab2eb3c8bdef338216c4240bc7631457a9100b"
+          "responseSha256": "de608b0c189c0aba60f1a835c7b34eec9948a9b6d52053702763a867ef13b1be"
         }
       }
     }

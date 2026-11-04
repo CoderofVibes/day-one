@@ -51,7 +51,7 @@ export const CLAIMS: Claim[] = [
   {
     id: "attacks",
     claim:
-      "Twenty attacks on Kevin, the ERP path, supplier credentials, sealed bids and the plant itself (over-orders, recalled lots, a supplier settling its own order, price spikes, over-deliveries) all fail.",
+      "Twenty-one attacks on Kevin, the ERP path, supplier credentials, sealed bids and the plant itself (over-orders, recalled lots, a supplier settling its own order, a short delivery invoiced in full, price spikes, over-deliveries) all fail.",
     evidence:
       "Each attack replays its recorded testnet transaction or model answer and asserts the refusal (data/attacks/, data/sealed/, data/replay/review-llm.json).",
     steps: [cleanCloneStep("test-attacks")],

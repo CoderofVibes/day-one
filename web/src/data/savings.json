@@ -69,7 +69,7 @@
       "title": "Sealed round RFQ-2611-02",
       "amountUsdc": 160000000,
       "status": "identified",
-      "identifiedAt": "2026-10-29T15:08:12.164Z",
+      "identifiedAt": "2026-11-04T01:39:23.748Z",
       "realizedAt": null,
       "evidence": [
         "RFQ-2611-02"
@@ -427,43 +427,43 @@
         "attack": "PO-T9001 to northgate-lngredients.testnet",
         "amountUsdc": 1000000000,
         "what": "northgate-lngredients.testnet is not an approved supplier; no approval can override this.",
-        "source": "data/replay/attacks-chain.json · tx BKjdSJD4…"
+        "source": "data/replay/attacks-chain.json · tx F6vWEEvk…"
       },
       {
         "attack": "PO-1042 to northgate-ingredients.testnet",
         "amountUsdc": 1000000000,
         "what": "PO-1042 was already submitted.",
-        "source": "data/replay/attacks-chain.json · tx 8CdDArQX…"
+        "source": "data/replay/attacks-chain.json · tx 6XBRJDVw…"
       },
       {
         "attack": "PO-T9201 to harrow-chemical.testnet",
         "amountUsdc": 1000000000,
         "what": "harrow-chemical.testnet is not an approved supplier; no approval can override this.",
-        "source": "data/replay/attacks-chain.json · tx 9FAzfv5K…"
+        "source": "data/replay/attacks-chain.json · tx AwrdZEYF…"
       },
       {
         "attack": "PO-T9301 to fennimore-polyols.testnet",
         "amountUsdc": 640000000,
-        "what": "fennimore-polyols.testnet's supplier credential was revoked by HQ on 2026-10-29 (Acme quality withdrew approval after a supplier review); no approval can override this.",
-        "source": "data/attacks/credentials-testnet.json · tx G6yUpj7R…"
+        "what": "fennimore-polyols.testnet's supplier credential was revoked by HQ on 2026-11-04 (Acme quality withdrew approval after a supplier review); no approval can override this.",
+        "source": "data/attacks/credentials-testnet.json · tx 9PeopoR9…"
       },
       {
         "attack": "PO-T9302 to sierra-mineral.testnet",
         "amountUsdc": 820000000,
-        "what": "sierra-mineral.testnet's supplier credential expired on 2026-10-29; HQ must renew it, and no approval can override this.",
-        "source": "data/attacks/credentials-testnet.json · tx GU3WDK5b…"
+        "what": "sierra-mineral.testnet's supplier credential expired on 2026-11-04; HQ must renew it, and no approval can override this.",
+        "source": "data/attacks/credentials-testnet.json · tx D5coJkPR…"
       },
       {
         "attack": "PO-T9303 to bayfront-labsupply.testnet",
         "amountUsdc": 900000000,
         "what": "PO-T9303: bayfront-labsupply.testnet is not credentialed to sell raw material; no approval can override this.",
-        "source": "data/attacks/credentials-testnet.json · tx 3riqFQbx…"
+        "source": "data/attacks/credentials-testnet.json · tx GNBf81Y4…"
       },
       {
         "attack": "PO-T9304 to pacific-excipient.testnet",
         "amountUsdc": 1240000000,
         "what": "pacific-excipient.testnet is suspended after 2 rejected deliveries in a row until HQ reinstates it; no approval can override this.",
-        "source": "data/attacks/credentials-testnet.json · tx 9GNMhMnz…"
+        "source": "data/attacks/credentials-testnet.json · tx CGwXDrTF…"
       },
       {
         "attack": "Inflated invoice",
@@ -488,38 +488,38 @@
   "answers": [
     {
       "file": "data/replay/ask-llm.json",
+      "inputTokens": 2114,
+      "outputTokens": 178
+    },
+    {
+      "file": "data/replay/ask-llm.json",
+      "inputTokens": 1797,
+      "outputTokens": 108
+    },
+    {
+      "file": "data/replay/ask-llm.json",
       "inputTokens": 612,
-      "outputTokens": 176
+      "outputTokens": 195
     },
     {
       "file": "data/replay/ask-llm.json",
       "inputTokens": 1000,
-      "outputTokens": 117
+      "outputTokens": 119
     },
     {
       "file": "data/replay/ask-llm.json",
       "inputTokens": 1569,
-      "outputTokens": 27
+      "outputTokens": 104
     },
     {
       "file": "data/replay/ask-llm.json",
       "inputTokens": 922,
-      "outputTokens": 80
-    },
-    {
-      "file": "data/replay/ask-llm.json",
-      "inputTokens": 2099,
-      "outputTokens": 189
-    },
-    {
-      "file": "data/replay/ask-llm.json",
-      "inputTokens": 1794,
-      "outputTokens": 137
+      "outputTokens": 53
     },
     {
       "file": "data/replay/attacks-llm.json",
       "inputTokens": 284,
-      "outputTokens": 115
+      "outputTokens": 134
     },
     {
       "file": "data/replay/attacks-llm.json",
@@ -529,22 +529,27 @@
     {
       "file": "data/replay/attacks-llm.json",
       "inputTokens": 322,
-      "outputTokens": 120
+      "outputTokens": 97
     },
     {
       "file": "data/replay/attacks-llm.json",
       "inputTokens": 284,
-      "outputTokens": 120
+      "outputTokens": 115
     },
     {
       "file": "data/replay/demo-llm.json",
       "inputTokens": 5028,
-      "outputTokens": 1606
+      "outputTokens": 2298
+    },
+    {
+      "file": "data/replay/demo-llm.json",
+      "inputTokens": 308,
+      "outputTokens": 316
     },
     {
       "file": "data/replay/demo-llm.json",
       "inputTokens": 284,
-      "outputTokens": 120
+      "outputTokens": 115
     },
     {
       "file": "data/replay/inbox-llm.json",

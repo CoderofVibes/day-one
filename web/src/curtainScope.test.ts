@@ -71,8 +71,16 @@ describe("behind the curtain, page by page", () => {
       c.kind === "tx" ? c.tx.tx.slice(0, 8) : c.hash,
     );
     // The steps the ERP mirrored (npm run erp:demo): the anchored batch record, both POs, the
-    // receipt and the payment. Linda's approval (EW5A8qi3) has no ERP line.
-    expect(erp).toEqual(["GjN3NXzU", "D28BgcP3", "FQepeewB", "3sUEp63g", "7pCauyEY", "2zwgaHgW"]);
+    // receipt, Kevin's recorded invoice and the payment. Linda's approval (FpXXzZBk) has no ERP line.
+    expect(erp).toEqual([
+      "6s1dZ5px",
+      "6j36nCoH",
+      "3bYd13vy",
+      "3TzgR7iY",
+      "228jQM7v",
+      "HACySJzX",
+      "3F2TYKZ1",
+    ]);
   });
 
   it("gives Group purchasing PO-G-2001's run and Suppliers the credential attacks", () => {

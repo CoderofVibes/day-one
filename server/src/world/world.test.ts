@@ -300,7 +300,7 @@ describe("the world generator", () => {
     expect(po1042?.approval?.path).toBe("director_text");
     expect(world.batches.find((b) => b.batchNo === "BR-B-1045")?.era).toBe("anchor");
     expect(world.lots.find((l) => l.lot === "ASC-261116-01")?.qtyBase).toBe(700_000_000);
-    expect(anchors.chain.filter((t) => t.txHash)).toHaveLength(13);
+    expect(anchors.chain.filter((t) => t.txHash)).toHaveLength(14);
     // Escrow as the recorded run left it: PO-1041 ($612.00) and PO-1042 ($5,150.00) funded on
     // Nov 9, PO-1042 paid out on Nov 16, PO-1041 still held; nothing before T0.
     const escrowOn = (d: string) => world.snapshots.escrowUsdc[world.snapshots.days.indexOf(d)];

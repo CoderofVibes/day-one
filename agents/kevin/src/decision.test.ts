@@ -74,6 +74,12 @@ APPROVE ${facts.poHash}`).llm,
       facts,
     );
     expect(thinking.approved).toBe(true);
+    const tagged = await decideOnPo(
+      model(`Answer: APPROVE ${facts.poHash}</think>APPROVE ${facts.poHash}`).llm,
+      null,
+      facts,
+    );
+    expect(tagged).toMatchObject({ approved: true, line: `APPROVE ${facts.poHash}` });
     const wavering = await decideOnPo(
       model(`HOLD: price looks high
 APPROVE ${facts.poHash}`).llm,

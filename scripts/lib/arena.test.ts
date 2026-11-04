@@ -18,9 +18,9 @@ function runSuite(): SuiteAttack[] {
 }
 
 describe("the attack arena's catalog", () => {
-  it("is the twenty cases of npm run test:attacks: names, hashes and reasons", () => {
+  it("is the twenty-one cases of npm run test:attacks: names, hashes and reasons", () => {
     const suite = runSuite();
-    expect(suite).toHaveLength(20);
+    expect(suite).toHaveLength(21);
     expect(arena.cases.map((c) => c.attack)).toEqual(suite.map((a) => a.attack));
     for (const [i, c] of arena.cases.entries()) {
       const a = suite[i] as SuiteAttack;

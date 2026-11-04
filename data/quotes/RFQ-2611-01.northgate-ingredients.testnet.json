@@ -1,7 +1,7 @@
 {
   "kind": "quote",
   "ref_id": "RFQ-2611-01/northgate-ingredients.testnet",
-  "salt": "aa066f6f0aac4f960bcd20b9facf964d",
+  "salt": "a9d4d05b06acfe0a6af61a777d4848e5",
   "record": {
     "rfq": "RFQ-2611-01",
     "supplier": "northgate-ingredients.testnet",
@@ -11,5 +11,5 @@
     "freightUsdc": 180000000,
     "leadTimeDays": 7
   },
-  "anchored_tx": "FMLQyTJ7yZvFW5qyqoNUHnKuc3JTvkv3dPfjcW9nkyC5"
+  "anchored_tx": "7XvVHnuyQJcy3vd3a6qvoY2t5gMrMdS7d9RQeEmmVvxC"
 }

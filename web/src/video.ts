@@ -254,14 +254,14 @@ const TOUR_EXTRA: Beat[] = [
   },
   {
     id: "attacks",
-    title: "20 of 20 refused",
+    title: "21 of 21 refused",
     panel: "attacks",
     curtain: true,
     camera: "money",
     shots: [{ step: 14, ms: 10_000 }],
     captions: [
       "Then we attacked it: lookalike vendors, fake invoices, new bank details, a supplier paying itself.",
-      "Twenty attacks, twenty refusals: by Kevin, the ERP or the contract.",
+      "Twenty-one attacks, twenty-one refusals: by Kevin, the ERP or the contract.",
     ],
   },
 ];

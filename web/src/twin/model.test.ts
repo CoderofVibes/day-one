@@ -175,7 +175,7 @@ describe("deriveTwinState over the recorded run", () => {
       "Quote: Northgate $7.10/kg, 7 days, selected.",
       "Quote: Ridgeway $7.35/kg, 5 days, runner-up.",
     ]);
-    expect(formatQuotes(s, true)[0]).toMatch(/anchor refused by the contract, tx 6qNuBF16…/);
+    expect(formatQuotes(s, true)[0]).toMatch(/anchor refused by the contract, tx 4jFfG6pa…/);
     expect(formatQuotes(s, true)[1]).toMatch(/anchored by northgate-ingredients.testnet, tx /);
   });
 
@@ -385,7 +385,7 @@ describe("formatTwinState", () => {
     expect(lines.join("\n")).not.toMatch(/tx /);
     const curtain = formatTwinState(at("Delivery"), true);
     expect(curtain.join("\n")).toMatch(
-      /Money: PO-1041 · \$612.00 held, in escrow \(tx D28BgcP3…\)/,
+      /Money: PO-1041 · \$612.00 held, in escrow \(tx 6j36nCoH…\)/,
     );
   });
 });

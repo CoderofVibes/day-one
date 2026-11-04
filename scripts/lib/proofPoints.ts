@@ -14,9 +14,10 @@ import { readAttestationFixture, recordedReceipts } from "../../server/src/attes
 import { verifyAttestation } from "../../server/src/attestation/verify.ts";
 import { canonicalJson } from "../../server/src/canonical.ts";
 import { type Fixture, ReplayTransport } from "../../server/src/chain/replay.ts";
-import { groupRunsFromFixture, reconcile } from "../../server/src/erp-connector/reconcile.ts";
+import { reconcile } from "../../server/src/erp-connector/reconcile.ts";
 import { STAFF } from "../../server/src/seed/reference.ts";
 import { replayDemoWithErp } from "./erp-demo-run.ts";
+import { recordedRunsOutsideDayOne } from "./recordedRuns.ts";
 
 export const PROOF_POINTS_FILE = "data/proof-points.json";
 
@@ -70,7 +71,7 @@ function refusalOf(r: AttackResult): string {
   return r.evidence.at(-1) ?? "";
 }
 
-/** The twenty attacks, replayed by `npm run test:attacks` from their recordings. */
+/** The twenty-one attacks, replayed by `npm run test:attacks` from their recordings. */
 function attacks(root: string) {
   const out = execFileSync(
     process.execPath,
@@ -160,10 +161,7 @@ async function reconciliation(root: string) {
     erpDb,
     erp: connector,
     view: (method, args = {}) => transport.view({ contractId: accounts.spendPolicy, method, args }),
-    groupRuns: groupRunsFromFixture(
-      readJson<Fixture>(root, "data/replay/group-chain.json"),
-      accounts.network,
-    ),
+    groupRuns: recordedRunsOutsideDayOne(root, accounts.network),
   });
   return {
     ok: result.ok,

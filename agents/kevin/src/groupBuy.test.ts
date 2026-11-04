@@ -26,7 +26,7 @@ import {
 } from "./groupBuy.ts";
 
 const ROOT = "acme-holdings.testnet";
-const POLICY = `spend-policy.${ROOT}`;
+const POLICY = `spend-policy-v2.${ROOT}`;
 const REPLAY = resolve(import.meta.dirname, "../../../data/replay");
 const KG = 1_000_000;
 
@@ -133,9 +133,10 @@ describe("the recorded group buy", () => {
     expect(result.po?.poNo).toBe(GROUP_PO);
     expect(result.pool.shares.reduce((sum, s) => sum + s.amount, 0)).toBe(result.po?.totalUsdc);
     expect(result.pool.shares.map((s) => s.approvedBy)).toEqual(["Linda Park", "Dana Whitfield"]);
-    // Recorded on testnet after the main demo: Plant B's month already holds PO-1041 and
-    // PO-1042 ($5,762.00), so its total is that plus its $4,745.00 share.
-    expect(result.spent).toEqual({ A: 4_745_000_000, B: 10_507_000_000, C: 0 });
+    // Recorded on testnet after the main demo and the attack suite: Plant B's month already
+    // holds PO-1041 and PO-1042 ($5,762.00) and what the attacks spent ($1,150.00), so its total
+    // is that plus its $4,745.00 share.
+    expect(result.spent).toEqual({ A: 4_745_000_000, B: 11_657_000_000, C: 0 });
     expect(result.po?.savingsUsdc).toBe(810_000_000);
     expect(result.po?.status).toBe("paid");
 

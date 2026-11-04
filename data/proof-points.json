@@ -7,7 +7,7 @@
         "network": "testnet",
         "refusal": "northgate-lngredients.testnet is not an approved supplier; no approval can override this.",
         "txHashes": [
-          "BKjdSJD49LVSpDYgo9LrMnbbCiNrs2wgz7GDt2suBRB7"
+          "F6vWEEvk2xZ9AU6MEQHxDP1HLFNYdmUYzP8cwrUmGWFZ"
         ]
       },
       {
@@ -23,7 +23,7 @@
         "network": "testnet",
         "refusal": "PO-1042 was already submitted.",
         "txHashes": [
-          "8CdDArQXLL3kiLpXpZBFUESamAttE1gafFXcYRifg2ic"
+          "6XBRJDVwc9Jvk3B45fwEP6MQuJMmHWobUX1ukkMf4Yre"
         ]
       },
       {
@@ -46,8 +46,8 @@
         "network": "testnet",
         "refusal": "PO-T9104: $695.00 would take lab chemical spending this month to $2,002.00, over the cap of $2,000.00; director approval required.",
         "txHashes": [
-          "EsVds3nMCTfLvBfhuEy5erVSjTA2Vo9w4CkWAyfEdT39",
-          "2w9YEuciywGFCRkTk6vMDoBb94ECzYB4BLayhYU5JVM3"
+          "5P46weySBbDqum4jrnmjre6EBHSMgLuwYZie8JquJuEY",
+          "4acigzQBNL9N5Qp4aSpZKSmM2F836GAnhXRM5k3mn2fh"
         ]
       },
       {
@@ -56,25 +56,25 @@
         "network": "testnet",
         "refusal": "harrow-chemical.testnet is not an approved supplier; no approval can override this.",
         "txHashes": [
-          "9FAzfv5KqbsqcbaYk2cjP3WfS5AY1UcK5iumcaXpLcKf"
+          "AwrdZEYF5KdG7gvh88eEtdmGkYdM8caC6bv4JJ1RGxzP"
         ]
       },
       {
         "held": true,
         "name": "Revoked supplier",
         "network": "testnet",
-        "refusal": "fennimore-polyols.testnet's supplier credential was revoked by HQ on 2026-10-29 (Acme quality withdrew approval after a supplier review); no approval can override this.",
+        "refusal": "fennimore-polyols.testnet's supplier credential was revoked by HQ on 2026-11-04 (Acme quality withdrew approval after a supplier review); no approval can override this.",
         "txHashes": [
-          "G6yUpj7RDpzMyj87LuCdRtdioPewZJyhVn2Lvs1RyqNL"
+          "9PeopoR9J3666HLYkTsce2RC2gzJAJnVQP3hRaRQHJ4K"
         ]
       },
       {
         "held": true,
         "name": "Expired supplier credential",
         "network": "testnet",
-        "refusal": "sierra-mineral.testnet's supplier credential expired on 2026-10-29; HQ must renew it, and no approval can override this.",
+        "refusal": "sierra-mineral.testnet's supplier credential expired on 2026-11-04; HQ must renew it, and no approval can override this.",
         "txHashes": [
-          "GU3WDK5bsPjRar4KgTf7DpVFFVvJx2cX1w7RC1sfMLp5"
+          "D5coJkPRUV6jJXFkV1ZSssUhJMGjTzxUS6Z1rm7a5oGN"
         ]
       },
       {
@@ -83,7 +83,7 @@
         "network": "testnet",
         "refusal": "PO-T9303: bayfront-labsupply.testnet is not credentialed to sell raw material; no approval can override this.",
         "txHashes": [
-          "3riqFQbxFX4VA2RzxBqLcZnZsui7mZZJ1kXtNFTm3ttB"
+          "GNBf81Y4t2V18D4FYGrRTyZJPXYiuzzfAiFUxyQ8uWda"
         ]
       },
       {
@@ -92,9 +92,9 @@
         "network": "testnet",
         "refusal": "pacific-excipient.testnet is suspended after 2 rejected deliveries in a row until HQ reinstates it; no approval can override this.",
         "txHashes": [
-          "9GNMhMnz7Lby2WTCj87cS7kbLETQMa1L8hntgws9rFva",
-          "EKcZtFo5UbWamjJ1H36VvYsYwvEs4DFG59mMdZtpUcQL",
-          "7YKiXojEecsz3sB5ifQ9a5un3rAk126hk8QvVzDQwC43"
+          "CGwXDrTFN9b5P7VfZ94r3fsvCsdweJ5AswQLu4PdKEXc",
+          "CiRTM56tmUxMbHmBfPpgdE92fi5KpUoqm247z3ZoYXar",
+          "4L2fwiJXHJLCqDeyf34FfJdVoSvj1sQTpp1ryjHuD78x"
         ]
       },
       {
@@ -103,8 +103,8 @@
         "network": "testnet",
         "refusal": "RFQ-2611-02 is still sealed; no quote can be awarded before the deadline.",
         "txHashes": [
-          "BKN5hwUP8YB3pkD2iJgAPr2bQUCNRDqf9s8ZHVP7r5r4",
-          "AohNNRtGcA8KXm2so8THhT6ZMGTpaQ5EVHq9xisxwkpg"
+          "HH6paWfDwopYgQFXrwDyWxezURKB8oamPzs9XjkFTMq6",
+          "6fYiAX2uAceoeZqyPHCBjf5EthT8RxAngGaD1jm7rD1Q"
         ]
       },
       {
@@ -113,7 +113,7 @@
         "network": "testnet",
         "refusal": "This quote does not match what ridgeway-ascorbics.testnet sealed for RFQ-2611-02.",
         "txHashes": [
-          "2Q9JfmLorrwR7DnazJvwV7otNAWkbhanu6AVPXAWFi2J"
+          "Grau7z5V7rGRipNPQkxbr7q4JoeCvr5SBM6rLu6uq14f"
         ]
       },
       {
@@ -122,7 +122,7 @@
         "network": "testnet",
         "refusal": "Quotes for RFQ-2611-02 closed at the deadline; this one came in late.",
         "txHashes": [
-          "9EWsVWgxenRParrUFJqsZTxnc5V23P211LM2fyuo3eBz"
+          "FmWzeMKmw3cj9SfhKSzVynY4EL54ro5PifqUHCrk1dox"
         ]
       },
       {
@@ -136,9 +136,9 @@
         "held": true,
         "name": "Over-order against the production plan",
         "network": "testnet",
-        "refusal": "Plant budget is short by $40,002.00.",
+        "refusal": "Plant budget is short by $31,207.00.",
         "txHashes": [
-          "a2MM74EhBanpaQeVvxNsGwNuhMcaxCEQKM3uKhaCNzg"
+          "7vUB6P6KM99ZmJ3ApQCxAh8LJyfuiCWvWGL7odL8G8EK"
         ]
       },
       {
@@ -154,14 +154,29 @@
         "network": "testnet",
         "refusal": "Tommy confirms the delivery and Priya releases it: Bayfront Lab Supply is paid $50.00 by the contract in that call.",
         "txHashes": [
-          "D8W7aBDZ72QL2CCjgqqtwv5sb6Mxtx6siw8Hd87f6mew",
-          "6fPHG7SLFsZ2mbUiJoCD4ESE3LDjGNkJPmrDHpTfpwt3",
-          "FTd1NrJUyJy4tVf73CFfR7HcdZE9Mmtj2ZJQYFMGk1tk",
-          "FoyTpkU3NCJeeVeiBzy5CCgxhLrbGXWzTBidJDYoXNBB",
-          "HitWRuwFXUSyhWnwVnJ8rGCuTMpfQszf7qA4ck8LxSrE",
-          "3FjfpGxtBWF1UM5KyMczGfkRLne7zZ8tFN7VHF4q7qe9",
-          "8xgVw6VskgWYXRRKWfnxwnGkt3qMbgRndm9uTgoSCsRo",
-          "3DVNKvgo43PLyH3ku6V5vsWm3uTboAWVFx1JtfpwLwx9"
+          "2gu59tRv3mL3N9neRKavLkuzxrijx9n9wiiDpabMCGoD",
+          "4yqUnukdnfcGLTR8ji8tJrQyPKiP5rtMvVEkUpfp9fzB",
+          "D3nsAgM8Hq8ANnCVcB78rTr3Vfv7ght56YfXqBD7j9Fg",
+          "GVrJemZXRbAvXbYvr3mWd1MSPvBbeE6Dcck713K13uEP",
+          "6eQQfxSre9YcZS6d9PhrnhddEKuNMKC1h6ecNfdhi1Fu",
+          "EKRLbt4BEmyG7kPn2v3nejckYr8aZcqtXKyvqGFnpMWz",
+          "E4qWqEck7Uwu3Db7Ngo5rfKp6LjioJ6PtmBEaA8gmYxH",
+          "8FTwfEJm7sGSXKbCaranBV4HTAinq5veVqkrpcMTk1MD"
+        ]
+      },
+      {
+        "held": true,
+        "name": "Short delivery invoiced in full",
+        "network": "testnet",
+        "refusal": "Contract: paid $355.00 for what reached stock and returned $355.00 to the budget (50000000 of 100000000 received; paid pro rata).",
+        "txHashes": [
+          "2AKLFAWePAzrT4JyQ2bT8hJ5fXx51v6uaFWcoy2AVxTa",
+          "CWfvP6u946f9tijaqbVAgdrbVshhHsXq8drZRVkvrqvT",
+          "H3SNjWo4acpVHV6QTByg19zMojpSBTgMaJB9L6x6qRFn",
+          "DCGJASspW4DgL3d9gqcmmuVcNzRdtoDECcMku9KkweBw",
+          "Ceo1GPby1vUUyWnKw4ykH7pJFScknC2nrgZ2VUeL8nNz",
+          "DfLWPbr4bLx3sHNY91dDYGidBaW5w57YTbMn7uwyUVEF",
+          "7At9Ynuwyg5QcvzVWuHfQFHdFquy76Kob4apReYJtbZX"
         ]
       },
       {
@@ -180,21 +195,21 @@
       }
     ],
     "passed": true,
-    "refused": 20,
-    "total": 20
+    "refused": 21,
+    "total": 21
   },
   "attestation": {
     "enclaveChecks": 15,
-    "fetchedAt": "2026-11-04T00:22:38.028Z",
+    "fetchedAt": "2026-11-04T01:47:08.773Z",
     "model": "z-ai/glm-5.3-flash",
     "ok": true,
-    "signedAnswers": 30
+    "signedAnswers": 31
   },
   "groupBuy": {
     "network": "testnet",
     "poId": "PO-G-2001",
     "poolId": "RFQ-G-2611",
-    "recordedAt": "2026-10-29T05:40:34.571Z",
+    "recordedAt": "2026-11-04T01:42:41.042Z",
     "shares": [
       {
         "amountUsd": "4745.00",
@@ -212,7 +227,7 @@
     "transactions": [
       {
         "error": null,
-        "hash": "6kDFjyFWzuCfJCiAkhuv5tP3D3nAZuJLzMvefRopd3Ma",
+        "hash": "AChjyLFTYERCxHRVScvJ3pzNHg3gMG9XgGGNLQkzdRMC",
         "method": "open_pool",
         "paidBy": "kevin.plant-b.acme-holdings.testnet",
         "poId": null,
@@ -221,7 +236,7 @@
       },
       {
         "error": null,
-        "hash": "13CSC6EdwebUFuKNZE813GdNuG4ziHNnxxoJR2xj8Cvy",
+        "hash": "3972nT3xZRWfAwGjRYzQw55hNfzUi15AoNbk6aKxAJeW",
         "method": "join_pool",
         "paidBy": "kevin.plant-a.acme-holdings.testnet",
         "poId": null,
@@ -230,7 +245,7 @@
       },
       {
         "error": "Only a registered purchasing agent or an approved supplier can anchor records.",
-        "hash": "68WJ7medhmkXjCoegDTZ1V1Yki1h1SDcrCVDnVmweZ3w",
+        "hash": "CmpuKKoFWbmCxvpc5qDUbEVCa8PAo6zou7ebrTCD3ypk",
         "method": "anchor",
         "paidBy": "quickchem-direct.testnet",
         "poId": null,
@@ -239,7 +254,7 @@
       },
       {
         "error": null,
-        "hash": "42R9MGcavZ4SRrnjw4m7y5QDT98Q4dFhNa5kXa2EoonB",
+        "hash": "CrQpPUiwsZef4x7QckgBbAda51KrxFXVAjaCDUCkC79D",
         "method": "anchor",
         "paidBy": "northgate-ingredients.testnet",
         "poId": null,
@@ -248,7 +263,7 @@
       },
       {
         "error": null,
-        "hash": "Ge3TbqWzV7hNLc4vNcR4jvTLgUhR4P3WPpqGfF9eUmqs",
+        "hash": "9hjj4NksR3T5VvUkSqFfB1iiom1ZDa27MEWfhhxLXe5W",
         "method": "anchor",
         "paidBy": "ridgeway-ascorbics.testnet",
         "poId": null,
@@ -257,7 +272,7 @@
       },
       {
         "error": "PO-G-2001: Kevin's $4,745.00 share exceeds its per-PO limit of $2,500.00; Kevin at Plant A's $4,745.00 share exceeds its per-PO limit of $2,500.00; director approval required.",
-        "hash": "7Vf5C8G4Y9nv4bgVfii6xx3cN98Bz6ymFHxJHMnqFgkN",
+        "hash": "KnHGiVzjZ7z5QzDakjTdXmD2f5NcatoFTLWd8aqR48c",
         "method": "submit_pooled_po",
         "paidBy": "kevin.plant-b.acme-holdings.testnet",
         "poId": "PO-G-2001",
@@ -266,7 +281,7 @@
       },
       {
         "error": null,
-        "hash": "Brc7mKxP3VQ6UcKZhBZoB3h4qSjHAsWB2AaV13bNnMVk",
+        "hash": "CKeAU63X6KNq8dJQa5hF2BCnm3b8e6UsDGkbfYoZRENC",
         "method": "approve_po",
         "paidBy": "dayone-relayer.testnet",
         "poId": "PO-G-2001/kevin.plant-b.acme-holdings.testnet",
@@ -275,7 +290,7 @@
       },
       {
         "error": null,
-        "hash": "Cm1dyEdK2P5eGZ5Ko8xVCqv5VE5DLcfzQvAM1epXB2LK",
+        "hash": "C8pFi3KStYuiE1N31yvfQMHRpfwBw5FFaSxfSRZ216qf",
         "method": "approve_po",
         "paidBy": "dayone-relayer.testnet",
         "poId": "PO-G-2001/kevin.plant-a.acme-holdings.testnet",
@@ -284,7 +299,7 @@
       },
       {
         "error": null,
-        "hash": "9soPwo62c2qoZ5vPF5SKqxTKGSNvLadDMxCP1QY89b7V",
+        "hash": "9LFKVTcHuDX5HUQWunewhQU356qxHayyDcivPDdMbjdY",
         "method": "submit_pooled_po",
         "paidBy": "kevin.plant-b.acme-holdings.testnet",
         "poId": "PO-G-2001",
@@ -293,7 +308,7 @@
       },
       {
         "error": null,
-        "hash": "3g6tJG5Jm1ncgwvo5yhP5vP5HmBxtFEsRCqQKoN3uHxJ",
+        "hash": "Ff5emZneEVQHiTRevBcjuWJxjuYVpskivudMx1n1AdEB",
         "method": "accept_po",
         "paidBy": "northgate-ingredients.testnet",
         "poId": "PO-G-2001",
@@ -302,7 +317,7 @@
       },
       {
         "error": null,
-        "hash": "53y1oyTVfdCENiFDixXyZwAYsWB5J7us6AjywDsiHwQS",
+        "hash": "9HctNQm2cVmKjRGfWxC8dr5hDzYnciHPx2SQ6TMQtEJT",
         "method": "mark_shipped",
         "paidBy": "northgate-ingredients.testnet",
         "poId": "PO-G-2001",
@@ -311,7 +326,7 @@
       },
       {
         "error": null,
-        "hash": "3pPaLEoasECQuDUuBCxF9aNBRKmxdbeDvQ3sSebKwydq",
+        "hash": "5qeVf9tnMFDNHLveWqqEKia85hCDoXbSChgUgAQjWFMu",
         "method": "confirm_receipt",
         "paidBy": "dayone-relayer.testnet",
         "poId": "PO-G-2001",
@@ -320,7 +335,7 @@
       },
       {
         "error": null,
-        "hash": "9XDEo3DpvFe2Tu8t94Hpe45su4AH9cB8JWCLiEnHV3ka",
+        "hash": "42HXtYRxtB3qV3P4TSAp8uSFyPp1NsrJq5QpzGzmgnko",
         "method": "qc_release",
         "paidBy": "dayone-relayer.testnet",
         "poId": "PO-G-2001",
@@ -341,12 +356,12 @@
     },
     "network": "testnet",
     "perPoLimitUsd": "2500.00",
-    "recordedAt": "2026-10-29T05:32:07.495Z",
+    "recordedAt": "2026-11-04T01:32:37.393Z",
     "releasedLot": "ASC-261116-01",
     "transactions": [
       {
         "error": null,
-        "hash": "GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS",
+        "hash": "6s1dZ5pxjB8vLwdQge7VPXF6bqeeuU4uh87podFzJQao",
         "method": "anchor_batch",
         "paidBy": "kevin.plant-b.acme-holdings.testnet",
         "poId": null,
@@ -355,7 +370,7 @@
       },
       {
         "error": "Only a registered purchasing agent or an approved supplier can anchor records.",
-        "hash": "6qNuBF16LW63gRCJ1QmLRY3RQ6k4RcX1NUN2V5scH3jJ",
+        "hash": "4jFfG6padyLFN2jYcnTPL9FZ83HK9rgZAdFCDkp8w4fN",
         "method": "anchor",
         "paidBy": "quickchem-direct.testnet",
         "poId": null,
@@ -364,7 +379,7 @@
       },
       {
         "error": null,
-        "hash": "FMLQyTJ7yZvFW5qyqoNUHnKuc3JTvkv3dPfjcW9nkyC5",
+        "hash": "7XvVHnuyQJcy3vd3a6qvoY2t5gMrMdS7d9RQeEmmVvxC",
         "method": "anchor",
         "paidBy": "northgate-ingredients.testnet",
         "poId": null,
@@ -373,7 +388,7 @@
       },
       {
         "error": null,
-        "hash": "4mBN5CwJBrkdn3e6CmaWWEzY7MVgdah1jcCo1t9pKjo2",
+        "hash": "CixVtmixxc7ts9EV4ut9SxTcxUCx5hntNBGtievYbsxv",
         "method": "anchor",
         "paidBy": "ridgeway-ascorbics.testnet",
         "poId": null,
@@ -382,7 +397,7 @@
       },
       {
         "error": null,
-        "hash": "D28BgcP34ruXdczobk6WhvrgJxBWEm73qjQK5uxmzH1A",
+        "hash": "6j36nCoH3CjoqYytTK4k2TLdaN3Z77auHHiCEgrqB4ay",
         "method": "submit_po",
         "paidBy": "kevin.plant-b.acme-holdings.testnet",
         "poId": "PO-1041",
@@ -391,7 +406,7 @@
       },
       {
         "error": "PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required.",
-        "hash": "FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af",
+        "hash": "3bYd13vyu89wuD299y6gvmZMu1rV1vbBGQpKVEZdp1UC",
         "method": "submit_po",
         "paidBy": "kevin.plant-b.acme-holdings.testnet",
         "poId": "PO-1042",
@@ -400,7 +415,7 @@
       },
       {
         "error": null,
-        "hash": "EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8",
+        "hash": "FpXXzZBkeCNouQgJn7eF8k7oe57dzgd3n21yhvFzGAtt",
         "method": "approve_po",
         "paidBy": "dayone-relayer.testnet",
         "poId": "PO-1042",
@@ -409,7 +424,7 @@
       },
       {
         "error": null,
-        "hash": "3sUEp63gHQFSr6FvrjTDvarFh2zM2i1Zp9bhzumfbpmQ",
+        "hash": "3TzgR7iY2zrbYHvnbNphFfeJJaLQwLi4tPfGkQCH1oee",
         "method": "submit_po",
         "paidBy": "kevin.plant-b.acme-holdings.testnet",
         "poId": "PO-1042",
@@ -418,7 +433,7 @@
       },
       {
         "error": null,
-        "hash": "AsDTwnSwqeSLh3gNREJPgU5ckMeGhqsM2FMAWfTk1Ma7",
+        "hash": "GjhjYyTt23vJpS3qBZgKnXxRQJviHEyGe6aGPFsSm6Z1",
         "method": "accept_po",
         "paidBy": "northgate-ingredients.testnet",
         "poId": "PO-1042",
@@ -427,7 +442,7 @@
       },
       {
         "error": null,
-        "hash": "BU6SLGGUxjkrXVdQQHv8c6G2iYFDQv8cyZ72q97MarBD",
+        "hash": "6aoubU1CBCbsc1ez7KUvUpLSc6AYJfdb8VtWL2dLPJb6",
         "method": "mark_shipped",
         "paidBy": "northgate-ingredients.testnet",
         "poId": "PO-1042",
@@ -436,7 +451,7 @@
       },
       {
         "error": null,
-        "hash": "7pCauyEYJSMeCLW1gNCgZ6bze6dqQasNvq7Twf8yJozm",
+        "hash": "228jQM7vLL8cADCN9YkLBbLQvRcMUJeuoSi9ZLbQVubz",
         "method": "confirm_receipt",
         "paidBy": "dayone-relayer.testnet",
         "poId": "PO-1042",
@@ -445,7 +460,16 @@
       },
       {
         "error": null,
-        "hash": "2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn",
+        "hash": "HACySJzXh3Ersw1qoLWYsaHdK3CKcisJxutiEH3V72ZQ",
+        "method": "record_invoice",
+        "paidBy": "kevin.plant-b.acme-holdings.testnet",
+        "poId": "PO-1042",
+        "signer": "kevin.plant-b.acme-holdings.testnet",
+        "status": "success"
+      },
+      {
+        "error": null,
+        "hash": "3F2TYKZ1bZPsKmrNt5aqJSQi49RaN9wTMUYdXDr1Hd6e",
         "method": "qc_release",
         "paidBy": "dayone-relayer.testnet",
         "poId": "PO-1042",
@@ -454,7 +478,7 @@
       },
       {
         "error": null,
-        "hash": "2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV",
+        "hash": "BqGaaj9gyJXFP8QaWf3ZkdxZdvvf85xoye6nH4cQaQNG",
         "method": "anchor_batch",
         "paidBy": "kevin.plant-b.acme-holdings.testnet",
         "poId": null,
@@ -482,21 +506,21 @@
       },
       {
         "lines": [
-          "1 escrow release: PO-1042 $5,150.00 to northgate-ingredients.testnet, tx 2zwgaHgW… = ERP VP-35 on NG-INV-24190 (matched, approved, paid in full)"
+          "1 escrow release: PO-1042 $5,150.00 to northgate-ingredients.testnet, tx 3F2TYKZ1… = ERP VP-35 on NG-INV-24190 (matched, approved, paid in full)"
         ],
         "name": "Payments",
         "verdict": "MATCH"
       },
       {
         "lines": [
-          "ERP account 1050 $19,850.00 = contract budget $9,748.00 + in escrow $612.00 + paid by the group buy $9,490.00 (PO-G-2001)"
+          "ERP account 1050 $19,850.00 = contract budget $9,293.00 + in escrow $612.00 + paid by recorded runs outside Day One $9,945.00 (PO-T9502, PO-T9503, PO-T9602, PO-G-2001)"
         ],
         "name": "Escrow",
         "verdict": "MATCH"
       },
       {
         "lines": [
-          "4 (rehearsals and cancelled tests): all cancelled or refunded, none holding or paid; PO-G-2001 $9,490.00 to northgate-ingredients.testnet is the recorded group purchase (npm run demo:group, release tx 9XDEo3Dp…), booked in its own run, not in this ERP"
+          "4 (rehearsals and cancelled tests): all cancelled or refunded, none holding or paid; PO-T9502 $50.00 to bayfront-labsupply.testnet was paid by an interrupted take of attack 18 on Nov 3, 2026 (the run stopped at the next attack before saving; PO-T9503 is the recorded take), not in this ERP; PO-T9503 $50.00 to bayfront-labsupply.testnet was paid by the recorded attack suite (npm run test:attacks), not in this ERP; PO-T9602 $355.00 to northgate-ingredients.testnet was paid by the recorded attack suite (npm run test:attacks), not in this ERP; PO-G-2001 $9,490.00 to northgate-ingredients.testnet is the recorded group purchase (npm run demo:group, release tx 42HXtYRx…), booked in its own run, not in this ERP"
         ],
         "name": "Contract POs not in Day One",
         "verdict": "MATCH"

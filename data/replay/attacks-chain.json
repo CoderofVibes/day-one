@@ -1,14 +1,14 @@
 {
   "version": 1,
   "network": "testnet",
-  "recordedAt": "2026-10-29T05:36:09.812Z",
+  "recordedAt": "2026-11-04T01:33:24.276Z",
   "entries": [
     {
       "type": "call",
       "request": {
         "kind": "submit_po",
         "signerId": "kevin.plant-b.acme-holdings.testnet",
-        "receiverId": "spend-policy.acme-holdings.testnet",
+        "receiverId": "spend-policy-v2.acme-holdings.testnet",
         "method": "submit_po",
         "args": {
           "po_id": "PO-T9001",
@@ -24,7 +24,7 @@
         "status": "refused",
         "errorMessage": "northgate-lngredients.testnet is not an approved supplier; no approval can override this.",
         "returnValue": null,
-        "txHash": "BKjdSJD49LVSpDYgo9LrMnbbCiNrs2wgz7GDt2suBRB7",
+        "txHash": "F6vWEEvk2xZ9AU6MEQHxDP1HLFNYdmUYzP8cwrUmGWFZ",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -40,13 +40,13 @@
             }
           }
         ],
-        "blockHeight": 275256835
+        "blockHeight": 276128494
       }
     },
     {
       "type": "view",
       "request": {
-        "contractId": "spend-policy.acme-holdings.testnet",
+        "contractId": "spend-policy-v2.acme-holdings.testnet",
         "method": "get_po",
         "args": {
           "po_id": "PO-1042"
@@ -59,16 +59,30 @@
         "supplier": "northgate-ingredients.testnet",
         "amount": "5150000000",
         "category": "raw_material",
-        "po_hash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3",
-        "period": 202610,
+        "po_hash": "74e7707deb33681866d9f1ad99b8c9566e978912cd1f46601e8bb3be39069187",
+        "period": 202611,
         "status": "Released",
         "approved_by": "director.plant-b.acme-holdings.testnet",
         "supplier_lot": "NG-24-8812",
-        "funded_at": "1793251906049083632",
-        "accepted_at": "1793251908478301558",
-        "shipped_at": "1793251910945249317",
-        "received_at": "1793251914576303933",
-        "released_at": "1793251923725205124"
+        "funded_at": "1793755932638401439",
+        "accepted_at": "1793755935137535804",
+        "shipped_at": "1793755937420341969",
+        "received_at": "1793755941032789290",
+        "released_at": "1793755953284711145",
+        "qty": "700000000",
+        "received_qty": "700000000",
+        "receipt_hash": "5e07b321d0a681a8daaa67389e8107774b54821cd971c99dd0cb561282e91b25",
+        "lots": [
+          "ASC-261116-01"
+        ],
+        "invoice": {
+          "invoice_hash": "090b0a0300987ffe630bd36666b07ab162fad620527a517774ad7a4a43b4cd82",
+          "amount": "5150000000",
+          "by": "kevin.plant-b.acme-holdings.testnet",
+          "at": "1793755947134872596"
+        },
+        "paid": "5150000000",
+        "decision": "z-ai/glm-5.3-flash:347bdfd989fae3bcfa9ff3d66319abe6ac67c06fffb9eac0360fbe7ee2d48f83:379849cb73703f446d41e8cb72d27d4200d7c17c59312ae07ccfb069c83a598d"
       }
     },
     {
@@ -87,7 +101,7 @@
       "request": {
         "kind": "submit_po",
         "signerId": "kevin.plant-b.acme-holdings.testnet",
-        "receiverId": "spend-policy.acme-holdings.testnet",
+        "receiverId": "spend-policy-v2.acme-holdings.testnet",
         "method": "submit_po",
         "args": {
           "po_id": "PO-1042",
@@ -103,7 +117,7 @@
         "status": "refused",
         "errorMessage": "PO-1042 was already submitted.",
         "returnValue": null,
-        "txHash": "8CdDArQXLL3kiLpXpZBFUESamAttE1gafFXcYRifg2ic",
+        "txHash": "6XBRJDVwc9Jvk3B45fwEP6MQuJMmHWobUX1ukkMf4Yre",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -119,13 +133,13 @@
             }
           }
         ],
-        "blockHeight": 275256854
+        "blockHeight": 276128509
       }
     },
     {
       "type": "view",
       "request": {
-        "contractId": "spend-policy.acme-holdings.testnet",
+        "contractId": "spend-policy-v2.acme-holdings.testnet",
         "method": "get_po",
         "args": {
           "po_id": "PO-1042"
@@ -138,22 +152,36 @@
         "supplier": "northgate-ingredients.testnet",
         "amount": "5150000000",
         "category": "raw_material",
-        "po_hash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3",
-        "period": 202610,
+        "po_hash": "74e7707deb33681866d9f1ad99b8c9566e978912cd1f46601e8bb3be39069187",
+        "period": 202611,
         "status": "Released",
         "approved_by": "director.plant-b.acme-holdings.testnet",
         "supplier_lot": "NG-24-8812",
-        "funded_at": "1793251906049083632",
-        "accepted_at": "1793251908478301558",
-        "shipped_at": "1793251910945249317",
-        "received_at": "1793251914576303933",
-        "released_at": "1793251923725205124"
+        "funded_at": "1793755932638401439",
+        "accepted_at": "1793755935137535804",
+        "shipped_at": "1793755937420341969",
+        "received_at": "1793755941032789290",
+        "released_at": "1793755953284711145",
+        "qty": "700000000",
+        "received_qty": "700000000",
+        "receipt_hash": "5e07b321d0a681a8daaa67389e8107774b54821cd971c99dd0cb561282e91b25",
+        "lots": [
+          "ASC-261116-01"
+        ],
+        "invoice": {
+          "invoice_hash": "090b0a0300987ffe630bd36666b07ab162fad620527a517774ad7a4a43b4cd82",
+          "amount": "5150000000",
+          "by": "kevin.plant-b.acme-holdings.testnet",
+          "at": "1793755947134872596"
+        },
+        "paid": "5150000000",
+        "decision": "z-ai/glm-5.3-flash:347bdfd989fae3bcfa9ff3d66319abe6ac67c06fffb9eac0360fbe7ee2d48f83:379849cb73703f446d41e8cb72d27d4200d7c17c59312ae07ccfb069c83a598d"
       }
     },
     {
       "type": "view",
       "request": {
-        "contractId": "spend-policy.acme-holdings.testnet",
+        "contractId": "spend-policy-v2.acme-holdings.testnet",
         "method": "get_category_spent",
         "args": {
           "category": "lab_chemical"
@@ -164,7 +192,7 @@
     {
       "type": "view",
       "request": {
-        "contractId": "spend-policy.acme-holdings.testnet",
+        "contractId": "spend-policy-v2.acme-holdings.testnet",
         "method": "get_category_cap",
         "args": {
           "category": "lab_chemical"
@@ -177,7 +205,7 @@
       "request": {
         "kind": "submit_po",
         "signerId": "kevin.plant-b.acme-holdings.testnet",
-        "receiverId": "spend-policy.acme-holdings.testnet",
+        "receiverId": "spend-policy-v2.acme-holdings.testnet",
         "method": "submit_po",
         "args": {
           "po_id": "PO-T9103",
@@ -200,17 +228,24 @@
           "amount": "695000000",
           "category": "lab_chemical",
           "po_hash": "264b4100327976b02a6036fc40c60f55f18a3f99118706a0fda8daf1a6ad2427",
-          "period": 202610,
+          "period": 202611,
           "status": "Funded",
           "approved_by": null,
           "supplier_lot": null,
-          "funded_at": "1793252162769551830",
+          "funded_at": "1793755996244861817",
           "accepted_at": null,
           "shipped_at": null,
           "received_at": null,
-          "released_at": null
+          "released_at": null,
+          "qty": null,
+          "received_qty": null,
+          "receipt_hash": null,
+          "lots": [],
+          "invoice": null,
+          "paid": null,
+          "decision": null
         },
-        "txHash": "EsVds3nMCTfLvBfhuEy5erVSjTA2Vo9w4CkWAyfEdT39",
+        "txHash": "5P46weySBbDqum4jrnmjre6EBHSMgLuwYZie8JquJuEY",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -238,7 +273,7 @@
             }
           }
         ],
-        "blockHeight": 275256871
+        "blockHeight": 276128520
       }
     },
     {
@@ -246,7 +281,7 @@
       "request": {
         "kind": "submit_po",
         "signerId": "kevin.plant-b.acme-holdings.testnet",
-        "receiverId": "spend-policy.acme-holdings.testnet",
+        "receiverId": "spend-policy-v2.acme-holdings.testnet",
         "method": "submit_po",
         "args": {
           "po_id": "PO-T9104",
@@ -262,7 +297,7 @@
         "status": "refused",
         "errorMessage": "PO-T9104: $695.00 would take lab chemical spending this month to $2,002.00, over the cap of $2,000.00; director approval required.",
         "returnValue": null,
-        "txHash": "2w9YEuciywGFCRkTk6vMDoBb94ECzYB4BLayhYU5JVM3",
+        "txHash": "4acigzQBNL9N5Qp4aSpZKSmM2F836GAnhXRM5k3mn2fh",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -278,13 +313,13 @@
             }
           }
         ],
-        "blockHeight": 275256875
+        "blockHeight": 276128525
       }
     },
     {
       "type": "view",
       "request": {
-        "contractId": "spend-policy.acme-holdings.testnet",
+        "contractId": "spend-policy-v2.acme-holdings.testnet",
         "method": "get_agent_policy",
         "args": {
           "agent": "kevin.plant-b.acme-holdings.testnet"
@@ -301,7 +336,8 @@
           "lab_chemical"
         ],
         "approver": "director.plant-b.acme-holdings.testnet",
-        "active": true
+        "active": true,
+        "signed_above": "2500000000"
       }
     },
     {
@@ -309,7 +345,7 @@
       "request": {
         "kind": "submit_po",
         "signerId": "kevin.plant-b.acme-holdings.testnet",
-        "receiverId": "spend-policy.acme-holdings.testnet",
+        "receiverId": "spend-policy-v2.acme-holdings.testnet",
         "method": "submit_po",
         "args": {
           "po_id": "PO-T9201",
@@ -325,7 +361,7 @@
         "status": "refused",
         "errorMessage": "harrow-chemical.testnet is not an approved supplier; no approval can override this.",
         "returnValue": null,
-        "txHash": "9FAzfv5KqbsqcbaYk2cjP3WfS5AY1UcK5iumcaXpLcKf",
+        "txHash": "AwrdZEYF5KdG7gvh88eEtdmGkYdM8caC6bv4JJ1RGxzP",
         "events": [
           {
             "standard": "dayone_spend_policy",
@@ -341,13 +377,13 @@
             }
           }
         ],
-        "blockHeight": 275256880
+        "blockHeight": 276128530
       }
     },
     {
       "type": "view",
       "request": {
-        "contractId": "spend-policy.acme-holdings.testnet",
+        "contractId": "spend-policy-v2.acme-holdings.testnet",
         "method": "get_supplier",
         "args": {
           "supplier": "harrow-chemical.testnet"

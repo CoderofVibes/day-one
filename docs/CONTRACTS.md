@@ -342,6 +342,8 @@ Refusals (each panics with the message): late seal "Quotes for RFQ-… closed at
 
 ## 11. Pay for what reached stock, and enclave-signed decisions (Nov 3; OPEN_QUESTIONS #48, #50)
 
+Deployed Nov 3 as **v2** at `spend-policy-v2.acme-holdings.testnet` (v1 stays at `spend-policy.acme-holdings.testnet`, which testnet would not delete once its state grew; LESSONS). Plant B's threshold is $2,500; the attested signer is `0x3b753b4406613c5e70ae640508632b600424fa0c`. The USDC deployment (`spend-policy-usdc`) still runs v1's code.
+
 Two additions in one contract version (docs/REFERENCE_IDEAS_PLAN.md, E and F). Every new argument is optional, so a caller that omits it gets the behaviour of §1–§10.
 
 **E. Receipt-bound settlement.** `submit_po` takes `qty` (the ordered quantity in base units: mg, or each). `confirm_receipt` then takes `received_qty`, `receipt_hash` (the ledger receipt's fingerprint) and `lots` (the plant lot codes it posted); for a PO with `qty`, `received_qty` is required and may not be zero or more than ordered ("more than PO-x ordered"). `record_invoice(po_id, invoice_hash, amount)`, sent by the PO's agent once the PO is shipped or received, records the supplier's invoice once. `qc_release` pays the smallest of: the escrow, the escrow pro rata to `received_qty / qty` (freight included in the ratio), and the invoice amount. The rest goes back to the plant budget and to the agent's and category's spend, `settlement_adjusted` says how much and why, and `po_released` carries the amount actually paid. The ERP stays the books: the contract applies its own quantity and amount rule and never asks the ERP. Pooled POs (§9) keep paying in full: they take no `qty` and no invoice in this version.

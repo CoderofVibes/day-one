@@ -17227,7 +17227,7 @@
    "freightUsdc": 0,
    "status": "funded",
    "createdBy": "kevin",
-   "poHash": "54c8013ce2306a3fa6c7991a2c2761c78607ca246356f1aa1526e5409b8083dc",
+   "poHash": "b0998c42a7ea281019bf1bf49824bb1bf8e2f0e6e282569673870e378bcceb36",
    "lines": [
     {
      "material": "ACN",
@@ -17251,7 +17251,7 @@
    "freightUsdc": 180000000,
    "status": "paid",
    "createdBy": "kevin",
-   "poHash": "4f1989c3f4331651a39cf471713692892230fcf7869e762cb629accc648730b3",
+   "poHash": "74e7707deb33681866d9f1ad99b8c9566e978912cd1f46601e8bb3be39069187",
    "lines": [
     {
      "material": "ASC",
@@ -19585,7 +19585,7 @@
    "yieldBp": 9080,
    "wasteBase": 91992000,
    "status": "confirmed",
-   "recordHash": "25c6caff2b79b01a2471cfd9fe5284d9f328c4f86fa7b4a3dcf89c98aff69029",
+   "recordHash": "f40a4b91f9aa390093f2184e9c00980c62b7d51348d9c876e450cb4ae8f9a896",
    "inputs": [
     {
      "lot": "ASC-261009-01",
@@ -20413,7 +20413,7 @@
      "leadDays": 7,
      "status": "accepted",
      "reason": null,
-     "quoteHash": "bc68bb7c7ecd58fef160fad0d384d7393b56c0d21073e2d9ba9e75fea8c3c6b8"
+     "quoteHash": "4e43e0e629a058381e3e25511c4d384f5ed08c30affb744acc16ab3d8f8e7d00"
     },
     {
      "vendor": "QCD",
@@ -20422,7 +20422,7 @@
      "leadDays": 4,
      "status": "excluded",
      "reason": "vendor not qualified",
-     "quoteHash": "850b4567c8342ce4692e681502afecdb07414ebb6d79f77d37e2fc1c816d8bea"
+     "quoteHash": "7a081fe6c5e50a5e52dd0a177247a449385ea8b246edf728991d34de97552930"
     },
     {
      "vendor": "RWA",
@@ -20431,7 +20431,7 @@
      "leadDays": 5,
      "status": "declined",
      "reason": null,
-     "quoteHash": "a6cc83becdb51a17fe9980422909594cb344dd0be146069cb8fd29c252f5d35d"
+     "quoteHash": "192dfd7435ae9f982a75cfc587fe6151faf41145795eef0346d62d1fd2351254"
     }
    ]
   }
@@ -20449,145 +20449,156 @@
  ],
  "chain": [
   {
-   "txHash": "GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS",
+   "txHash": "6s1dZ5pxjB8vLwdQge7VPXF6bqeeuU4uh87podFzJQao",
    "method": "anchor_batch",
    "signer": "kevin.plant-b.acme-holdings.testnet",
-   "receiver": "spend-policy.acme-holdings.testnet",
+   "receiver": "spend-policy-v2.acme-holdings.testnet",
    "status": "success",
    "error": null,
-   "explorerUrl": "https://testnet.nearblocks.io/txns/GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/6s1dZ5pxjB8vLwdQge7VPXF6bqeeuU4uh87podFzJQao",
    "at": "2026-11-09T13:05:00.000Z",
    "poNo": null
   },
   {
-   "txHash": "6qNuBF16LW63gRCJ1QmLRY3RQ6k4RcX1NUN2V5scH3jJ",
+   "txHash": "4jFfG6padyLFN2jYcnTPL9FZ83HK9rgZAdFCDkp8w4fN",
    "method": "anchor",
    "signer": "quickchem-direct.testnet",
-   "receiver": "spend-policy.acme-holdings.testnet",
+   "receiver": "spend-policy-v2.acme-holdings.testnet",
    "status": "refused",
    "error": "Only a registered purchasing agent or an approved supplier can anchor records.",
-   "explorerUrl": "https://testnet.nearblocks.io/txns/6qNuBF16LW63gRCJ1QmLRY3RQ6k4RcX1NUN2V5scH3jJ",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/4jFfG6padyLFN2jYcnTPL9FZ83HK9rgZAdFCDkp8w4fN",
    "at": "2026-11-09T13:10:00.000Z",
    "poNo": null
   },
   {
-   "txHash": "FMLQyTJ7yZvFW5qyqoNUHnKuc3JTvkv3dPfjcW9nkyC5",
+   "txHash": "7XvVHnuyQJcy3vd3a6qvoY2t5gMrMdS7d9RQeEmmVvxC",
    "method": "anchor",
    "signer": "northgate-ingredients.testnet",
-   "receiver": "spend-policy.acme-holdings.testnet",
+   "receiver": "spend-policy-v2.acme-holdings.testnet",
    "status": "success",
    "error": null,
-   "explorerUrl": "https://testnet.nearblocks.io/txns/FMLQyTJ7yZvFW5qyqoNUHnKuc3JTvkv3dPfjcW9nkyC5",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/7XvVHnuyQJcy3vd3a6qvoY2t5gMrMdS7d9RQeEmmVvxC",
    "at": "2026-11-09T13:10:00.000Z",
    "poNo": null
   },
   {
-   "txHash": "4mBN5CwJBrkdn3e6CmaWWEzY7MVgdah1jcCo1t9pKjo2",
+   "txHash": "CixVtmixxc7ts9EV4ut9SxTcxUCx5hntNBGtievYbsxv",
    "method": "anchor",
    "signer": "ridgeway-ascorbics.testnet",
-   "receiver": "spend-policy.acme-holdings.testnet",
+   "receiver": "spend-policy-v2.acme-holdings.testnet",
    "status": "success",
    "error": null,
-   "explorerUrl": "https://testnet.nearblocks.io/txns/4mBN5CwJBrkdn3e6CmaWWEzY7MVgdah1jcCo1t9pKjo2",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/CixVtmixxc7ts9EV4ut9SxTcxUCx5hntNBGtievYbsxv",
    "at": "2026-11-09T13:10:00.000Z",
    "poNo": null
   },
   {
-   "txHash": "D28BgcP34ruXdczobk6WhvrgJxBWEm73qjQK5uxmzH1A",
+   "txHash": "6j36nCoH3CjoqYytTK4k2TLdaN3Z77auHHiCEgrqB4ay",
    "method": "submit_po",
    "signer": "kevin.plant-b.acme-holdings.testnet",
-   "receiver": "spend-policy.acme-holdings.testnet",
+   "receiver": "spend-policy-v2.acme-holdings.testnet",
    "status": "success",
    "error": null,
-   "explorerUrl": "https://testnet.nearblocks.io/txns/D28BgcP34ruXdczobk6WhvrgJxBWEm73qjQK5uxmzH1A",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/6j36nCoH3CjoqYytTK4k2TLdaN3Z77auHHiCEgrqB4ay",
    "at": "2026-11-09T13:10:00.000Z",
    "poNo": "PO-1041"
   },
   {
-   "txHash": "FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af",
+   "txHash": "3bYd13vyu89wuD299y6gvmZMu1rV1vbBGQpKVEZdp1UC",
    "method": "submit_po",
    "signer": "kevin.plant-b.acme-holdings.testnet",
-   "receiver": "spend-policy.acme-holdings.testnet",
+   "receiver": "spend-policy-v2.acme-holdings.testnet",
    "status": "refused",
    "error": "PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required.",
-   "explorerUrl": "https://testnet.nearblocks.io/txns/FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/3bYd13vyu89wuD299y6gvmZMu1rV1vbBGQpKVEZdp1UC",
    "at": "2026-11-09T13:10:00.000Z",
    "poNo": "PO-1042"
   },
   {
-   "txHash": "EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8",
+   "txHash": "FpXXzZBkeCNouQgJn7eF8k7oe57dzgd3n21yhvFzGAtt",
    "method": "approve_po",
    "signer": "director.plant-b.acme-holdings.testnet",
-   "receiver": "spend-policy.acme-holdings.testnet",
+   "receiver": "spend-policy-v2.acme-holdings.testnet",
    "status": "success",
    "error": null,
-   "explorerUrl": "https://testnet.nearblocks.io/txns/EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/FpXXzZBkeCNouQgJn7eF8k7oe57dzgd3n21yhvFzGAtt",
    "at": "2026-11-09T13:25:00.000Z",
    "poNo": "PO-1042"
   },
   {
-   "txHash": "3sUEp63gHQFSr6FvrjTDvarFh2zM2i1Zp9bhzumfbpmQ",
+   "txHash": "3TzgR7iY2zrbYHvnbNphFfeJJaLQwLi4tPfGkQCH1oee",
    "method": "submit_po",
    "signer": "kevin.plant-b.acme-holdings.testnet",
-   "receiver": "spend-policy.acme-holdings.testnet",
+   "receiver": "spend-policy-v2.acme-holdings.testnet",
    "status": "success",
    "error": null,
-   "explorerUrl": "https://testnet.nearblocks.io/txns/3sUEp63gHQFSr6FvrjTDvarFh2zM2i1Zp9bhzumfbpmQ",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/3TzgR7iY2zrbYHvnbNphFfeJJaLQwLi4tPfGkQCH1oee",
    "at": "2026-11-09T13:25:00.000Z",
    "poNo": "PO-1042"
   },
   {
-   "txHash": "AsDTwnSwqeSLh3gNREJPgU5ckMeGhqsM2FMAWfTk1Ma7",
+   "txHash": "GjhjYyTt23vJpS3qBZgKnXxRQJviHEyGe6aGPFsSm6Z1",
    "method": "accept_po",
    "signer": "northgate-ingredients.testnet",
-   "receiver": "spend-policy.acme-holdings.testnet",
+   "receiver": "spend-policy-v2.acme-holdings.testnet",
    "status": "success",
    "error": null,
-   "explorerUrl": "https://testnet.nearblocks.io/txns/AsDTwnSwqeSLh3gNREJPgU5ckMeGhqsM2FMAWfTk1Ma7",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/GjhjYyTt23vJpS3qBZgKnXxRQJviHEyGe6aGPFsSm6Z1",
    "at": "2026-11-13T09:00:00.000Z",
    "poNo": "PO-1042"
   },
   {
-   "txHash": "BU6SLGGUxjkrXVdQQHv8c6G2iYFDQv8cyZ72q97MarBD",
+   "txHash": "6aoubU1CBCbsc1ez7KUvUpLSc6AYJfdb8VtWL2dLPJb6",
    "method": "mark_shipped",
    "signer": "northgate-ingredients.testnet",
-   "receiver": "spend-policy.acme-holdings.testnet",
+   "receiver": "spend-policy-v2.acme-holdings.testnet",
    "status": "success",
    "error": null,
-   "explorerUrl": "https://testnet.nearblocks.io/txns/BU6SLGGUxjkrXVdQQHv8c6G2iYFDQv8cyZ72q97MarBD",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/6aoubU1CBCbsc1ez7KUvUpLSc6AYJfdb8VtWL2dLPJb6",
    "at": "2026-11-13T09:00:00.000Z",
    "poNo": "PO-1042"
   },
   {
-   "txHash": "7pCauyEYJSMeCLW1gNCgZ6bze6dqQasNvq7Twf8yJozm",
+   "txHash": "228jQM7vLL8cADCN9YkLBbLQvRcMUJeuoSi9ZLbQVubz",
    "method": "confirm_receipt",
    "signer": "receiving.plant-b.acme-holdings.testnet",
-   "receiver": "spend-policy.acme-holdings.testnet",
+   "receiver": "spend-policy-v2.acme-holdings.testnet",
    "status": "success",
    "error": null,
-   "explorerUrl": "https://testnet.nearblocks.io/txns/7pCauyEYJSMeCLW1gNCgZ6bze6dqQasNvq7Twf8yJozm",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/228jQM7vLL8cADCN9YkLBbLQvRcMUJeuoSi9ZLbQVubz",
    "at": "2026-11-16T14:20:00.000Z",
    "poNo": "PO-1042"
   },
   {
-   "txHash": "2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn",
-   "method": "qc_release",
-   "signer": "qc.plant-b.acme-holdings.testnet",
-   "receiver": "spend-policy.acme-holdings.testnet",
+   "txHash": "HACySJzXh3Ersw1qoLWYsaHdK3CKcisJxutiEH3V72ZQ",
+   "method": "record_invoice",
+   "signer": "kevin.plant-b.acme-holdings.testnet",
+   "receiver": "spend-policy-v2.acme-holdings.testnet",
    "status": "success",
    "error": null,
-   "explorerUrl": "https://testnet.nearblocks.io/txns/2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/HACySJzXh3Ersw1qoLWYsaHdK3CKcisJxutiEH3V72ZQ",
+   "at": "2026-11-16T14:20:00.000Z",
+   "poNo": "PO-1042"
+  },
+  {
+   "txHash": "3F2TYKZ1bZPsKmrNt5aqJSQi49RaN9wTMUYdXDr1Hd6e",
+   "method": "qc_release",
+   "signer": "qc.plant-b.acme-holdings.testnet",
+   "receiver": "spend-policy-v2.acme-holdings.testnet",
+   "status": "success",
+   "error": null,
+   "explorerUrl": "https://testnet.nearblocks.io/txns/3F2TYKZ1bZPsKmrNt5aqJSQi49RaN9wTMUYdXDr1Hd6e",
    "at": "2026-11-16T16:05:00.000Z",
    "poNo": "PO-1042"
   },
   {
-   "txHash": "2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV",
+   "txHash": "BqGaaj9gyJXFP8QaWf3ZkdxZdvvf85xoye6nH4cQaQNG",
    "method": "anchor_batch",
    "signer": "kevin.plant-b.acme-holdings.testnet",
-   "receiver": "spend-policy.acme-holdings.testnet",
+   "receiver": "spend-policy-v2.acme-holdings.testnet",
    "status": "success",
    "error": null,
-   "explorerUrl": "https://testnet.nearblocks.io/txns/2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV",
+   "explorerUrl": "https://testnet.nearblocks.io/txns/BqGaaj9gyJXFP8QaWf3ZkdxZdvvf85xoye6nH4cQaQNG",
    "at": "2026-11-16T16:05:00.000Z",
    "poNo": null
   }

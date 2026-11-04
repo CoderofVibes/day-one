@@ -78,11 +78,13 @@ export async function decideOnPo(
     system: DECISION_SYSTEM,
     prompt: decisionPrompt(facts),
     // GLM reasons before it answers; the answer itself is one line.
-    maxTokens: 2000,
+    maxTokens: 8000,
     keepRaw: true,
   });
-  // The verdict is the last line: the model sometimes thinks aloud first. Any HOLD wins.
-  const lines = result.text
+  // The verdict is the last line after any reasoning: the model thinks aloud first, sometimes
+  // ending it with "</think>" on the verdict's own line (Nov 3). Any HOLD wins.
+  const verdictText = result.text.split("</think>").at(-1) ?? result.text;
+  const lines = verdictText
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter(Boolean);

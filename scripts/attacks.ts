@@ -1,4 +1,4 @@
-// npm run test:attacks — twenty attacks on Kevin, each shown failing: seven in
+// npm run test:attacks — twenty-one attacks on Kevin, each shown failing: seven in
 // agents/kevin/src/attacks.ts, four on supplier credentials in credential-attacks.ts, the
 // three sealed-bid attacks of agents/kevin/src/sealedRound.ts, and the "new bank details"
 // email read by Kevin's morning review (emailRedirectAttack, from the recording of

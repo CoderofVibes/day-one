@@ -329,7 +329,8 @@ const PAGE_TEXT: Record<
   arena: {
     group: "proof",
     title: "Attack arena",
-    sentence: "Pick one of the twenty recorded attacks, fire it, and see what refused it and why.",
+    sentence:
+      "Pick one of the twenty-one recorded attacks, fire it, and see what refused it and why.",
   },
   ask: {
     group: "proof",

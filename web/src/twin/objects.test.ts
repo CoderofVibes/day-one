@@ -87,6 +87,7 @@ describe("the inspector's data", () => {
       "accept_po",
       "mark_shipped",
       "confirm_receipt",
+      "record_invoice",
       "qc_release",
       "anchor_batch",
     ]);
@@ -96,10 +97,14 @@ describe("the inspector's data", () => {
     const held = look("Delivery", "ASC-261116-01");
     expect(held?.state.label).toBe("quarantine");
     expect(held?.timeline.map((s) => s.state)).toEqual(["done", "now", "todo"]);
-    expect(held?.chain.map((t) => t.method)).toEqual(["confirm_receipt"]);
+    expect(held?.chain.map((t) => t.method)).toEqual(["confirm_receipt", "record_invoice"]);
     const released = look("QC release", "ASC-261116-01");
     expect(released?.state.label).toBe("released");
-    expect(released?.chain.map((t) => t.method)).toEqual(["confirm_receipt", "qc_release"]);
+    expect(released?.chain.map((t) => t.method)).toEqual([
+      "confirm_receipt",
+      "record_invoice",
+      "qc_release",
+    ]);
   });
 
   it("shows the escrow's balance and the departments' status in staff words", () => {

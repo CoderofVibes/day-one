@@ -1,0 +1,11 @@
+{
+  "note": "Payouts the contract made in takes that stopped before they were saved, so no recording lists them. Read by npm run erp:reconcile, which adds them back in the escrow check and names them instead of flagging them. Everything here is testnet and fictional.",
+  "payouts": [
+    {
+      "poNo": "PO-T9502",
+      "supplier": "bayfront-labsupply.testnet",
+      "releaseTx": null,
+      "source": "an interrupted take of attack 18 on Nov 3, 2026 (the run stopped at the next attack before saving; PO-T9503 is the recorded take)"
+    }
+  ]
+}

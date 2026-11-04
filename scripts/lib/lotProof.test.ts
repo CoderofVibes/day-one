@@ -52,7 +52,7 @@ describe("the frozen lot book", () => {
   });
 
   it("is anchored on the contract, every day", () => {
-    expect(book.contract).toBe("spend-policy.acme-holdings.testnet");
+    expect(book.contract).toBe("spend-policy-v2.acme-holdings.testnet");
     expect(book.days.filter((d) => !book.anchors[d.refId])).toEqual([]);
   });
 });

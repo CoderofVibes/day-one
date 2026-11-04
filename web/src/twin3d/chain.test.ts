@@ -26,13 +26,13 @@ const BIG_PO = step("Big PO");
 
 describe("the chain layer's table", () => {
   it("draws the one spend-policy contract's four roles and its token, named as deployed", () => {
-    expect(layout.contract).toBe("spend-policy.acme-holdings.testnet");
+    expect(layout.contract).toBe("spend-policy-v2.acme-holdings.testnet");
     expect(layout.token).toBe("dtusd.acme-holdings.testnet");
     expect(layout.nodes.map((n) => [n.role, n.label, n.contract])).toEqual([
-      ["policy", "Spend policy", "spend-policy.acme-holdings.testnet"],
-      ["escrow", "Escrow", "spend-policy.acme-holdings.testnet"],
-      ["credentials", "Credentials", "spend-policy.acme-holdings.testnet"],
-      ["records", "Records", "spend-policy.acme-holdings.testnet"],
+      ["policy", "Spend policy", "spend-policy-v2.acme-holdings.testnet"],
+      ["escrow", "Escrow", "spend-policy-v2.acme-holdings.testnet"],
+      ["credentials", "Credentials", "spend-policy-v2.acme-holdings.testnet"],
+      ["records", "Records", "spend-policy-v2.acme-holdings.testnet"],
       ["token", "DTUSD", "dtusd.acme-holdings.testnet"],
     ]);
     for (const n of layout.nodes) expect(n.position[1]).toBeGreaterThan(25);

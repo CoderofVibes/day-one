@@ -5,7 +5,14 @@
 // they were recorded.
 
 import type { Ledger } from "@day-one/server/ledger/db";
-import { forecasts, materials, poLines, quotes, vendors } from "@day-one/server/ledger/schema";
+import {
+  forecasts,
+  materials,
+  poLines,
+  purchaseOrders,
+  quotes,
+  vendors,
+} from "@day-one/server/ledger/schema";
 import type { LlmClient } from "@day-one/server/llm/types";
 import { formatUsd } from "@day-one/server/money";
 import { desc, eq } from "drizzle-orm";
@@ -44,7 +51,21 @@ function factsOf(db: Ledger, po: SubmittablePo) {
     .map((l) => `${amount(l.line.qtyBase, l.material.dimension)} ${l.material.name.toLowerCase()}`)
     .join(", ");
   const unit = (dim: string) => (dim === "mass" ? "kg" : "each");
-  const price = `${usd(po.totalUsdc)} (${lines.map((l) => `${usd(l.line.unitPriceUsdc)}/${unit(l.material.dimension)}`).join(", ")})`;
+  const freight =
+    db
+      .select({ f: purchaseOrders.freightUsdc })
+      .from(purchaseOrders)
+      .where(eq(purchaseOrders.id, po.id))
+      .get()?.f ?? 0;
+  // Every part of the total, so it adds up: each line's quantity × unit price, then freight.
+  const price =
+    [
+      ...lines.map(
+        (l) =>
+          `${amount(l.line.qtyBase, l.material.dimension)} × ${usd(l.line.unitPriceUsdc)}/${unit(l.material.dimension)} = ${usd(l.line.extendedUsdc)}`,
+      ),
+      ...(freight ? [`freight ${usd(freight)}`] : []),
+    ].join(" + ") + ` = ${usd(po.totalUsdc)} total`;
   const first = lines[0];
   const forecast = first
     ? db
@@ -54,8 +75,29 @@ function factsOf(db: Ledger, po: SubmittablePo) {
         .orderBy(desc(forecasts.id))
         .get()
     : undefined;
+  // The whole reason for the quantity, as Kevin's rule works (forecast.ts): falling below the
+  // reorder point triggers an order, and the order is the whole standard lots that cover the
+  // horizon's shortfall. A rule the model is not told it reads into the numbers itself (the
+  // first live decisions held PO-1042 under rules of their own, Nov 3).
+  const dim = first?.material.dimension ?? "mass";
   const plan = forecast
-    ? `need ${amount(forecast.projectedNeedBase, first?.material.dimension ?? "mass")} over ${forecast.horizonDays} days, ${amount(forecast.onHandBase, first?.material.dimension ?? "mass")} on hand, ${amount(forecast.onOrderBase, first?.material.dimension ?? "mass")} on order, short ${amount(forecast.shortfallBase, first?.material.dimension ?? "mass")}`
+    ? (() => {
+        const after = forecast.onHandBase + forecast.onOrderBase - forecast.projectedNeedBase;
+        const reorderPoint = first?.material.reorderPointBase ?? 0;
+        const lot = first?.material.reorderQtyBase ?? null;
+        const lots =
+          lot && forecast.shortfallBase > 0 ? Math.ceil(forecast.shortfallBase / lot) : null;
+        return [
+          `the next ${forecast.horizonDays} days of planned batches need ${amount(forecast.projectedNeedBase, dim)}`,
+          `${amount(forecast.onHandBase, dim)} on hand and ${amount(forecast.onOrderBase, dim)} on order leave ${after < 0 ? `a shortfall of ${amount(-after, dim)}` : `${amount(after, dim)}`}`,
+          `falling below the ${amount(reorderPoint, dim)} reorder point triggers an order`,
+          ...(lot
+            ? [
+                `the plant's rule orders whole standard lots of ${amount(lot, dim)} that cover the shortfall${lots ? `: ${lots} lot${lots === 1 ? "" : "s"}` : ""}; the next plan cycle orders again`,
+              ]
+            : []),
+        ].join("; ");
+      })()
     : "no forecast on record";
   const quoteIds = lines.map((l) => l.line.quoteId).filter((q): q is number => q !== null);
   const quoted = quoteIds.length

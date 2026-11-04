@@ -1,7 +1,7 @@
 {
   "kind": "batch_record",
   "ref_id": "BR-B-1045",
-  "salt": "ba23be607a930286cbea3477667fd8d7",
+  "salt": "54acfbf7fc5d9a1e03d2bce7f262c15e",
   "record": {
     "batch_no": "BR-B-1045",
     "product": "P-VC500",
@@ -60,6 +60,6 @@
     "source_sha256": "61467002474c5766bb6c3abf1c17e8354d80db4f9a21759b71bd0bf0d3c1fc09",
     "confirmed_by": "Ray Delgado"
   },
-  "hash": "25c6caff2b79b01a2471cfd9fe5284d9f328c4f86fa7b4a3dcf89c98aff69029",
-  "anchored_tx": "GjN3NXzUhBFFBBp6K1bcpTboTEiWL55m2j7hfaaK9eFS"
+  "hash": "f40a4b91f9aa390093f2184e9c00980c62b7d51348d9c876e450cb4ae8f9a896",
+  "anchored_tx": "6s1dZ5pxjB8vLwdQge7VPXF6bqeeuU4uh87podFzJQao"
 }

@@ -40,7 +40,8 @@ const repo = resolve(import.meta.dirname, "..");
 const args = process.argv.slice(2);
 const json = args.includes("--json");
 const ROOT = "acme-holdings.testnet";
-const MAIN_POLICY = `spend-policy.${ROOT}`;
+// The main deployment the USDC one copies its code from (v2 since Nov 3, CONTRACTS.md §11).
+const MAIN_POLICY = `spend-policy-v2.${ROOT}`;
 const RELAYER = "dayone-relayer.testnet";
 const DOLLAR = 1_000_000n;
 const FIXTURE = join(repo, "data", "usdc", "PO-1047-chain.json");

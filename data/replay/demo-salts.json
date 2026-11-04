@@ -1,12 +1,12 @@
 {
-  "po1041": "4bf6535135bf571eec0e24d5fa67e476",
-  "po1042": "5d9e9baca31c6919b2ce137148e0fc6d",
-  "batch": "ba23be607a930286cbea3477667fd8d7",
-  "receipt": "bfefa29f2f4dddff7eb7676b362233f7",
+  "po1041": "c17b567e3b4093cc91efefee002ba9e1",
+  "po1042": "5c03bcd55b34c3d5e57583978b77559e",
+  "batch": "54acfbf7fc5d9a1e03d2bce7f262c15e",
+  "receipt": "c7eb825d5c2efa711f4dd1fb549b2a17",
   "quotes": {
-    "quickchem-direct.testnet": "751d5c6a19a3cada44d7cdd9e34c1e44",
-    "northgate-ingredients.testnet": "aa066f6f0aac4f960bcd20b9facf964d",
-    "ridgeway-ascorbics.testnet": "924aefbb5c0d53414bde57a7ce6fade1",
-    "bayfront-labsupply.testnet": "8701f67da67dfcfdbeef8800072affe1"
+    "quickchem-direct.testnet": "f8eebbf2722de533b2f61062cdbf9680",
+    "northgate-ingredients.testnet": "a9d4d05b06acfe0a6af61a777d4848e5",
+    "ridgeway-ascorbics.testnet": "63aeac1b462c49721e08254b1c8f0d54",
+    "bayfront-labsupply.testnet": "56fab7091dda8d4617882528dffd39ef"
   }
 }

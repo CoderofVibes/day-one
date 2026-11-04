@@ -1,6 +1,6 @@
 {
   "network": "testnet",
-  "recordedAt": "2026-11-04T00:19:15.662Z",
+  "recordedAt": "2026-11-04T01:41:46.013Z",
   "cases": [
     {
       "n": 1,
@@ -23,10 +23,10 @@
       ],
       "txs": [
         {
-          "tx": "BKjdSJD49LVSpDYgo9LrMnbbCiNrs2wgz7GDt2suBRB7",
-          "url": "https://testnet.nearblocks.io/txns/BKjdSJD49LVSpDYgo9LrMnbbCiNrs2wgz7GDt2suBRB7",
+          "tx": "F6vWEEvk2xZ9AU6MEQHxDP1HLFNYdmUYzP8cwrUmGWFZ",
+          "url": "https://testnet.nearblocks.io/txns/F6vWEEvk2xZ9AU6MEQHxDP1HLFNYdmUYzP8cwrUmGWFZ",
           "method": "submit_po",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "kevin.plant-b.acme-holdings.testnet",
           "paidBy": "kevin.plant-b.acme-holdings.testnet",
           "status": "refused",
@@ -34,7 +34,7 @@
           "events": [
             "po_refused"
           ],
-          "block": 275256835
+          "block": 276128494
         }
       ],
       "refusedBy": "contract",
@@ -83,15 +83,15 @@
       "evidence": [
         "Kevin: PO-1042 was paid on QC release: $5,150.00 to northgate-ingredients.testnet, recorded on chain. Kevin sent no payment. Flagged for Marcy: the message asks for payment to northgate-billing.testnet, not the PO's supplier; the message came from northgate-billing.testnet, not northgate-ingredients.testnet.",
         "Kevin holds no DTUSD; the plant's money sits in the contract.",
-        "Kevin's signing key can call only submit_po, submit_pooled_po, open_pool, join_pool, anchor, anchor_batch, open_sealed_round, award_sealed_round on spend-policy.acme-holdings.testnet.",
+        "Kevin's signing key can call only submit_po, submit_pooled_po, open_pool, join_pool, anchor, anchor_batch, open_sealed_round, award_sealed_round, record_invoice on spend-policy-v2.acme-holdings.testnet.",
         "Contract, if PO-1042 were sent again: \"PO-1042 was already submitted.\""
       ],
       "txs": [
         {
-          "tx": "8CdDArQXLL3kiLpXpZBFUESamAttE1gafFXcYRifg2ic",
-          "url": "https://testnet.nearblocks.io/txns/8CdDArQXLL3kiLpXpZBFUESamAttE1gafFXcYRifg2ic",
+          "tx": "6XBRJDVwc9Jvk3B45fwEP6MQuJMmHWobUX1ukkMf4Yre",
+          "url": "https://testnet.nearblocks.io/txns/6XBRJDVwc9Jvk3B45fwEP6MQuJMmHWobUX1ukkMf4Yre",
           "method": "submit_po",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "kevin.plant-b.acme-holdings.testnet",
           "paidBy": "kevin.plant-b.acme-holdings.testnet",
           "status": "refused",
@@ -99,7 +99,7 @@
           "events": [
             "po_refused"
           ],
-          "block": 275256854
+          "block": 276128509
         }
       ],
       "refusedBy": "contract",
@@ -146,7 +146,7 @@
       "outcome": "Funds didn't move: the escrow paid PO-1042 once and holds nothing more for it.",
       "held": true,
       "evidence": [
-        "ERP: NG-INV-24190 for PO-1042 matched (bill = PO = receipt, $5,150.00) and paid in full by VP-35, settlement ref 2zwgaHgW….",
+        "ERP: NG-INV-24190 for PO-1042 matched (bill = PO = receipt, $5,150.00) and paid in full by VP-35, settlement ref 3F2TYKZ1….",
         "ERP: NG-INV-24190-R (\"reissued\", same $5,150.00) rejected: Duplicate of NG-INV-24190: same invoice number as NG-INV-24190. NG-INV-24190 is already paid. Nobody can approve it.",
         "Contract: PO-1042 is Released; the escrow paid once and holds nothing more for it."
       ],
@@ -176,14 +176,14 @@
         "Contract on PO-T9103: funded $695.00 (spend now $1,307.00)",
         "ERP matrix on PO-T9104: vendor approved, payout account verified; no category cap of its own, so pendingApproval (waiting for the contract's verdict).",
         "Contract on PO-T9104: ✗ \"PO-T9104: $695.00 would take lab chemical spending this month to $2,002.00, over the cap of $2,000.00; director approval required.\"",
-        "PO-T9103 stays escrowed until HQ cancels it from the treasury key: near contract call-function as-transaction spend-policy.acme-holdings.testnet cancel json-args '{\"po_id\":\"PO-T9103\"}' prepaid-gas '30 Tgas' attached-deposit '1 yoctoNEAR' sign-as acme-holdings.testnet network-config testnet sign-with-keychain send"
+        "PO-T9103 stays escrowed until HQ cancels it from the treasury key: near contract call-function as-transaction spend-policy-v2.acme-holdings.testnet cancel json-args '{\"po_id\":\"PO-T9103\"}' prepaid-gas '30 Tgas' attached-deposit '1 yoctoNEAR' sign-as acme-holdings.testnet network-config testnet sign-with-keychain send"
       ],
       "txs": [
         {
-          "tx": "EsVds3nMCTfLvBfhuEy5erVSjTA2Vo9w4CkWAyfEdT39",
-          "url": "https://testnet.nearblocks.io/txns/EsVds3nMCTfLvBfhuEy5erVSjTA2Vo9w4CkWAyfEdT39",
+          "tx": "5P46weySBbDqum4jrnmjre6EBHSMgLuwYZie8JquJuEY",
+          "url": "https://testnet.nearblocks.io/txns/5P46weySBbDqum4jrnmjre6EBHSMgLuwYZie8JquJuEY",
           "method": "submit_po",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "kevin.plant-b.acme-holdings.testnet",
           "paidBy": "kevin.plant-b.acme-holdings.testnet",
           "status": "success",
@@ -192,13 +192,13 @@
             "po_authorized",
             "po_funded"
           ],
-          "block": 275256871
+          "block": 276128520
         },
         {
-          "tx": "2w9YEuciywGFCRkTk6vMDoBb94ECzYB4BLayhYU5JVM3",
-          "url": "https://testnet.nearblocks.io/txns/2w9YEuciywGFCRkTk6vMDoBb94ECzYB4BLayhYU5JVM3",
+          "tx": "4acigzQBNL9N5Qp4aSpZKSmM2F836GAnhXRM5k3mn2fh",
+          "url": "https://testnet.nearblocks.io/txns/4acigzQBNL9N5Qp4aSpZKSmM2F836GAnhXRM5k3mn2fh",
           "method": "submit_po",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "kevin.plant-b.acme-holdings.testnet",
           "paidBy": "kevin.plant-b.acme-holdings.testnet",
           "status": "refused",
@@ -206,7 +206,7 @@
           "events": [
             "po_refused"
           ],
-          "block": 275256875
+          "block": 276128525
         }
       ],
       "refusedBy": "contract",
@@ -235,10 +235,10 @@
       ],
       "txs": [
         {
-          "tx": "9FAzfv5KqbsqcbaYk2cjP3WfS5AY1UcK5iumcaXpLcKf",
-          "url": "https://testnet.nearblocks.io/txns/9FAzfv5KqbsqcbaYk2cjP3WfS5AY1UcK5iumcaXpLcKf",
+          "tx": "AwrdZEYF5KdG7gvh88eEtdmGkYdM8caC6bv4JJ1RGxzP",
+          "url": "https://testnet.nearblocks.io/txns/AwrdZEYF5KdG7gvh88eEtdmGkYdM8caC6bv4JJ1RGxzP",
           "method": "submit_po",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "kevin.plant-b.acme-holdings.testnet",
           "paidBy": "kevin.plant-b.acme-holdings.testnet",
           "status": "refused",
@@ -246,7 +246,7 @@
           "events": [
             "po_refused"
           ],
-          "block": 275256880
+          "block": 276128530
         }
       ],
       "refusedBy": "contract",
@@ -273,28 +273,28 @@
         "Kevin, through the ERP connector: Fennimore Polyols is \"on hold: approval withdrawn by HQ\"; it may sell raw material.",
         "Behind the curtain: credential #4, standing Revoked, 0 released and 0 rejected deliveries, revoked (Acme quality withdrew approval after a supplier review).",
         "ERP vendor master: Fennimore Polyols: ERP says approved but the contract says on hold: approval withdrawn by HQ; Kevin treats it as on hold and the contract refuses its POs. Acme AP should put it on hold in the ERP.",
-        "Contract, when Kevin's key sends PO-T9301 ($640.00, within his limits) anyway: \"fennimore-polyols.testnet's supplier credential was revoked by HQ on 2026-10-29 (Acme quality withdrew approval after a supplier review); no approval can override this.\""
+        "Contract, when Kevin's key sends PO-T9301 ($640.00, within his limits) anyway: \"fennimore-polyols.testnet's supplier credential was revoked by HQ on 2026-11-04 (Acme quality withdrew approval after a supplier review); no approval can override this.\""
       ],
       "txs": [
         {
-          "tx": "G6yUpj7RDpzMyj87LuCdRtdioPewZJyhVn2Lvs1RyqNL",
-          "url": "https://testnet.nearblocks.io/txns/G6yUpj7RDpzMyj87LuCdRtdioPewZJyhVn2Lvs1RyqNL",
+          "tx": "9PeopoR9J3666HLYkTsce2RC2gzJAJnVQP3hRaRQHJ4K",
+          "url": "https://testnet.nearblocks.io/txns/9PeopoR9J3666HLYkTsce2RC2gzJAJnVQP3hRaRQHJ4K",
           "method": "submit_po",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "kevin.plant-b.acme-holdings.testnet",
           "paidBy": "kevin.plant-b.acme-holdings.testnet",
           "status": "refused",
-          "error": "fennimore-polyols.testnet's supplier credential was revoked by HQ on 2026-10-29 (Acme quality withdrew approval after a supplier review); no approval can override this.",
+          "error": "fennimore-polyols.testnet's supplier credential was revoked by HQ on 2026-11-04 (Acme quality withdrew approval after a supplier review); no approval can override this.",
           "events": [
             "po_refused"
           ],
-          "block": 275315266
+          "block": 276128763
         }
       ],
       "refusedBy": "contract",
       "method": "submit_po",
       "signer": "kevin.plant-b.acme-holdings.testnet",
-      "reason": "fennimore-polyols.testnet's supplier credential was revoked by HQ on 2026-10-29 (Acme quality withdrew approval after a supplier review); no approval can override this."
+      "reason": "fennimore-polyols.testnet's supplier credential was revoked by HQ on 2026-11-04 (Acme quality withdrew approval after a supplier review); no approval can override this."
     },
     {
       "n": 9,
@@ -315,28 +315,28 @@
         "Kevin, through the ERP connector: Sierra Mineral Supply is \"on hold: approval expired\"; it may sell raw material.",
         "Behind the curtain: credential #5, standing Expired, 0 released and 0 rejected deliveries.",
         "ERP vendor master: Sierra Mineral Supply: ERP says approved but the contract says on hold: approval expired; Kevin treats it as on hold and the contract refuses its POs. Acme AP should put it on hold in the ERP.",
-        "Contract, when Kevin's key sends PO-T9302 ($820.00, within his limits) anyway: \"sierra-mineral.testnet's supplier credential expired on 2026-10-29; HQ must renew it, and no approval can override this.\""
+        "Contract, when Kevin's key sends PO-T9302 ($820.00, within his limits) anyway: \"sierra-mineral.testnet's supplier credential expired on 2026-11-04; HQ must renew it, and no approval can override this.\""
       ],
       "txs": [
         {
-          "tx": "GU3WDK5bsPjRar4KgTf7DpVFFVvJx2cX1w7RC1sfMLp5",
-          "url": "https://testnet.nearblocks.io/txns/GU3WDK5bsPjRar4KgTf7DpVFFVvJx2cX1w7RC1sfMLp5",
+          "tx": "D5coJkPRUV6jJXFkV1ZSssUhJMGjTzxUS6Z1rm7a5oGN",
+          "url": "https://testnet.nearblocks.io/txns/D5coJkPRUV6jJXFkV1ZSssUhJMGjTzxUS6Z1rm7a5oGN",
           "method": "submit_po",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "kevin.plant-b.acme-holdings.testnet",
           "paidBy": "kevin.plant-b.acme-holdings.testnet",
           "status": "refused",
-          "error": "sierra-mineral.testnet's supplier credential expired on 2026-10-29; HQ must renew it, and no approval can override this.",
+          "error": "sierra-mineral.testnet's supplier credential expired on 2026-11-04; HQ must renew it, and no approval can override this.",
           "events": [
             "po_refused"
           ],
-          "block": 275315271
+          "block": 276128768
         }
       ],
       "refusedBy": "contract",
       "method": "submit_po",
       "signer": "kevin.plant-b.acme-holdings.testnet",
-      "reason": "sierra-mineral.testnet's supplier credential expired on 2026-10-29; HQ must renew it, and no approval can override this."
+      "reason": "sierra-mineral.testnet's supplier credential expired on 2026-11-04; HQ must renew it, and no approval can override this."
     },
     {
       "n": 10,
@@ -361,10 +361,10 @@
       ],
       "txs": [
         {
-          "tx": "3riqFQbxFX4VA2RzxBqLcZnZsui7mZZJ1kXtNFTm3ttB",
-          "url": "https://testnet.nearblocks.io/txns/3riqFQbxFX4VA2RzxBqLcZnZsui7mZZJ1kXtNFTm3ttB",
+          "tx": "GNBf81Y4t2V18D4FYGrRTyZJPXYiuzzfAiFUxyQ8uWda",
+          "url": "https://testnet.nearblocks.io/txns/GNBf81Y4t2V18D4FYGrRTyZJPXYiuzzfAiFUxyQ8uWda",
           "method": "submit_po",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "kevin.plant-b.acme-holdings.testnet",
           "paidBy": "kevin.plant-b.acme-holdings.testnet",
           "status": "refused",
@@ -372,7 +372,7 @@
           "events": [
             "po_refused"
           ],
-          "block": 275315275
+          "block": 276128773
         }
       ],
       "refusedBy": "contract",
@@ -401,15 +401,15 @@
         "ERP vendor master: Pacific Excipient Co.: ERP says approved but the contract says on hold: 2 deliveries in a row failed QC; Kevin treats it as on hold and the contract refuses its POs. Acme AP should put it on hold in the ERP.",
         "Contract, when Kevin's key sends PO-T9304 ($1,240.00, within his limits) anyway: \"pacific-excipient.testnet is suspended after 2 rejected deliveries in a row until HQ reinstates it; no approval can override this.\"",
         "Linda approves PO-T9304 (success); Kevin's identical retry: \"pacific-excipient.testnet is suspended after 2 rejected deliveries in a row until HQ reinstates it; no approval can override this.\"",
-        "How it got there: QC rejected PO-T9311 and PO-T9312; the contract suspended Pacific Excipient Co. on PO-T9312 (event supplier_suspended, tx Fw7XhxW3…).",
-        "After all four: $9,748.00 unallocated, $612.00 in escrow, as before the first."
+        "How it got there: QC rejected PO-T9311 and PO-T9312; the contract suspended Pacific Excipient Co. on PO-T9312 (event supplier_suspended, tx FExxPRVR…).",
+        "After all four: $18,543.00 unallocated, $1,307.00 in escrow, as before the first."
       ],
       "txs": [
         {
-          "tx": "9GNMhMnz7Lby2WTCj87cS7kbLETQMa1L8hntgws9rFva",
-          "url": "https://testnet.nearblocks.io/txns/9GNMhMnz7Lby2WTCj87cS7kbLETQMa1L8hntgws9rFva",
+          "tx": "CGwXDrTFN9b5P7VfZ94r3fsvCsdweJ5AswQLu4PdKEXc",
+          "url": "https://testnet.nearblocks.io/txns/CGwXDrTFN9b5P7VfZ94r3fsvCsdweJ5AswQLu4PdKEXc",
           "method": "submit_po",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "kevin.plant-b.acme-holdings.testnet",
           "paidBy": "kevin.plant-b.acme-holdings.testnet",
           "status": "refused",
@@ -417,13 +417,13 @@
           "events": [
             "po_refused"
           ],
-          "block": 275315279
+          "block": 276128778
         },
         {
-          "tx": "EKcZtFo5UbWamjJ1H36VvYsYwvEs4DFG59mMdZtpUcQL",
-          "url": "https://testnet.nearblocks.io/txns/EKcZtFo5UbWamjJ1H36VvYsYwvEs4DFG59mMdZtpUcQL",
+          "tx": "CiRTM56tmUxMbHmBfPpgdE92fi5KpUoqm247z3ZoYXar",
+          "url": "https://testnet.nearblocks.io/txns/CiRTM56tmUxMbHmBfPpgdE92fi5KpUoqm247z3ZoYXar",
           "method": "approve_po",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "director.plant-b.acme-holdings.testnet",
           "paidBy": "dayone-relayer.testnet",
           "status": "success",
@@ -431,13 +431,13 @@
           "events": [
             "po_approved"
           ],
-          "block": 275315284
+          "block": 276128783
         },
         {
-          "tx": "7YKiXojEecsz3sB5ifQ9a5un3rAk126hk8QvVzDQwC43",
-          "url": "https://testnet.nearblocks.io/txns/7YKiXojEecsz3sB5ifQ9a5un3rAk126hk8QvVzDQwC43",
+          "tx": "4L2fwiJXHJLCqDeyf34FfJdVoSvj1sQTpp1ryjHuD78x",
+          "url": "https://testnet.nearblocks.io/txns/4L2fwiJXHJLCqDeyf34FfJdVoSvj1sQTpp1ryjHuD78x",
           "method": "submit_po",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "kevin.plant-b.acme-holdings.testnet",
           "paidBy": "kevin.plant-b.acme-holdings.testnet",
           "status": "refused",
@@ -445,7 +445,7 @@
           "events": [
             "po_refused"
           ],
-          "block": 275315289
+          "block": 276128788
         }
       ],
       "refusedBy": "contract",
@@ -475,28 +475,28 @@
       ],
       "txs": [
         {
-          "tx": "BKN5hwUP8YB3pkD2iJgAPr2bQUCNRDqf9s8ZHVP7r5r4",
-          "url": "https://testnet.nearblocks.io/txns/BKN5hwUP8YB3pkD2iJgAPr2bQUCNRDqf9s8ZHVP7r5r4",
+          "tx": "HH6paWfDwopYgQFXrwDyWxezURKB8oamPzs9XjkFTMq6",
+          "url": "https://testnet.nearblocks.io/txns/HH6paWfDwopYgQFXrwDyWxezURKB8oamPzs9XjkFTMq6",
           "method": "award_sealed_round",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "kevin.plant-b.acme-holdings.testnet",
           "paidBy": "kevin.plant-b.acme-holdings.testnet",
           "status": "refused",
           "error": "RFQ-2611-02 is still sealed; no quote can be awarded before the deadline.",
           "events": [],
-          "block": 275315845
+          "block": 276128827
         },
         {
-          "tx": "AohNNRtGcA8KXm2so8THhT6ZMGTpaQ5EVHq9xisxwkpg",
-          "url": "https://testnet.nearblocks.io/txns/AohNNRtGcA8KXm2so8THhT6ZMGTpaQ5EVHq9xisxwkpg",
+          "tx": "6fYiAX2uAceoeZqyPHCBjf5EthT8RxAngGaD1jm7rD1Q",
+          "url": "https://testnet.nearblocks.io/txns/6fYiAX2uAceoeZqyPHCBjf5EthT8RxAngGaD1jm7rD1Q",
           "method": "reveal_quote",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "northgate-ingredients.testnet",
           "paidBy": "northgate-ingredients.testnet",
           "status": "refused",
           "error": "RFQ-2611-02 is still sealed; quotes open after the deadline.",
           "events": [],
-          "block": 275315849
+          "block": 276128831
         }
       ],
       "refusedBy": "contract",
@@ -524,16 +524,16 @@
       ],
       "txs": [
         {
-          "tx": "2Q9JfmLorrwR7DnazJvwV7otNAWkbhanu6AVPXAWFi2J",
-          "url": "https://testnet.nearblocks.io/txns/2Q9JfmLorrwR7DnazJvwV7otNAWkbhanu6AVPXAWFi2J",
+          "tx": "Grau7z5V7rGRipNPQkxbr7q4JoeCvr5SBM6rLu6uq14f",
+          "url": "https://testnet.nearblocks.io/txns/Grau7z5V7rGRipNPQkxbr7q4JoeCvr5SBM6rLu6uq14f",
           "method": "reveal_quote",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "ridgeway-ascorbics.testnet",
           "paidBy": "ridgeway-ascorbics.testnet",
           "status": "refused",
           "error": "This quote does not match what ridgeway-ascorbics.testnet sealed for RFQ-2611-02.",
           "events": [],
-          "block": 275316152
+          "block": 276129128
         }
       ],
       "refusedBy": "contract",
@@ -557,20 +557,20 @@
       "held": true,
       "evidence": [
         "Contract, when a supplier seals a $6.95/kg quote after the deadline: \"Quotes for RFQ-2611-02 closed at the deadline; this one came in late.\"",
-        "Every quote in the round was sealed before block time 1793286479450870743."
+        "Every quote in the round was sealed before block time 1793756349865831279."
       ],
       "txs": [
         {
-          "tx": "9EWsVWgxenRParrUFJqsZTxnc5V23P211LM2fyuo3eBz",
-          "url": "https://testnet.nearblocks.io/txns/9EWsVWgxenRParrUFJqsZTxnc5V23P211LM2fyuo3eBz",
+          "tx": "FmWzeMKmw3cj9SfhKSzVynY4EL54ro5PifqUHCrk1dox",
+          "url": "https://testnet.nearblocks.io/txns/FmWzeMKmw3cj9SfhKSzVynY4EL54ro5PifqUHCrk1dox",
           "method": "commit_quote",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "ridgeway-ascorbics.testnet",
           "paidBy": "ridgeway-ascorbics.testnet",
           "status": "refused",
           "error": "Quotes for RFQ-2611-02 closed at the deadline; this one came in late.",
           "events": [],
-          "block": 275316156
+          "block": 276129132
         }
       ],
       "refusedBy": "contract",
@@ -621,28 +621,28 @@
       "evidence": [
         "Request (email from \"Dale, sales\"): \"Rush 7,000 kg of ascorbic acid for the spring promo, today please.\"",
         "Kevin: I won't draft 7,000 kg of ascorbic acid. The 2 batches planned in the next 10 days need 824 kg; with 310 kg on hand, 0 kg on order and the 500 kg reorder point, the plan can use 1,014 kg more. Anything bigger needs a production plan that calls for it.",
-        "Contract, when Kevin's key sends PO-T9401 for $49,700.00 anyway: \"Plant budget is short by $40,002.00.\" Nothing is funded, and no approval can spend more than the plant's budget holds."
+        "Contract, when Kevin's key sends PO-T9401 for $49,700.00 anyway: \"Plant budget is short by $31,207.00.\" Nothing is funded, and no approval can spend more than the plant's budget holds."
       ],
       "txs": [
         {
-          "tx": "a2MM74EhBanpaQeVvxNsGwNuhMcaxCEQKM3uKhaCNzg",
-          "url": "https://testnet.nearblocks.io/txns/a2MM74EhBanpaQeVvxNsGwNuhMcaxCEQKM3uKhaCNzg",
+          "tx": "7vUB6P6KM99ZmJ3ApQCxAh8LJyfuiCWvWGL7odL8G8EK",
+          "url": "https://testnet.nearblocks.io/txns/7vUB6P6KM99ZmJ3ApQCxAh8LJyfuiCWvWGL7odL8G8EK",
           "method": "submit_po",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "kevin.plant-b.acme-holdings.testnet",
           "paidBy": "kevin.plant-b.acme-holdings.testnet",
           "status": "refused",
-          "error": "Plant budget is short by $40,002.00.",
+          "error": "Plant budget is short by $31,207.00.",
           "events": [
             "po_refused"
           ],
-          "block": 276120904
+          "block": 276129316
         }
       ],
       "refusedBy": "contract",
       "method": "submit_po",
       "signer": "kevin.plant-b.acme-holdings.testnet",
-      "reason": "Plant budget is short by $40,002.00."
+      "reason": "Plant budget is short by $31,207.00."
     },
     {
       "n": 17,
@@ -683,19 +683,19 @@
       "outcome": "Paid only when Tommy confirmed the delivery and Priya released it, as the roles require.",
       "held": true,
       "evidence": [
-        "PO-T9502: Kevin orders 2 buffer kits from Bayfront Lab Supply, $50.00, inside his limits; escrow funded.",
-        "Priya releases it before anything arrived: \"PO-T9502 is Funded, not Received.\"",
+        "PO-T9503: Kevin orders 2 buffer kits from Bayfront Lab Supply, $50.00, inside his limits; escrow funded.",
+        "Priya releases it before anything arrived: \"PO-T9503 is Funded, not Received.\"",
         "Bayfront Lab Supply ships, then, with its own key, confirms its own delivery: \"Only the plant's receiving lead can confirm delivery.\"",
         "…and releases its own payment: \"Only the plant's QC manager can release or reject a delivery.\"",
-        "Kevin's key cannot try either: it reaches only submit_po, submit_pooled_po, open_pool, join_pool, anchor, anchor_batch, open_sealed_round, award_sealed_round.",
+        "Kevin's key cannot try either: it reaches only submit_po, submit_pooled_po, open_pool, join_pool, anchor, anchor_batch, open_sealed_round, award_sealed_round, record_invoice.",
         "Tommy confirms the delivery and Priya releases it: Bayfront Lab Supply is paid $50.00 by the contract in that call."
       ],
       "txs": [
         {
-          "tx": "D8W7aBDZ72QL2CCjgqqtwv5sb6Mxtx6siw8Hd87f6mew",
-          "url": "https://testnet.nearblocks.io/txns/D8W7aBDZ72QL2CCjgqqtwv5sb6Mxtx6siw8Hd87f6mew",
+          "tx": "2gu59tRv3mL3N9neRKavLkuzxrijx9n9wiiDpabMCGoD",
+          "url": "https://testnet.nearblocks.io/txns/2gu59tRv3mL3N9neRKavLkuzxrijx9n9wiiDpabMCGoD",
           "method": "submit_po",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "kevin.plant-b.acme-holdings.testnet",
           "paidBy": "kevin.plant-b.acme-holdings.testnet",
           "status": "success",
@@ -704,25 +704,25 @@
             "po_authorized",
             "po_funded"
           ],
-          "block": 276120908
+          "block": 276129320
         },
         {
-          "tx": "6fPHG7SLFsZ2mbUiJoCD4ESE3LDjGNkJPmrDHpTfpwt3",
-          "url": "https://testnet.nearblocks.io/txns/6fPHG7SLFsZ2mbUiJoCD4ESE3LDjGNkJPmrDHpTfpwt3",
+          "tx": "4yqUnukdnfcGLTR8ji8tJrQyPKiP5rtMvVEkUpfp9fzB",
+          "url": "https://testnet.nearblocks.io/txns/4yqUnukdnfcGLTR8ji8tJrQyPKiP5rtMvVEkUpfp9fzB",
           "method": "qc_release",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "qc.plant-b.acme-holdings.testnet",
           "paidBy": "dayone-relayer.testnet",
           "status": "refused",
-          "error": "PO-T9502 is Funded, not Received.",
+          "error": "PO-T9503 is Funded, not Received.",
           "events": [],
-          "block": 276120913
+          "block": 276129324
         },
         {
-          "tx": "FTd1NrJUyJy4tVf73CFfR7HcdZE9Mmtj2ZJQYFMGk1tk",
-          "url": "https://testnet.nearblocks.io/txns/FTd1NrJUyJy4tVf73CFfR7HcdZE9Mmtj2ZJQYFMGk1tk",
+          "tx": "D3nsAgM8Hq8ANnCVcB78rTr3Vfv7ght56YfXqBD7j9Fg",
+          "url": "https://testnet.nearblocks.io/txns/D3nsAgM8Hq8ANnCVcB78rTr3Vfv7ght56YfXqBD7j9Fg",
           "method": "accept_po",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "bayfront-labsupply.testnet",
           "paidBy": "bayfront-labsupply.testnet",
           "status": "success",
@@ -730,13 +730,13 @@
           "events": [
             "po_accepted"
           ],
-          "block": 276120918
+          "block": 276129329
         },
         {
-          "tx": "FoyTpkU3NCJeeVeiBzy5CCgxhLrbGXWzTBidJDYoXNBB",
-          "url": "https://testnet.nearblocks.io/txns/FoyTpkU3NCJeeVeiBzy5CCgxhLrbGXWzTBidJDYoXNBB",
+          "tx": "GVrJemZXRbAvXbYvr3mWd1MSPvBbeE6Dcck713K13uEP",
+          "url": "https://testnet.nearblocks.io/txns/GVrJemZXRbAvXbYvr3mWd1MSPvBbeE6Dcck713K13uEP",
           "method": "mark_shipped",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "bayfront-labsupply.testnet",
           "paidBy": "bayfront-labsupply.testnet",
           "status": "success",
@@ -744,37 +744,37 @@
           "events": [
             "po_shipped"
           ],
-          "block": 276120922
+          "block": 276129333
         },
         {
-          "tx": "HitWRuwFXUSyhWnwVnJ8rGCuTMpfQszf7qA4ck8LxSrE",
-          "url": "https://testnet.nearblocks.io/txns/HitWRuwFXUSyhWnwVnJ8rGCuTMpfQszf7qA4ck8LxSrE",
+          "tx": "6eQQfxSre9YcZS6d9PhrnhddEKuNMKC1h6ecNfdhi1Fu",
+          "url": "https://testnet.nearblocks.io/txns/6eQQfxSre9YcZS6d9PhrnhddEKuNMKC1h6ecNfdhi1Fu",
           "method": "confirm_receipt",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "bayfront-labsupply.testnet",
           "paidBy": "bayfront-labsupply.testnet",
           "status": "refused",
           "error": "Only the plant's receiving lead can confirm delivery.",
           "events": [],
-          "block": 276120926
+          "block": 276129337
         },
         {
-          "tx": "3FjfpGxtBWF1UM5KyMczGfkRLne7zZ8tFN7VHF4q7qe9",
-          "url": "https://testnet.nearblocks.io/txns/3FjfpGxtBWF1UM5KyMczGfkRLne7zZ8tFN7VHF4q7qe9",
+          "tx": "EKRLbt4BEmyG7kPn2v3nejckYr8aZcqtXKyvqGFnpMWz",
+          "url": "https://testnet.nearblocks.io/txns/EKRLbt4BEmyG7kPn2v3nejckYr8aZcqtXKyvqGFnpMWz",
           "method": "qc_release",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "bayfront-labsupply.testnet",
           "paidBy": "bayfront-labsupply.testnet",
           "status": "refused",
           "error": "Only the plant's QC manager can release or reject a delivery.",
           "events": [],
-          "block": 276120930
+          "block": 276129341
         },
         {
-          "tx": "8xgVw6VskgWYXRRKWfnxwnGkt3qMbgRndm9uTgoSCsRo",
-          "url": "https://testnet.nearblocks.io/txns/8xgVw6VskgWYXRRKWfnxwnGkt3qMbgRndm9uTgoSCsRo",
+          "tx": "E4qWqEck7Uwu3Db7Ngo5rfKp6LjioJ6PtmBEaA8gmYxH",
+          "url": "https://testnet.nearblocks.io/txns/E4qWqEck7Uwu3Db7Ngo5rfKp6LjioJ6PtmBEaA8gmYxH",
           "method": "confirm_receipt",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "receiving.plant-b.acme-holdings.testnet",
           "paidBy": "dayone-relayer.testnet",
           "status": "success",
@@ -782,13 +782,13 @@
           "events": [
             "po_received"
           ],
-          "block": 276120934
+          "block": 276129345
         },
         {
-          "tx": "3DVNKvgo43PLyH3ku6V5vsWm3uTboAWVFx1JtfpwLwx9",
-          "url": "https://testnet.nearblocks.io/txns/3DVNKvgo43PLyH3ku6V5vsWm3uTboAWVFx1JtfpwLwx9",
+          "tx": "8FTwfEJm7sGSXKbCaranBV4HTAinq5veVqkrpcMTk1MD",
+          "url": "https://testnet.nearblocks.io/txns/8FTwfEJm7sGSXKbCaranBV4HTAinq5veVqkrpcMTk1MD",
           "method": "qc_release",
-          "contract": "spend-policy.acme-holdings.testnet",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
           "signer": "qc.plant-b.acme-holdings.testnet",
           "paidBy": "dayone-relayer.testnet",
           "status": "success",
@@ -798,7 +798,7 @@
             "po_released",
             "delivery_recorded"
           ],
-          "block": 276120940
+          "block": 276129351
         }
       ],
       "refusedBy": "contract",
@@ -808,6 +808,134 @@
     },
     {
       "n": 19,
+      "attack": "Short delivery invoiced in full",
+      "story": "Northgate ships 50 kg of a 100 kg order and invoices all of it; someone also keys 1,000 kg received.",
+      "controls": "The invoice and the quantity keyed in.",
+      "defense": "Pay for what reached stock",
+      "code": "short-delivery",
+      "steps": [
+        "Delivery arrives",
+        "Tommy counts it in",
+        "Contract checks"
+      ],
+      "outcome": "Northgate was paid for the 50 kg that reached stock; the other half went back to the budget.",
+      "held": true,
+      "evidence": [
+        "PO-T9602: Kevin orders 100 kg of ascorbic acid from Northgate, $710.00, inside his limits; escrow funded.",
+        "Northgate ships 50 kg and invoices all 100 kg, $710.00; Kevin records the invoice.",
+        "Someone keys 1,000 kg received: \"PO-T9602: 1000000000 received is more than the 100000000 ordered; the extra is not this PO's.\"",
+        "Tommy counts 50 kg into stock and takes the short delivery; Priya releases it.",
+        "Contract: paid $355.00 for what reached stock and returned $355.00 to the budget (50000000 of 100000000 received; paid pro rata)."
+      ],
+      "txs": [
+        {
+          "tx": "2AKLFAWePAzrT4JyQ2bT8hJ5fXx51v6uaFWcoy2AVxTa",
+          "url": "https://testnet.nearblocks.io/txns/2AKLFAWePAzrT4JyQ2bT8hJ5fXx51v6uaFWcoy2AVxTa",
+          "method": "submit_po",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
+          "signer": "kevin.plant-b.acme-holdings.testnet",
+          "paidBy": "kevin.plant-b.acme-holdings.testnet",
+          "status": "success",
+          "error": null,
+          "events": [
+            "po_authorized",
+            "po_funded"
+          ],
+          "block": 276129358
+        },
+        {
+          "tx": "CWfvP6u946f9tijaqbVAgdrbVshhHsXq8drZRVkvrqvT",
+          "url": "https://testnet.nearblocks.io/txns/CWfvP6u946f9tijaqbVAgdrbVshhHsXq8drZRVkvrqvT",
+          "method": "accept_po",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
+          "signer": "northgate-ingredients.testnet",
+          "paidBy": "northgate-ingredients.testnet",
+          "status": "success",
+          "error": null,
+          "events": [
+            "po_accepted"
+          ],
+          "block": 276129362
+        },
+        {
+          "tx": "H3SNjWo4acpVHV6QTByg19zMojpSBTgMaJB9L6x6qRFn",
+          "url": "https://testnet.nearblocks.io/txns/H3SNjWo4acpVHV6QTByg19zMojpSBTgMaJB9L6x6qRFn",
+          "method": "mark_shipped",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
+          "signer": "northgate-ingredients.testnet",
+          "paidBy": "northgate-ingredients.testnet",
+          "status": "success",
+          "error": null,
+          "events": [
+            "po_shipped"
+          ],
+          "block": 276129366
+        },
+        {
+          "tx": "DCGJASspW4DgL3d9gqcmmuVcNzRdtoDECcMku9KkweBw",
+          "url": "https://testnet.nearblocks.io/txns/DCGJASspW4DgL3d9gqcmmuVcNzRdtoDECcMku9KkweBw",
+          "method": "record_invoice",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
+          "signer": "kevin.plant-b.acme-holdings.testnet",
+          "paidBy": "kevin.plant-b.acme-holdings.testnet",
+          "status": "success",
+          "error": null,
+          "events": [
+            "invoice_recorded"
+          ],
+          "block": 276129370
+        },
+        {
+          "tx": "Ceo1GPby1vUUyWnKw4ykH7pJFScknC2nrgZ2VUeL8nNz",
+          "url": "https://testnet.nearblocks.io/txns/Ceo1GPby1vUUyWnKw4ykH7pJFScknC2nrgZ2VUeL8nNz",
+          "method": "confirm_receipt",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
+          "signer": "receiving.plant-b.acme-holdings.testnet",
+          "paidBy": "dayone-relayer.testnet",
+          "status": "refused",
+          "error": "PO-T9602: 1000000000 received is more than the 100000000 ordered; the extra is not this PO's.",
+          "events": [],
+          "block": 276129375
+        },
+        {
+          "tx": "DfLWPbr4bLx3sHNY91dDYGidBaW5w57YTbMn7uwyUVEF",
+          "url": "https://testnet.nearblocks.io/txns/DfLWPbr4bLx3sHNY91dDYGidBaW5w57YTbMn7uwyUVEF",
+          "method": "confirm_receipt",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
+          "signer": "receiving.plant-b.acme-holdings.testnet",
+          "paidBy": "dayone-relayer.testnet",
+          "status": "success",
+          "error": null,
+          "events": [
+            "po_received"
+          ],
+          "block": 276129381
+        },
+        {
+          "tx": "7At9Ynuwyg5QcvzVWuHfQFHdFquy76Kob4apReYJtbZX",
+          "url": "https://testnet.nearblocks.io/txns/7At9Ynuwyg5QcvzVWuHfQFHdFquy76Kob4apReYJtbZX",
+          "method": "qc_release",
+          "contract": "spend-policy-v2.acme-holdings.testnet",
+          "signer": "qc.plant-b.acme-holdings.testnet",
+          "paidBy": "dayone-relayer.testnet",
+          "status": "success",
+          "error": null,
+          "events": [
+            "ft_transfer",
+            "settlement_adjusted",
+            "po_released",
+            "delivery_recorded"
+          ],
+          "block": 276129387
+        }
+      ],
+      "refusedBy": "contract",
+      "method": "confirm_receipt",
+      "signer": "receiving.plant-b.acme-holdings.testnet",
+      "reason": "PO-T9602: 1000000000 received is more than the 100000000 ordered; the extra is not this PO's."
+    },
+    {
+      "n": 20,
       "attack": "Price spike on a small reorder",
       "story": "The only quote for a small reorder is $10.40/kg, under Kevin's limit but far above what the plant pays.",
       "controls": "The price on a quote nobody else answered.",
@@ -832,7 +960,7 @@
       "reason": "lowest landed cost, but 63% above the $6.40/kg median paid on 10 orders over the last 12 months; needs director approval."
     },
     {
-      "n": 20,
+      "n": 21,
       "attack": "Over-delivery on the packing slip",
       "story": "A packing slip claims 7,000 kg on a PO that ordered 700 kg.",
       "controls": "The quantity on the paperwork.",

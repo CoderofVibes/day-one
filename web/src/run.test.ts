@@ -70,7 +70,8 @@ describe("the web UI's recorded run", () => {
   it("carries the verified attestation of the recorded model answers", () => {
     const a = run.attestation;
     expect(a?.ok).toBe(true);
-    expect(a?.answers.map((x) => x.task)).toEqual(["vision", "reasoning"]);
+    // BR-B-1045, Kevin's enclave-signed decision on PO-1042, and the invoice.
+    expect(a?.answers.map((x) => x.task)).toEqual(["vision", "reasoning", "reasoning"]);
     for (const c of [...(a?.enclave ?? []), ...(a?.answers.flatMap((x) => x.checks) ?? [])]) {
       expect(c.status, c.name).toBe("verified");
     }

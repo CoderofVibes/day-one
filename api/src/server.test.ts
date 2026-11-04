@@ -87,7 +87,8 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     // The recorded answers' attestation rides along from the start: the enclave is a fact of
     // the recording, not of the step the screen is on.
     expect(body.attestation).toMatchObject({ model: "z-ai/glm-5.3-flash", ok: true });
-    expect(body.attestation.answers).toHaveLength(2);
+    // BR-B-1045 read, the invoice read, and Kevin's enclave-signed decision on PO-1042.
+    expect(body.attestation.answers).toHaveLength(3);
     const policy = (await api("GET", "/api/policy")).body;
     expect(policy.reachable).toBe(true);
     expect(policy.policy.agent).toMatchObject({ name: "Kevin", perPoLimit: "2500000000" });
@@ -257,12 +258,12 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(state.ok).toBe(true);
     // The over-limit PO-1042 and QuickChem's quote anchor are both refused on purpose.
     expect(state.summary).toEqual({
-      transactions: 13,
+      transactions: 14,
       refusedByDesign: 2,
       refusedOther: 0,
       failed: 0,
     });
-    expect(state.transactions).toHaveLength(13);
+    expect(state.transactions).toHaveLength(14);
   });
 
   it("prints Kevin's morning brief for the run, as JSON and as a page", async () => {
@@ -597,7 +598,7 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     };
     expect(books.settled.at(-1)).toMatchObject({
       poNo: "PO-1042",
-      recordRef: "2vHPhG3vMutiCh5kjojfVwZ9j9zTF2n2xYsHBrdvXVFV",
+      recordRef: "BqGaaj9gyJXFP8QaWf3ZkdxZdvvf85xoye6nH4cQaQNG",
     });
   });
 });

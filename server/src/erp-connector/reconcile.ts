@@ -41,6 +41,8 @@ export interface ContractPo {
   status: string;
   approved_by: string | null;
   supplier_lot: string | null;
+  /** What the release paid, when the contract settles by receipt (CONTRACTS.md §11). */
+  paid?: string | null;
 }
 
 export interface Check {
@@ -73,11 +75,13 @@ export interface ReconcileInput {
 
 export interface GroupRunPo {
   poNo: string;
-  /** Token base units. */
-  amount: string;
+  /** Token base units; absent when the run settled by receipt and the contract says what it paid. */
+  amount?: string;
   supplier: string;
-  /** The `qc_release` transaction in the recording. */
-  releaseTx: string;
+  /** The `qc_release` transaction in the recording, when the recording has it. */
+  releaseTx: string | null;
+  /** Which recorded run paid it: "group" (npm run demo:group), "attacks" or a note. */
+  source?: string;
 }
 
 /** Contract statuses that still hold money, or have paid it out. */
@@ -365,7 +369,10 @@ async function contractPos(view: ContractView): Promise<ContractPo[]> {
 function groupRunPos(all: readonly ContractPo[], groupRuns: readonly GroupRunPo[] = []) {
   return all.flatMap((p) => {
     const run = groupRuns.find((g) => g.poNo === p.po_id);
-    return run && p.status === PAID && p.amount === run.amount && p.supplier === run.supplier
+    return run &&
+      p.status === PAID &&
+      (run.amount === undefined || p.amount === run.amount) &&
+      p.supplier === run.supplier
       ? [{ po: p, run }]
       : [];
   });
@@ -378,11 +385,11 @@ async function escrow({ erpDb, view, groupRuns }: ReconcileInput): Promise<Check
   const tb = trialBalance(erpDb);
   const erpHeld = tb.rows.find((r) => r.acctNumber === account)?.balanceUsdc ?? 0;
   const group = groupRunPos(await contractPos(view), groupRuns);
-  const groupPaid = group.reduce((sum, g) => sum + Number(g.po.amount), 0);
+  const groupPaid = group.reduce((sum, g) => sum + Number(g.po.paid ?? g.po.amount), 0);
   const chainHeld = Number(budget.budget) + Number(budget.escrowed) + groupPaid;
   const ok = erpHeld === chainHeld;
   const plus = group.length
-    ? ` + paid by the group buy ${money(groupPaid)} (${group.map((g) => g.po.po_id).join(", ")})`
+    ? ` + paid by recorded runs outside Day One ${money(groupPaid)} (${group.map((g) => g.po.po_id).join(", ")})`
     : "";
   return {
     name: "Escrow",
@@ -434,9 +441,10 @@ async function strangers({ dayOne, view, groupRuns }: ReconcileInput): Promise<C
 
 function groupLine(group: ReturnType<typeof groupRunPos>) {
   return group
-    .map(
-      (g) =>
-        `${g.po.po_id} ${money(g.po.amount)} to ${g.po.supplier} is the recorded group purchase (npm run demo:group, release tx ${short(g.run.releaseTx)}), booked in its own run, not in this ERP`,
+    .map((g) =>
+      g.run.source === undefined || g.run.source === "group"
+        ? `${g.po.po_id} ${money(g.po.amount)} to ${g.po.supplier} is the recorded group purchase (npm run demo:group, release tx ${short(g.run.releaseTx ?? "")}), booked in its own run, not in this ERP`
+        : `${g.po.po_id} ${money(g.po.paid ?? g.po.amount)} to ${g.po.supplier} was paid by ${g.run.source === "attacks" ? "the recorded attack suite (npm run test:attacks)" : g.run.source}, not in this ERP`,
     )
     .join("; ");
 }
@@ -520,6 +528,38 @@ interface FixtureEntry {
   type?: string;
   request?: { method?: string; args?: Record<string, unknown> };
   outcome?: { status?: string; txHash?: string | null };
+}
+
+/**
+ * The POs a recorded attack run paid out (`data/attacks/plant-attacks-testnet.json`): each
+ * funded `submit_po` with a successful `qc_release`; the contract says what each release paid.
+ */
+export function attackRunsFromFixture(
+  fixture: { network?: string; entries?: FixtureEntry[] },
+  network: string,
+): GroupRunPo[] {
+  if (fixture.network !== network) return [];
+  const entries = fixture.entries ?? [];
+  const ok = (e: FixtureEntry, method: string) =>
+    e.request?.method === method && e.outcome?.status === "success";
+  return entries
+    .filter((e) => ok(e, "submit_po"))
+    .flatMap((e) => {
+      const args = e.request?.args ?? {};
+      const release = entries.find(
+        (r) => ok(r, "qc_release") && r.request?.args?.po_id === args.po_id,
+      );
+      return release
+        ? [
+            {
+              poNo: String(args.po_id),
+              supplier: String(args.supplier),
+              releaseTx: release.outcome?.txHash ?? null,
+              source: "attacks",
+            },
+          ]
+        : [];
+    });
 }
 
 /**

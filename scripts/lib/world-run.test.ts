@@ -32,6 +32,7 @@ describe("the committed worlds", () => {
       "accept_po:success",
       "mark_shipped:success",
       "confirm_receipt:success",
+      "record_invoice:success",
       "qc_release:success",
     ]);
     // Riverside's Cal-Mag batches behind the 115.199 kg flag, and Lakeview's packaging stock.

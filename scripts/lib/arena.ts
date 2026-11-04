@@ -242,6 +242,16 @@ export const ARENA_WORDS: Record<string, Words> = {
       "Paid only when Tommy confirmed the delivery and Priya released it, as the roles require.",
     headline: "QC manager",
   },
+  "Short delivery invoiced in full": {
+    story:
+      "Northgate ships 50 kg of a 100 kg order and invoices all of it; someone also keys 1,000 kg received.",
+    controls: "The invoice and the quantity keyed in.",
+    defense: "Pay for what reached stock",
+    code: "short-delivery",
+    steps: ["Delivery arrives", "Tommy counts it in", "Contract checks"],
+    outcome:
+      "Northgate was paid for the 50 kg that reached stock; the other half went back to the budget.",
+  },
   "Price spike on a small reorder": {
     story:
       "The only quote for a small reorder is $10.40/kg, under Kevin's limit but far above what the plant pays.",

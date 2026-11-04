@@ -1,7 +1,7 @@
 {
   "kind": "quote",
   "ref_id": "RFQ-G-2611/ridgeway-ascorbics.testnet",
-  "salt": "dab27672652dabde212ed179678720bc",
+  "salt": "255565405a2dc50552a6ac2d9dbba87e",
   "record": {
     "rfq": "RFQ-G-2611",
     "supplier": "ridgeway-ascorbics.testnet",
@@ -11,5 +11,5 @@
     "freightUsdc": 165000000,
     "leadTimeDays": 5
   },
-  "anchored_tx": "Ge3TbqWzV7hNLc4vNcR4jvTLgUhR4P3WPpqGfF9eUmqs"
+  "anchored_tx": "9hjj4NksR3T5VvUkSqFfB1iiom1ZDa27MEWfhhxLXe5W"
 }

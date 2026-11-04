@@ -292,7 +292,7 @@ describe("receiving for a contract that settles by what reached stock (CONTRACTS
       settle,
     );
     expect(r.lotCodes).toEqual(["ASC-261116-01"]);
-    const args = fake.calls[0]?.args as Record<string, unknown>;
+    const args = fake.calls[0]?.args ?? {};
     expect(args).toMatchObject({
       po_id: "PO-1042",
       received_qty: String(700 * KG),
@@ -320,7 +320,7 @@ describe("receiving for a contract that settles by what reached stock (CONTRACTS
     );
     expect(taken.status).toBe("received");
     expect(taken.sentences[0]).toContain("350 kg ascorbic acid");
-    expect((fake.calls[0]?.args as Record<string, unknown>).received_qty).toBe(String(350 * KG));
+    expect((fake.calls[0]?.args ?? {}).received_qty).toBe(String(350 * KG));
     const lot = db.select().from(lots).where(eq(lots.lotCode, "ASC-261116-01")).get();
     const received = db
       .select()

@@ -38,8 +38,8 @@ const usd = (units: number | bigint) => formatUsd(BigInt(units));
 /** The over-order's throwaway PO: refused, so it never exists on chain. */
 export const OVER_ORDER_PO = "PO-T9401";
 /** The PO the supplier tries to settle by itself; the real people settle it afterwards. */
-// PO-T9501 was the first take (Nov 3), which found the relayed-outcome bug; this is the record.
-export const SELF_PAY_PO = "PO-T9502";
+// PO-T9501 found the relayed-outcome bug (v1); PO-T9502 ran on v2 before a ledger error (Nov 3).
+export const SELF_PAY_PO = "PO-T9503";
 export const SELF_PAY = {
   supplier: "bayfront-labsupply.testnet",
   supplierName: "Bayfront Lab Supply",
@@ -217,7 +217,7 @@ async function supplierPaysItself(deps: PlantAttackDeps): Promise<AttackResult> 
 
 // 19 ----------------------------------------------------------------------------------------
 /** The short delivery's PO: 100 kg ordered, 50 kg arrive, the invoice asks for all 100. */
-export const SHORT_PO = "PO-T9601";
+export const SHORT_PO = "PO-T9602";
 
 async function shortDeliveryInvoicedInFull(deps: PlantAttackDeps): Promise<AttackResult> {
   const { db, chain, kevin, policyContract } = deps;
@@ -227,7 +227,8 @@ async function shortDeliveryInvoicedInFull(deps: PlantAttackDeps): Promise<Attac
   const amount = 710 * USD;
   const call = (signerId: string, method: string, args: Record<string, unknown>, relayed = false) =>
     chain.call({
-      kind: method as "submit_po",
+      // The ledger logs an invoice as a record, as the demo run does.
+      kind: (method === "record_invoice" ? "anchor" : method) as "submit_po",
       signerId,
       receiverId: policyContract,
       method,

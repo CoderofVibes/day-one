@@ -1,7 +1,7 @@
 {
   "network": "testnet",
   "root": "acme-holdings.testnet",
-  "spendPolicy": "spend-policy.acme-holdings.testnet",
+  "spendPolicy": "spend-policy-v2.acme-holdings.testnet",
   "accounts": {
     "plant-a.acme-holdings.testnet": {
       "publicKeys": [
@@ -18,9 +18,9 @@
         "ed25519:5qYpY2QqD34Q6oS5Gu3JHN6zEqeHnXzL2pEhmdfBXAEA"
       ]
     },
-    "spend-policy.acme-holdings.testnet": {
+    "spend-policy-v2.acme-holdings.testnet": {
       "publicKeys": [
-        "ed25519:23qwFbjjADD8XHwy8acE1FAC3iZKXYdfFMwJ7UdUBEsF"
+        "ed25519:GZt9TxyyKHNWLdkymCs12u6Luu8nvxJ33o3r6CqxCKcY"
       ]
     },
     "dtusd.acme-holdings.testnet": {
@@ -116,5 +116,10 @@
         "ed25519:5UYLqw36WhoU8LYcgCsQJMWatpcC8uaKcAMrRe9AdBsg"
       ]
     }
+  },
+  "contractFeatures": {
+    "receiptSettlement": true,
+    "signedDecisions": true,
+    "signedAboveUsd": 2500
   }
 }

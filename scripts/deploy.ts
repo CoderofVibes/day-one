@@ -27,7 +27,8 @@ import { directorOf, kevinOf, PLANT_AGENTS } from "./lib/dayone-sandbox.ts";
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const ROOT = "acme-holdings.testnet";
 const TOKEN = `dtusd.${ROOT}`;
-const POLICY = `spend-policy.${ROOT}`;
+// v2 (CONTRACTS.md §11); v1 stays at spend-policy.${ROOT} with its recorded state.
+const POLICY = `spend-policy-v2.${ROOT}`;
 const PLANT_B = `plant-b.${ROOT}`;
 const DOLLAR = 1_000_000n;
 /** DTUSD minted to the treasury at init, and the plant budget funded from it. */

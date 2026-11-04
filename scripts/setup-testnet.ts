@@ -27,7 +27,9 @@ const configFile = join(repo, "config", "testnet-accounts.json");
 
 const ROOT = "acme-holdings.testnet";
 const PLANT_B = `plant-b.${ROOT}`;
-const SPEND_POLICY = `spend-policy.${ROOT}`;
+// v2 (CONTRACTS.md §11, Nov 3): v1 at spend-policy.${ROOT} could not be deleted once its state
+// grew past the protocol's limit for DeleteAccount, so v1 and its anchors stay readable there.
+const SPEND_POLICY = `spend-policy-v2.${ROOT}`;
 const RPC_URL = process.env.NEAR_RPC_URL ?? "https://test.rpc.fastnear.com";
 const provider = new JsonRpcProvider({ url: RPC_URL });
 

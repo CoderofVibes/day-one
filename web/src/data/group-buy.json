@@ -37,7 +37,7 @@
   },
   "spent": {
     "A": 4745000000,
-    "B": 10507000000,
+    "B": 11657000000,
     "C": 0
   },
   "summary": {
@@ -68,7 +68,7 @@
       ],
       "chain": [
         {
-          "line": "chain: spend-policy budget 19,238.00 DTUSD, escrowed 612.00 DTUSD",
+          "line": "chain: spend-policy budget 18,088.00 DTUSD, escrowed 1,307.00 DTUSD",
           "tx": null
         }
       ]
@@ -92,12 +92,12 @@
       ],
       "chain": [
         {
-          "line": "chain: open_pool RFQ-G-2611 ✓ signed by kevin.plant-b.acme-holdings.testnet (tx 6kDFjyFWzuCfJCiAkhuv5tP3D3nAZuJLzMvefRopd3Ma)",
-          "tx": "6kDFjyFWzuCfJCiAkhuv5tP3D3nAZuJLzMvefRopd3Ma"
+          "line": "chain: open_pool RFQ-G-2611 ✓ signed by kevin.plant-b.acme-holdings.testnet (tx AChjyLFTYERCxHRVScvJ3pzNHg3gMG9XgGGNLQkzdRMC)",
+          "tx": "AChjyLFTYERCxHRVScvJ3pzNHg3gMG9XgGGNLQkzdRMC"
         },
         {
-          "line": "chain: join_pool RFQ-G-2611 ✓ signed by kevin.plant-a.acme-holdings.testnet (tx 13CSC6EdwebUFuKNZE813GdNuG4ziHNnxxoJR2xj8Cvy)",
-          "tx": "13CSC6EdwebUFuKNZE813GdNuG4ziHNnxxoJR2xj8Cvy"
+          "line": "chain: join_pool RFQ-G-2611 ✓ signed by kevin.plant-a.acme-holdings.testnet (tx 3972nT3xZRWfAwGjRYzQw55hNfzUi15AoNbk6aKxAJeW)",
+          "tx": "3972nT3xZRWfAwGjRYzQw55hNfzUi15AoNbk6aKxAJeW"
         }
       ]
     },
@@ -110,16 +110,16 @@
       ],
       "chain": [
         {
-          "line": "chain: anchor quote RFQ-G-2611 ✗ REFUSED \"Only a registered purchasing agent or an approved supplier can anchor records.\" (tx 68WJ7medhmkXjCoegDTZ1V1Yki1h1SDcrCVDnVmweZ3w)",
-          "tx": "68WJ7medhmkXjCoegDTZ1V1Yki1h1SDcrCVDnVmweZ3w"
+          "line": "chain: anchor quote RFQ-G-2611 ✗ REFUSED \"Only a registered purchasing agent or an approved supplier can anchor records.\" (tx CmpuKKoFWbmCxvpc5qDUbEVCa8PAo6zou7ebrTCD3ypk)",
+          "tx": "CmpuKKoFWbmCxvpc5qDUbEVCa8PAo6zou7ebrTCD3ypk"
         },
         {
-          "line": "chain: anchor quote RFQ-G-2611 ✓ signed by northgate-ingredients.testnet (tx 42R9MGcavZ4SRrnjw4m7y5QDT98Q4dFhNa5kXa2EoonB)",
-          "tx": "42R9MGcavZ4SRrnjw4m7y5QDT98Q4dFhNa5kXa2EoonB"
+          "line": "chain: anchor quote RFQ-G-2611 ✓ signed by northgate-ingredients.testnet (tx CrQpPUiwsZef4x7QckgBbAda51KrxFXVAjaCDUCkC79D)",
+          "tx": "CrQpPUiwsZef4x7QckgBbAda51KrxFXVAjaCDUCkC79D"
         },
         {
-          "line": "chain: anchor quote RFQ-G-2611 ✓ signed by ridgeway-ascorbics.testnet (tx Ge3TbqWzV7hNLc4vNcR4jvTLgUhR4P3WPpqGfF9eUmqs)",
-          "tx": "Ge3TbqWzV7hNLc4vNcR4jvTLgUhR4P3WPpqGfF9eUmqs"
+          "line": "chain: anchor quote RFQ-G-2611 ✓ signed by ridgeway-ascorbics.testnet (tx 9hjj4NksR3T5VvUkSqFfB1iiom1ZDa27MEWfhhxLXe5W)",
+          "tx": "9hjj4NksR3T5VvUkSqFfB1iiom1ZDa27MEWfhhxLXe5W"
         }
       ]
     },
@@ -132,8 +132,8 @@
       ],
       "chain": [
         {
-          "line": "chain: submit_pooled_po PO-G-2001 ✗ REFUSED \"PO-G-2001: Kevin's $4,745.00 share exceeds its per-PO limit of $2,500.00; Kevin at Plant A's $4,745.00 share exceeds its per-PO limit of $2,500.00; director approval required.\" (tx 7Vf5C8G4Y9nv4bgVfii6xx3cN98Bz6ymFHxJHMnqFgkN)",
-          "tx": "7Vf5C8G4Y9nv4bgVfii6xx3cN98Bz6ymFHxJHMnqFgkN"
+          "line": "chain: submit_pooled_po PO-G-2001 ✗ REFUSED \"PO-G-2001: Kevin's $4,745.00 share exceeds its per-PO limit of $2,500.00; Kevin at Plant A's $4,745.00 share exceeds its per-PO limit of $2,500.00; director approval required.\" (tx KnHGiVzjZ7z5QzDakjTdXmD2f5NcatoFTLWd8aqR48c)",
+          "tx": "KnHGiVzjZ7z5QzDakjTdXmD2f5NcatoFTLWd8aqR48c"
         }
       ]
     },
@@ -146,8 +146,8 @@
       ],
       "chain": [
         {
-          "line": "chain: approve_po PO-G-2001/Plant B ✓ signed by director.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx Brc7mKxP3VQ6UcKZhBZoB3h4qSjHAsWB2AaV13bNnMVk)",
-          "tx": "Brc7mKxP3VQ6UcKZhBZoB3h4qSjHAsWB2AaV13bNnMVk"
+          "line": "chain: approve_po PO-G-2001/Plant B ✓ signed by director.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx CKeAU63X6KNq8dJQa5hF2BCnm3b8e6UsDGkbfYoZRENC)",
+          "tx": "CKeAU63X6KNq8dJQa5hF2BCnm3b8e6UsDGkbfYoZRENC"
         }
       ]
     },
@@ -159,8 +159,8 @@
       ],
       "chain": [
         {
-          "line": "chain: approve_po PO-G-2001/Plant A ✓ signed by director.plant-a.acme-holdings.testnet, paid by dayone-relayer.testnet (tx Cm1dyEdK2P5eGZ5Ko8xVCqv5VE5DLcfzQvAM1epXB2LK)",
-          "tx": "Cm1dyEdK2P5eGZ5Ko8xVCqv5VE5DLcfzQvAM1epXB2LK"
+          "line": "chain: approve_po PO-G-2001/Plant A ✓ signed by director.plant-a.acme-holdings.testnet, paid by dayone-relayer.testnet (tx C8pFi3KStYuiE1N31yvfQMHRpfwBw5FFaSxfSRZ216qf)",
+          "tx": "C8pFi3KStYuiE1N31yvfQMHRpfwBw5FFaSxfSRZ216qf"
         }
       ]
     },
@@ -172,8 +172,8 @@
       ],
       "chain": [
         {
-          "line": "chain: submit_pooled_po PO-G-2001 ✓ (tx 9soPwo62c2qoZ5vPF5SKqxTKGSNvLadDMxCP1QY89b7V) · escrow funded 9,490.00 DTUSD · Plant B 4,745.00 DTUSD · Plant A 4,745.00 DTUSD",
-          "tx": "9soPwo62c2qoZ5vPF5SKqxTKGSNvLadDMxCP1QY89b7V"
+          "line": "chain: submit_pooled_po PO-G-2001 ✓ (tx 9LFKVTcHuDX5HUQWunewhQU356qxHayyDcivPDdMbjdY) · escrow funded 9,490.00 DTUSD · Plant B 4,745.00 DTUSD · Plant A 4,745.00 DTUSD",
+          "tx": "9LFKVTcHuDX5HUQWunewhQU356qxHayyDcivPDdMbjdY"
         }
       ]
     },
@@ -183,12 +183,12 @@
       "staff": [],
       "chain": [
         {
-          "line": "chain: accept_po PO-G-2001 ✓ signed by northgate-ingredients.testnet (tx 3g6tJG5Jm1ncgwvo5yhP5vP5HmBxtFEsRCqQKoN3uHxJ)",
-          "tx": "3g6tJG5Jm1ncgwvo5yhP5vP5HmBxtFEsRCqQKoN3uHxJ"
+          "line": "chain: accept_po PO-G-2001 ✓ signed by northgate-ingredients.testnet (tx Ff5emZneEVQHiTRevBcjuWJxjuYVpskivudMx1n1AdEB)",
+          "tx": "Ff5emZneEVQHiTRevBcjuWJxjuYVpskivudMx1n1AdEB"
         },
         {
-          "line": "chain: mark_shipped PO-G-2001 ✓ signed by northgate-ingredients.testnet (tx 53y1oyTVfdCENiFDixXyZwAYsWB5J7us6AjywDsiHwQS)",
-          "tx": "53y1oyTVfdCENiFDixXyZwAYsWB5J7us6AjywDsiHwQS"
+          "line": "chain: mark_shipped PO-G-2001 ✓ signed by northgate-ingredients.testnet (tx 9HctNQm2cVmKjRGfWxC8dr5hDzYnciHPx2SQ6TMQtEJT)",
+          "tx": "9HctNQm2cVmKjRGfWxC8dr5hDzYnciHPx2SQ6TMQtEJT"
         }
       ]
     },
@@ -201,8 +201,8 @@
       ],
       "chain": [
         {
-          "line": "chain: confirm_receipt PO-G-2001 ✓ signed by receiving.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx 3pPaLEoasECQuDUuBCxF9aNBRKmxdbeDvQ3sSebKwydq)",
-          "tx": "3pPaLEoasECQuDUuBCxF9aNBRKmxdbeDvQ3sSebKwydq"
+          "line": "chain: confirm_receipt PO-G-2001 ✓ signed by receiving.plant-b.acme-holdings.testnet, paid by dayone-relayer.testnet (tx 5qeVf9tnMFDNHLveWqqEKia85hCDoXbSChgUgAQjWFMu)",
+          "tx": "5qeVf9tnMFDNHLveWqqEKia85hCDoXbSChgUgAQjWFMu"
         }
       ]
     },
@@ -215,8 +215,8 @@
       ],
       "chain": [
         {
-          "line": "chain: qc_release PO-G-2001 ✓ (tx 9XDEo3DpvFe2Tu8t94Hpe45su4AH9cB8JWCLiEnHV3ka) · 9,490.00 DTUSD → northgate-ingredients.testnet",
-          "tx": "9XDEo3DpvFe2Tu8t94Hpe45su4AH9cB8JWCLiEnHV3ka"
+          "line": "chain: qc_release PO-G-2001 ✓ (tx 42HXtYRxtB3qV3P4TSAp8uSFyPp1NsrJq5QpzGzmgnko) · 9,490.00 DTUSD → northgate-ingredients.testnet",
+          "tx": "42HXtYRxtB3qV3P4TSAp8uSFyPp1NsrJq5QpzGzmgnko"
         }
       ]
     },
@@ -224,7 +224,7 @@
       "step": 10,
       "title": "Each plant's books",
       "staff": [
-        "On the books this month: Plant A $4,745.00, Plant B $10,507.00, Plant C $0.00 — each counted against its own limits by the contract."
+        "On the books this month: Plant A $4,745.00, Plant B $11,657.00, Plant C $0.00 — each counted against its own limits by the contract."
       ],
       "chain": [
         {
@@ -237,13 +237,13 @@
   "transactions": [
     {
       "method": "open_pool",
-      "contract": "spend-policy.acme-holdings.testnet",
+      "contract": "spend-policy-v2.acme-holdings.testnet",
       "signer": "kevin.plant-b.acme-holdings.testnet",
       "paidBy": "kevin.plant-b.acme-holdings.testnet",
       "status": "success",
       "error": null,
-      "tx": "6kDFjyFWzuCfJCiAkhuv5tP3D3nAZuJLzMvefRopd3Ma",
-      "url": "https://testnet.nearblocks.io/txns/6kDFjyFWzuCfJCiAkhuv5tP3D3nAZuJLzMvefRopd3Ma",
+      "tx": "AChjyLFTYERCxHRVScvJ3pzNHg3gMG9XgGGNLQkzdRMC",
+      "url": "https://testnet.nearblocks.io/txns/AChjyLFTYERCxHRVScvJ3pzNHg3gMG9XgGGNLQkzdRMC",
       "events": [
         "pool_opened",
         "pool_joined"
@@ -251,102 +251,102 @@
     },
     {
       "method": "join_pool",
-      "contract": "spend-policy.acme-holdings.testnet",
+      "contract": "spend-policy-v2.acme-holdings.testnet",
       "signer": "kevin.plant-a.acme-holdings.testnet",
       "paidBy": "kevin.plant-a.acme-holdings.testnet",
       "status": "success",
       "error": null,
-      "tx": "13CSC6EdwebUFuKNZE813GdNuG4ziHNnxxoJR2xj8Cvy",
-      "url": "https://testnet.nearblocks.io/txns/13CSC6EdwebUFuKNZE813GdNuG4ziHNnxxoJR2xj8Cvy",
+      "tx": "3972nT3xZRWfAwGjRYzQw55hNfzUi15AoNbk6aKxAJeW",
+      "url": "https://testnet.nearblocks.io/txns/3972nT3xZRWfAwGjRYzQw55hNfzUi15AoNbk6aKxAJeW",
       "events": [
         "pool_joined"
       ]
     },
     {
       "method": "anchor",
-      "contract": "spend-policy.acme-holdings.testnet",
+      "contract": "spend-policy-v2.acme-holdings.testnet",
       "signer": "quickchem-direct.testnet",
       "paidBy": "quickchem-direct.testnet",
       "status": "refused",
       "error": "Only a registered purchasing agent or an approved supplier can anchor records.",
-      "tx": "68WJ7medhmkXjCoegDTZ1V1Yki1h1SDcrCVDnVmweZ3w",
-      "url": "https://testnet.nearblocks.io/txns/68WJ7medhmkXjCoegDTZ1V1Yki1h1SDcrCVDnVmweZ3w",
+      "tx": "CmpuKKoFWbmCxvpc5qDUbEVCa8PAo6zou7ebrTCD3ypk",
+      "url": "https://testnet.nearblocks.io/txns/CmpuKKoFWbmCxvpc5qDUbEVCa8PAo6zou7ebrTCD3ypk",
       "events": []
     },
     {
       "method": "anchor",
-      "contract": "spend-policy.acme-holdings.testnet",
+      "contract": "spend-policy-v2.acme-holdings.testnet",
       "signer": "northgate-ingredients.testnet",
       "paidBy": "northgate-ingredients.testnet",
       "status": "success",
       "error": null,
-      "tx": "42R9MGcavZ4SRrnjw4m7y5QDT98Q4dFhNa5kXa2EoonB",
-      "url": "https://testnet.nearblocks.io/txns/42R9MGcavZ4SRrnjw4m7y5QDT98Q4dFhNa5kXa2EoonB",
+      "tx": "CrQpPUiwsZef4x7QckgBbAda51KrxFXVAjaCDUCkC79D",
+      "url": "https://testnet.nearblocks.io/txns/CrQpPUiwsZef4x7QckgBbAda51KrxFXVAjaCDUCkC79D",
       "events": [
         "record_anchored"
       ]
     },
     {
       "method": "anchor",
-      "contract": "spend-policy.acme-holdings.testnet",
+      "contract": "spend-policy-v2.acme-holdings.testnet",
       "signer": "ridgeway-ascorbics.testnet",
       "paidBy": "ridgeway-ascorbics.testnet",
       "status": "success",
       "error": null,
-      "tx": "Ge3TbqWzV7hNLc4vNcR4jvTLgUhR4P3WPpqGfF9eUmqs",
-      "url": "https://testnet.nearblocks.io/txns/Ge3TbqWzV7hNLc4vNcR4jvTLgUhR4P3WPpqGfF9eUmqs",
+      "tx": "9hjj4NksR3T5VvUkSqFfB1iiom1ZDa27MEWfhhxLXe5W",
+      "url": "https://testnet.nearblocks.io/txns/9hjj4NksR3T5VvUkSqFfB1iiom1ZDa27MEWfhhxLXe5W",
       "events": [
         "record_anchored"
       ]
     },
     {
       "method": "submit_pooled_po",
-      "contract": "spend-policy.acme-holdings.testnet",
+      "contract": "spend-policy-v2.acme-holdings.testnet",
       "signer": "kevin.plant-b.acme-holdings.testnet",
       "paidBy": "kevin.plant-b.acme-holdings.testnet",
       "status": "refused",
       "error": "PO-G-2001: Kevin's $4,745.00 share exceeds its per-PO limit of $2,500.00; Kevin at Plant A's $4,745.00 share exceeds its per-PO limit of $2,500.00; director approval required.",
-      "tx": "7Vf5C8G4Y9nv4bgVfii6xx3cN98Bz6ymFHxJHMnqFgkN",
-      "url": "https://testnet.nearblocks.io/txns/7Vf5C8G4Y9nv4bgVfii6xx3cN98Bz6ymFHxJHMnqFgkN",
+      "tx": "KnHGiVzjZ7z5QzDakjTdXmD2f5NcatoFTLWd8aqR48c",
+      "url": "https://testnet.nearblocks.io/txns/KnHGiVzjZ7z5QzDakjTdXmD2f5NcatoFTLWd8aqR48c",
       "events": [
         "po_refused"
       ]
     },
     {
       "method": "approve_po",
-      "contract": "spend-policy.acme-holdings.testnet",
+      "contract": "spend-policy-v2.acme-holdings.testnet",
       "signer": "director.plant-b.acme-holdings.testnet",
       "paidBy": "dayone-relayer.testnet",
       "status": "success",
       "error": null,
-      "tx": "Brc7mKxP3VQ6UcKZhBZoB3h4qSjHAsWB2AaV13bNnMVk",
-      "url": "https://testnet.nearblocks.io/txns/Brc7mKxP3VQ6UcKZhBZoB3h4qSjHAsWB2AaV13bNnMVk",
+      "tx": "CKeAU63X6KNq8dJQa5hF2BCnm3b8e6UsDGkbfYoZRENC",
+      "url": "https://testnet.nearblocks.io/txns/CKeAU63X6KNq8dJQa5hF2BCnm3b8e6UsDGkbfYoZRENC",
       "events": [
         "po_approved"
       ]
     },
     {
       "method": "approve_po",
-      "contract": "spend-policy.acme-holdings.testnet",
+      "contract": "spend-policy-v2.acme-holdings.testnet",
       "signer": "director.plant-a.acme-holdings.testnet",
       "paidBy": "dayone-relayer.testnet",
       "status": "success",
       "error": null,
-      "tx": "Cm1dyEdK2P5eGZ5Ko8xVCqv5VE5DLcfzQvAM1epXB2LK",
-      "url": "https://testnet.nearblocks.io/txns/Cm1dyEdK2P5eGZ5Ko8xVCqv5VE5DLcfzQvAM1epXB2LK",
+      "tx": "C8pFi3KStYuiE1N31yvfQMHRpfwBw5FFaSxfSRZ216qf",
+      "url": "https://testnet.nearblocks.io/txns/C8pFi3KStYuiE1N31yvfQMHRpfwBw5FFaSxfSRZ216qf",
       "events": [
         "po_approved"
       ]
     },
     {
       "method": "submit_pooled_po",
-      "contract": "spend-policy.acme-holdings.testnet",
+      "contract": "spend-policy-v2.acme-holdings.testnet",
       "signer": "kevin.plant-b.acme-holdings.testnet",
       "paidBy": "kevin.plant-b.acme-holdings.testnet",
       "status": "success",
       "error": null,
-      "tx": "9soPwo62c2qoZ5vPF5SKqxTKGSNvLadDMxCP1QY89b7V",
-      "url": "https://testnet.nearblocks.io/txns/9soPwo62c2qoZ5vPF5SKqxTKGSNvLadDMxCP1QY89b7V",
+      "tx": "9LFKVTcHuDX5HUQWunewhQU356qxHayyDcivPDdMbjdY",
+      "url": "https://testnet.nearblocks.io/txns/9LFKVTcHuDX5HUQWunewhQU356qxHayyDcivPDdMbjdY",
       "events": [
         "pooled_po_authorized",
         "po_funded"
@@ -354,52 +354,52 @@
     },
     {
       "method": "accept_po",
-      "contract": "spend-policy.acme-holdings.testnet",
+      "contract": "spend-policy-v2.acme-holdings.testnet",
       "signer": "northgate-ingredients.testnet",
       "paidBy": "northgate-ingredients.testnet",
       "status": "success",
       "error": null,
-      "tx": "3g6tJG5Jm1ncgwvo5yhP5vP5HmBxtFEsRCqQKoN3uHxJ",
-      "url": "https://testnet.nearblocks.io/txns/3g6tJG5Jm1ncgwvo5yhP5vP5HmBxtFEsRCqQKoN3uHxJ",
+      "tx": "Ff5emZneEVQHiTRevBcjuWJxjuYVpskivudMx1n1AdEB",
+      "url": "https://testnet.nearblocks.io/txns/Ff5emZneEVQHiTRevBcjuWJxjuYVpskivudMx1n1AdEB",
       "events": [
         "po_accepted"
       ]
     },
     {
       "method": "mark_shipped",
-      "contract": "spend-policy.acme-holdings.testnet",
+      "contract": "spend-policy-v2.acme-holdings.testnet",
       "signer": "northgate-ingredients.testnet",
       "paidBy": "northgate-ingredients.testnet",
       "status": "success",
       "error": null,
-      "tx": "53y1oyTVfdCENiFDixXyZwAYsWB5J7us6AjywDsiHwQS",
-      "url": "https://testnet.nearblocks.io/txns/53y1oyTVfdCENiFDixXyZwAYsWB5J7us6AjywDsiHwQS",
+      "tx": "9HctNQm2cVmKjRGfWxC8dr5hDzYnciHPx2SQ6TMQtEJT",
+      "url": "https://testnet.nearblocks.io/txns/9HctNQm2cVmKjRGfWxC8dr5hDzYnciHPx2SQ6TMQtEJT",
       "events": [
         "po_shipped"
       ]
     },
     {
       "method": "confirm_receipt",
-      "contract": "spend-policy.acme-holdings.testnet",
+      "contract": "spend-policy-v2.acme-holdings.testnet",
       "signer": "receiving.plant-b.acme-holdings.testnet",
       "paidBy": "dayone-relayer.testnet",
       "status": "success",
       "error": null,
-      "tx": "3pPaLEoasECQuDUuBCxF9aNBRKmxdbeDvQ3sSebKwydq",
-      "url": "https://testnet.nearblocks.io/txns/3pPaLEoasECQuDUuBCxF9aNBRKmxdbeDvQ3sSebKwydq",
+      "tx": "5qeVf9tnMFDNHLveWqqEKia85hCDoXbSChgUgAQjWFMu",
+      "url": "https://testnet.nearblocks.io/txns/5qeVf9tnMFDNHLveWqqEKia85hCDoXbSChgUgAQjWFMu",
       "events": [
         "po_received"
       ]
     },
     {
       "method": "qc_release",
-      "contract": "spend-policy.acme-holdings.testnet",
+      "contract": "spend-policy-v2.acme-holdings.testnet",
       "signer": "qc.plant-b.acme-holdings.testnet",
       "paidBy": "dayone-relayer.testnet",
       "status": "success",
       "error": null,
-      "tx": "9XDEo3DpvFe2Tu8t94Hpe45su4AH9cB8JWCLiEnHV3ka",
-      "url": "https://testnet.nearblocks.io/txns/9XDEo3DpvFe2Tu8t94Hpe45su4AH9cB8JWCLiEnHV3ka",
+      "tx": "42HXtYRxtB3qV3P4TSAp8uSFyPp1NsrJq5QpzGzmgnko",
+      "url": "https://testnet.nearblocks.io/txns/42HXtYRxtB3qV3P4TSAp8uSFyPp1NsrJq5QpzGzmgnko",
       "events": [
         "ft_transfer",
         "po_released",
