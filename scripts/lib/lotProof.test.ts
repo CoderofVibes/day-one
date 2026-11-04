@@ -11,7 +11,12 @@ import {
   passportFor,
 } from "../../server/src/lots/lotBook.ts";
 import { paymentsFrom } from "../../server/src/lots/payments.ts";
-import { checkPassport, type Passport } from "../../web/src/lotProof.ts";
+import {
+  checkPassport,
+  type LotBookFile,
+  type Passport,
+  passportForKeys,
+} from "../../web/src/lotProof.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const readJson = <T>(p: string): T => JSON.parse(readFileSync(join(root, p), "utf8")) as T;
@@ -87,5 +92,21 @@ describe("the browser's verifier on passports the server builds", () => {
     expect(long.entries.some((e) => e.leaf.kind === "shipment")).toBe(true);
     const r = await checkPassport(long, { online: true, fetcher: fakeChain() });
     expect(r.entries.filter((e) => e.verdict !== "proved")).toEqual([]);
+  });
+});
+
+describe("the browser's passport builder", () => {
+  it("builds the same entries and paths as the server for the same records", async () => {
+    for (const lot of ["ASC-261116-01", "SHC-251229-01"]) {
+      const server = passportFor(book, g, lot);
+      const keys = server.entries.map((e) => `${e.leaf.kind}:${e.leaf.id}`);
+      const web = await passportForKeys(book as unknown as LotBookFile, lot, keys);
+      expect(web).toEqual(server);
+    }
+  });
+
+  it("reads the same book the web data copies", () => {
+    const copy = readJson<LotBook>("web/src/data/lot-book.json");
+    expect(copy).toEqual(book);
   });
 });

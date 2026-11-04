@@ -152,3 +152,80 @@ export async function checkPassport(
   }
   return { entries, chain };
 }
+
+// ------------------------------------------------------------------ building a passport here
+
+/** The lot book as web/src/data/lot-book.json holds it (a copy of data/lots/lot-book.json). */
+export interface LotBookDay {
+  plant: string;
+  date: string;
+  refId: string;
+  root: string;
+  prev: string | null;
+  leaves: PassportLeaf[];
+}
+export interface LotBookFile {
+  version: 1;
+  at: string;
+  contract: string | null;
+  anchors: Record<string, string>;
+  days: LotBookDay[];
+}
+
+export const loadLotBook = (): Promise<LotBookFile> =>
+  import("./data/lot-book.json").then((m) => m.default as unknown as LotBookFile);
+
+/** The path from leaf `index` to the root, pairing as server/src/lots/merkle.ts does. */
+export async function proofFor(leaves: string[], index: number): Promise<PassportStep[]> {
+  const steps: PassportStep[] = [];
+  let level = leaves;
+  let i = index;
+  while (level.length > 1) {
+    const sibling = level[i % 2 === 0 ? i + 1 : i - 1];
+    if (sibling !== undefined) steps.push({ sibling, side: i % 2 === 0 ? "right" : "left" });
+    const next: string[] = [];
+    for (let j = 0; j < level.length; j += 2) {
+      const left = level[j] as string;
+      const right = level[j + 1];
+      next.push(right === undefined ? left : await sha256Hex(`N${left}${right}`));
+    }
+    level = next;
+    i = Math.floor(i / 2);
+  }
+  return steps;
+}
+
+/**
+ * A passport for the records behind a set of keys ("receipt:<lot>", "qc:<lot>", "payment:<po>",
+ * "batch:<no>", "shipment:<no>"): each found leaf with its path to its day's root. Keys the book
+ * does not hold (a lot still in quarantine has no QC record yet) are left out.
+ */
+export async function passportForKeys(
+  book: LotBookFile,
+  lot: string,
+  keys: string[],
+): Promise<Passport> {
+  const where = new Map<string, { day: LotBookDay; i: number; leaf: PassportLeaf }>();
+  for (const day of book.days)
+    for (const [i, leaf] of day.leaves.entries())
+      where.set(`${leaf.kind}:${leaf.id}`, { day, i, leaf });
+  const hashes = new Map<string, string[]>();
+  const entries: PassportEntry[] = [];
+  for (const key of new Set(keys)) {
+    const at = where.get(key);
+    if (!at) continue;
+    let dayHashes = hashes.get(at.day.refId);
+    if (!dayHashes) {
+      dayHashes = await Promise.all(at.day.leaves.map(leafHash));
+      hashes.set(at.day.refId, dayHashes);
+    }
+    entries.push({
+      leaf: at.leaf,
+      refId: at.day.refId,
+      root: at.day.root,
+      proof: await proofFor(dayHashes, at.i),
+      anchoredTx: book.anchors[at.day.refId] ?? null,
+    });
+  }
+  return { version: 1, lot, contract: book.contract, entries };
+}

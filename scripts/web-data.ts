@@ -71,6 +71,9 @@ const PAGES = join(root, "web/src/data/pages.json");
 const REVIEW = join(root, "web/src/data/review.json");
 const ARENA = join(root, "web/src/data/arena.json");
 const GENEALOGY = join(root, "web/src/data/genealogy.json");
+// The lot book Kevin anchored (data/lots/lot-book.json, npm run lots), copied for the Lots page's
+// "Prove it": the browser builds a lot's passport from it and checks the roots on testnet.
+const LOT_BOOK = join(root, "web/src/data/lot-book.json");
 const ASK = join(root, "web/src/data/ask.json");
 const SUPPLIERS = join(root, "web/src/data/suppliers.json");
 const WORLD_EVENTS = join(root, "web/src/data/world");
@@ -570,6 +573,7 @@ const files: [string, string][] = [
   [REVIEW, `${JSON.stringify(review, null, 2)}\n`],
   [ARENA, `${JSON.stringify(arena, null, 2)}\n`],
   [GENEALOGY, `${JSON.stringify(lineage)}\n`],
+  [LOT_BOOK, readFileSync(join(root, "data/lots/lot-book.json"), "utf8")],
   [ASK, `${JSON.stringify(ask, null, 2)}\n`],
   [SUPPLIERS, `${JSON.stringify(suppliers)}\n`],
   ...worldEventFiles(worlds).map(
