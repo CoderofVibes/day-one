@@ -19,6 +19,8 @@ export interface LlmRequest {
   /** When set, the reply must be JSON matching this schema; `LlmResult.json` holds it. */
   schema?: { name: string; schema: Record<string, unknown> };
   maxTokens?: number;
+  /** Keep the raw response body in the receipt: a contract checks a signed decision against it. */
+  keepRaw?: boolean;
 }
 
 /** Proof of which TEE answered, kept for the attestation check (nearai only). */
@@ -26,6 +28,8 @@ export interface LlmReceipt {
   chatId: string;
   requestSha256: string;
   responseSha256: string;
+  /** The response body exactly as signed, when the request asked to keep it. */
+  rawResponse?: string;
 }
 
 export interface LlmResult {

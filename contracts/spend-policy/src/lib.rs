@@ -1530,7 +1530,7 @@ impl SpendPolicy {
                 "the decision was signed by {signer}, not an enclave key HQ attested."
             ));
         }
-        if !d.response.contains(&format!("APPROVE {po_hash}")) {
+        if !d.response.contains(&format!("APPROVE {po_hash}")) || d.response.contains("HOLD:") {
             return Err("the signed decision does not approve this PO.".into());
         }
         Ok(d.text.clone())

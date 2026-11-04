@@ -290,6 +290,16 @@ fn a_decision_from_another_key_a_different_response_or_another_po_is_refused() {
         "PO-2001: the signed decision does not approve this PO."
     );
 
+    let both = decision(
+        &enclave(),
+        &format!("APPROVE {} ... HOLD: on second thought, no", hash(1)),
+    );
+    let msg = panic_message(|| submit_with(&mut c, "PO-2001", 900, Some(both)));
+    assert_eq!(
+        msg,
+        "PO-2001: the signed decision does not approve this PO."
+    );
+
     let held = decision(&enclave(), "HOLD: the plan does not need it");
     let msg = panic_message(|| submit_with(&mut c, "PO-2001", 900, Some(held)));
     assert_eq!(

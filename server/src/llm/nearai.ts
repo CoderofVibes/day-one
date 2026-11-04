@@ -96,6 +96,7 @@ export class NearAiAdapter implements LlmAdapter {
         chatId: completion.id,
         requestSha256: sha256Hex(body),
         responseSha256: sha256Hex(raw),
+        ...(request.keepRaw && { rawResponse: raw }),
       },
     };
   }
