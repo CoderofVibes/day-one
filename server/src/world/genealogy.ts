@@ -153,6 +153,10 @@ export function mergeGenealogyTables(
   const added = new Set(newLots.map((l) => l.code));
   const newBatches = world.batches.filter((b) => !batchNos.has(b.batchNo));
   const addedBatches = new Set(newBatches.map((b) => b.batchNo));
+  // A world output or shipment can name a batch or lot the ledger has not posted yet (BR-B-1045
+  // and its lot at the start of a live run): it joins once the ledger holds them.
+  const anyBatch = new Set([...batchNos, ...addedBatches]);
+  const anyLot = new Set([...lotCodes, ...added]);
   return {
     lots: [...ledger.lots, ...newLots],
     received: [...ledger.received, ...world.received.filter((r) => added.has(r.lot))],
@@ -165,7 +169,10 @@ export function mergeGenealogyTables(
         a.batchNo.localeCompare(b.batchNo),
     ),
     inputs: [...ledger.inputs, ...world.inputs.filter((i) => addedBatches.has(i.batch))],
-    outputs: [...ledger.outputs, ...world.outputs],
-    shipments: [...ledger.shipments, ...world.shipments],
+    outputs: [
+      ...ledger.outputs,
+      ...world.outputs.filter((o) => anyBatch.has(o.batch) && anyLot.has(o.lot)),
+    ],
+    shipments: [...ledger.shipments, ...world.shipments.filter((x) => anyLot.has(x.lot))],
   };
 }

@@ -95,7 +95,7 @@ export function groupPurchase() {
   };
 }
 
-/** The fifteen recorded attacks: how many were refused, and each refused transaction. */
+/** The twenty recorded attacks: how many were refused, and each refused transaction. */
 export function attacks() {
   const cases = (arena as Arena).cases;
   return {

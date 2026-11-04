@@ -71,6 +71,48 @@ describe("outcome parsing", () => {
     expect(outcome.events.map((e) => e.event)).toEqual(["po_refused"]);
   });
 
+  it("reads a relayed call's status from the contract's own receipt, not the relayer's", () => {
+    // The shape testnet returned for a QC release relayed before the delivery was received
+    // (PO-T9501, Nov 3): the transaction succeeded, the contract's receipt panicked.
+    const relayed: RawOutcome = {
+      status: { SuccessValue: "" },
+      transaction_outcome: { id: "TxRelay", block_hash: "Block", outcome: { logs: [] } },
+      receipts_outcome: [
+        {
+          outcome: {
+            logs: [],
+            executor_id: "qc.plant-b.acme-holdings.testnet",
+            status: { SuccessValue: "" },
+          },
+        },
+        {
+          outcome: {
+            logs: [],
+            executor_id: "spend-policy.acme-holdings.testnet",
+            status: panic("PO-T9501 is Funded, not Received."),
+          },
+        },
+        {
+          outcome: {
+            logs: [],
+            executor_id: "dayone-relayer.testnet",
+            status: { SuccessValue: "" },
+          },
+        },
+      ],
+    };
+    const asRelayed = parseOutcome(relayed, 1, "spend-policy.acme-holdings.testnet");
+    expect(asRelayed.status).toBe("refused");
+    expect(asRelayed.errorMessage).toBe("PO-T9501 is Funded, not Received.");
+    // Read without the contract's name, the same outcome looks like a success: the old bug.
+    expect(parseOutcome(relayed, 1).status).toBe("success");
+    // A relayed call the contract accepted stays a success.
+    const ok = structuredClone(relayed);
+    const contractReceipt = ok.receipts_outcome[1];
+    if (contractReceipt) contractReceipt.outcome.status = { SuccessValue: "" };
+    expect(parseOutcome(ok, 1, "spend-policy.acme-holdings.testnet").status).toBe("success");
+  });
+
   it("calls anything else a failure", () => {
     const gas = {
       Failure: {

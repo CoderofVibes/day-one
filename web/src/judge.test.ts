@@ -59,7 +59,7 @@ describe("judge mode", () => {
     const titles = JUDGE_STEPS.map((s) => s.title);
     expect(JUDGE_STEPS).toHaveLength(11);
     expect(JUDGE_STEPS.slice(0, 3).map((s) => s.id)).toEqual(["takeover", "limits", "kevin"]);
-    expect(titles).toContain("15 of 15 attacks refused");
+    expect(titles).toContain("20 of 20 attacks refused");
     expect(titles).toContain("Group buy PO-G-2001, $9,490.00");
     expect(titles).toContain("7 of 7 reconciliation checks agree");
     expect(JUDGE_STEPS.find((s) => s.id === "books")?.body).toContain(
@@ -76,7 +76,7 @@ describe("judge mode", () => {
     expect(group.shares.map((s) => s.amount)).toEqual([4745, 4745]);
     expect(group.declined).toEqual(["Acme Lakeview"]);
     expect(group.released?.tx.startsWith("9XDEo3Dp")).toBe(true);
-    expect(attacks()).toMatchObject({ total: 15, refused: 15 });
+    expect(attacks()).toMatchObject({ total: 20, refused: 20 });
     expect(reconciliation().checks.filter((c) => c.ok)).toHaveLength(7);
     const books = JUDGE_STEPS.find((s) => s.id === "books");
     expect(books?.links).toHaveLength(5);

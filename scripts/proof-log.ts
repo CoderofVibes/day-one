@@ -50,9 +50,19 @@ if (argv.includes("--live")) {
             params: { tx_hash: t.hash, sender_account_id: t.sender, wait_until: "NONE" },
           }),
         });
-        const body = (await res.json()) as { result?: { status?: unknown } };
+        const body = (await res.json()) as {
+          result?: {
+            status?: unknown;
+            receipts_outcome?: { outcome: { executor_id: string; status: unknown } }[];
+          };
+        };
         if (body.result?.status) {
-          status = body.result.status;
+          // A relayed call succeeds as a transaction even when the contract refused it inside:
+          // the contract's own receipt holds the answer (server/src/chain/outcome.ts).
+          const inner = t.relayed
+            ? body.result.receipts_outcome?.find((r) => r.outcome.executor_id === t.receiver)
+            : undefined;
+          status = inner ? inner.outcome.status : body.result.status;
           break;
         }
       } catch {}

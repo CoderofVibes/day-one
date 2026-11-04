@@ -96,6 +96,6 @@ describe("the walkthrough", () => {
     expect(line("limits")).toContain("$2,500");
     expect(line("limits")).toContain("$60,000");
     expect(line("books")).not.toMatch(/batch records? (go|pass)/i);
-    expect(line("attacks")).toContain("15 attacks");
+    expect(line("attacks")).toContain("20 attacks");
   });
 });

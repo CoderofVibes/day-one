@@ -70,7 +70,7 @@ function refusalOf(r: AttackResult): string {
   return r.evidence.at(-1) ?? "";
 }
 
-/** The fifteen attacks, replayed by `npm run test:attacks` from their recordings. */
+/** The twenty attacks, replayed by `npm run test:attacks` from their recordings. */
 function attacks(root: string) {
   const out = execFileSync(
     process.execPath,

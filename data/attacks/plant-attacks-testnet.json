@@ -1,0 +1,339 @@
+{
+  "version": 1,
+  "network": "testnet",
+  "recordedAt": "2026-11-04T00:19:15.662Z",
+  "entries": [
+    {
+      "type": "call",
+      "request": {
+        "kind": "submit_po",
+        "signerId": "kevin.plant-b.acme-holdings.testnet",
+        "receiverId": "spend-policy.acme-holdings.testnet",
+        "method": "submit_po",
+        "args": {
+          "po_id": "PO-T9401",
+          "supplier": "northgate-ingredients.testnet",
+          "amount": "49700000000",
+          "category": "raw_material",
+          "po_hash": "6cc526cc03e0ba0f883e30e91b64585f9013649d717873e0336efca5b1995272"
+        },
+        "depositYocto": "0",
+        "viaRelayer": false
+      },
+      "outcome": {
+        "status": "refused",
+        "errorMessage": "Plant budget is short by $40,002.00.",
+        "returnValue": null,
+        "txHash": "a2MM74EhBanpaQeVvxNsGwNuhMcaxCEQKM3uKhaCNzg",
+        "events": [
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_refused",
+            "data": {
+              "po_id": "PO-T9401",
+              "agent": "kevin.plant-b.acme-holdings.testnet",
+              "supplier": "northgate-ingredients.testnet",
+              "amount": "49700000000",
+              "category": "raw_material",
+              "reason": "Plant budget is short by $40,002.00."
+            }
+          }
+        ],
+        "blockHeight": 276120904
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "submit_po",
+        "signerId": "kevin.plant-b.acme-holdings.testnet",
+        "receiverId": "spend-policy.acme-holdings.testnet",
+        "method": "submit_po",
+        "args": {
+          "po_id": "PO-T9502",
+          "supplier": "bayfront-labsupply.testnet",
+          "amount": "50000000",
+          "category": "lab_chemical",
+          "po_hash": "03cf6ca2b032ba3c27a1f80eb3f44ab04da407151481b0c8f0e77506b3bf94fb"
+        },
+        "depositYocto": "0",
+        "viaRelayer": false
+      },
+      "outcome": {
+        "status": "success",
+        "errorMessage": null,
+        "returnValue": {
+          "po_id": "PO-T9502",
+          "agent": "kevin.plant-b.acme-holdings.testnet",
+          "plant": "plant-b.acme-holdings.testnet",
+          "supplier": "bayfront-labsupply.testnet",
+          "amount": "50000000",
+          "category": "lab_chemical",
+          "po_hash": "03cf6ca2b032ba3c27a1f80eb3f44ab04da407151481b0c8f0e77506b3bf94fb",
+          "period": 202611,
+          "status": "Funded",
+          "approved_by": null,
+          "supplier_lot": null,
+          "funded_at": "1793751532112395025",
+          "accepted_at": null,
+          "shipped_at": null,
+          "received_at": null,
+          "released_at": null
+        },
+        "txHash": "D8W7aBDZ72QL2CCjgqqtwv5sb6Mxtx6siw8Hd87f6mew",
+        "events": [
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_authorized",
+            "data": {
+              "po_id": "PO-T9502",
+              "agent": "kevin.plant-b.acme-holdings.testnet",
+              "supplier": "bayfront-labsupply.testnet",
+              "amount": "50000000",
+              "category": "lab_chemical",
+              "po_hash": "03cf6ca2b032ba3c27a1f80eb3f44ab04da407151481b0c8f0e77506b3bf94fb",
+              "approved_by": null
+            }
+          },
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_funded",
+            "data": {
+              "po_id": "PO-T9502",
+              "amount": "50000000",
+              "budget": "9648000000",
+              "escrowed": "662000000"
+            }
+          }
+        ],
+        "blockHeight": 276120908
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "qc_release",
+        "signerId": "qc.plant-b.acme-holdings.testnet",
+        "receiverId": "spend-policy.acme-holdings.testnet",
+        "method": "qc_release",
+        "args": {
+          "po_id": "PO-T9502"
+        },
+        "depositYocto": "0",
+        "viaRelayer": true
+      },
+      "outcome": {
+        "status": "refused",
+        "errorMessage": "PO-T9502 is Funded, not Received.",
+        "returnValue": null,
+        "txHash": "6fPHG7SLFsZ2mbUiJoCD4ESE3LDjGNkJPmrDHpTfpwt3",
+        "events": [],
+        "blockHeight": 276120913
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "accept_po",
+        "signerId": "bayfront-labsupply.testnet",
+        "receiverId": "spend-policy.acme-holdings.testnet",
+        "method": "accept_po",
+        "args": {
+          "po_id": "PO-T9502"
+        },
+        "depositYocto": "0",
+        "viaRelayer": false
+      },
+      "outcome": {
+        "status": "success",
+        "errorMessage": null,
+        "returnValue": null,
+        "txHash": "FTd1NrJUyJy4tVf73CFfR7HcdZE9Mmtj2ZJQYFMGk1tk",
+        "events": [
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_accepted",
+            "data": {
+              "po_id": "PO-T9502",
+              "supplier": "bayfront-labsupply.testnet"
+            }
+          }
+        ],
+        "blockHeight": 276120918
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "mark_shipped",
+        "signerId": "bayfront-labsupply.testnet",
+        "receiverId": "spend-policy.acme-holdings.testnet",
+        "method": "mark_shipped",
+        "args": {
+          "po_id": "PO-T9502",
+          "supplier_lot": "BLS-BUF-2611-07"
+        },
+        "depositYocto": "0",
+        "viaRelayer": false
+      },
+      "outcome": {
+        "status": "success",
+        "errorMessage": null,
+        "returnValue": null,
+        "txHash": "FoyTpkU3NCJeeVeiBzy5CCgxhLrbGXWzTBidJDYoXNBB",
+        "events": [
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_shipped",
+            "data": {
+              "po_id": "PO-T9502",
+              "supplier_lot": "BLS-BUF-2611-07"
+            }
+          }
+        ],
+        "blockHeight": 276120922
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "confirm_receipt",
+        "signerId": "bayfront-labsupply.testnet",
+        "receiverId": "spend-policy.acme-holdings.testnet",
+        "method": "confirm_receipt",
+        "args": {
+          "po_id": "PO-T9502"
+        },
+        "depositYocto": "0",
+        "viaRelayer": false
+      },
+      "outcome": {
+        "status": "refused",
+        "errorMessage": "Only the plant's receiving lead can confirm delivery.",
+        "returnValue": null,
+        "txHash": "HitWRuwFXUSyhWnwVnJ8rGCuTMpfQszf7qA4ck8LxSrE",
+        "events": [],
+        "blockHeight": 276120926
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "qc_release",
+        "signerId": "bayfront-labsupply.testnet",
+        "receiverId": "spend-policy.acme-holdings.testnet",
+        "method": "qc_release",
+        "args": {
+          "po_id": "PO-T9502"
+        },
+        "depositYocto": "0",
+        "viaRelayer": false
+      },
+      "outcome": {
+        "status": "refused",
+        "errorMessage": "Only the plant's QC manager can release or reject a delivery.",
+        "returnValue": null,
+        "txHash": "3FjfpGxtBWF1UM5KyMczGfkRLne7zZ8tFN7VHF4q7qe9",
+        "events": [],
+        "blockHeight": 276120930
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "confirm_receipt",
+        "signerId": "receiving.plant-b.acme-holdings.testnet",
+        "receiverId": "spend-policy.acme-holdings.testnet",
+        "method": "confirm_receipt",
+        "args": {
+          "po_id": "PO-T9502"
+        },
+        "depositYocto": "0",
+        "viaRelayer": true
+      },
+      "outcome": {
+        "status": "success",
+        "errorMessage": null,
+        "returnValue": null,
+        "txHash": "8xgVw6VskgWYXRRKWfnxwnGkt3qMbgRndm9uTgoSCsRo",
+        "events": [
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_received",
+            "data": {
+              "po_id": "PO-T9502",
+              "by": "receiving.plant-b.acme-holdings.testnet"
+            }
+          }
+        ],
+        "blockHeight": 276120934
+      }
+    },
+    {
+      "type": "call",
+      "request": {
+        "kind": "qc_release",
+        "signerId": "qc.plant-b.acme-holdings.testnet",
+        "receiverId": "spend-policy.acme-holdings.testnet",
+        "method": "qc_release",
+        "args": {
+          "po_id": "PO-T9502"
+        },
+        "depositYocto": "0",
+        "viaRelayer": true
+      },
+      "outcome": {
+        "status": "success",
+        "errorMessage": null,
+        "returnValue": null,
+        "txHash": "3DVNKvgo43PLyH3ku6V5vsWm3uTboAWVFx1JtfpwLwx9",
+        "events": [
+          {
+            "standard": "nep141",
+            "version": "1.0.0",
+            "event": "ft_transfer",
+            "data": [
+              {
+                "old_owner_id": "spend-policy.acme-holdings.testnet",
+                "new_owner_id": "bayfront-labsupply.testnet",
+                "amount": "50000000",
+                "memo": "Day One PO-T9502"
+              }
+            ]
+          },
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "po_released",
+            "data": {
+              "po_id": "PO-T9502",
+              "by": "qc.plant-b.acme-holdings.testnet",
+              "supplier": "bayfront-labsupply.testnet",
+              "amount": "50000000"
+            }
+          },
+          {
+            "standard": "dayone_spend_policy",
+            "version": "1.0.0",
+            "event": "delivery_recorded",
+            "data": {
+              "supplier": "bayfront-labsupply.testnet",
+              "po_id": "PO-T9502",
+              "outcome": "Released",
+              "released": 2,
+              "rejected": 0,
+              "consecutive_rejects": 0
+            }
+          }
+        ],
+        "blockHeight": 276120940
+      }
+    }
+  ]
+}

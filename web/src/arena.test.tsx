@@ -54,9 +54,9 @@ describe("the attack arena", () => {
   });
 
   it("keeps the score of what the judge tried beside the suite's", () => {
-    expect(tallyLine(tally(arena.cases, new Set()))).toBe("Suite: 15 of 15");
+    expect(tallyLine(tally(arena.cases, new Set()))).toBe("Suite: 20 of 20");
     expect(tallyLine(tally(arena.cases, new Set([1, 2, 3, 4])))).toBe(
-      "Refused 4 of 4 you tried · Suite: 15 of 15",
+      "Refused 4 of 4 you tried · Suite: 20 of 20",
     );
     expect(shortHash("BKjdSJD49LVSpDYgo9LrMnbbCiNrs2wgz7GDt2suBRB7")).toBe("BKjdSJ…BRB7");
   });

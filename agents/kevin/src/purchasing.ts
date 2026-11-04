@@ -11,6 +11,7 @@ import { canonicalJson, sha256Hex } from "@day-one/server/canonical";
 import type { LoggedOutcome } from "@day-one/server/chain/client";
 import type { Ledger } from "@day-one/server/ledger/db";
 import {
+  facilities,
   materials,
   poLines,
   purchaseOrders,
@@ -29,6 +30,7 @@ import {
 import type { QuoteSpec } from "@day-one/server/seed/quotes";
 import { eq } from "drizzle-orm";
 import type { Forecast } from "./forecast.ts";
+import { ledgerPricePoints, type PricePoint, paidPriceBand, priceSpike } from "./planCheck.ts";
 
 const DAY_MS = 86_400_000;
 
@@ -266,6 +268,8 @@ export interface RankedQuote {
   leadTimeDays: number;
   landedUsdc: number;
   needsApproval: boolean;
+  /** Set when the price is far above the 12-month median paid (planCheck.ts). */
+  priceSpike: string | null;
   outcome: "selected" | "runner-up" | "declined" | "excluded";
   reason: string;
 }
@@ -280,8 +284,17 @@ export interface Ranking {
 /** A vendor's name as Kevin says it in a ranked line: "Northgate", "Ridgeway". */
 const shortName = (name: string) => name.split(" ")[0] ?? name;
 
-/** Ranks the RFQ's quotes as of `now` and writes each quote's status and exclusion reason. */
-export function rankQuotes(db: Ledger, rfq: Rfq, now: string): Ranking {
+/**
+ * Ranks the RFQ's quotes as of `now` and writes each quote's status and exclusion reason.
+ * `history` adds prices from the plant's own books (its twelve months before Day One) to the
+ * ledger's, for the price check.
+ */
+export function rankQuotes(
+  db: Ledger,
+  rfq: Rfq,
+  now: string,
+  history: readonly PricePoint[] = [],
+): Ranking {
   const material = db.select().from(materials).where(eq(materials.id, rfq.materialId)).get();
   if (!material) throw new Error(`${rfq.rfqNo}: unknown material`);
   const perUnit = baseUnitsPerUnit(material.dimension);
@@ -293,7 +306,17 @@ export function rankQuotes(db: Ledger, rfq: Rfq, now: string): Ranking {
     .innerJoin(vendors, eq(vendors.id, quotes.vendorId))
     .where(eq(quotes.rfqId, rfq.id))
     .all();
+  // A price far above what the plant has been paying goes to the director, under any limit.
+  const facility = db.select().from(facilities).where(eq(facilities.id, rfq.facilityId)).get();
+  const band = paidPriceBand(
+    [...ledgerPricePoints(db), ...history],
+    material.code,
+    facility?.code ?? "",
+    now,
+  );
+  const unitWord = material.dimension === "mass" ? "kg" : "each";
   const candidates: RankedQuote[] = rows.map(({ quote, vendor }) => {
+    const spike = priceSpike(quote.unitPriceUsdc, band, unitWord);
     const excluded =
       vendor.qualificationStatus === "unqualified" || vendor.qualificationStatus === "suspended"
         ? `vendor not ${vendor.qualificationStatus === "suspended" ? "active" : "qualified"}`
@@ -309,7 +332,8 @@ export function rankQuotes(db: Ledger, rfq: Rfq, now: string): Ranking {
       freightUsdc: quote.freightUsdc,
       leadTimeDays: quote.leadTimeDays,
       landedUsdc: extendedUsdc(rfq.qtyBase, quote.unitPriceUsdc, perUnit) + quote.freightUsdc,
-      needsApproval: vendor.qualificationStatus === "conditional",
+      needsApproval: vendor.qualificationStatus === "conditional" || spike !== null,
+      priceSpike: spike,
       outcome: excluded ? "excluded" : "declined",
       reason: excluded ?? "",
     };
@@ -321,9 +345,11 @@ export function rankQuotes(db: Ledger, rfq: Rfq, now: string): Ranking {
   const [first, second] = eligible;
   if (first) {
     first.outcome = "selected";
-    first.reason = first.needsApproval
-      ? "lowest landed cost; conditional vendor, needs director approval"
-      : "qualified, lowest landed cost, arrives before the need date";
+    first.reason = first.priceSpike
+      ? `lowest landed cost, but ${first.priceSpike}; needs director approval`
+      : first.needsApproval
+        ? "lowest landed cost; conditional vendor, needs director approval"
+        : "qualified, lowest landed cost, arrives before the need date";
   }
   if (second) {
     second.outcome = "runner-up";

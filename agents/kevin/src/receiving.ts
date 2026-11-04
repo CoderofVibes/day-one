@@ -90,7 +90,7 @@ function staffAccount(db: Ledger, staffId: number) {
   return { ...person, nearAccountId: person.nearAccountId };
 }
 
-function loadPoWithLines(db: Ledger, poNo: string) {
+export function loadPoWithLines(db: Ledger, poNo: string) {
   const row = db
     .select({ po: purchaseOrders, vendor: vendors })
     .from(purchaseOrders)

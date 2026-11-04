@@ -27,7 +27,7 @@ export interface ChainOutcome {
 export interface RawOutcome {
   status: unknown;
   transaction_outcome: { id: string; block_hash: string; outcome: { logs: string[] } };
-  receipts_outcome: { outcome: { logs: string[] } }[];
+  receipts_outcome: { outcome: { logs: string[]; executor_id?: string; status?: unknown } }[];
 }
 
 const EVENT_PREFIX = "EVENT_JSON:";
@@ -91,9 +91,23 @@ export function classify(status: unknown): Pick<ChainOutcome, "status" | "errorM
   };
 }
 
-export function parseOutcome(raw: RawOutcome, blockHeight: number | null = null): ChainOutcome {
+/**
+ * A relayed call (a delegate action) succeeds as a transaction even when the contract refuses
+ * the call inside it: the relayer's outer receipt is fine, the contract's receipt failed. For a
+ * relayed call, `relayedTo` names the contract, and its own receipt decides the status.
+ */
+export function parseOutcome(
+  raw: RawOutcome,
+  blockHeight: number | null = null,
+  relayedTo?: string,
+): ChainOutcome {
+  const outer = classify(raw.status);
+  const inner =
+    relayedTo && outer.status === "success"
+      ? raw.receipts_outcome.find((r) => r.outcome.executor_id === relayedTo)
+      : undefined;
   return {
-    ...classify(raw.status),
+    ...(inner ? classify(inner.outcome.status) : outer),
     txHash: raw.transaction_outcome.id,
     events: eventsOf(raw),
     blockHeight,

@@ -18,9 +18,9 @@ function runSuite(): SuiteAttack[] {
 }
 
 describe("the attack arena's catalog", () => {
-  it("is the fifteen cases of npm run test:attacks: names, hashes and reasons", () => {
+  it("is the twenty cases of npm run test:attacks: names, hashes and reasons", () => {
     const suite = runSuite();
-    expect(suite).toHaveLength(15);
+    expect(suite).toHaveLength(20);
     expect(arena.cases.map((c) => c.attack)).toEqual(suite.map((a) => a.attack));
     for (const [i, c] of arena.cases.entries()) {
       const a = suite[i] as SuiteAttack;
@@ -47,7 +47,8 @@ describe("the attack arena's catalog", () => {
   it("names the contract's refusal for every case with a transaction, and no hash for the rest", () => {
     for (const c of arena.cases) {
       if (c.refusedBy === "contract") {
-        const refused = c.txs.find((t) => t.status === "refused");
+        // A case with several refusals headlines one (ARENA_WORDS headline); each is refused.
+        const refused = c.txs.find((t) => t.status === "refused" && t.error === c.reason);
         expect(refused?.error, c.attack).toBe(c.reason);
         expect(c.method, c.attack).toBe(refused?.method);
         expect(c.signer, c.attack).toBe(refused?.signer);
@@ -62,6 +63,9 @@ describe("the attack arena's catalog", () => {
       "Hidden instructions in an invoice",
       "Duplicate invoice",
       "New bank details by email",
+      "Recalled lot written into a batch record",
+      "Price spike on a small reorder",
+      "Over-delivery on the packing slip",
     ]);
   });
 

@@ -197,6 +197,18 @@ export function flows(root: string): Flow[] {
       ],
     },
     {
+      title: "Attacks grounded in the plant",
+      claim:
+        "Kevin's key sends an order seven times what the plan can use and the contract refuses it on the plant's budget; a supplier holding its own key confirms its own delivery and releases its own payment, and QC releases before anything arrived. The contract refuses all three, and the receiving lead and QC manager then settle the order.",
+      replay: ["npm run test:attacks"],
+      notProved:
+        "The suite's other plant attacks (a recalled lot written into a batch record, a price spike, an over-delivery on the packing slip) are Kevin's own checks on the ledger and send no transaction.",
+      source: [],
+      calls: callsFrom(
+        readJson<{ entries: RawEntry[] }>(root, "data/attacks/plant-attacks-testnet.json").entries,
+      ),
+    },
+    {
       title: "Group purchase: PO-G-2001",
       claim:
         "Three plants pool their ascorbic acid demand into one pooled PO; each plant's share is checked against its own limits and approved by its own director, and the supplier is paid once.",
@@ -367,8 +379,16 @@ export function anchorOf(title: string): string {
 }
 
 /** Every recorded transaction with the account that sent it, for --live. */
-export function allTransactions(root: string): { hash: string; sender: string; ok: boolean }[] {
+export function allTransactions(
+  root: string,
+): { hash: string; sender: string; receiver: string; relayed: boolean; ok: boolean }[] {
   return flows(root).flatMap((f) =>
-    f.calls.map((c) => ({ hash: c.txHash, sender: c.paidBy, ok: c.ok })),
+    f.calls.map((c) => ({
+      hash: c.txHash,
+      sender: c.paidBy,
+      receiver: c.receiver,
+      relayed: c.paidBy !== c.signer,
+      ok: c.ok,
+    })),
   );
 }

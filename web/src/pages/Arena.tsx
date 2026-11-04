@@ -1,4 +1,4 @@
-// The attack arena (docs/UPGRADE_BRIEF.md §3.1), recorded mode: the fifteen cases of
+// The attack arena (docs/UPGRADE_BRIEF.md §3.1), recorded mode: the twenty cases of
 // `npm run test:attacks` down the left, the picked case in the middle with its timeline and
 // result, and on the right a log of the transactions fired this visit, styled like Behind the
 // curtain. A fired case replays its recorded refusal; the run, the ledger and the chain do not

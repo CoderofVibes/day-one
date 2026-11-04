@@ -2,8 +2,10 @@
 // trace left to right (raw lots → batches → finished-goods lots → shipments → customers) as a
 // graph or a list, and run the recall drill: a mock supplier recall notice for the ascorbic acid
 // lot that went into the most batches, traced in measured time. The drill is the page's own
-// overlay: holds, drafts and the anchor line vanish with "End drill", and the ledger never moves.
-// Staff words only; the anchor line shows behind the curtain alone, and it is simulated.
+// overlay: holds and drafts vanish with "End drill", and the ledger never moves. "Prove it"
+// (src/LotProofPanel.tsx) checks the records of the trace on screen against the lot book's roots
+// anchored on the contract, for real; ?prove=1 runs it as the page opens. Staff words only; the
+// day refs, roots and transactions show behind the curtain alone.
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { dollars, NumberCard, qty } from "../charts.tsx";
@@ -18,12 +20,11 @@ import {
   type NodeRef,
   runDrill,
   search,
-  sha256Hex,
   type Trace,
   type TraceNode,
   trace,
-  traceReport,
 } from "../genealogy.ts";
+import { ProvePanel, useLotProof } from "../LotProofPanel.tsx";
 import { type LotStateLook, lotState, ON_HOLD } from "../lotStates.ts";
 import { type Source, useRead } from "../series.ts";
 import type { PlantCode } from "../shell.tsx";
@@ -85,7 +86,6 @@ export function LotsView({
   const [shown, setShown] = useState(0);
   const [held, setHeld] = useState<Set<string>>(new Set());
   const [drafts, setDrafts] = useState(false);
-  const [anchor, setAnchor] = useState<string | null>(null);
 
   // A new plant opens on its own latest batch, unless a drill is running.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset on the plant only
@@ -99,6 +99,21 @@ export function LotsView({
   );
   const t = useMemo(() => (start ? trace(g, start) : null), [g, start]);
   const target = useMemo(() => drillLot(g), [g]);
+  const proof = useLotProof(g, t);
+
+  // ?prove=1 runs the check as the page opens (a link straight to the proved state).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: once, on open
+  useEffect(() => {
+    if (typeof location === "undefined") return;
+    if (new URLSearchParams(location.search).get("prove") === "1" && t) proof.prove();
+  }, []);
+  const proveTrace = () => {
+    proof.prove();
+    document.getElementById("prove")?.scrollIntoView({
+      behavior: reducedMotion() ? "auto" : "smooth",
+      block: "start",
+    });
+  };
 
   // The drill's steps appear one after another; the times shown are the ones measured.
   useEffect(() => {
@@ -131,18 +146,13 @@ export function LotsView({
     setPicked(`lot:${report.lot}`);
     setHeld(new Set());
     setDrafts(false);
-    setAnchor(null);
   };
   const endDrill = () => {
     setDrill(null);
     setHeld(new Set());
     setDrafts(false);
-    setAnchor(null);
     setStart(before ?? firstStart(g, plant));
     setPicked(null);
-  };
-  const anchorTrace = () => {
-    if (drill) setAnchor(sha256Hex(traceReport(drill)));
   };
   const lookOf = (lot: string): LotStateLook =>
     held.has(lot) ? ON_HOLD : lotState(g.lots[lot]?.state);
@@ -233,11 +243,10 @@ export function LotsView({
             shown={shown}
             held={held}
             drafts={drafts}
-            anchor={anchor}
-            curtain={curtain}
+            proving={proof.state.phase !== "idle"}
             onHold={() => setHeld(new Set(drill.hold.map((h) => h.lot)))}
             onDrafts={() => setDrafts(true)}
-            onAnchor={anchorTrace}
+            onProve={proveTrace}
           />
         )}
       </section>
@@ -272,6 +281,8 @@ export function LotsView({
           <NodePanel g={g} nodeKey={picked ?? t.start} lookOf={lookOf} />
         </div>
       )}
+
+      {t && start && <ProvePanel g={g} curtain={curtain} proof={proof} traceOf={start.id} />}
 
       <section className="cards-4 tiles-compact lots-coverage" aria-label="Coverage">
         <NumberCard label="Lots" value={lotCount.toLocaleString("en-US")}>
@@ -762,22 +773,21 @@ function DrillPanel({
   shown,
   held,
   drafts,
-  anchor,
-  curtain,
+  proving,
   onHold,
   onDrafts,
-  onAnchor,
+  onProve,
 }: {
   drill: DrillReport;
   g: Genealogy;
   shown: number;
   held: Set<string>;
   drafts: boolean;
-  anchor: string | null;
-  curtain: boolean;
+  /** The trace's proof has started or finished below. */
+  proving: boolean;
   onHold: () => void;
   onDrafts: () => void;
-  onAnchor: () => void;
+  onProve: () => void;
 }) {
   const done = shown >= drill.steps.length;
   const customers = drill.trace.customers;
@@ -875,16 +885,9 @@ function DrillPanel({
             >
               Draft customer notices
             </button>
-            {curtain && (
-              <button
-                type="button"
-                className="btn sm"
-                onClick={onAnchor}
-                disabled={Boolean(anchor)}
-              >
-                Anchor the trace
-              </button>
-            )}
+            <button type="button" className="btn sm" onClick={onProve} disabled={proving}>
+              {proving ? "Trace proved below" : "Prove this trace"}
+            </button>
           </div>
           {!drill.hold.length && (
             <p className="small muted">Nothing to hold: the lot was used up.</p>
@@ -918,7 +921,6 @@ function DrillPanel({
               ))}
             </div>
           )}
-          {curtain && anchor && <p className="anchor-line">Simulated · would anchor {anchor}</p>}
         </section>
       )}
     </div>

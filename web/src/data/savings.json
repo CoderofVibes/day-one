@@ -488,33 +488,33 @@
   "answers": [
     {
       "file": "data/replay/ask-llm.json",
-      "inputTokens": 1721,
-      "outputTokens": 100
-    },
-    {
-      "file": "data/replay/ask-llm.json",
-      "inputTokens": 2061,
-      "outputTokens": 39
+      "inputTokens": 612,
+      "outputTokens": 176
     },
     {
       "file": "data/replay/ask-llm.json",
       "inputTokens": 1000,
-      "outputTokens": 105
-    },
-    {
-      "file": "data/replay/ask-llm.json",
-      "inputTokens": 477,
-      "outputTokens": 187
-    },
-    {
-      "file": "data/replay/ask-llm.json",
-      "inputTokens": 794,
-      "outputTokens": 102
+      "outputTokens": 117
     },
     {
       "file": "data/replay/ask-llm.json",
       "inputTokens": 1569,
-      "outputTokens": 114
+      "outputTokens": 27
+    },
+    {
+      "file": "data/replay/ask-llm.json",
+      "inputTokens": 922,
+      "outputTokens": 80
+    },
+    {
+      "file": "data/replay/ask-llm.json",
+      "inputTokens": 2099,
+      "outputTokens": 189
+    },
+    {
+      "file": "data/replay/ask-llm.json",
+      "inputTokens": 1794,
+      "outputTokens": 137
     },
     {
       "file": "data/replay/attacks-llm.json",

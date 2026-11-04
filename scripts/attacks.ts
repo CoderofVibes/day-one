@@ -1,8 +1,11 @@
-// npm run test:attacks — fifteen attacks on Kevin, each shown failing: seven in
+// npm run test:attacks — twenty attacks on Kevin, each shown failing: seven in
 // agents/kevin/src/attacks.ts, four on supplier credentials in credential-attacks.ts, the
 // three sealed-bid attacks of agents/kevin/src/sealedRound.ts, and the "new bank details"
 // email read by Kevin's morning review (emailRedirectAttack, from the recording of
-// `npm run review -- --live --record`).
+// `npm run review -- --live --record`), and five attacks grounded in the plant
+// (agents/kevin/src/plantAttacks.ts: over-order, recalled lot, the supplier settling its own
+// order, price spike, over-delivery), two of them from data/attacks/plant-attacks-testnet.json.
+//   --record-plant  run the plant attacks' chain calls live on testnet and rewrite their fixture
 // Replays the recorded testnet calls and model answers by default: no keys, no network.
 // The credential attacks replay their testnet run (data/attacks/credentials-testnet.json,
 // written by `npm run record:credentials`) and the sealed-bid attacks the testnet round of
@@ -27,17 +30,21 @@ import {
   type SetupStep,
 } from "../agents/kevin/src/credential-attacks.ts";
 import { forecastMaterial } from "../agents/kevin/src/forecast.ts";
+import { bookPricePoints } from "../agents/kevin/src/planCheck.ts";
+import { runPlantAttacks } from "../agents/kevin/src/plantAttacks.ts";
 import { openSealedEnv } from "../agents/kevin/src/sealedEnv.ts";
 import { runSealedRound, sealedAttacks } from "../agents/kevin/src/sealedRound.ts";
-import { confirmBr1045 } from "../agents/kevin/src/test/br-b-1045.ts";
+import { BR_1045_EXTRACTION, confirmBr1045 } from "../agents/kevin/src/test/br-b-1045.ts";
 import { ChainClient, explorerUrl } from "../server/src/chain/client.ts";
 import { LiveTransport } from "../server/src/chain/live.ts";
 import { type Fixture, RecordingTransport, ReplayTransport } from "../server/src/chain/replay.ts";
 import { rebuildErp } from "../server/src/erp-connector/rebuild.ts";
 import { openLedger } from "../server/src/ledger/db.ts";
 import { createLlm, RecordingLlm, ReplayLlm } from "../server/src/llm/client.ts";
+import { plantBStaff } from "../server/src/relayer/relayer.ts";
 import { seedLedger } from "../server/src/seed/index.ts";
 import { MAILBOX } from "../server/src/seed/mailbox.ts";
+import { readWorlds } from "../server/src/world/files.ts";
 
 const root = resolve(import.meta.dirname, "..");
 const args = process.argv.slice(2);
@@ -180,6 +187,40 @@ results.push(
     NOW,
   ),
 );
+
+// 16–18, 20, 21. Attacks grounded in the plant (agents/kevin/src/plantAttacks.ts): their two
+// chain attacks replay data/attacks/plant-attacks-testnet.json; --record-plant runs them live
+// (Kevin's and the supplier's keys, the relayer for Tommy and Priya) and rewrites it.
+const PLANT_FIXTURE = join(root, "data/attacks/plant-attacks-testnet.json");
+const recordPlant = args.includes("--record-plant");
+let plantTransport: RecordingTransport | ReplayTransport;
+if (recordPlant) {
+  if (existsSync(join(root, ".env"))) process.loadEnvFile(join(root, ".env"));
+  plantTransport = new RecordingTransport(
+    new LiveTransport("testnet", undefined, undefined, {
+      relayerId: "dayone-relayer.testnet",
+      policyContract: ACCOUNTS.spendPolicy,
+      staffMethods: plantBStaff(ACCOUNTS.root),
+    }),
+  );
+} else {
+  plantTransport = ReplayTransport.fromFile(PLANT_FIXTURE);
+}
+results.push(
+  ...(await runPlantAttacks({
+    db,
+    chain: new ChainClient(db, plantTransport, () => NOW),
+    kevin: KEVIN,
+    policyContract: ACCOUNTS.spendPolicy,
+    forecast,
+    signingKey,
+    batchRecord: BR_1045_EXTRACTION,
+    priceHistory: bookPricePoints(readWorlds(root)),
+    now: NOW,
+  })),
+);
+if (plantTransport instanceof RecordingTransport) plantTransport.save(PLANT_FIXTURE);
+else plantTransport.assertDone();
 
 const held = results.filter((r) => r.held).length;
 console.log(`Attack suite (${record ? "live on testnet" : "replay of recorded testnet run"})`);

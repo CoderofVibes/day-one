@@ -84,7 +84,7 @@ export class LiveTransport implements ChainTransport {
       })) as unknown as RawOutcome;
     }
     const block = await this.provider.viewBlock({ blockId: raw.transaction_outcome.block_hash });
-    return parseOutcome(raw, block.header.height);
+    return parseOutcome(raw, block.header.height, call.viaRelayer ? call.receiverId : undefined);
   }
 
   view({ contractId, method, args = {} }: ChainView): Promise<unknown> {

@@ -79,7 +79,7 @@ describe("fact cards", () => {
     expect(po).toContain("lot ASC-261116-01");
     expect(cards.find((c) => c.id === "PO-G-2001")?.facts.join(" ")).toContain("$9,490.00");
     expect(cards.find((c) => c.id === "Attack suite")?.facts[0]).toBe(
-      "15 attempted abuses were tried; 15 were refused.",
+      "20 attempted abuses were tried; 20 were refused.",
     );
     expect(cards.find((c) => c.id === "Reconciliation")?.facts[0]).toMatch(/^7 of 7 checks agree/);
   });

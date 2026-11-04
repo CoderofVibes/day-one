@@ -15,7 +15,7 @@ describe("the six proof points", () => {
 
   it("say what the brief promises", () => {
     const p = JSON.parse(frozen);
-    expect([p.attacks.refused, p.attacks.total]).toEqual([15, 15]);
+    expect([p.attacks.refused, p.attacks.total]).toEqual([20, 20]);
     expect([p.po1042.amountUsd, p.po1042.perPoLimitUsd]).toEqual(["5150.00", "2500.00"]);
     expect(p.po1042.approver.name).toBe("Linda Park");
     expect(p.po1042.releasedLot).toBe("ASC-261116-01");
