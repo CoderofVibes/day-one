@@ -127,6 +127,8 @@ fn submit(c: &mut SpendPolicy, po: &str, supplier: AccountId, dollars: u128, cat
         U128(dollars * DOLLAR),
         category.into(),
         hash(1),
+        None,
+        None,
     );
 }
 
@@ -168,7 +170,7 @@ fn deliver(c: &mut SpendPolicy, po: &str, supplier: &AccountId) {
     c.accept_po(po.into());
     c.mark_shipped(po.into(), "NG-24-8812".into());
     as_(&receiving());
-    c.confirm_receipt(po.into());
+    c.confirm_receipt(po.into(), None, None, None);
 }
 
 // ---------------------------------------------------------------------- budget and funding
@@ -288,6 +290,8 @@ fn spending_resets_in_a_new_month() {
         U128(1_500 * DOLLAR),
         "lab_chemical".into(),
         hash(1),
+        None,
+        None,
     );
     assert_eq!(
         c.get_category_spent("lab_chemical".into(), Some(202612)).0,
@@ -406,6 +410,8 @@ fn only_registered_agents_submit() {
             U128(DOLLAR),
             "lab_chemical".into(),
             hash(1),
+            None,
+            None,
         );
     });
     assert_eq!(msg, "Only a registered purchasing agent can submit POs.");
@@ -497,6 +503,8 @@ fn retry_that_differs_from_the_approval_is_refused() {
             U128(5_150 * DOLLAR),
             "raw_material".into(),
             hash(2),
+            None,
+            None,
         );
     });
     assert_eq!(msg, "PO-1042 does not match what the director approved.");
@@ -514,6 +522,8 @@ fn expired_approval_is_refused() {
             U128(5_150 * DOLLAR),
             "raw_material".into(),
             hash(1),
+            None,
+            None,
         );
     });
     assert_eq!(
@@ -619,10 +629,10 @@ fn only_the_receiving_lead_confirms_delivery() {
     c.accept_po("PO-1041".into());
     c.mark_shipped("PO-1041".into(), "BLS-1".into());
     as_(&qc());
-    let msg = panic_message(|| c.confirm_receipt("PO-1041".into()));
+    let msg = panic_message(|| c.confirm_receipt("PO-1041".into(), None, None, None));
     assert_eq!(msg, "Only the plant's receiving lead can confirm delivery.");
     call_as(&receiving(), &relayer(), DEMO_NS, 0);
-    c.confirm_receipt("PO-1041".into());
+    c.confirm_receipt("PO-1041".into(), None, None, None);
     assert_eq!(
         c.get_po("PO-1041".into()).unwrap().status,
         PoStatus::Received
@@ -866,3 +876,5 @@ fn anchor_batch_takes_up_to_fifty() {
 }
 
 mod credentials;
+/// Pay for what reached stock and enclave-signed decisions (tests/settlement.rs).
+mod settlement;

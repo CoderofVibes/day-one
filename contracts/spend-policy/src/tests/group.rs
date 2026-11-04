@@ -633,6 +633,8 @@ fn a_plants_monthly_limit_counts_its_pooled_shares() {
         U128(10_000 * DOLLAR),
         "raw_material".into(),
         hash(1),
+        None,
+        None,
     );
     as_owner();
     c.set_agent_policy(
@@ -775,6 +777,8 @@ fn a_pool_takes_one_po_and_then_no_more_pledges() {
             U128(DOLLAR),
             "raw_material".into(),
             hash(1),
+            None,
+            None,
         );
     });
     assert_eq!(msg, "PO-G-2001 was already submitted.");

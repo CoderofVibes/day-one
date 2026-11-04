@@ -5,6 +5,7 @@
 //! Every access check uses `predecessor_account_id`, never the signer, so relayed
 //! meta-transactions (signer = relayer) are judged by the account that asked.
 
+mod attest;
 mod credentials;
 mod events;
 mod sealed;
@@ -61,6 +62,8 @@ pub struct AgentPolicy {
     pub categories: Vec<String>,
     pub approver: AccountId,
     pub active: bool,
+    /// POs above this amount need a decision signed by an attested enclave key (§11 F).
+    pub signed_above: Option<U128>,
 }
 
 /// A supplier Kevin may pay. Conditional suppliers always need the director's approval;
@@ -123,6 +126,38 @@ pub struct PoRecord {
     pub shipped_at: Option<U64>,
     pub received_at: Option<U64>,
     pub released_at: Option<U64>,
+    /// The ordered quantity in base units (mg or each), when the PO settles by receipt (§11 E).
+    pub qty: Option<U64>,
+    /// What the receiving lead counted into stock.
+    pub received_qty: Option<U64>,
+    /// The ledger receipt's fingerprint and the plant lots it posted.
+    pub receipt_hash: Option<String>,
+    pub lots: Vec<String>,
+    pub invoice: Option<InvoiceRecord>,
+    /// What the contract paid the supplier, once released.
+    pub paid: Option<U128>,
+    /// The enclave-signed decision text that came with the PO (§11 F).
+    pub decision: Option<String>,
+}
+
+/// The supplier's invoice as the agent recorded it (§11 E).
+#[near(serializers = [borsh, json])]
+#[derive(Clone, Debug, PartialEq)]
+pub struct InvoiceRecord {
+    pub invoice_hash: String,
+    pub amount: U128,
+    pub by: AccountId,
+    pub at: U64,
+}
+
+/// An answer signed inside NEAR AI Cloud's TEE (§11 F): the signed text
+/// `<model>:<sha256 request>:<sha256 response>`, its 65-byte signature in hex, and the response.
+#[near(serializers = [json])]
+#[derive(Clone, Debug)]
+pub struct SignedDecision {
+    pub text: String,
+    pub signature: String,
+    pub response: String,
 }
 
 #[near(serializers = [borsh, json])]
@@ -262,6 +297,8 @@ pub struct SpendPolicy {
     po_ids: Vector<String>,
     anchors: LookupMap<String, Anchor>,
     suppliers: LookupMap<AccountId, SupplierStatus>,
+    /// Enclave signing addresses HQ verified off chain ("0x…", lower case) (§11 F).
+    attested: Vec<String>,
 }
 
 fn spend_key(who: &str, period: u32) -> String {
@@ -294,10 +331,45 @@ impl SpendPolicy {
             po_ids: Vector::new(StorageKey::PoIds),
             anchors: LookupMap::new(StorageKey::Anchors),
             suppliers: LookupMap::new(StorageKey::Suppliers),
+            attested: Vec::new(),
         }
     }
 
     // ------------------------------------------------------------------ owner configuration
+
+    /// HQ registers (or retires) an enclave signing address it verified off chain (§11 F).
+    #[payable]
+    pub fn set_attested_signer(&mut self, address: String, active: bool) {
+        self.require_owner();
+        let address = address.to_lowercase();
+        require!(
+            address.len() == 42
+                && address.starts_with("0x")
+                && attest::from_hex(&address).is_some(),
+            "A signing address is 0x and 40 hex characters."
+        );
+        self.attested.retain(|a| a != &address);
+        if active {
+            self.attested.push(address.clone());
+        }
+        Event::AttestedSignerSet { address, active }.emit();
+    }
+
+    pub fn get_attested_signers(&self) -> Vec<String> {
+        self.attested.clone()
+    }
+
+    /// HQ sets the amount above which an agent's POs need an enclave-signed decision (§11 F).
+    #[payable]
+    pub fn set_signed_decision_threshold(&mut self, agent: AccountId, above: Option<U128>) {
+        self.require_owner();
+        let policy = match self.agents.get_mut(&agent) {
+            Some(p) => p,
+            None => env::panic_str("No such agent."),
+        };
+        policy.signed_above = above;
+        Event::SignedThresholdSet { agent, above }.emit();
+    }
 
     #[payable]
     pub fn set_roles(&mut self, plant: AccountId, receiver: AccountId, qc: AccountId) {
@@ -331,13 +403,14 @@ impl SpendPolicy {
     ) {
         self.require_owner();
         require!(approver != agent, "An agent cannot approve its own POs.");
-        let active = match self.agents.get(&agent) {
+        let (active, signed_above) = match self.agents.get(&agent) {
             Some(old) => {
-                let (old_approver, was_active) = (old.approver.clone(), old.active);
+                let (old_approver, was_active, above) =
+                    (old.approver.clone(), old.active, old.signed_above);
                 self.drop_approver(&old_approver);
-                was_active
+                (was_active, above)
             }
-            None => true,
+            None => (true, None),
         };
         *self.approvers.entry(approver.clone()).or_insert(0) += 1;
         self.agents.insert(
@@ -350,6 +423,7 @@ impl SpendPolicy {
                 categories: categories.clone(),
                 approver: approver.clone(),
                 active,
+                signed_above,
             },
         );
         Event::AgentPolicySet {
@@ -441,6 +515,7 @@ impl SpendPolicy {
 
     /// Authorizes and escrows a PO if it is within the agent's limits or matches a director's
     /// approval. Otherwise logs `po_refused` and panics with a reason staff can read.
+    #[allow(clippy::too_many_arguments)]
     pub fn submit_po(
         &mut self,
         po_id: String,
@@ -448,6 +523,8 @@ impl SpendPolicy {
         amount: U128,
         category: String,
         po_hash: String,
+        qty: Option<U64>,
+        decision: Option<SignedDecision>,
     ) -> PoRecord {
         let agent = env::predecessor_account_id();
         let policy = match self.agents.get(&agent) {
@@ -490,6 +567,25 @@ impl SpendPolicy {
                 "Plant budget is short by {}.",
                 usd(amount.0 - self.budget)
             ));
+        }
+        if qty.map(|q| q.0 == 0).unwrap_or(false) {
+            refuse(format!("{po_id}: an ordered quantity cannot be zero."));
+        }
+        // §11 F: a decision signed in the enclave, required above the policy's threshold.
+        let decision_text = match &decision {
+            Some(d) => match self.check_decision(d, &po_hash) {
+                Ok(text) => Some(text),
+                Err(reason) => refuse(format!("{po_id}: {reason}")),
+            },
+            None => None,
+        };
+        if let Some(above) = policy.signed_above {
+            if amount.0 > above.0 && decision_text.is_none() {
+                refuse(format!(
+                    "{po_id}: over {}, {name}'s decision must be signed in the enclave, and none came with it.",
+                    usd(above.0)
+                ));
+            }
         }
 
         let now = env::block_timestamp();
@@ -577,6 +673,13 @@ impl SpendPolicy {
             shipped_at: None,
             received_at: None,
             released_at: None,
+            qty,
+            received_qty: None,
+            receipt_hash: None,
+            lots: Vec::new(),
+            invoice: None,
+            paid: None,
+            decision: decision_text,
         };
         self.pos.insert(po_id.clone(), record.clone());
         self.po_ids.push(po_id.clone());
@@ -696,7 +799,15 @@ impl SpendPolicy {
         .emit();
     }
 
-    pub fn confirm_receipt(&mut self, po_id: String) {
+    /// The receiving lead confirms delivery. A PO that settles by receipt (§11 E) needs the
+    /// quantity counted into stock: not zero, and not more than was ordered.
+    pub fn confirm_receipt(
+        &mut self,
+        po_id: String,
+        received_qty: Option<U64>,
+        receipt_hash: Option<String>,
+        lots: Option<Vec<String>>,
+    ) {
         let mut po = self.po(&po_id);
         let by = env::predecessor_account_id();
         require!(
@@ -704,10 +815,77 @@ impl SpendPolicy {
             "Only the plant's receiving lead can confirm delivery."
         );
         Self::require_status(&po, PoStatus::Shipped);
+        if let Some(ordered) = po.qty {
+            let counted = match received_qty {
+                Some(q) => q.0,
+                None => env::panic_str(&format!(
+                    "{po_id} settles by what reached stock: say how much was received."
+                )),
+            };
+            require!(
+                counted > 0,
+                "Nothing received: reject the delivery instead."
+            );
+            if counted > ordered.0 {
+                env::panic_str(&format!(
+                    "{po_id}: {counted} received is more than the {} ordered; the extra is not this PO's.",
+                    ordered.0
+                ));
+            }
+        }
+        if let Some(h) = &receipt_hash {
+            require!(is_hash(h), "A fingerprint is 64 lowercase hex characters.");
+        }
+        let lots = lots.unwrap_or_default();
+        require!(lots.len() <= 20, "At most 20 lots on one receipt.");
         po.status = PoStatus::Received;
         po.received_at = Some(U64(env::block_timestamp()));
+        po.received_qty = received_qty;
+        po.receipt_hash = receipt_hash;
+        po.lots = lots;
         self.pos.insert(po_id.clone(), po);
         Event::PoReceived { po_id, by }.emit();
+    }
+
+    /// The PO's agent records the supplier's invoice, once, after the PO ships (§11 E). The
+    /// release pays no more than it.
+    pub fn record_invoice(&mut self, po_id: String, invoice_hash: String, amount: U128) {
+        let mut po = self.po(&po_id);
+        let by = env::predecessor_account_id();
+        require!(
+            by == po.agent,
+            "Only the PO's purchasing agent can record its invoice."
+        );
+        require!(
+            Self::pool_lines().get(&po_id).is_none(),
+            "A pooled PO settles by its shares; it takes no invoice in this version."
+        );
+        require!(
+            matches!(po.status, PoStatus::Shipped | PoStatus::Received),
+            "An invoice is recorded once the PO has shipped."
+        );
+        if po.invoice.is_some() {
+            env::panic_str(&format!("{po_id} already has an invoice recorded."));
+        }
+        require!(
+            is_hash(&invoice_hash),
+            "A fingerprint is 64 lowercase hex characters."
+        );
+        require!(amount.0 > 0, "An invoice amount cannot be zero.");
+        po.invoice = Some(InvoiceRecord {
+            invoice_hash: invoice_hash.clone(),
+            amount,
+            by: by.clone(),
+            at: U64(env::block_timestamp()),
+        });
+        self.pos.insert(po_id.clone(), po);
+        Event::InvoiceRecorded {
+            po_id,
+            invoice_hash,
+            amount,
+            by,
+        }
+        .emit();
     }
 
     /// QC releases the lot: the escrowed amount is paid to the supplier.
@@ -716,7 +894,8 @@ impl SpendPolicy {
         self.require_qc(&po);
         Self::require_status(&po, PoStatus::Received);
         po.status = PoStatus::Paying;
-        let (supplier, amount) = (po.supplier.clone(), po.amount);
+        let supplier = po.supplier.clone();
+        let amount = U128(Self::settlement(&po).0);
         self.pos.insert(po_id.clone(), po);
         ext_ft::ext(self.token.clone())
             .with_attached_deposit(NearToken::from_yoctonear(1))
@@ -734,14 +913,28 @@ impl SpendPolicy {
         let mut po = self.po(&po_id);
         let ok = env::promise_result_checked(0, 64).is_ok();
         if ok {
+            let (paid, why) = Self::settlement(&po);
             po.status = PoStatus::Released;
             po.released_at = Some(U64(env::block_timestamp()));
+            po.paid = Some(U128(paid));
+            // The whole escrow leaves escrow: the paid part to the supplier, the rest to the budget.
             self.escrowed -= po.amount.0;
+            let returned = po.amount.0 - paid;
+            if returned > 0 {
+                self.return_part(&po, returned);
+                Event::SettlementAdjusted {
+                    po_id: po_id.clone(),
+                    paid: U128(paid),
+                    returned: U128(returned),
+                    reason: why,
+                }
+                .emit();
+            }
             Event::PoReleased {
                 po_id: po_id.clone(),
                 by,
                 supplier: po.supplier.clone(),
-                amount: po.amount,
+                amount: U128(paid),
             }
             .emit();
             self.record_delivery(&po.supplier, &po_id, DeliveryOutcome::Released);
@@ -1009,6 +1202,13 @@ impl SpendPolicy {
             shipped_at: None,
             received_at: None,
             released_at: None,
+            qty: None,
+            received_qty: None,
+            receipt_hash: None,
+            lots: Vec::new(),
+            invoice: None,
+            paid: None,
+            decision: None,
         };
         self.pos.insert(po_id.clone(), record.clone());
         self.po_ids.push(po_id.clone());
@@ -1266,6 +1466,76 @@ impl SpendPolicy {
 
     /// Escrow back to budget, and the PO no longer counts against its month's limits. A pooled
     /// PO was charged to each plant's agent by share; a plain PO to its agent in full.
+    /// What a release pays (§11 E): the escrow, pro rata to what reached stock when the PO
+    /// settles by receipt, and no more than the recorded invoice; with the reason when it is
+    /// less than the escrow.
+    fn settlement(po: &PoRecord) -> (u128, String) {
+        let mut pay = po.amount.0;
+        let mut why = String::new();
+        if let (Some(ordered), Some(counted)) = (po.qty, po.received_qty) {
+            if counted.0 < ordered.0 {
+                pay = po.amount.0 * counted.0 as u128 / ordered.0 as u128;
+                why = format!("{} of {} received; paid pro rata", counted.0, ordered.0);
+            }
+        }
+        if let Some(inv) = &po.invoice {
+            if inv.amount.0 < pay {
+                pay = inv.amount.0;
+                why = format!("the invoice asks only {}", usd(pay));
+            }
+        }
+        (pay, why)
+    }
+
+    /// Returns part of a released PO's escrow to the budget and to the agent's and category's
+    /// spend for its month (never a pooled PO: those take no quantity or invoice).
+    fn return_part(&mut self, po: &PoRecord, part: u128) {
+        self.budget += part;
+        let agent_key = spend_key(po.agent.as_str(), po.period);
+        let agent_spent = self.spent(&agent_key, true).saturating_sub(part);
+        self.spent_agent.insert(agent_key, agent_spent);
+        let category_key = spend_key(&po.category, po.period);
+        let category_spent = self.spent(&category_key, false).saturating_sub(part);
+        self.spent_category.insert(category_key, category_spent);
+    }
+
+    /// §11 F: the decision's text recovers to an attested signer, its response hashes to the
+    /// text's response hash, and the response approves this PO. Returns the signed text.
+    fn check_decision(&self, d: &SignedDecision, po_hash: &str) -> Result<String, String> {
+        let mut parts = d.text.rsplitn(3, ':');
+        let response_hash = parts.next().unwrap_or_default();
+        let request_hash = parts.next().unwrap_or_default();
+        let model = parts.next().unwrap_or_default();
+        if model.is_empty() || !is_hash(request_hash) || !is_hash(response_hash) {
+            return Err("the signed decision is not a model:request:response text.".into());
+        }
+        let sha = env::sha256_array(d.response.as_bytes());
+        let mut hex = String::with_capacity(64);
+        for b in sha {
+            hex.push_str(&format!("{b:02x}"));
+        }
+        if hex != response_hash {
+            return Err("the signed decision does not match the response sent with it.".into());
+        }
+        let signature = match attest::from_hex(&d.signature) {
+            Some(sig) => sig,
+            None => return Err("the decision's signature is not hex.".into()),
+        };
+        let signer = match attest::signer_of(&d.text, &signature) {
+            Some(address) => attest::address_hex(&address),
+            None => return Err("the decision's signature recovers to no key.".into()),
+        };
+        if !self.attested.contains(&signer) {
+            return Err(format!(
+                "the decision was signed by {signer}, not an enclave key HQ attested."
+            ));
+        }
+        if !d.response.contains(&format!("APPROVE {po_hash}")) {
+            return Err("the signed decision does not approve this PO.".into());
+        }
+        Ok(d.text.clone())
+    }
+
     fn refund(&mut self, po: &PoRecord) {
         self.escrowed -= po.amount.0;
         self.budget += po.amount.0;

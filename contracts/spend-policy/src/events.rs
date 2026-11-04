@@ -92,6 +92,27 @@ pub enum Event {
     #[event_version("1.0.0")]
     PayoutFailed { po_id: String },
     #[event_version("1.0.0")]
+    InvoiceRecorded {
+        po_id: String,
+        invoice_hash: String,
+        amount: U128,
+        by: AccountId,
+    },
+    #[event_version("1.0.0")]
+    SettlementAdjusted {
+        po_id: String,
+        paid: U128,
+        returned: U128,
+        reason: String,
+    },
+    #[event_version("1.0.0")]
+    AttestedSignerSet { address: String, active: bool },
+    #[event_version("1.0.0")]
+    SignedThresholdSet {
+        agent: AccountId,
+        above: Option<U128>,
+    },
+    #[event_version("1.0.0")]
     PoRefunded {
         po_id: String,
         by: AccountId,
