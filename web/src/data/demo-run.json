@@ -432,7 +432,24 @@
       "error": "PO-1042: $5,150.00 exceeds Kevin's per-PO limit of $2,500.00; director approval required.",
       "events": [
         "po_refused"
-      ]
+      ],
+      "decision": {
+        "poId": "PO-1042",
+        "supplier": "northgate-ingredients.testnet",
+        "amount": 5150,
+        "qtyKg": 700,
+        "poHash": "74e7707deb33681866d9f1ad99b8c9566e978912cd1f46601e8bb3be39069187",
+        "verdict": "APPROVE 74e7707deb33681866d9f1ad99b8c9566e978912cd1f46601e8bb3be39069187",
+        "namesThisPo": true,
+        "model": "z-ai/glm-5.3-flash",
+        "chatId": "7190a65d67044a27ad7f0255403987e8",
+        "requestSha256": "347bdfd989fae3bcfa9ff3d66319abe6ac67c06fffb9eac0360fbe7ee2d48f83",
+        "responseSha256": "379849cb73703f446d41e8cb72d27d4200d7c17c59312ae07ccfb069c83a598d",
+        "signer": "0x3b753b4406613c5e70ae640508632b600424fa0c",
+        "signature": "0x5267baa2f3b901cce2d94c6f774b0aa06aa9e2fab1c11d4283cf58e0465f68a5193bcb31cf0d08605b888bdd5538bec1d64af5d47603c9dbc735e1406a3ae5df1c",
+        "verified": true,
+        "failed": null
+      }
     },
     {
       "tx": "FpXXzZBkeCNouQgJn7eF8k7oe57dzgd3n21yhvFzGAtt",
@@ -459,7 +476,24 @@
       "events": [
         "po_authorized",
         "po_funded"
-      ]
+      ],
+      "decision": {
+        "poId": "PO-1042",
+        "supplier": "northgate-ingredients.testnet",
+        "amount": 5150,
+        "qtyKg": 700,
+        "poHash": "74e7707deb33681866d9f1ad99b8c9566e978912cd1f46601e8bb3be39069187",
+        "verdict": "APPROVE 74e7707deb33681866d9f1ad99b8c9566e978912cd1f46601e8bb3be39069187",
+        "namesThisPo": true,
+        "model": "z-ai/glm-5.3-flash",
+        "chatId": "7190a65d67044a27ad7f0255403987e8",
+        "requestSha256": "347bdfd989fae3bcfa9ff3d66319abe6ac67c06fffb9eac0360fbe7ee2d48f83",
+        "responseSha256": "379849cb73703f446d41e8cb72d27d4200d7c17c59312ae07ccfb069c83a598d",
+        "signer": "0x3b753b4406613c5e70ae640508632b600424fa0c",
+        "signature": "0x5267baa2f3b901cce2d94c6f774b0aa06aa9e2fab1c11d4283cf58e0465f68a5193bcb31cf0d08605b888bdd5538bec1d64af5d47603c9dbc735e1406a3ae5df1c",
+        "verified": true,
+        "failed": null
+      }
     },
     {
       "tx": "GjhjYyTt23vJpS3qBZgKnXxRQJviHEyGe6aGPFsSm6Z1",

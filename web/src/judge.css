@@ -161,6 +161,43 @@ body.judge-open .main {
 .judge-card .judge-primary {
   margin-left: 0;
 }
+/* Next comes second in the markup, so a phone shows it beside Back; on a wide screen it sits last,
+   at the right. */
+.judge-controls .judge-primary {
+  order: 1;
+}
+.judge-proof-list {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 6px;
+}
+.judge-proof-list button {
+  width: 100%;
+  min-height: 40px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--t-sm);
+  text-align: left;
+  cursor: pointer;
+}
+.judge-proof-list li:first-child button {
+  border-color: var(--brand);
+}
+.judge-all {
+  margin-top: 10px;
+  font-size: var(--t-sm);
+}
+.judge-all summary {
+  cursor: pointer;
+  color: var(--ink-2);
+}
 
 .judge-overlay {
   position: fixed;
@@ -253,5 +290,17 @@ body.judge-open .main {
   }
   .judge-primary {
     margin-left: 0;
+  }
+  .judge-controls .judge-primary {
+    order: 0;
+  }
+  /* Back and Next stay in view while the sheet's text scrolls under them. */
+  .judge-bar .judge-controls {
+    position: sticky;
+    bottom: -16px;
+    margin: 8px -16px -16px;
+    padding: 8px 16px 12px;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
   }
 }

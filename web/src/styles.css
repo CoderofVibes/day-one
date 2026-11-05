@@ -1476,6 +1476,88 @@ tbody th:first-child {
   overflow-wrap: anywhere;
 }
 
+.decision {
+  border: 1px solid var(--curtain-line);
+  border-radius: var(--r-md);
+  padding: var(--s-3);
+  margin: 0 0 var(--s-3);
+  background: var(--curtain-2);
+  display: grid;
+  gap: 4px;
+}
+
+.decision h3 {
+  margin: 0;
+  font-size: var(--t-sm);
+  color: var(--curtain-ink);
+}
+
+.decision p {
+  margin: 0;
+}
+
+.decision .verdict {
+  font-weight: 600;
+}
+
+.decision .sig.ok {
+  color: var(--curtain-ok);
+}
+
+.decision .sig.bad {
+  color: var(--curtain-refused);
+}
+
+/* The contract's answer leads in its own colour, so a green signature never reads as permission. */
+.decision .outcome {
+  font-weight: 600;
+  border-left: 3px solid currentColor;
+  padding-left: 8px;
+  margin-top: 4px;
+}
+
+.decision .outcome.refused {
+  color: var(--curtain-wait);
+}
+
+.decision .outcome.funded {
+  color: var(--curtain-held);
+}
+
+.decision details summary {
+  cursor: pointer;
+  color: var(--curtain-ink-2);
+  margin-top: 4px;
+}
+
+.decision dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 2px 10px;
+  margin: 6px 0;
+  font-size: var(--t-xs);
+}
+
+.decision dt {
+  color: var(--curtain-ink-2);
+}
+
+.decision dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.decision .hash {
+  font-family: var(--mono);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 520px) {
+  .decision dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .attest {
   border: 1px solid var(--curtain-line);
   border-radius: var(--r-md);

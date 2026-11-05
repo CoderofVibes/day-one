@@ -26,6 +26,26 @@ export interface Transaction {
   status: string;
   error: string | null;
   events: string[];
+  /** The signed decision a submit_po carried, with its recorded evidence (scripts/lib/decisionEvidence.ts). */
+  decision?: DecisionEvidence | null;
+}
+/** Kevin's model decision on a PO, as the recording holds it; `verified` is the offline check. */
+export interface DecisionEvidence {
+  poId: string;
+  supplier: string;
+  amount: number;
+  qtyKg: number | null;
+  poHash: string;
+  verdict: string;
+  namesThisPo: boolean;
+  model: string;
+  chatId: string;
+  requestSha256: string;
+  responseSha256: string;
+  signer: string | null;
+  signature: string;
+  verified: boolean;
+  failed: string | null;
 }
 export interface Summary {
   transactions: number;

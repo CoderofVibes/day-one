@@ -61,6 +61,7 @@ import { extended } from "../server/src/world/sim.ts";
 import { type RfqSummary, supplierView } from "../server/src/world/supplierView.ts";
 import { buildArena, readRecordings } from "./lib/arena.ts";
 import { PLANT_AGENTS } from "./lib/dayone-sandbox.ts";
+import { type DecisionArgs, decisionEvidence } from "./lib/decisionEvidence.ts";
 
 const root = resolve(import.meta.dirname, "..");
 const OUT = join(root, "web/src/data/demo-run.json");
@@ -97,7 +98,13 @@ interface DemoJson {
 }
 interface ChainEntry {
   type: string;
-  request: { method: string; signerId: string; receiverId: string; viaRelayer: boolean };
+  request: {
+    method: string;
+    signerId: string;
+    receiverId: string;
+    viaRelayer: boolean;
+    args?: unknown;
+  };
   outcome: {
     status: string;
     errorMessage: string | null;
@@ -161,6 +168,10 @@ const data = {
       status: t.status,
       error: call.outcome.errorMessage,
       events: call.outcome.events.map((e) => e.event),
+      // The signed decision a submit_po carried, joined to its attested answer (the curtain's card).
+      ...(call.request.method === "submit_po" && (call.request.args as DecisionArgs)?.decision
+        ? { decision: decisionEvidence(call.request.args as DecisionArgs, attestation?.answers) }
+        : {}),
     };
   }),
 };

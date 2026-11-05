@@ -2,7 +2,15 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { STEPS } from "./clean-clone.ts";
-import { CLAIMS, contractClaim, markdown, scriptsUsed, wslPath } from "./prove.ts";
+import {
+  CLAIMS,
+  contractClaim,
+  failureCause,
+  markdown,
+  scope,
+  scriptsUsed,
+  wslPath,
+} from "./prove.ts";
 
 const pkg = JSON.parse(
   readFileSync(fileURLToPath(new URL("../../package.json", import.meta.url)), "utf8"),
@@ -76,5 +84,21 @@ describe("the proof scorecard", () => {
     expect(md).toContain("**Failed:** b: exit 1");
     expect(md).toContain("1 of 2 claims proved.");
     expect(md).toContain("Skipped: the contract");
+    // The result, the failure and the skip come before the table.
+    const table = md.indexOf("| | Claim |");
+    expect(md.indexOf("1 of 2 claims proved.")).toBeLessThan(table);
+    expect(md.indexOf("- FAIL b: b: exit 1")).toBeLessThan(table);
+    expect(md.indexOf("- Skipped: the contract")).toBeLessThan(table);
+  });
+
+  it("names an unreachable RPC and says what it will check", () => {
+    expect(failureCause("TypeError: fetch failed\n  cause: getaddrinfo ENOTFOUND rpc")).toBe(
+      "testnet RPC unavailable; the on-chain comparison was not completed",
+    );
+    expect(failureCause("MISMATCH BR-B-1045")).toBeNull();
+    expect(scope(13, true)).toBe(
+      "Checking 13 claims from the recordings and read-only testnet queries. No keys required. Quick mode skips lint, typecheck and tests.",
+    );
+    expect(scope(14, false)).not.toContain("Quick");
   });
 });

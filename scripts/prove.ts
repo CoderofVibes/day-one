@@ -1,7 +1,7 @@
-// npm run prove [--json] [--quick] [--contract]: one command for a reviewer. Runs every keyless
-// check behind Day One's claims (scripts/lib/prove.ts) in this checkout and prints a scorecard:
-// one PASS or FAIL row per claim with its evidence and command, as Markdown, or one JSON line
-// with --json. --quick skips lint, typecheck and the test suite (the slowest claim); --contract
+// npm run prove [--json] [--quick] [--contract]: one command for a reviewer. Runs the keyless
+// checks behind Day One's claims (scripts/lib/prove.ts) in this checkout and prints a scorecard:
+// the result line first, then one PASS or FAIL row per claim with its evidence and command, as
+// Markdown, or one JSON line with --json (`npm run --silent prove -- --json` for a parser). --quick skips lint, typecheck and the test suite (the slowest claim); --contract
 // adds the contract's Rust tests (WSL on Windows). Needs no keys, no .env and no network except
 // what the README's replay commands already read; signs nothing and writes nothing tracked.
 // Exit code = failed claims.
@@ -12,7 +12,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { judge, tail, tamperRecord } from "./lib/clean-clone.ts";
-import { CLAIMS, type Claim, type ClaimResult, contractClaim, markdown } from "./lib/prove.ts";
+import {
+  CLAIMS,
+  type Claim,
+  type ClaimResult,
+  contractClaim,
+  failureCause,
+  markdown,
+  scope,
+} from "./lib/prove.ts";
 
 const root = fileURLToPath(new URL("../", import.meta.url)).replace(/[\\/]$/, "");
 const argv = process.argv.slice(2);
@@ -60,7 +68,8 @@ function prove(claim: Claim): ClaimResult {
     const outcome = sh(command);
     const why = judge(step, outcome);
     if (why) {
-      reason = `${step.name}: ${why}`;
+      const cause = failureCause(outcome.output);
+      reason = `${step.name}: ${why}${cause ? ` (${cause})` : ""}`;
       progress(tail(outcome.output, 12));
       break;
     }
@@ -86,6 +95,7 @@ if (!withContract)
   skipped.push("the contract's Rust tests; `npm run prove -- --contract` or CI runs them.");
 
 const commit = sh("git rev-parse --short HEAD").output.trim() || "unknown";
+progress(scope(claims.length, quick));
 const results = claims.map(prove);
 rmSync(scratch, { recursive: true, force: true });
 

@@ -122,7 +122,7 @@ Kevin's key sends an order seven times what the plan can use and the contract re
 
 ## Group purchase: PO-G-2001
 
-Three plants pool their ascorbic acid demand into one pooled PO; each plant's share is checked against its own limits and approved by its own director, and the supplier is paid once.
+Two plants (Riverside and Hollow Pine) pool their ascorbic acid demand into one pooled PO; Lakeview has no need and stays out. Each plant's share is checked against its own limits and approved by its own director, and the supplier is paid once.
 
 - **Replay (no keys):** `npm run demo:group`
 - **Contract:** `spend-policy-v2.acme-holdings.testnet`
@@ -152,7 +152,7 @@ Suppliers commit hashed quotes before a deadline and reveal them after it. The c
 - **Replay (no keys):** `npm run sealed`, then `npm run verify:round -- data/sealed/RFQ-2611-02.round.json`
 - **Contract:** `spend-policy-v2.acme-holdings.testnet`
 - **Enforced in:** [`open_sealed_round`](contracts/spend-policy/src/sealed.rs#L149) (sealed.rs:149), [`commit_quote`](contracts/spend-policy/src/sealed.rs#L187) (sealed.rs:187), [`award_sealed_round`](contracts/spend-policy/src/sealed.rs#L276) (sealed.rs:276), [`reveal_quote`](contracts/spend-policy/src/sealed.rs#L229) (sealed.rs:229)
-- **Does not prove:** Commit-and-reveal hides quote contents until the reveal, not the fact that a supplier quoted.
+- **Does not prove:** This is commit-and-reveal, not encryption. A supplier can disclose its own quote, the fact that a supplier quoted is public, and transaction arguments stay public even when a reveal is refused.
 
 | # | Call | Record | Signed by | Gas paid by | Contract's answer | Events | Transaction |
 |---|---|---|---|---|---|---|---|
@@ -170,12 +170,12 @@ Suppliers commit hashed quotes before a deadline and reveal them after it. The c
 
 ## PO-1047 in Circle testnet USDC
 
-The same contract code, deployed with Circle's testnet USDC as its token, takes PO-1047 from submission to payment.
+A separate deployment of the first contract version, with Circle's testnet USDC as its token, takes PO-1047 from submission to payment.
 
 - **Replay (no keys):** `npm run usdc`
 - **Contract:** `spend-policy-usdc.acme-holdings.testnet`
 - **Enforced in:** [`submit_po`](contracts/spend-policy/src/lib.rs#L519) (lib.rs:519), [`accept_po`](contracts/spend-policy/src/lib.rs#L765) (lib.rs:765), [`mark_shipped`](contracts/spend-policy/src/lib.rs#L780) (lib.rs:780), [`confirm_receipt`](contracts/spend-policy/src/lib.rs#L804) (lib.rs:804), [`qc_release`](contracts/spend-policy/src/lib.rs#L892) (lib.rs:892)
-- **Does not prove:** A $19.00 order on testnet; the main run uses DTUSD.
+- **Does not prove:** A $19.00 order on testnet; the main run uses DTUSD. This deployment runs the first contract version, so it does not demonstrate v2 receipt settlement or signed decisions.
 
 | # | Call | Record | Signed by | Gas paid by | Contract's answer | Events | Transaction |
 |---|---|---|---|---|---|---|---|

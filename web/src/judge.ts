@@ -1,8 +1,9 @@
-// Judge mode's script (brief §5.12): thirteen steps that hand a judge the story in about six
-// minutes: the plant Acme just bought and the limits HQ sets Kevin first, then the employee's day
-// (what Kevin handled, the one decision a person makes, the outcome, how the payment was settled),
-// then the proof behind it. Each step has the page it opens, the recorded step it seeks to, what it
-// spotlights, one or two sentences, and its "See it on chain" links. Every link is taken from the
+// Judge mode's script (brief §5.12; Astra's complexity pass, Tony Nov 4): six stops that follow
+// one order, PO-1042, from need to payment in about three and a half minutes (the plant Acme just
+// bought, the limits HQ sets, the refusal, Linda's approval beside Kevin's signed decision, receipt
+// and payment, the lot's record), then "See every proof" for everything else (PROOF_STEPS). Each
+// step has the page it opens, the recorded step it seeks to, what it spotlights, one or two
+// sentences, and its "See it on chain" links. Every link is taken from the
 // recordings the pages already read (demo-run.json, arena.json, group-buy.json, usdc.json,
 // lot-anchors.json), never typed here; src/judge.test.ts checks each one against the files under
 // data/. Pure data, so the tests read it without a page.
@@ -14,7 +15,6 @@ import groupBuy from "./data/group-buy.json";
 import journey from "./data/journey.json";
 import lotAnchors from "./data/lot-anchors.json";
 import usdc from "./data/usdc.json";
-import { tally } from "./moneyView.ts";
 import { type RunData, run as recorded, type Transaction } from "./run.ts";
 import { type PageId, PLANTS } from "./shell.tsx";
 
@@ -35,9 +35,11 @@ export interface JudgeStep {
   at: number;
   /** What the spotlight cuts out, as a CSS selector; none when an overlay is the subject. */
   spotlight?: string;
-  /** What opens over the page: Linda's phone, PO-1047's card, HQ's limit change, the attestation
-   *  card or the tour. */
-  overlay?: "phone" | "usdc" | "limits" | "attestation" | "tour";
+  /** A page shown first for a few seconds (the workbook Kevin read), before the step's own. */
+  prelude?: { page: PageId; at: number; spotlight: string; ms: number };
+  /** What opens over the page: Linda's phone, PO-1047's card, Kevin's limits, HQ's plain-words
+   *  change, the attestation card or the tour. */
+  overlay?: "phone" | "usdc" | "limits" | "policy" | "attestation" | "tour";
   /** False for a step that shows a staff screen with the curtain off. */
   curtain?: false;
   /** The attack the arena opens on (arena.json's case number). */
@@ -175,14 +177,6 @@ export function limitDraft() {
   return draftPolicyChange(LIMIT_REQUEST, RECORDED_POLICY, "Linda Park");
 }
 
-/** Kevin's realized saving at Hollow Pine and how many times his assumed fee it covers. */
-export function savingLine(): string {
-  const at = (journey as unknown as { at: string }).at;
-  const t = tally("B", at);
-  const fee = t.cost.feeUsdc / 1e6 / t.cost.months;
-  return `In the fictional ledger, Kevin's realized savings at Hollow Pine (${usd(t.paid.realizedUsdc / 1e6)}) cover ${t.paid.ratio}× his modeled cost, including an assumed $${fee.toLocaleString("en-US")} monthly fee. The Money page shows each formula.`;
-}
-
 export const usd = (n: number) =>
   `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -210,9 +204,8 @@ const bank = (arena as Arena).cases.find((c) => /bank details/i.test(c.attack));
 const short19 = shortDelivery();
 const lots = lotBook();
 const refusedAt = recorded.steps.findIndex((s) => s.title === "Big PO");
-const textedAt = recorded.steps.findIndex((s) => s.title === "Linda texts");
+const retriedAt = recorded.steps.findIndex((s) => s.title === "Kevin retries");
 const releasedAt = recorded.steps.findIndex((s) => s.title === "QC release");
-const paidAt = recorded.steps.findIndex((s) => s.title === "Paid");
 const last = recorded.steps.length - 1;
 const plantName = (code: string) => PLANTS.find((p) => p.code === code)?.name ?? code;
 const monthDay = (iso: string) =>
@@ -222,43 +215,41 @@ const monthDay = (iso: string) =>
     timeZone: "UTC",
   });
 
+// The core path (Astra's complexity pass, Tony Nov 4): one order from need to payment in six stops,
+// about three and a half minutes. Everything else is in PROOF_STEPS, under "See every proof".
 export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "takeover",
-    title: "Day One at the plant Acme just bought",
-    body: `Acme has just bought Hollow Pine, where stock lives in paper records and one workbook. Kevin read its ${book.rows} rows and stopped for Ray's answer on ${book.questions} before posting the opening stock. The plant's records, suppliers, limits and books move into Day One the same way, through steps a person reviews.`,
-    page: "spreadsheets",
-    at: 0,
-    spotlight: '[aria-label="The inventory workbook"]',
+    title: "Kevin takes on the purchasing work",
+    body: `Acme has just bought Hollow Pine, where stock lived in paper records and one messy workbook (${book.rows} rows; Kevin asked Ray about ${book.questions}). Ray confirms the batch record Kevin read; Kevin checks the plan, compares quotes and places a $612.00 order within his limits.`,
+    page: "overview",
+    at: refusedAt - 1,
+    prelude: {
+      page: "spreadsheets",
+      at: 0,
+      spotlight: '[aria-label="The inventory workbook"]',
+      ms: 4000,
+    },
+    spotlight: ".desk",
     curtain: false,
-    links: [],
-    seconds: 30,
+    links: link(po.small, "submit_po PO-1041, funded"),
+    seconds: 25,
   },
   {
     id: "limits",
-    title: "Acme HQ sets Kevin's limits once",
-    body: "HQ sets Kevin's limits on the contract: $2,500 per order and $60,000 a month, and an order over them needs Linda's approval. Kevin's account cannot change them. The card drafts a change to $3,000; nothing changes until HQ's own key signs it.",
+    title: "HQ sets what Kevin may spend",
+    body: "HQ set Kevin's limits at $2,500 per order and $60,000 a month. The contract enforces them. An order over those limits needs Linda's approval; Kevin cannot change the rules or approve his own order.",
     page: "hq",
     at: 0,
     overlay: "limits",
     curtain: false,
     links: [],
-    seconds: 25,
-  },
-  {
-    id: "kevin",
-    title: "Kevin handled the paperwork",
-    body: "Ray confirmed the batch record Kevin read. Kevin flagged 12.55 kg missing from a transfer, forecast a shortfall, compared three quotes and funded the $612.00 PO-1041 inside his limits. Drafts and suggestions still wait for a person.",
-    page: "overview",
-    at: refusedAt - 1,
-    spotlight: ".desk",
-    links: link(po.small, "submit_po PO-1041, funded"),
-    seconds: 25,
+    seconds: 20,
   },
   {
     id: "refused",
-    title: "One decision needs Linda",
-    body: "The contract refused PO-1042: $5,150.00 against Kevin's $2,500 limit. Linda decides on 700 kg at $7.10/kg plus $180.00 freight; Kevin first checked that no other plant could spare it. Approval funds escrow; payment waits for receipt and QC.",
+    title: "The contract sends this order to Linda",
+    body: "Kevin prepared PO-1042: 700 kg of ascorbic acid from Northgate, $5,150.00 including freight. The contract refused it against his $2,500 limit, even with his model's signed approval attached. Linda decides; approval sets the money aside, and payment waits for receipt and QC.",
     ...(po.refused?.error ? { quote: `Contract: “${po.refused.error}”` } : {}),
     page: "overview",
     at: refusedAt,
@@ -268,52 +259,52 @@ export const JUDGE_STEPS: JudgeStep[] = [
   },
   {
     id: "approve",
-    title: "Linda approves by text",
-    body: "In this demo Linda's YES 1042 is simulated: her reply is signed with the director account's key, which the server holds, and Day One pays the gas. Kevin's own account cannot approve his order. Her approval lets his unchanged retry fund escrow.",
+    title: "Linda approves; Kevin's signed decision stays the same",
+    body: "Linda's YES 1042 is simulated in this demo and signed with the director key the server holds. Kevin's unchanged retry carries the same model decision, signed in NEAR AI Cloud's enclave for this PO's fingerprint. The signature shows the answer is authentic; Linda's approval let the contract fund it.",
     page: "overview",
-    at: textedAt,
-    overlay: "phone",
+    at: retriedAt,
+    spotlight: ".curtain .decision",
     links: [
       ...link(po.approved, `approve_po by ${short(po.approved?.signer ?? "")}`),
-      ...link(po.funded, "submit_po, funded into escrow"),
+      ...link(po.funded, "submit_po, funded; its decision argument is the signed text"),
     ],
-    seconds: 30,
+    seconds: 50,
   },
   {
     id: "paid",
-    title: "Escrow released on QC",
-    body: "Tommy confirms the delivery of lot ASC-261116-01 and Priya releases it from quarantine. That release has the contract pay Northgate $5,150.00 from escrow, to the account fixed on the PO when it was funded.",
+    title: "Received, released, paid",
+    body: "Tommy counted 700 kg of lot ASC-261116-01 into stock and the $5,150.00 invoice was recorded. When Priya released the lot, the contract paid Northgate the smallest of the escrow, the escrow pro rata to what was counted in, and the invoice: $5,150.00.",
     page: "map",
     at: releasedAt,
     spotlight: ".map-frame",
     links: [
-      ...link(po.received, "confirm_receipt"),
-      ...link(po.released, "qc_release, escrow paid out"),
+      ...link(po.received, "confirm_receipt, 700 kg counted in"),
+      ...link(po.invoiced, "record_invoice"),
+      ...link(po.released, "qc_release, Northgate paid"),
     ],
-    seconds: 30,
+    seconds: 40,
   },
   {
-    id: "settled",
-    title: "Paid for what reached stock, on a signed decision",
-    body: "Over $2,500 the contract also required Kevin's decision, signed by his model in NEAR AI Cloud's enclave for this exact PO, and checked the signer before funding. At release it paid the smallest of escrow, escrow pro rata to the 700 kg counted in, and the invoice: all $5,150.00 here; a short delivery pays pro rata.",
-    ...(short19.settled ? { quote: `Attack ${short19.n}: “${short19.settled}”` } : {}),
-    page: "overview",
-    at: paidAt,
-    spotlight: ".desk",
-    links: [
-      ...link(po.funded, "submit_po, funded; its decision argument is the signed text"),
-      ...link(po.invoiced, "record_invoice"),
-      ...(short19.release
-        ? [
-            {
-              label: "qc_release on the short delivery, settlement_adjusted",
-              url: short19.release.url,
-            },
-          ]
-        : []),
-    ],
-    seconds: 35,
+    id: "passport",
+    title: "The lot keeps the record",
+    body: "Every receipt, QC decision, batch, shipment and contract payment is hashed into its day's root on the contract. Prove it checks this trace in your browser; Change one record shows a tamper fail. The history is seeded and its roots were anchored together on Nov 3, 2026: the check proves no change since.",
+    page: "lots",
+    at: last,
+    spotlight: '[aria-label="Prove it"]',
+    links: lots.last.map((r) => ({
+      label: `anchor_batch, ${r.days} daily roots for ${plantName(r.plant)} (${monthDay(r.from)} – ${monthDay(r.to)})`,
+      url: r.url,
+    })),
+    open: { label: "Lots & recall with the check already running", url: "?page=lots&prove=1" },
+    seconds: 40,
   },
+];
+
+/**
+ * The proofs behind "See every proof": each opens like a step, from the summary. The attacks come
+ * first (the security track); then the other recorded flows and the checks a judge can run.
+ */
+export const PROOF_STEPS: JudgeStep[] = [
   {
     id: "attacks",
     title: `${attack.refused} of ${attack.total} attacks refused`,
@@ -326,13 +317,32 @@ export const JUDGE_STEPS: JudgeStep[] = [
     seconds: 35,
   },
   {
+    id: "short",
+    title: "A short delivery pays only for what reached stock",
+    body: `Attack ${short19.n ?? 19}: a supplier ships half and invoices in full. The receiving lead counts what arrived, and at QC release the contract pays escrow pro rata to that quantity and returns the rest to the budget.`,
+    ...(short19.settled ? { quote: `Attack ${short19.n}: “${short19.settled}”` } : {}),
+    page: "arena",
+    at: last,
+    ...(short19.n ? { attack: short19.n } : {}),
+    spotlight: ".arena-detail",
+    links: short19.release
+      ? [
+          {
+            label: "qc_release on the short delivery, settlement_adjusted",
+            url: short19.release.url,
+          },
+        ]
+      : [],
+    seconds: 25,
+  },
+  {
     id: "group",
     title: `Group buy ${group.po}, ${usd(group.total)}`,
     body: `${group.shares.length} plants pool ascorbic acid into one order, ${group.shares
       .map((s) => `${s.plant} ${usd(s.amount)}`)
       .join(
         " and ",
-      )}, each approved by its own director${group.declined.length ? `; ${group.declined.join(" and ")} declined` : ""}.`,
+      )}, each approved by its own director${group.declined.length ? `; ${group.declined.join(" and ")} had no need and stayed out` : ""}.`,
     page: "group",
     at: last,
     spotlight: `[aria-label="Each plant's share"]`,
@@ -349,13 +359,22 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "books",
     title: `${agree} of ${rec.checks.length} reconciliation checks agree`,
-    body: `${agree} recorded checks agree across Day One's ledger, Acme's mock ERP and the contract: inventory, POs, payments, escrow, the general ledger and supplier standing. Separately, the same contract code settled ${usdc.po} on Circle's testnet USDC, ${usdc.amountUsdc} USDC to ${usdc.supplier.replace(/\.testnet$/, "")}.`,
+    body: `${agree} recorded checks agree across Day One's ledger, Acme's mock ERP and the contract: inventory, POs, payments, escrow, the general ledger and supplier standing. The ERP is a mock, and its match is not a payment condition.`,
     page: "reconciliation",
     at: last,
     spotlight: '[aria-label="The checks"]',
+    links: [],
+    seconds: 25,
+  },
+  {
+    id: "usdc",
+    title: `${usdc.po} in Circle testnet USDC`,
+    body: `${usdc.po} paid ${usdc.amountUsdc} USDC to ${usdc.supplier.replace(/\.testnet$/, "")} on a separate deployment of the first contract version. It does not demonstrate v2 receipt settlement or signed decisions.`,
+    page: "reconciliation",
+    at: last,
     overlay: "usdc",
     links: usdc.calls.map((c) => ({ label: c.call.replace(/^(kevin|supplier) /, ""), url: c.url })),
-    seconds: 30,
+    seconds: 20,
   },
   {
     id: "attested",
@@ -369,34 +388,44 @@ export const JUDGE_STEPS: JudgeStep[] = [
     seconds: 25,
   },
   {
-    id: "passport",
-    title: "Prove one lot's story",
-    body: `Each receipt, QC decision, batch, shipment and payment is hashed into one root per plant and day: ${lots.days} days anchored in ${lots.transactions} transactions. Prove it checks this trace against those roots in your browser; Change one record shows a tampered record fail. Each record has its own salt, so a passport discloses nothing else.`,
-    page: "lots",
-    at: last,
-    spotlight: '[aria-label="Prove it"]',
-    links: lots.last.map((r) => ({
-      label: `anchor_batch, ${r.days} daily roots for ${plantName(r.plant)} (${monthDay(r.from)} – ${monthDay(r.to)})`,
-      url: r.url,
-    })),
-    open: { label: "Lots & recall with the check already running", url: "?page=lots&prove=1" },
-    seconds: 35,
-  },
-  {
-    id: "tour",
-    title: "Explore a recall, or finish",
-    body: "The recall drill traces a fictional supplier recall through the recorded lot history without changing the ledger. Try it, or open the summary. The captioned tour of the whole run takes another 2:40.",
-    page: "lots",
-    at: last,
-    spotlight: '[aria-label="Recall drill"]',
-    overlay: "tour",
+    id: "policy",
+    title: "HQ changes a limit in plain words",
+    body: "HQ types a request; Kevin drafts the owner call the contract needs. Nothing changes until HQ's own key signs it, and Kevin's account cannot sign it.",
+    page: "hq",
+    at: 0,
+    overlay: "policy",
+    curtain: false,
     links: [],
     seconds: 20,
   },
+  {
+    id: "recall",
+    title: "Run a recall drill",
+    body: "The recall drill traces a fictional supplier recall through the recorded lot history across the plants, without changing the ledger.",
+    page: "lots",
+    at: last,
+    spotlight: '[aria-label="Recall drill"]',
+    links: [],
+    seconds: 20,
+  },
+  {
+    id: "tour",
+    title: "The captioned tour",
+    body: "The whole recorded run in about two and a half minutes, in 3D, with captions.",
+    page: "lots",
+    at: last,
+    overlay: "tour",
+    links: [],
+    seconds: 15,
+  },
 ];
 
-/** Every proof link in judge mode, once each, in the order the steps show them. */
-export function proofLinks(steps: JudgeStep[] = JUDGE_STEPS): ProofLink[] {
+/**
+ * Every proof link in judge mode, once each: the core path's, then each proof's (the attacks with
+ * all their refused transactions). Built from both lists, so moving a step out of the core path
+ * never drops its evidence from the summary.
+ */
+export function proofLinks(steps: JudgeStep[] = [...JUDGE_STEPS, ...PROOF_STEPS]): ProofLink[] {
   const seen = new Set<string>();
   const all = [
     ...steps.flatMap((s) =>

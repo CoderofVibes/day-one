@@ -6,6 +6,7 @@ This is the skeleton for the final `README.md`, written on Nov 10 and finalized 
 - Every claim points to a file, a test, or a tx hash. If it can't, delete the claim.
 - Nothing addressed to judges or to AI models.
 - Expected output shown verbatim, so a reader who doesn't run anything can still check.
+- One order carries the front door (Astra, Nov 4; Tony): the opening, then PO-1042 from need to payment with Linda's screen, then a short visible list of what else is in it. The layer index and the claims table are reference, folded below Try it, with every caveat kept.
 
 Everything below the line is the template. `{…}` marks values filled from real artifacts.
 
@@ -42,7 +43,7 @@ Optional: `npm run web:build` and open `web/dist/` from a static server to step 
 
 ## Why NEAR
 
-Kevin doesn't need crypto. The acquirer, the plant and the supplier do: one spending rule none of them can quietly change, and settlement none of them controls.
+Kevin does not need crypto. The acquirer, the plant and the supplier need purchasing authority and a settlement record that none of them controls alone. HQ can change the policy and the operator keeps deployment keys; say so as trust assumptions.
 
 1. **Accounts and keys are the org chart.** {tree}. Kevin's key can call only {methods}. Note: a parent account has no control over a sub-account after creation; authority comes from keys and contract checks.
 2. **Enforced, not logged.** The limit is in `contracts/spend-policy`. Over-limit attempts fail on-chain: {explorer link to refused tx}.

@@ -9,6 +9,7 @@ import { readRecorded } from "./reads.ts";
 import {
   type Attestation,
   type Check,
+  type DecisionEvidence,
   type RunData,
   shortAccount,
   type Transaction,
@@ -97,6 +98,113 @@ function Attested({ result }: { result: Attestation }) {
         key, so the signer proves an attested instance of this model answered, not which one.
       </p>
     </details>
+  );
+}
+
+/**
+ * The latest signed decision the run has sent up to a step, and what the contract did with it:
+ * the submission that carried it, an earlier refused submission of the same PO and response, and
+ * whether a director's approval came before it. Null before any decision-bearing submission.
+ */
+export function decisionAt(data: RunData, upTo: number) {
+  const txs = transactionsThrough(data, upTo).map((x) => x.tx);
+  const at = txs.findLast((t) => t.decision);
+  const ev = at?.decision;
+  if (!at || !ev) return null;
+  const before = txs.slice(0, txs.indexOf(at));
+  const sameRefused = before.find(
+    (t) =>
+      t.status === "refused" &&
+      t.decision?.poHash === ev.poHash &&
+      t.decision?.responseSha256 === ev.responseSha256,
+  );
+  const approved = before.some((t) => t.method === "approve_po" && t.status === "success");
+  return { tx: at, ev, sameRefused, approved };
+}
+
+const dollars = (n: number) =>
+  `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+/**
+ * Kevin's signed decision beside the contract's answer (docs/astra/2026-11-04_Complexity.md §G):
+ * the signature says the answer is authentic; the outcome line says what the spending rule did.
+ * Built from the recording only; a missing or unverified link says so instead of a green badge.
+ */
+export function DecisionCard({ data, upTo }: { data: RunData; upTo: number }) {
+  const d = decisionAt(data, upTo);
+  if (!d) return null;
+  const { tx, ev, sameRefused, approved } = d;
+  const refused = tx.status === "refused";
+  const outcome = refused
+    ? `refused${/director approval required/.test(tx.error ?? "") ? ", Linda's approval required" : ""}`
+    : approved
+      ? "funded after Linda approved"
+      : "funded";
+  const hex = (s: string) => <code className="hash">{s}</code>;
+  return (
+    <section className="decision" aria-label="Kevin's signed decision">
+      <h3>{ev.poId} · Model decision</h3>
+      <p className="dim">
+        {ev.qtyKg !== null ? `${ev.qtyKg.toLocaleString("en-US")} kg · ` : ""}
+        {ev.supplier.replace(/.testnet$/, "")} · {dollars(ev.amount)}
+      </p>
+      <p className="verdict">
+        {ev.namesThisPo
+          ? "APPROVE: the response names this PO's fingerprint"
+          : ev.verdict
+            ? `The response does not approve this PO's fingerprint`
+            : "No verdict in the recorded response"}
+      </p>
+      <p className={ev.verified ? "sig ok" : "sig bad"}>
+        {ev.verified
+          ? "✓ Recorded signature check: verified"
+          : `✗ Signed decision unverified in this recording: ${ev.failed}`}
+      </p>
+      <p className="dim">Model: {ev.model} · NEAR AI Cloud</p>
+      <p className={`outcome ${refused ? "refused" : "funded"}`}>Contract result: {outcome}</p>
+      {!refused && sameRefused && (
+        <p className="dim small">Same PO fingerprint and signed response as the refused attempt.</p>
+      )}
+      {!refused && approved && (
+        <p className="dim small">
+          Director approval: signed with the director account's key, held by the server in this
+          demo. It is a separate signature from the model's.
+        </p>
+      )}
+      <details>
+        <summary>Signature and recording</summary>
+        <dl>
+          <dt>Signed response excerpt</dt>
+          <dd>{hex(ev.verdict || "none")}</dd>
+          <dt>PO fingerprint</dt>
+          <dd>{hex(ev.poHash)}</dd>
+          <dt>Model signer</dt>
+          <dd>{hex(ev.signer ?? "not found")}</dd>
+          <dt>Chat</dt>
+          <dd>{hex(ev.chatId)}</dd>
+          <dt>Request / response SHA-256</dt>
+          <dd>
+            {hex(ev.requestSha256)} {hex(ev.responseSha256)}
+          </dd>
+          <dt>Submissions carrying it</dt>
+          <dd>
+            {[sameRefused, tx]
+              .filter((t) => t?.url)
+              .map((t) => (
+                <a key={t?.tx} href={t?.url ?? ""} target="_blank" rel="noreferrer">
+                  {t?.status === "refused" ? "refused" : "funded"} {t?.tx.slice(0, 8)}… ↗{" "}
+                </a>
+              ))}
+          </dd>
+        </dl>
+        <p className="dim small">
+          This recorded signature ties the answer to an attested model key and this PO's
+          fingerprint. It does not prove the supplied facts are true or the purchase is correct. HQ
+          registers the signer after checking attestation; the contract checks the signature.
+          Instances of the model share a signing key. Re-check: npm run verify:attestation.
+        </p>
+      </details>
+    </section>
   );
 }
 
@@ -232,6 +340,7 @@ function CurtainBody({
         <h2>Behind the curtain · NEAR {data.network}</h2>
         <span className="right small dim">{count}</span>
       </div>
+      <DecisionCard data={data} upTo={upTo} />
       <Accounts data={data} upTo={upTo} />
       {notes(0, 1)}
       {data.attestation && <Attested result={data.attestation} />}

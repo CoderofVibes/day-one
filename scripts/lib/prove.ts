@@ -93,19 +93,22 @@ export const CLAIMS: Claim[] = [
   },
   {
     id: "group",
-    claim: "Three plants pool one purchase, each approving and paying its own share.",
+    claim:
+      "Two plants pool PO-G-2001; each plant's director approves that plant's share, and Lakeview, with no need, stays out.",
     evidence: "Replays the recorded testnet group purchase (PO-G-2001).",
     steps: [cleanCloneStep("demo-group")],
   },
   {
     id: "sealed",
-    claim: "Suppliers quote in a sealed round nobody can read or change before the deadline.",
+    claim:
+      "Suppliers commit a quote's fingerprint before the deadline and reveal after it; the contract refuses an early award, a reveal that does not match its commitment and a late quote.",
     evidence: "Replays the recorded commit-and-reveal round and checks it from its file (VALID).",
     steps: [cleanCloneStep("sealed"), cleanCloneStep("verify-round")],
   },
   {
     id: "usdc",
-    claim: "The same contract code settles a PO in Circle's testnet USDC.",
+    claim:
+      "A separate deployment of the first contract version settles PO-1047 in Circle testnet USDC.",
     evidence: "Replays PO-1047 on spend-policy-usdc.acme-holdings.testnet.",
     steps: [cleanCloneStep("usdc")],
   },
@@ -178,11 +181,35 @@ export interface ClaimResult {
   reason?: string;
 }
 
-/** The scorecard as Markdown: a heading, one table row per claim, the total. */
+/**
+ * Why a failed step failed, when its output says more than an exit code: an unreachable testnet
+ * RPC is named as such, so a reviewer in a sandbox without network can tell that the local replay
+ * passed and only the chain comparison did not run. The claim stays failed either way.
+ */
+export function failureCause(output: string): string | null {
+  if (
+    /fetch failed|ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ETIMEDOUT|getaddrinfo|network request failed|socket hang up/i.test(
+      output,
+    )
+  )
+    return "testnet RPC unavailable; the on-chain comparison was not completed";
+  return null;
+}
+
+/** What the run is about to check, before it starts: the count and mode, derived. */
+export function scope(count: number, quick: boolean): string {
+  return `Checking ${count} claims from the recordings and read-only testnet queries. No keys required.${quick ? " Quick mode skips lint, typecheck and tests." : ""}`;
+}
+
+/** The scorecard as Markdown: the result first, then failures and skips, then one row per claim. */
 export function markdown(results: ClaimResult[], meta: { commit: string; skipped: string[] }) {
   const passed = results.filter((r) => r.ok).length;
   const lines = [
     `# Day One proof scorecard (commit ${meta.commit})`,
+    "",
+    `**${passed} of ${results.length} claims proved.**`,
+    ...results.filter((r) => !r.ok).map((r) => `- FAIL ${r.id}: ${r.reason ?? "failed"}`),
+    ...meta.skipped.map((s) => `- Skipped: ${s}`),
     "",
     "| | Claim | Evidence | Command |",
     "|---|---|---|---|",
@@ -190,9 +217,6 @@ export function markdown(results: ClaimResult[], meta: { commit: string; skipped
       (r) =>
         `| ${r.ok ? "PASS" : "FAIL"} | ${r.claim} | ${r.evidence}${r.reason ? ` **Failed:** ${r.reason}` : ""} | ${r.commands.map((c) => `\`${c}\``).join("<br>")} |`,
     ),
-    "",
-    `${passed} of ${results.length} claims proved.`,
   ];
-  for (const s of meta.skipped) lines.push(`Skipped: ${s}`);
   return lines.join("\n");
 }

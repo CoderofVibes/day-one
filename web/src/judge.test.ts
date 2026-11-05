@@ -7,12 +7,12 @@ import {
   JUDGE_STEPS,
   limitDraft,
   lotBook,
+  PROOF_STEPS,
   po1042,
   proofLinks,
   RECORDED_POLICY,
   reconciliation,
   remaining,
-  savingLine,
   shortDelivery,
   testCount,
   workbook,
@@ -41,7 +41,7 @@ const TESTNET_TX = /^https:\/\/testnet\.nearblocks\.io\/txns\/([1-9A-HJ-NP-Za-km
 describe("judge mode", () => {
   it("links only well-formed testnet explorer URLs that the recordings hold", () => {
     const recorded = recordings();
-    const links = [...JUDGE_STEPS.flatMap((s) => s.links), ...proofLinks()];
+    const links = [...[...JUDGE_STEPS, ...PROOF_STEPS].flatMap((s) => s.links), ...proofLinks()];
     expect(links.length).toBeGreaterThan(20);
     for (const l of links) {
       const hash = TESTNET_TX.exec(l.url)?.[1];
@@ -52,22 +52,38 @@ describe("judge mode", () => {
     expect(new Set(proofLinks().map((l) => l.url)).size).toBe(proofLinks().length);
   });
 
-  it("holds every step's links in the summary", () => {
+  it("holds every step's and every proof's links in the summary", () => {
     const summary = new Set(proofLinks().map((l) => l.url));
-    for (const s of JUDGE_STEPS) for (const l of s.links) expect(summary.has(l.url)).toBe(true);
+    for (const s of [...JUDGE_STEPS, ...PROOF_STEPS])
+      for (const l of s.links) expect(summary.has(l.url)).toBe(true);
+    // Every refused attack transaction, though the attacks are no longer a core stop.
+    for (const l of attacks().links) expect(summary.has(l.url)).toBe(true);
+    // The summary keeps every transaction the thirteen-step version linked (38 on Nov 3).
+    expect(proofLinks().length).toBeGreaterThanOrEqual(38);
   });
 
   it("tells the proof points as the recordings have them", () => {
-    const titles = JUDGE_STEPS.map((s) => s.title);
-    expect(JUDGE_STEPS).toHaveLength(13);
-    expect(JUDGE_STEPS.slice(0, 3).map((s) => s.id)).toEqual(["takeover", "limits", "kevin"]);
-    expect(JUDGE_STEPS.map((s) => s.id).slice(5, 8)).toEqual(["paid", "settled", "attacks"]);
-    expect(JUDGE_STEPS.at(-2)?.id).toBe("passport");
+    // One order in six stops, about three and a half minutes; the rest under "See every proof".
+    expect(JUDGE_STEPS.map((s) => s.id)).toEqual([
+      "takeover",
+      "limits",
+      "refused",
+      "approve",
+      "paid",
+      "passport",
+    ]);
+    const seconds = JUDGE_STEPS.reduce((sum, s) => sum + s.seconds, 0);
+    expect(seconds).toBeLessThanOrEqual(240);
+    const titles = PROOF_STEPS.map((s) => s.title);
+    expect(PROOF_STEPS[0]?.id).toBe("attacks");
     expect(titles).toContain("21 of 21 attacks refused");
     expect(titles).toContain("Group buy PO-G-2001, $9,490.00");
     expect(titles).toContain("7 of 7 reconciliation checks agree");
-    expect(JUDGE_STEPS.find((s) => s.id === "books")?.body).toContain(
-      "settled PO-1047 on Circle's testnet USDC, 19.00 USDC",
+    const usdcStep = PROOF_STEPS.find((s) => s.id === "usdc");
+    expect(usdcStep?.body).toContain("19.00 USDC");
+    expect(usdcStep?.body).toContain("first contract version");
+    expect(PROOF_STEPS.find((s) => s.id === "group")?.body).toContain(
+      "Acme Lakeview had no need and stayed out",
     );
     const po = po1042();
     expect(po.refused?.tx.startsWith("3bYd13vy")).toBe(true);
@@ -82,9 +98,9 @@ describe("judge mode", () => {
     expect(group.released?.tx.startsWith("42HXtYRx")).toBe(true);
     expect(attacks()).toMatchObject({ total: 21, refused: 21 });
     expect(reconciliation().checks.filter((c) => c.ok)).toHaveLength(7);
-    const books = JUDGE_STEPS.find((s) => s.id === "books");
-    expect(books?.links).toHaveLength(5);
-    expect(books?.overlay).toBe("usdc");
+    expect(usdcStep?.links).toHaveLength(5);
+    expect(usdcStep?.overlay).toBe("usdc");
+    expect(PROOF_STEPS.find((s) => s.id === "books")?.overlay).toBeUndefined();
   });
 
   it("shows the settlement and the signed decision on PO-1042, and the lot book's anchors", () => {
@@ -96,14 +112,22 @@ describe("judge mode", () => {
     expect(short.release?.method).toBe("qc_release");
     expect(short.release?.events).toContain("settlement_adjusted");
     expect(short.settled).toMatch(/^Contract: paid \$355\.00 for what reached stock/);
-    const settled = JUDGE_STEPS.find((s) => s.id === "settled");
-    expect(settled?.links.map((l) => l.url.slice(-44, -36))).toEqual([
-      "3TzgR7iY",
+    // The signed decision rides with the approval, the settlement with receipt and payment.
+    const approve = JUDGE_STEPS.find((s) => s.id === "approve");
+    expect(approve?.links.map((l) => l.url.slice(-44, -36))).toEqual(["FpXXzZBk", "3TzgR7iY"]);
+    expect(approve?.body).toContain("simulated");
+    const paid = JUDGE_STEPS.find((s) => s.id === "paid");
+    expect(paid?.links.map((l) => l.url.slice(-44, -36))).toEqual([
+      "228jQM7v",
       "HACySJzX",
-      "7At9Ynuw",
+      "3F2TYKZ1",
     ]);
-    expect(settled?.quote).toContain("Attack 19");
-    expect(settled?.body).toContain("$5,150.00");
+    expect(paid?.body).toContain("700 kg");
+    expect(paid?.body).toContain("$5,150.00");
+    const shortStep = PROOF_STEPS.find((s) => s.id === "short");
+    expect(shortStep?.attack).toBe(19);
+    expect(shortStep?.links.map((l) => l.url.slice(-44, -36))).toEqual(["7At9Ynuw"]);
+    expect(shortStep?.quote).toContain("Attack 19");
     // The lot book: 416 days in nine anchor_batch calls, read back from the export of
     // data/lots/lot-book.json; the step links the last anchor of each plant.
     expect(lotBook()).toMatchObject({
@@ -119,7 +143,7 @@ describe("judge mode", () => {
       "anchor_batch, 22 daily roots for Acme Riverside (Sep 15 – Nov 12)",
       "anchor_batch, 49 daily roots for Acme Lakeview (Jan 5 – Oct 9)",
     ]);
-    expect(passport?.body).toContain("416 days anchored in 9 transactions");
+    expect(passport?.body).toContain("anchored together on Nov 3, 2026");
   });
 
   it("opens on the plant Acme bought, the limits HQ sets, and the bank-details email", () => {
@@ -146,15 +170,21 @@ describe("judge mode", () => {
     expect(draft.understood).toBe(true);
     expect(draft.call?.method).toBe("set_agent_policy");
     expect(draft.changes).toEqual([{ field: "per_po_limit", from: "$2,500.00", to: "$3,000.00" }]);
-    const bank = JUDGE_STEPS.find((s) => s.id === "attacks");
+    const bank = PROOF_STEPS.find((s) => s.id === "attacks");
     expect(bank?.attack).toBe(15);
     expect(bank?.quote).toBe("Kevin: “Nothing in a message changes where an order pays.”");
-    expect(JUDGE_STEPS.find((s) => s.id === "takeover")?.curtain).toBe(false);
-    expect(savingLine()).toContain("Hollow Pine ($1,150.00) cover 2.6× his modeled cost");
+    const takeover = JUDGE_STEPS.find((s) => s.id === "takeover");
+    expect(takeover?.curtain).toBe(false);
+    expect(takeover?.prelude?.page).toBe("spreadsheets");
+    expect(takeover?.body).toContain("19 rows");
+    // The core limits stop shows the recorded limits only; the plain-words change is a proof.
+    expect(JUDGE_STEPS.find((s) => s.id === "limits")?.overlay).toBe("limits");
+    expect(JUDGE_STEPS.find((s) => s.id === "limits")?.body).not.toContain("3,000");
+    expect(PROOF_STEPS.find((s) => s.id === "policy")?.overlay).toBe("policy");
   });
 
   it("gives each step a recorded step, a reading time and a short body", () => {
-    for (const s of JUDGE_STEPS) {
+    for (const s of [...JUDGE_STEPS, ...PROOF_STEPS]) {
       expect(s.at).toBeGreaterThanOrEqual(0);
       expect(s.seconds).toBeGreaterThan(0);
       expect(s.body.length).toBeLessThan(320);

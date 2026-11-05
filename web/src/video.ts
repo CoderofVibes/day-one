@@ -133,7 +133,7 @@ export const BEATS: Beat[] = [
     panel: "desk",
     shots: [{ step: 8, ms: 10_000 }],
     captions: [
-      "Linda approves from her phone. That YES becomes a transaction signed by the director's account.",
+      "Linda approves from her phone. In this replay her text is simulated and signed with the director's account.",
       "Kevin's account can't approve it, and Linda never touches a wallet.",
     ],
   },
@@ -206,7 +206,7 @@ export const BEATS: Beat[] = [
     panel: "close",
     shots: [{ step: 14, ms: 7_000 }],
     captions: [
-      "Kevin doesn't need crypto. The plant, the new owners and the supplier do: one rule none of them can quietly change.",
+      "Kevin does the purchasing work. The contract enforces the limits HQ sets, and every recorded payment traces to its order.",
     ],
   },
 ];
@@ -250,7 +250,9 @@ const TOUR_EXTRA: Beat[] = [
     curtain: true,
     camera: "money",
     shots: [{ step: 14, ms: 7_000 }],
-    captions: ["Same contract, real stablecoin: PO-1047 paid $19.00 in Circle's testnet USDC."],
+    captions: [
+      "Real stablecoin: PO-1047 paid $19.00 in Circle's testnet USDC, on a separate deployment of the first contract version.",
+    ],
   },
   {
     id: "attacks",

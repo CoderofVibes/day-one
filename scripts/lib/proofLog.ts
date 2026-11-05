@@ -211,7 +211,7 @@ export function flows(root: string): Flow[] {
     {
       title: "Group purchase: PO-G-2001",
       claim:
-        "Three plants pool their ascorbic acid demand into one pooled PO; each plant's share is checked against its own limits and approved by its own director, and the supplier is paid once.",
+        "Two plants (Riverside and Hollow Pine) pool their ascorbic acid demand into one pooled PO; Lakeview has no need and stays out. Each plant's share is checked against its own limits and approved by its own director, and the supplier is paid once.",
       replay: ["npm run demo:group"],
       notProved: "Plants A and C are seeded plants with the same fictional data as Plant B.",
       source: [],
@@ -225,7 +225,7 @@ export function flows(root: string): Flow[] {
         "Suppliers commit hashed quotes before a deadline and reveal them after it. The contract refuses a quote from an unapproved supplier, a reveal or an award before the deadline, a reveal that does not match its commitment and a quote after the deadline; the award goes to a revealed quote.",
       replay: ["npm run sealed", "npm run verify:round -- data/sealed/RFQ-2611-02.round.json"],
       notProved:
-        "Commit-and-reveal hides quote contents until the reveal, not the fact that a supplier quoted.",
+        "This is commit-and-reveal, not encryption. A supplier can disclose its own quote, the fact that a supplier quoted is public, and transaction arguments stay public even when a reveal is refused.",
       source: [],
       calls: callsFrom(
         readJson<{ entries: RawEntry[] }>(root, "data/sealed/RFQ-2611-02.chain.json").entries,
@@ -234,9 +234,10 @@ export function flows(root: string): Flow[] {
     {
       title: "PO-1047 in Circle testnet USDC",
       claim:
-        "The same contract code, deployed with Circle's testnet USDC as its token, takes PO-1047 from submission to payment.",
+        "A separate deployment of the first contract version, with Circle's testnet USDC as its token, takes PO-1047 from submission to payment.",
       replay: ["npm run usdc"],
-      notProved: "A $19.00 order on testnet; the main run uses DTUSD.",
+      notProved:
+        "A $19.00 order on testnet; the main run uses DTUSD. This deployment runs the first contract version, so it does not demonstrate v2 receipt settlement or signed decisions.",
       source: [],
       calls: callsFrom(
         readJson<{ entries: RawEntry[] }>(root, "data/usdc/PO-1047-chain.json").entries,

@@ -1,10 +1,11 @@
 // Judge mode (brief §5.12): the header's "Judge mode" button or ?judge=1. Dark theme, the curtain
 // on, the recorded run from its start, and a stepper docked at the bottom (a bottom sheet on a
-// phone) that walks the thirteen steps of src/judge.ts: each opens its page at its recorded step,
+// phone) that walks the six core stops of src/judge.ts: each opens its page at its recorded step,
 // cuts a spotlight round what to look at, says what happened in a sentence or two and links the
-// recorded testnet transactions. Recorded data only: no wallet, no login, no network.
+// recorded testnet transactions. Then "See every proof" opens any of the other proofs the same way
+// and lists every transaction. Recorded data only: no wallet, no login, no network.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { storedTheme } from "./chrome.ts";
 import usdc from "./data/usdc.json";
 import {
@@ -13,10 +14,10 @@ import {
   type JudgeStep,
   LIMIT_REQUEST,
   limitDraft,
+  PROOF_STEPS,
   proofLinks,
   RECORDED_POLICY,
   remaining,
-  savingLine,
   TOUR_URL,
   testCount,
   usd,
@@ -85,7 +86,7 @@ export function UsdcCard() {
       </h3>
       <p className="small">
         <code>{usdc.contract}</code> paid <code>{usdc.supplier}</code>; the order is{" "}
-        {usdc.status.toLowerCase()}.
+        {usdc.status.toLowerCase()}. This deployment runs the first contract version.
       </p>
       <ol className="judge-calls">
         {usdc.calls.map((c) => (
@@ -101,20 +102,31 @@ export function UsdcCard() {
   );
 }
 
-/** HQ's request in plain words and Kevin's draft of the owner call, from the recorded policy. */
+const units = (u: string) => usd(Number(u) / 1e6);
+
+/** Kevin's recorded limits as the contract holds them: nothing else on the core stop. */
 function LimitsCard() {
   const p = RECORDED_POLICY;
-  const draft = limitDraft();
-  const units = (u: string) => usd(Number(u) / 1e6);
   return (
     <section className="judge-card" aria-label="Kevin's limits">
       <h3>Kevin's limits, on the contract</h3>
-      <p className="small">Recorded limits · an unsigned example change</p>
+      <p className="small">As the recorded run read them</p>
       <p className="judge-chips">
         <span>{units(p.perPoLimit)} per order</span>
         <span>{units(p.monthlyLimit)} a month</span>
         <span>over that: Linda approves</span>
       </p>
+    </section>
+  );
+}
+
+/** HQ's request in plain words and Kevin's draft of the owner call, from the recorded policy. */
+function PolicyCard() {
+  const draft = limitDraft();
+  return (
+    <section className="judge-card" aria-label="A limit change in plain words">
+      <h3>A limit change in plain words</h3>
+      <p className="small">An unsigned example; the recorded limit stays $2,500</p>
       <p className="small">HQ asks: “{LIMIT_REQUEST}”</p>
       <p className="small">Kevin's draft: {draft.sentence}</p>
       <p className="small">Try other wording:</p>
@@ -158,36 +170,52 @@ function TourCard() {
   );
 }
 
-function Summary({ onBack, onExit }: { onBack: () => void; onExit: () => void }) {
+/** "See every proof": each proof opens like a step; every transaction folded below. */
+function Summary({
+  onBack,
+  onExit,
+  onOpen,
+}: {
+  onBack: () => void;
+  onExit: () => void;
+  onOpen: (k: number) => void;
+}) {
   const links = proofLinks();
   const tests = testCount();
   return (
     <div className="judge-summary">
-      <h2>Selected transaction proofs</h2>
+      <h2>See every proof</h2>
       <p className="small">
-        {links.length} recorded testnet transactions from this walkthrough, each opening on the
-        explorer. The replays, the reconciliation and the signed answers are evidence too.{" "}
+        Choose a claim to inspect its recording, checks and limitations.{" "}
         {tests
-          ? `${tests.tests.toLocaleString("en-US")} automated tests passed in the last full run (${tests.at.slice(0, 10)}): npm run check.`
-          : "The automated tests run with npm run check; the attacks alone with npm run test:attacks."}
+          ? `${tests.tests.toLocaleString("en-US")} automated tests passed in the last full run (${tests.at.slice(0, 10)}); npm run prove checks every claim with no keys.`
+          : "npm run prove checks every claim with no keys."}
       </p>
-      <p className="small">{savingLine()}</p>
-      <ol className="judge-proofs">
-        {links.map((l) => (
-          <li key={l.url}>
-            <a href={l.url} target="_blank" rel="noreferrer">
-              {l.label} ↗
-            </a>
+      <ol className="judge-proof-list">
+        {PROOF_STEPS.map((s, k) => (
+          <li key={s.id}>
+            <button type="button" onClick={() => onOpen(k)}>
+              {s.title} →
+            </button>
           </li>
         ))}
       </ol>
+      <details className="judge-all">
+        <summary>All {links.length} recorded testnet transactions in judge mode</summary>
+        <ol className="judge-proofs">
+          {links.map((l) => (
+            <li key={l.url}>
+              <a href={l.url} target="_blank" rel="noreferrer">
+                {l.label} ↗
+              </a>
+            </li>
+          ))}
+        </ol>
+      </details>
       <div className="judge-controls">
         <button type="button" onClick={onBack}>
           ← Back
         </button>
-        <a className="judge-primary" href={TOUR_URL}>
-          Play the tour
-        </a>
         <button type="button" onClick={onExit}>
           Exit judge mode
         </button>
@@ -210,35 +238,43 @@ export default function JudgeMode({
   onExit: () => void;
 }) {
   useDarkWhileOpen();
-  const [i, setI] = useState(() =>
-    start === "summary" ? JUDGE_STEPS.length : Math.min(start, JUDGE_STEPS.length - 1),
-  );
-  const step = JUDGE_STEPS[i];
+  // The latest go(): a prelude timer must not call the one from the render that started it, which
+  // still thinks the page is the one before the prelude.
+  const goRef = useRef(go);
+  goRef.current = go;
   const total = JUDGE_STEPS.length;
+  const [i, setI] = useState(() => (start === "summary" ? total : Math.min(start, total - 1)));
+  /** A proof opened from the summary (an index into PROOF_STEPS), or null. */
+  const [proof, setProof] = useState<number | null>(null);
+  /** True while a step's prelude page is showing. */
+  const [preluding, setPreluding] = useState(false);
+  const step: JudgeStep | undefined =
+    proof !== null ? PROOF_STEPS[proof] : i < total ? JUDGE_STEPS[i] : undefined;
 
-  // Each step opens its page at its recorded step; the first flips the curtain on after a beat,
-  // so the judge sees the staff screen first.
+  // Each step opens its page at its recorded step; a prelude shows its own page first.
   // biome-ignore lint/correctness/useExhaustiveDependencies: a step opens once, when it is reached
   useEffect(() => {
-    setJudgeParam(i >= total ? "summary" : String(i + 1));
+    setJudgeParam(proof !== null || i >= total ? "summary" : String(i + 1));
+    setPreluding(false);
     if (!step) {
+      setParam("attack", null);
       setCurtain(true);
       return;
     }
     setParam("attack", step.attack ? String(step.attack) : null);
-    go(step.page, step.at);
-    if (step.curtain === false) {
-      setCurtain(false);
+    setCurtain(step.curtain !== false);
+    if (!step.prelude) {
+      goRef.current(step.page, step.at);
       return;
     }
-    if (step.id !== "kevin") {
-      setCurtain(true);
-      return;
-    }
-    setCurtain(false);
-    const flip = setTimeout(() => setCurtain(true), 1500);
-    return () => clearTimeout(flip);
-  }, [i]);
+    setPreluding(true);
+    goRef.current(step.prelude.page, step.prelude.at);
+    const t = setTimeout(() => {
+      setPreluding(false);
+      goRef.current(step.page, step.at);
+    }, step.prelude.ms);
+    return () => clearTimeout(t);
+  }, [i, proof]);
 
   const exit = () => {
     setJudgeParam(null);
@@ -255,23 +291,31 @@ export default function JudgeMode({
     return () => window.removeEventListener("keydown", onKey);
   });
 
+  const spotlight = preluding ? step?.prelude?.spotlight : step?.spotlight;
+  const overlay = preluding ? undefined : step?.overlay;
+
   return (
     <>
-      {step?.spotlight && <Spotlight selector={step.spotlight} />}
-      {step?.overlay && (
-        <div className={`judge-overlay ${step.overlay}`}>
-          {step.overlay === "phone" && <LindaPhone curtain replied />}
-          {step.overlay === "usdc" && <UsdcCard />}
-          {step.overlay === "limits" && <LimitsCard />}
-          {step.overlay === "attestation" && <AttestationCard />}
-          {step.overlay === "tour" && <TourCard />}
+      {spotlight && <Spotlight key={spotlight} selector={spotlight} />}
+      {overlay && (
+        <div className={`judge-overlay ${overlay}`}>
+          {overlay === "phone" && <LindaPhone curtain replied />}
+          {overlay === "usdc" && <UsdcCard />}
+          {overlay === "limits" && <LimitsCard />}
+          {overlay === "policy" && <PolicyCard />}
+          {overlay === "attestation" && <AttestationCard />}
+          {overlay === "tour" && <TourCard />}
         </div>
       )}
       <section className="judge-bar" aria-label="Judge mode" data-step={step?.id ?? "summary"}>
         <div className="judge-head">
           <span className="judge-badge">Judge mode</span>
           <span className="small">
-            {step ? `Step ${i + 1} of ${total} · ${remaining(i)}` : "Summary"}
+            {proof !== null
+              ? "Every proof"
+              : step
+                ? `Step ${i + 1} of ${total} · ${remaining(i)}`
+                : "Every proof"}
           </span>
           <ol className="judge-dots" aria-label="Steps">
             {JUDGE_STEPS.map((s, n) => (
@@ -279,9 +323,12 @@ export default function JudgeMode({
                 <button
                   type="button"
                   aria-label={`Step ${n + 1}: ${s.title}`}
-                  aria-current={n === i ? "step" : undefined}
-                  className={n < i ? "done" : undefined}
-                  onClick={() => setI(n)}
+                  aria-current={proof === null && n === i ? "step" : undefined}
+                  className={proof !== null || n < i ? "done" : undefined}
+                  onClick={() => {
+                    setProof(null);
+                    setI(n);
+                  }}
                 />
               </li>
             ))}
@@ -296,23 +343,36 @@ export default function JudgeMode({
             <p>{step.body}</p>
             {step.quote && <p className="judge-quote">{step.quote}</p>}
             <ChainLinks step={step} />
-            <div className="judge-controls">
-              <button type="button" onClick={() => setI(i - 1)} disabled={i === 0}>
-                ← Back
-              </button>
-              <button type="button" onClick={() => setI(total)}>
-                Skip to summary
-              </button>
-              <button type="button" onClick={exit}>
-                Exit
-              </button>
-              <button type="button" className="judge-primary" onClick={() => setI(i + 1)}>
-                {i === total - 1 ? "Summary →" : "Next →"}
-              </button>
-            </div>
+            {proof !== null ? (
+              <div className="judge-controls">
+                <button type="button" className="judge-primary" onClick={() => setProof(null)}>
+                  ← Every proof
+                </button>
+                <button type="button" onClick={exit}>
+                  Exit
+                </button>
+              </div>
+            ) : (
+              <div className="judge-controls">
+                <button type="button" onClick={() => setI(i - 1)} disabled={i === 0}>
+                  ← Back
+                </button>
+                <button type="button" className="judge-primary" onClick={() => setI(i + 1)}>
+                  {i === total - 1 ? "See every proof →" : "Next →"}
+                </button>
+                {i < total - 1 && (
+                  <button type="button" onClick={() => setI(total)}>
+                    Every proof
+                  </button>
+                )}
+                <button type="button" onClick={exit}>
+                  Exit
+                </button>
+              </div>
+            )}
           </>
         ) : (
-          <Summary onBack={() => setI(total - 1)} onExit={exit} />
+          <Summary onBack={() => setI(total - 1)} onExit={exit} onOpen={(k) => setProof(k)} />
         )}
       </section>
     </>

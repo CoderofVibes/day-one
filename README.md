@@ -1,37 +1,16 @@
 # Day One
 
-The ops lead sets Kevin's purchasing limits once. Kevin does the paperwork and buys within those limits; larger orders wait for the plant director's approval. Day One is a purchasing and inventory assistant, Kevin, for a small manufacturing plant its new owner has just acquired.
+The ops lead sets Kevin's purchasing limits once. Kevin does the paperwork and buys within them; larger orders wait for the plant director. Day One is Kevin, a purchasing and inventory assistant for a small manufacturing plant its new owner has just acquired.
 
-Kevin reads batch records, tracks stock and lots across plants, compares quotes, prepares orders, matches invoices and writes the morning brief. A NEAR testnet contract enforces his limits, holds each funded order's money in escrow and, after receipt and QC release, pays the order's fixed supplier for what the plant counted into stock. Plant staff see dollars, POs and decisions, never wallets or gas. Day One plugs into the acquirer's ERP: POs, receipts and payments flow into its books and reconcile against the contract.
+Kevin reads batch records, checks stock and compares quotes. A NEAR testnet contract enforces his limits, holds each funded PO's money in escrow and, after receipt and QC release, pays the supplier for what the plant counted into stock. Staff see dollars, POs and decisions, never wallets or gas.
 
-This is a working prototype with fictional plant data and replayable testnet transactions. The director's text reply is simulated, staff keys are held by the server, and the ERP is a mock shaped like NetSuite. The main run settles in DTUSD, our labeled test token; a separate $19.00 order settles in Circle testnet USDC.
+Follow PO-1042 below: Kevin prepared a $5,150 order, the contract refused it against his $2,500 limit, and Linda, the plant director, approved it. Northgate was paid after the plant received and released the lot. Every step is a recorded testnet call that replays with no keys.
+
+This is a prototype with fictional plant data. The director's text reply is simulated, staff keys are held by the server, and the ERP is a mock shaped like NetSuite. The main run settles in DTUSD, a labeled test token; a separate $19.00 order settles in Circle testnet USDC on the first contract version.
 
 Built at NEAR HACKATHON (Oct 19 – Nov 14, 2026). Tracks: `realworld`, `business`, `security`, `agents`.
 
-> Commands and outputs below were re-run on Nov 3, 2026 against that day's testnet recordings: `npm run prove`, `npm run check` and every command in the tables from the repo, step 5 by `cargo test` in WSL. Features that are not built are left out rather than described.
-
-## What is in it, layer by layer
-
-Each row is one layer of the product, the keyless command that proves it from a clean clone, and where the evidence is. `npm run prove` runs the whole column and prints one PASS/FAIL row per claim (14 of 14 on Nov 3, Markdown or `-- --json`); [`PROOF.md`](PROOF.md) lists all 93 recorded transactions with the contract code behind each; [`llms.txt`](llms.txt) is the short version for a reviewer's coding agent.
-
-| Layer | What it does for the plant | Prove it (no keys) | Recorded on testnet, or in the repo |
-|---|---|---|---|
-| Inventory and forecast | Reads the plant's batch records and its messy spreadsheet, keeps stock and lots across three plants, and says what to buy before it runs short | `npm run demo` (steps 1–3), `npm run import -- "data/imports/INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx"`, `npm run brief` | batch record BR-B-1045 [anchored](https://testnet.nearblocks.io/txns/6s1dZ5pxjB8vLwdQge7VPXF6bqeeuU4uh87podFzJQao) and verifiable with `npm run verify` |
-| ERP books and reconciliation | Mirrors POs, receipts and the contract's payments into the acquirer's mock ERP, and checks ledger, ERP and contract against each other | `npm run erp:reconcile` → `7 of 7 checks match.` | `erp/`, `server/src/erp-connector/` |
-| Spending limits and approvals | HQ sets Kevin's per-order and monthly limits and category caps once, on the contract; an order over them is refused until the director approves it, and Kevin's account cannot change the rules | `npm run demo`, `npm run escrow`, `npm run policy -- "<request>"` (a dry run) | [refused `submit_po`](https://testnet.nearblocks.io/txns/3bYd13vyu89wuD299y6gvmZMu1rV1vbBGQpKVEZdp1UC), [relayed `approve_po`](https://testnet.nearblocks.io/txns/FpXXzZBkeCNouQgJn7eF8k7oe57dzgd3n21yhvFzGAtt) |
-| PO escrow | A funded order's money waits in the contract and goes only to the supplier fixed on the PO, only after the receiving lead confirms delivery and QC releases the lot | `npm run demo` | [`qc_release` paying Northgate](https://testnet.nearblocks.io/txns/3F2TYKZ1bZPsKmrNt5aqJSQi49RaN9wTMUYdXDr1Hd6e) |
-| Pay for what reached stock | At release the contract pays the smallest of the escrow, the escrow pro rata to the quantity counted into stock, and the recorded invoice, and returns the rest to the budget; a receipt over the order is refused | `npm run test:attacks` (attack 19) | [`qc_release` paying half, `settlement_adjusted`](https://testnet.nearblocks.io/txns/7At9Ynuwyg5QcvzVWuHfQFHdFquy76Kob4apReYJtbZX), [over-receipt refused](https://testnet.nearblocks.io/txns/Ceo1GPby1vUUyWnKw4ykH7pJFScknC2nrgZ2VUeL8nNz) |
-| Enclave-signed decisions | Above $2,500 a PO must carry Kevin's decision, signed by his model inside NEAR AI Cloud's TEE for that exact PO; the contract recovers the signer with `env::ecrecover` and checks it is the attested key | `npm run demo` (PO-1042 carries one), `npm run verify:attestation` | [funded `submit_po` with its `decision` argument](https://testnet.nearblocks.io/txns/3TzgR7iY2zrbYHvnbNphFfeJJaLQwLi4tPfGkQCH1oee), `contracts/spend-policy/src/attest.rs` |
-| Attested model answers | Every recorded answer (batch-record readings, the mailbox, Talk to Kevin, the decision) is signed by an attested NEAR AI Cloud model; the report and 31 signatures are re-checked | `npm run verify:attestation` (`-- --offline` without Intel and NVIDIA), `npm run ask` | `data/replay/attestation.json` |
-| Supplier credentials | HQ issues, revokes and lets lapse supplier credentials; a PO to a revoked, expired, out-of-category or suspended supplier is refused, and a director's approval cannot override it | `npm run test:attacks` (attacks 8–11) | [revoked, refused](https://testnet.nearblocks.io/txns/9PeopoR9J3666HLYkTsce2RC2gzJAJnVQP3hRaRQHJ4K), [refused again after the director approved](https://testnet.nearblocks.io/txns/4L2fwiJXHJLCqDeyf34FfJdVoSvj1sQTpp1ryjHuD78x) |
-| Sealed quotes | Suppliers commit a quote's fingerprint before a deadline and reveal after it; an early reveal, an early award, a changed price and a late quote are refused | `npm run sealed`, `npm run verify:round -- data/sealed/RFQ-2611-02.round.json` | [early award refused](https://testnet.nearblocks.io/txns/HH6paWfDwopYgQFXrwDyWxezURKB8oamPzs9XjkFTMq6), [award](https://testnet.nearblocks.io/txns/79Rn1nSB54G1FvvhfZnNRxcsd2zTKAaC311cQ1TFeYPz) |
-| Group purchasing | Plants pool one order; each plant's share is checked against its own limits and approved by its own director, and the supplier is paid once | `npm run demo:group` | PO-G-2001 [refused](https://testnet.nearblocks.io/txns/KnHGiVzjZ7z5QzDakjTdXmD2f5NcatoFTLWd8aqR48c), [funded](https://testnet.nearblocks.io/txns/9LFKVTcHuDX5HUQWunewhQU356qxHayyDcivPDdMbjdY), [paid](https://testnet.nearblocks.io/txns/42HXtYRxtB3qV3P4TSAp8uSFyPp1NsrJq5QpzGzmgnko) |
-| USDC | The contract code deployed a second time with Circle's testnet USDC as its token settles PO-1047 ($19.00) | `npm run usdc` | [19.00 USDC to Bayfront](https://testnet.nearblocks.io/txns/5utQmP8fo5tmf3A1wQjTDZsfdXjWy861EXfp8KvXY9Xf) on `spend-policy-usdc` |
-| Lot passports and recall | 1,955 lot records (receipts, QC decisions, batches, shipments, the contract's payments) hashed into one Merkle root per plant per day, 416 roots anchored; one lot's story is proved against the chain without disclosing any other record; a recall drill traces a supplier lot across plants | `npm run lots`, `npm run verify:lot -- ASC-261116-01` → `3 of 3 records proved` | [`anchor_batch`, 45 daily roots for Hollow Pine](https://testnet.nearblocks.io/txns/7ioGtdSz5V9bZuh7R67F5iZs9jX5Tb1uQ9Nq78FXfcK4); in the browser, `?page=lots&prove=1` |
-| Attack suite | 21 recorded attacks on Kevin, the ERP path, supplier credentials, sealed quotes and the plant itself, each one refused | `npm run test:attacks` → `21 of 21 attacks failed against Kevin.` | the Attack arena page; 23 refusals in `PROOF.md` |
-| Twelve-month history and the twin | Each plant's year of stock, batches and orders regenerated from its seed around the recorded week, and a 3D site plan that lights as Day One reaches each department, with the contract's calls behind the curtain | `npm run world -- --check` | `data/world/<plant>.json`; the Plant twin page (`?page=map`) |
-
-The contract is `spend-policy-v2.acme-holdings.testnet` (deployed Nov 3; the first deployment, `spend-policy.acme-holdings.testnet`, stays on testnet with its earlier anchors). Kevin is the purchasing agent. The contract limits are one enforced layer around him, not the whole product; the escrow is scoped to purchase orders and is not a general multisig.
+[Try the recorded run](#try-it-no-keys-needed) · [Claims and evidence](#claims-and-evidence) · [Limitations](#limitations) · `npm ci && npm run prove` checks every claim with no keys.
 
 ## Ray's Monday
 
@@ -48,6 +27,23 @@ The desk's model is `web/src/desk.ts`, tested without a browser (`docs/DESK.md`)
 <img src="docs/readme/linda-phone.png" alt="The same desk on a 390 px phone in dark mode: Linda Park's dark card with the limit bar, Approve PO-1042, and the Why you, What you decide and What happens next answers" width="232">
 
 </details>
+
+## What else is in it
+
+PO-1042 is one order. Around it, each of these has a keyless command and testnet evidence in the [layer index](#layer-index):
+
+- **Inventory and forecast:** reads batch records and a messy spreadsheet, tracks stock and lots across three plants, and says what to buy before it runs short.
+- **Enforced limits and escrow:** HQ's limits, the director's approval and each PO's escrow are contract rules, not app settings.
+- **Pay for what reached stock:** at QC release the contract pays the smallest of the escrow, the escrow pro rata to the quantity counted in, and the invoice.
+- **Signed decisions:** above $2,500 the contract checks Kevin's decision, signed by his model inside NEAR AI Cloud's enclave for that exact PO.
+- **Supplier credentials and sealed quotes:** HQ-issued credentials gate new POs; suppliers commit a quote before a deadline and reveal it after.
+- **Lot passports and recall:** one Merkle root per plant per day of lot records is anchored on chain, and one lot's records are proved without disclosing the rest.
+- **ERP books:** a mock NetSuite-shaped ERP reconciles with the plant ledger and the contract.
+- **21 recorded attacks,** each stopped by Kevin, the mock ERP or the contract.
+- **Group buying and USDC:** two plants pooling one PO; one $19.00 order in Circle testnet USDC.
+- **A seeded twelve-month history and a 3D plant twin** that lights up as Day One reaches each department.
+
+Kevin is the purchasing agent. The contract limits are one enforced layer around him, not the whole product; the escrow is scoped to purchase orders and is not a general multisig.
 
 ## The problem
 
@@ -83,7 +79,7 @@ Requires Node 24 (`.nvmrc`). The replays use recordings in the repo and need no 
 4. Copy that file, add 1 g (`1000` mg) to one `actual_mg` in the copy and verify the copy → `MISMATCH`, exit code 1. Keep the original unchanged.
 5. `cd contracts && cargo test` → 106 unit tests and four sandbox tests on a local NEAR node with our own test token: the purchasing loop and a group purchase (`purchasing_loop_on_sandbox`, `group_purchasing_on_sandbox`), the four supplier-credential attacks, and a sealed quote round. The unit tests include the receipt-bound settlement (`a_short_delivery_pays_pro_rata_and_returns_the_rest`) and the signed decision (`above_the_threshold_a_po_needs_a_signed_decision`).
 
-**In a browser:** `npm run web:build`, then serve `web/dist/` from any static file server. A bare first visit starts Kevin's introduction and offers a two-minute walk through Ray's first shift. `/?judge=1` is judge mode, thirteen steps in about six minutes: the plant Acme just bought, the limits HQ sets, then the proof, with transaction links where a step made a recorded call (`docs/JUDGE_MODE.md`). `/?judge=summary` lists those links; `/?video=1&tour=1` plays the 2:40 captioned tour; `/?page=lots&prove=1` opens Lots & recall with one lot's passport being checked against the roots on chain. The static site replays recordings; nothing it shows submits a transaction. The full check, `npm run check`, runs Biome, `tsc` and 985 Vitest tests in 131 files (Nov 3).
+**In a browser:** `npm run web:build`, then serve `web/dist/` from any static file server. A bare first visit starts Kevin's introduction and offers a two-minute walk through Ray's first shift. `/?judge=1` is judge mode: PO-1042 from need to payment in six stops, about three and a half minutes, with transaction links where a step made a recorded call, then "See every proof" for the attacks, the group buy, USDC and the rest (`docs/JUDGE_MODE.md`). `/?judge=summary` opens that list; `/?video=1&tour=1` plays the 2:40 captioned tour; `/?page=lots&prove=1` opens Lots & recall with one lot's passport being checked against the roots on chain. The static site replays recordings; nothing it shows submits a transaction. The full check, `npm run check`, runs Biome, `tsc` and 985 Vitest tests in 131 files (Nov 3).
 
 <p><img src="docs/readme/first-shift-intro.png" alt="Kevin's introduction on a first visit, light: Acme Holdings, Hollow Pine Tablet Co.; a thin green line that is Kevin, moving as he speaks, his name under it, and the first caption, Good morning, Ray. Welcome to Acme's Day One program at Hollow Pine.; buttons Show me around and Open my desk" width="560"></p>
 
@@ -102,7 +98,7 @@ Cites: PO-1042, Spending limits
 Signed in enclave ✓ (z-ai/glm-5.3-flash, chat a7e140b72f8f4e9cbdf8dd1132b508e9)
 ```
 
-<details><summary>Every other command that runs without keys (`npm run prove` runs them all)</summary>
+<details><summary>Additional keyless commands; some read testnet</summary>
 
 | Command | Shows |
 |---|---|
@@ -190,7 +186,38 @@ Kevin does not need crypto. The acquirer, the plant and the supplier need purcha
 5. **The model's decision is checked on chain.** NEAR AI Cloud signs each answer inside its TEE with a secp256k1 key; the contract recovers that signer with `env::ecrecover` and refuses a PO over $2,500 whose decision was not signed by the attested key for that PO's hash: [funded `submit_po` carrying the decision](https://testnet.nearblocks.io/txns/3TzgR7iY2zrbYHvnbNphFfeJJaLQwLi4tPfGkQCH1oee).
 6. **Tamper-evident records.** Record fingerprints (salted sha256) and one Merkle root per plant per day of lot records are stored in contract state; anyone can recompute one and compare with `npm run verify` or `npm run verify:lot`.
 
+## Layer index
+
+Each row is one layer of the product, the keyless command that proves it from a clean clone, and where the evidence is. `npm run prove` runs the checks in its claim scorecard and prints the result first (14 of 14 on Nov 3; `-- --json` for one JSON line; `--quick` skips lint and tests and still reads testnet); [`PROOF.md`](PROOF.md) lists all 93 recorded transactions with the contract code behind each; [`llms.txt`](llms.txt) is the short version for a reviewer's coding agent.
+
+<details><summary>Explore the product layers and their evidence</summary>
+
+| Layer | What it does for the plant | Prove it (no keys) | Recorded on testnet, or in the repo |
+|---|---|---|---|
+| Inventory and forecast | Reads the plant's batch records and its messy spreadsheet, keeps stock and lots across three plants, and says what to buy before it runs short | `npm run demo` (steps 1–3), `npm run import -- "data/imports/INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx"`, `npm run brief` | batch record BR-B-1045 [anchored](https://testnet.nearblocks.io/txns/6s1dZ5pxjB8vLwdQge7VPXF6bqeeuU4uh87podFzJQao) and verifiable with `npm run verify` |
+| ERP books and reconciliation | Mirrors POs, receipts and the contract's payments into the acquirer's mock ERP, and checks ledger, ERP and contract against each other | `npm run erp:reconcile` → `7 of 7 checks match.` | `erp/`, `server/src/erp-connector/` |
+| Spending limits and approvals | HQ sets Kevin's per-order and monthly limits and category caps once, on the contract; an order over them is refused until the director approves it, and Kevin's account cannot change the rules | `npm run demo`, `npm run escrow`, `npm run policy -- "<request>"` (a dry run) | [refused `submit_po`](https://testnet.nearblocks.io/txns/3bYd13vyu89wuD299y6gvmZMu1rV1vbBGQpKVEZdp1UC), [relayed `approve_po`](https://testnet.nearblocks.io/txns/FpXXzZBkeCNouQgJn7eF8k7oe57dzgd3n21yhvFzGAtt) |
+| PO escrow | A funded order's money waits in the contract and goes only to the supplier fixed on the PO, only after the receiving lead confirms delivery and QC releases the lot | `npm run demo` | [`qc_release` paying Northgate](https://testnet.nearblocks.io/txns/3F2TYKZ1bZPsKmrNt5aqJSQi49RaN9wTMUYdXDr1Hd6e) |
+| Pay for what reached stock | At release the contract pays the smallest of the escrow, the escrow pro rata to the quantity counted into stock, and the recorded invoice, and returns the rest to the budget; a receipt over the order is refused | `npm run test:attacks` (attack 19) | [`qc_release` paying half, `settlement_adjusted`](https://testnet.nearblocks.io/txns/7At9Ynuwyg5QcvzVWuHfQFHdFquy76Kob4apReYJtbZX), [over-receipt refused](https://testnet.nearblocks.io/txns/Ceo1GPby1vUUyWnKw4ykH7pJFScknC2nrgZ2VUeL8nNz) |
+| Enclave-signed decisions | Above $2,500 a PO must carry Kevin's decision, signed by his model inside NEAR AI Cloud's TEE for that exact PO; the contract recovers the signer with `env::ecrecover` and checks it is the attested key | `npm run demo` (PO-1042 carries one), `npm run verify:attestation` | [funded `submit_po` with its `decision` argument](https://testnet.nearblocks.io/txns/3TzgR7iY2zrbYHvnbNphFfeJJaLQwLi4tPfGkQCH1oee), `contracts/spend-policy/src/attest.rs` |
+| Attested model answers | Every recorded answer (batch-record readings, the mailbox, Talk to Kevin, the decision) is signed by an attested NEAR AI Cloud model; the report and 31 signatures are re-checked | `npm run verify:attestation` (`-- --offline` without Intel and NVIDIA), `npm run ask` | `data/replay/attestation.json` |
+| Supplier credentials | HQ issues, revokes and lets lapse supplier credentials; a PO to a revoked, expired, out-of-category or suspended supplier is refused, and a director's approval cannot override it | `npm run test:attacks` (attacks 8–11) | [revoked, refused](https://testnet.nearblocks.io/txns/9PeopoR9J3666HLYkTsce2RC2gzJAJnVQP3hRaRQHJ4K), [refused again after the director approved](https://testnet.nearblocks.io/txns/4L2fwiJXHJLCqDeyf34FfJdVoSvj1sQTpp1ryjHuD78x) |
+| Sealed quotes | Suppliers commit a quote's fingerprint before a deadline and reveal after it; an early reveal, an early award, a changed price and a late quote are refused | `npm run sealed`, `npm run verify:round -- data/sealed/RFQ-2611-02.round.json` | [early award refused](https://testnet.nearblocks.io/txns/HH6paWfDwopYgQFXrwDyWxezURKB8oamPzs9XjkFTMq6), [award](https://testnet.nearblocks.io/txns/79Rn1nSB54G1FvvhfZnNRxcsd2zTKAaC311cQ1TFeYPz) |
+| Group purchasing | Plants pool one order; each plant's share is checked against its own limits and approved by its own director, and the supplier is paid once | `npm run demo:group` | PO-G-2001 [refused](https://testnet.nearblocks.io/txns/KnHGiVzjZ7z5QzDakjTdXmD2f5NcatoFTLWd8aqR48c), [funded](https://testnet.nearblocks.io/txns/9LFKVTcHuDX5HUQWunewhQU356qxHayyDcivPDdMbjdY), [paid](https://testnet.nearblocks.io/txns/42HXtYRxtB3qV3P4TSAp8uSFyPp1NsrJq5QpzGzmgnko) |
+| USDC | The contract code deployed a second time with Circle's testnet USDC as its token settles PO-1047 ($19.00) | `npm run usdc` | [19.00 USDC to Bayfront](https://testnet.nearblocks.io/txns/5utQmP8fo5tmf3A1wQjTDZsfdXjWy861EXfp8KvXY9Xf) on `spend-policy-usdc` |
+| Lot passports and recall | 1,955 lot records (receipts, QC decisions, batches, shipments, the contract's payments) hashed into one Merkle root per plant per day, 416 roots anchored; one lot's story is proved against the chain without disclosing any other record; a recall drill traces a supplier lot across plants | `npm run lots`, `npm run verify:lot -- ASC-261116-01` → `3 of 3 records proved` | [`anchor_batch`, 45 daily roots for Hollow Pine](https://testnet.nearblocks.io/txns/7ioGtdSz5V9bZuh7R67F5iZs9jX5Tb1uQ9Nq78FXfcK4); in the browser, `?page=lots&prove=1` |
+| Attack suite | 21 recorded attacks on Kevin, the ERP path, supplier credentials, sealed quotes and the plant itself, each one refused | `npm run test:attacks` → `21 of 21 attacks failed against Kevin.` | the Attack arena page; 23 refusals in `PROOF.md` |
+| Twelve-month history and the twin | Each plant's year of stock, batches and orders regenerated from its seed around the recorded week, and a 3D site plan that lights as Day One reaches each department, with the contract's calls behind the curtain | `npm run world -- --check` | `data/world/<plant>.json`; the Plant twin page (`?page=map`) |
+
+</details>
+
+The contract is `spend-policy-v2.acme-holdings.testnet` (deployed Nov 3; the first deployment, `spend-policy.acme-holdings.testnet`, stays on testnet with its earlier anchors). Kevin is the purchasing agent. The contract limits are one enforced layer around him, not the whole product; the escrow is scoped to purchase orders and is not a general multisig.
+
 ## Claims and evidence
+
+> Commands and outputs below were re-run on Nov 3, 2026 against that day's testnet recordings: `npm run prove`, `npm run check` and every command in the tables from the repo, step 5 by `cargo test` in WSL. Features that are not built are left out rather than described.
+
+<details><summary>Code, tests and transactions for each claim</summary>
 
 | Claim | Code | Test | On testnet |
 |---|---|---|---|
@@ -215,6 +242,8 @@ Kevin does not need crypto. The acquirer, the plant and the supplier need purcha
 | The contract takes its token at deployment: the same code settles a PO in Circle's testnet USDC | `new(owner, treasury, token)`, `agents/kevin/src/usdcOrder.ts`, `scripts/usdc.ts` | `agents/kevin/src/usdcOrder.test.ts`; `npm run usdc` | PO-1047 on `spend-policy-usdc.acme-holdings.testnet` (the first contract version, before receipt settlement and signed decisions): [funded](https://testnet.nearblocks.io/txns/5x72zCmhZhtEoUGjqhxsxxfgS2grMzDjJroYztyUx6Er), [relayed receipt](https://testnet.nearblocks.io/txns/7at1y7jYpF6ACMAe4QiTNEQLw1PnFG5XsLLzAH9qytJY), [released, 19.00 USDC to Bayfront](https://testnet.nearblocks.io/txns/5utQmP8fo5tmf3A1wQjTDZsfdXjWy861EXfp8KvXY9Xf) |
 | Kevin's recorded answers (batch records, the inbox, the mailbox, Talk to Kevin, the PO decision) were signed by an attested NEAR AI Cloud model; a signature shows where an answer came from, not that it is right | `server/src/attestation/verify.ts` | `server/src/attestation/attestation.test.ts`; `npm run verify:attestation` | — (the report, 15 enclave checks and 31 answer signatures in `data/replay/attestation.json`; the main run's own three answers are the curtain's "3 signed answers in this run") |
 | The proof points on the pages are rebuilt from the recordings, and `PROOF.md` is generated from them | `scripts/lib/proofPoints.ts`, `data/proof-points.json`; `scripts/proof-log.ts` | `scripts/lib/proofPoints.test.ts` rebuilds the groups from the recordings and compares them byte for byte; `npm run proof -- --check` | `npm run proof -- --live` → `93 of 93 transactions found on testnet as recorded.` (Nov 3, archival RPC) |
+
+</details>
 
 ## What is on chain and what is not
 

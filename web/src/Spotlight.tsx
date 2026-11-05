@@ -25,11 +25,19 @@ export function Spotlight({
       if (!el) return setBox(null);
       if (!scrolled.current) {
         scrolled.current = true;
-        // A tall subject (the attack list) shows its top under the sticky header, not its middle.
-        const top = el.getBoundingClientRect().top + window.scrollY;
-        if (el.getBoundingClientRect().height > window.innerHeight * 0.5)
-          window.scrollTo({ top: Math.max(0, top - 80) });
-        else el.scrollIntoView({ block: "center" });
+        // Fit the subject into what the guide leaves visible: below the sticky header and, on a
+        // phone, above the bottom sheet (judge mode's bar or the first shift's dock), measured as
+        // it is now rather than assumed. A subject taller than that shows its top.
+        const header = 80;
+        const sheet = [...document.querySelectorAll<HTMLElement>(".judge-bar, .fs-dock")]
+          .map((s) => s.getBoundingClientRect())
+          .find((s) => s.width >= window.innerWidth * 0.9 && s.bottom >= window.innerHeight - 4);
+        const bottom = sheet ? sheet.top : window.innerHeight;
+        const room = Math.max(120, bottom - header);
+        const r = el.getBoundingClientRect();
+        const top = r.top + window.scrollY;
+        const offset = r.height > room ? 0 : (room - r.height) / 2;
+        window.scrollTo({ top: Math.max(0, top - header - offset) });
       }
       const r = el.getBoundingClientRect();
       setBox((was) =>

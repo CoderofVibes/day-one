@@ -64,6 +64,8 @@
   --curtain-line: #2a2f37;
   --curtain-refused: #ff9a92;
   --curtain-ok: #74c69d;
+  --curtain-wait: #f2c46d;
+  --curtain-held: #8fb8f0;
 
   /* Map and twin */
   --map-floor: #e9e7e0;
