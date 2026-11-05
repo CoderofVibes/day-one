@@ -52,6 +52,13 @@ function lineOf(text: string, index: number): number {
   return line;
 }
 
+/** The text with every fenced code block's contents replaced by spaces, newlines kept. */
+export function maskFences(text: string): string {
+  return text.replace(/^(\s*)(```|~~~)[^\n]*\n[\s\S]*?^\s*\2[^\n]*$/gm, (block) =>
+    block.replace(/[^\n]/g, " "),
+  );
+}
+
 function isDated(path: string): boolean {
   return DATED_RECORDS.some((re) => re.test(path));
 }
@@ -82,7 +89,9 @@ export function docProblems(files: DocFile[], repo: DocsRepo): DocProblem[] {
       problems.push({ file: path, line: lineOf(text, index), kind, target });
     };
 
-    for (const m of text.matchAll(LINK)) {
+    // A link inside a fenced code block is example text (a proposed README, say), not a link in
+    // this file, so the link check reads the text with fenced blocks blanked; lines keep their numbers.
+    for (const m of maskFences(text).matchAll(LINK)) {
       const raw = m[1];
       if (/^(https?:|mailto:|#)/.test(raw)) continue;
       const target = decodeURI(raw.split("#")[0].split("?")[0]);

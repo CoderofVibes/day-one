@@ -30,6 +30,8 @@ export interface Beat {
   captions: string[];
   /** Behind the curtain: chain details on the map and the transaction log in the panel. */
   curtain?: boolean;
+  /** A curtain panel that holds its top (the signed-decision card) instead of scrolling the log. */
+  hold?: boolean;
   /** A photo shown beside the plant-floor cards. */
   photo?: "batch-record" | "packing-slip";
   /** The tour: a camera keyframe, one of the twin's Views presets (twin3d/scene.ts VIEWS). */
@@ -138,12 +140,26 @@ export const BEATS: Beat[] = [
     ],
   },
   {
+    // The v2 contract (CONTRACTS §11 F): the retry carries Kevin's model decision, signed in NEAR
+    // AI Cloud's enclave for this PO's fingerprint, the same one the refused attempt carried. The
+    // curtain's decision card (Curtain.tsx DecisionCard) shows both facts side by side.
+    id: "signed",
+    title: "Signed decision",
+    panel: "curtain",
+    curtain: true,
+    hold: true,
+    shots: [{ step: 9, ms: 8_000 }],
+    captions: [
+      "Kevin's model signed its approval in a secure enclave, for this exact order.",
+      "A signature isn't permission: it was refused until Linda said yes.",
+    ],
+  },
+  {
     id: "delivery",
     title: "Delivery",
     panel: "feed",
     shots: [
-      { step: 9, ms: 3_000 },
-      { step: 10, ms: 2_000 },
+      { step: 10, ms: 3_000 },
       { step: 11, ms: 5_000 },
     ],
     captions: [
@@ -173,7 +189,7 @@ export const BEATS: Beat[] = [
       { step: 13, ms: 5_000 },
     ],
     captions: [
-      "Priya releases the lot. The supplier is paid that second, not in net-30.",
+      "Priya releases the lot. The supplier is paid that second, for what was counted in, not in net-30.",
       "Accounting sees it matched and paid.",
     ],
   },
@@ -192,12 +208,11 @@ export const BEATS: Beat[] = [
     title: "Behind the curtain",
     panel: "curtain",
     curtain: true,
-    shots: [{ step: 14, ms: 16_000 }],
+    shots: [{ step: 14, ms: 11_000 }],
     captions: [
-      "Here's what's underneath. Every person and agent is a NEAR account.",
-      "Kevin's key can only ask; the contract decides.",
+      "Underneath, everyone is a NEAR account. Kevin's key can only ask; the contract decides.",
       "Staff hold zero tokens; Day One pays their gas.",
-      "Records are fingerprinted on-chain, so nobody can quietly edit history.",
+      "Every lot's records are anchored on chain, so nobody can quietly edit history.",
     ],
   },
   {
@@ -220,6 +235,7 @@ export const BEATS: Beat[] = [
  */
 const TOUR_CHANGES: Record<string, Partial<Beat>> = {
   refusal: { curtain: true },
+  signed: { camera: "money" },
   approve: { panel: "phone", curtain: true, camera: "money" },
   delivery: { camera: "receiving" },
   paid: { curtain: true },
@@ -263,7 +279,7 @@ const TOUR_EXTRA: Beat[] = [
     shots: [{ step: 14, ms: 10_000 }],
     captions: [
       "Then we attacked it: lookalike vendors, fake invoices, new bank details, a supplier paying itself.",
-      "Twenty-one attacks, twenty-one refusals: by Kevin, the ERP or the contract.",
+      "Twenty-one attacks, twenty-one refusals: by Kevin, the mock ERP or the contract.",
     ],
   },
 ];

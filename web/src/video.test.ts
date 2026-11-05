@@ -20,9 +20,14 @@ import {
 describe("the video timeline", () => {
   it("fits X's 2:20 limit and keeps the storyboard's length", () => {
     expect(totalMs()).toBeLessThanOrEqual(140_000);
-    // 1:57 plus the 8.5 s "New bank details" beat (OPEN_QUESTIONS #41) and the 9 s "Morning
-    // review" beat (research 24 §2).
-    expect(clockLabel(totalMs())).toBe("2:14");
+    // 1:57 plus the 8.5 s "New bank details" beat (OPEN_QUESTIONS #41), the 9 s "Morning
+    // review" beat (research 24 §2) and, Nov 4, the 8 s "Signed decision" beat less 7 s trimmed
+    // from "Delivery" and "Behind the curtain".
+    expect(clockLabel(totalMs())).toBe("2:15");
+    const signed = BEATS.find((b) => b.id === "signed");
+    expect(signed?.panel).toBe("curtain");
+    expect(signed?.hold).toBe(true);
+    expect(signed?.shots).toEqual([{ step: 9, ms: 8_000 }]);
   });
 
   it("walks every recorded step in order, ending on the last", () => {
@@ -122,11 +127,11 @@ describe("the tour", () => {
     expect(ids.filter((id) => BEATS.some((b) => b.id === id))).toEqual(BEATS.map((b) => b.id));
     expect(ids.slice(-4)).toEqual(["group-buy", "usdc", "attacks", "close"]);
     expect(totalMs(TOUR_BEATS) - totalMs()).toBe(26_000);
-    expect(clockLabel(totalMs(TOUR_BEATS))).toBe("2:40");
+    expect(clockLabel(totalMs(TOUR_BEATS))).toBe("2:41");
   });
 
   it("leaves the take as it was", () => {
-    expect(clockLabel(totalMs())).toBe("2:14");
+    expect(clockLabel(totalMs())).toBe("2:15");
     expect(BEATS.some((b) => b.camera || b.run || b.panel === "phone")).toBe(false);
     expect(BEATS.find((b) => b.id === "refusal")?.curtain).toBeUndefined();
   });

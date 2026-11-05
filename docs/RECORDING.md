@@ -1,6 +1,6 @@
 # Recording the demo video — 15 minutes
 
-The video page plays the recorded testnet run to the storyboard (docs/DEMO_STORYBOARD.md) on a fixed clock: 2:14, captions burned in, no mouse. Every take is identical, so you can record the screen once and the voice-over separately. Settings from research 16.
+The video page plays the recorded testnet run to the storyboard (docs/DEMO_STORYBOARD.md) on a fixed clock: 2:15, captions burned in, no mouse. Every take is identical, so you can record the screen once and the voice-over separately. Settings from research 16.
 
 ## 1. Set up the PC (3 min)
 
@@ -26,7 +26,7 @@ Then open Edge as a bare window (no address bar, a clean profile with no extensi
 & "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --app="http://localhost:8787/?video=1&view=3d" --window-size=1920,1080 --user-data-dir="$env:TEMP\dayone-video"
 ```
 
-Press **F11** for full screen. You should see "BEFORE", the paper batch record and a green hint "Space to start · R to go back · 2:14 in all". The page always plays the recorded run, even with the API running, so nothing touches testnet.
+Press **F11** for full screen. You should see "BEFORE", the paper batch record and a green hint "Space to start · R to go back · 2:15 in all". The page always plays the recorded run, even with the API running, so nothing touches testnet.
 
 Use `?video=1` without `&view=3d` for the flat map instead.
 
@@ -46,14 +46,14 @@ Check **View → Stats** during a test take: "frames missed due to rendering lag
 ## 4. Record (2 min a take)
 
 1. Press R in the browser (back to the start), then Start Recording in OBS.
-2. Click once on the Edge window to focus it, move the mouse off-screen, press **Space**. The take runs 2:14 and stops on the closing card.
+2. Click once on the Edge window to focus it, move the mouse off-screen, press **Space**. The take runs 2:15 and stops on the closing card.
 3. Stop Recording.
 
 **Retake one beat:** add `&from=<beat>` to the address, e.g. `?video=1&view=3d&from=refusal`; the hint shows where it starts. Beat names are in the table below.
 
-**Voice-over:** read the caption on screen in each beat (they are the storyboard's voice-over drafts). Easiest: record the screen take silent, then record your voice in Clipchamp while the take plays, and line it up beat by beat.
+**Voice-over:** read the caption on screen in each beat; docs/VOICEOVER.md lays them out with start times and shorter spoken lines for the tight beats. Easiest: record the screen take silent, then record your voice in Clipchamp while the take plays, and line it up beat by beat.
 
-## 5. Shot list (checked against the real run, Oct 29)
+## 5. Shot list (checked against the real run, Nov 4)
 
 | Time | Beat (`from=`) | On screen | Caption |
 |---|---|---|---|
@@ -65,12 +65,15 @@ Check **View → Stats** during a test take: "frames missed due to rendering lag
 | 0:45–0:55 | Quotes (`quotes`) | Forecast, then the three quotes, QuickChem excluded; suppliers' pad | He asks the supplier agents for quotes… |
 | 0:55–1:05 | The refusal (`refusal`) | The desk: PO-1041 lands in "Handled for you" as done, then PO-1042's bar runs past Kevin's $2,500 limit and resolves into Linda's decision card; on the twin the coin bounces off the vault | Kevin isn't allowed to spend that much… |
 | 1:05–1:15 | Approve by text (`approve`) | The desk: Linda's approval slides into "Handled for you" and the order's track pins its payment condition (Northgate is paid only when QC releases the lot); the tour shows her phone instead | Linda approves from her phone… |
-| 1:15–1:25 | Delivery (`delivery`) | Funded retry, the packing slip photo, the lot in quarantine (amber cage) | The truck shows up… |
-| 1:25–1:33 | New bank details (`bank-details`) | Marcy's screen: the attack suite's hidden-text invoice for PO-1042, held: "asks for payment to a different account; PO-1042 can only pay Northgate Ingredients"; a small curtain inset with the account the order was funded for and the funding transaction | Then an invoice arrives saying Northgate's bank details changed… |
-| 1:33–1:43 | QC release → paid (`paid`) | The desk: Priya's release, then the gold line from QC release to Paid and "Condition met"; "PO-1042 is paid."; the payout flies to Northgate on the twin | Priya releases the lot… |
-| 1:43–1:51 | The numbers reconcile (`reconcile`) | Mass balance: Riverside's 115.2 kg (6.84%), Hollow Pine to the gram | Material in, batches out… |
-| 1:51–2:07 | Behind the curtain (`curtain`) | Who signed what and who paid the gas, then the transaction log scrolling, with the refusal in red | Here's what's underneath… |
-| 2:07–2:14 | Close (`close`) | "Day One · Built at NEAR HACKATHON", team credit | Kevin doesn't need crypto… |
+| 1:15–1:23 | Signed decision (`signed`) | Behind the curtain, held at its top: PO-1042's decision card at the funded retry, the verified signed APPROVE and "Contract result: funded after Linda approved", the same fingerprint and response as the refused attempt | Kevin's model signed its approval… |
+| 1:23–1:31 | Delivery (`delivery`) | Northgate ships, the packing slip photo, the lot in quarantine (amber cage) | The truck shows up… |
+| 1:31–1:39 | New bank details (`bank-details`) | Marcy's screen: the attack suite's hidden-text invoice for PO-1042, held: "asks for payment to a different account; PO-1042 can only pay Northgate Ingredients"; a small curtain inset with the account the order was funded for and the funding transaction | Then an invoice arrives saying Northgate's bank details changed… |
+| 1:39–1:49 | QC release → paid (`paid`) | The desk: Priya's release, then the gold line from QC release to Paid and "Condition met"; "PO-1042 is paid."; the payout flies to Northgate on the twin | Priya releases the lot… |
+| 1:49–1:57 | The numbers reconcile (`reconcile`) | Mass balance: Riverside's 115.2 kg (6.84%), Hollow Pine to the gram | Material in, batches out… |
+| 1:57–2:08 | Behind the curtain (`curtain`) | Who signed what and who paid the gas, then the transaction log scrolling, with the refusal in red | Underneath, everyone is a NEAR account… |
+| 2:08–2:15 | Close (`close`) | "Day One · Built at NEAR HACKATHON", team credit | Kevin does the purchasing work… |
+
+**Signed-decision beat (Nov 4, OPEN_QUESTIONS #51):** 8 s after Linda's approval, the curtain panel held at its top (`hold` in `web/src/video.ts`) so the decision card stays in frame; "Delivery" gave up its first 2 s (the funded retry moved to the new beat) and "Behind the curtain" went from 16 s to 11 s. The take is 2:15; `npm run web:tour` with `TAKE=1`: 15 beats, 28 of 28 captions in order, no console errors; the tour is 2:41, 33 of 33.
 
 The "New bank details" beat (OPEN_QUESTIONS #41) is 8.5 s, so both its captions stay under 20 characters a second; the take was 2:05 after it, under the 2:20 export limit, and nothing was trimmed. The invoice is the attack suite's recorded one (`data/attacks/invoices.json`, read with the recorded model answer in `data/replay/attacks-llm.json`), video-only: it sends nothing to the contract and prints nothing in the transcript.
 
@@ -81,7 +84,7 @@ The "New bank details" beat (OPEN_QUESTIONS #41) is 8.5 s, so both its captions 
 **Kevin's desk in the take (Oct 31, docs/DESK.md):** four beats show the desk in place of the floor cards: Ray's morning, the limit, Linda's approval and the payment, so the video carries the desk's three motions on the recorded steps. The desk takes the wider share of the frame on those beats and the twin steps back beside it. Same length (2:14), captions within 20 characters a second; `npm run web:tour` with `TAKE=1` and without: every caption in order, no console errors. The desk's buttons show but are never clicked; the clock moves the run.
 
 **Explorer insets** (optional, from the storyboard): screenshots of these recorded transactions on testnet.nearblocks.io:
-the refusal, [FQepeewB…](https://testnet.nearblocks.io/txns/FQepeewB243A1V4EUdUbv5PxeMeBqeZPagFrTVDvQ1af); Linda's relayed approval, [EW5A8qi3…](https://testnet.nearblocks.io/txns/EW5A8qi3nSzvccdQ6hbTJbrd3qxMeK9dSU6SvtHxyJh8); the payout, [2zwgaHgW…](https://testnet.nearblocks.io/txns/2zwgaHgWrYy1yQVcaSw7UHGsPsvdaUvZrBVqyJzewmSn).
+the refusal, [3bYd13vy…](https://testnet.nearblocks.io/txns/3bYd13vyu89wuD299y6gvmZMu1rV1vbBGQpKVEZdp1UC); Linda's relayed approval, [FpXXzZBk…](https://testnet.nearblocks.io/txns/FpXXzZBkeCNouQgJn7eF8k7oe57dzgd3n21yhvFzGAtt); the funded retry carrying the signed decision, [3TzgR7iY…](https://testnet.nearblocks.io/txns/3TzgR7iY2zrbYHvnbNphFfeJJaLQwLi4tPfGkQCH1oee); the payout, [3F2TYKZ1…](https://testnet.nearblocks.io/txns/3F2TYKZ1bZPsKmrNt5aqJSQi49RaN9wTMUYdXDr1Hd6e) (the Nov 4 recording on `spend-policy-v2`).
 
 ## 6. Export
 
@@ -92,15 +95,15 @@ Cut to **≤ 2:20** (X's limit for a standard account) in Clipchamp: H.264 MP4, 
 - **Before (0:00):** the storyboard asks for a clipboard, someone keying grams into an ERP grid and a whiteboard of lot numbers. The product has none of that; the page shows the paper batch record Kevin reads. Film real B-roll only with fictional paper (no real employer's documents).
 - **Kevin's desk (0:16):** in the live run Ray opens each draft and signs it himself (`POST /api/review/<id>/sign`); the video shows the drafts waiting on the desk and signs nothing.
 - **Batch record (0:25):** "one field highlighted": BR-B-1045 has no flagged field (all 8 materials within tolerance), so nothing is highlighted. Kevin's line says so.
-- **Delivery (1:15):** "Tommy takes a picture, Kevin matches it": Tommy's photo is kept with the receipt, but Kevin matches the slip's details from its file, not by reading the photo (not built). The caption says "checks in the packing slip"; say it that way in the voice-over too.
-- **Reconcile (1:43):** the storyboard's "172.8 kg unaccounted" is over three batches; the ledger holds two (BR-A-2207 is not extracted), so the screen shows 115.2 kg at the same 6.84%. The caption names no number.
-- **Behind the curtain (1:51):** "Kevin's key can call: submit_po, anchor" is out of date (his key reaches eight methods since the Oct 29 redeploy) and the page does not show key permissions; it shows what each account signed in the run and who paid. "One anchor verified MATCH" is a terminal command (`npm run verify -- data/batch-records/BR-B-1045.json`), not on the page: record it as a separate clip if you want it.
-- **Recording checklist:** the storyboard says to record from a live run after a fresh reset; research 16 says record the replay so testnet latency never shows. The video page plays the Oct 29 testnet recording, whose every transaction is real and linked; no reset is needed.
-- **Close (2:07):** add the repo URL in the edit once the repo is public (Nov 13).
+- **Delivery (1:23):** "Tommy takes a picture, Kevin matches it": Tommy's photo is kept with the receipt, but Kevin matches the slip's details from its file, not by reading the photo (not built). The caption says "checks in the packing slip"; say it that way in the voice-over too.
+- **Reconcile (1:49):** the storyboard's "172.8 kg unaccounted" is over three batches; the ledger holds two (BR-A-2207 is not extracted), so the screen shows 115.2 kg at the same 6.84%. The caption names no number.
+- **Behind the curtain (1:57):** "Kevin's key can call: submit_po, anchor" is out of date (his key reaches nine methods since the v2 deploy) and the page does not show key permissions; it shows what each account signed in the run and who paid. "One anchor verified MATCH" is a terminal command (`npm run verify -- data/batch-records/BR-B-1045.json`), not on the page: record it as a separate clip if you want it.
+- **Recording checklist:** research 16 says record the replay so testnet latency never shows. The video page plays the Nov 4 testnet recording, whose every transaction is real and linked; no reset is needed.
+- **Close (2:08):** add the repo URL in the edit once the repo is public (Nov 13).
 
 ## 7. The tour and clean capture (Oct 31)
 
-The tour is the take with more in it, for judges and for a longer cut: `?video=1&tour=1` (judge mode's last step opens it with `&autostart=1`). Same recorded run, same fixed clock, 2:40 in all; `web/src/video.ts` `TOUR_BEATS`, the take's `BEATS` untouched.
+The tour is the take with more in it, for judges and for a longer cut: `?video=1&tour=1` (judge mode's last step opens it with `&autostart=1`). Same recorded run, same fixed clock, 2:41 in all; `web/src/video.ts` `TOUR_BEATS`, the take's `BEATS` untouched.
 
 - **What changes from the take:** the curtain is on at the refusal (the twin's red shield), at Linda's approval and at the payout; "Approve by text" shows Linda's phone in the panel in place of the desk (the same `LindaPhone` as `?page=approve&po=1042`); the camera flies to the twin's "HQ & Escrow" view for the approval and "Receiving & Warehouse" for the delivery; and three beats come after "Behind the curtain": Group buy (2:07, `from=group-buy`), Real USDC (2:16, `from=usdc`), 21 of 21 refused (2:23, `from=attacks`; the count is read from the arena recording), then the close (2:33).
 - **Controls:** T or Space starts, Space pauses, → and ← skip a beat, R goes back to the start; the same as buttons bottom right, for a mouse.

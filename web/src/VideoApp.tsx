@@ -100,7 +100,8 @@ export default function VideoApp() {
       const next = frameAt(clock.current, beats);
       setFrame((was) => (same(was, next) ? was : next));
       const el = panel.current;
-      if (el && next.beat.panel === "curtain") {
+      if (el && next.beat.panel === "curtain" && next.beat.hold) el.scrollTop = 0;
+      else if (el && next.beat.panel === "curtain") {
         // Hold the top for a fifth of the beat, then scroll to the end by four fifths.
         const u = Math.min(1, Math.max(0, (next.beatU - 0.2) / 0.6));
         el.scrollTop = Math.round(u * (el.scrollHeight - el.clientHeight));

@@ -57,6 +57,13 @@ describe("docs against the repo", () => {
     expect(docProblems([{ path: "README.md", text }], repo)).toHaveLength(1);
   });
 
+  it("skips links inside fenced code blocks and keeps line numbers after them", () => {
+    const text = "```markdown\n[proposed](gone.md)\n```\n[real](missing.md)";
+    expect(docProblems([{ path: "docs/astra/x.md", text }], repo).map(formatProblem)).toEqual([
+      "docs/astra/x.md:4: broken link missing.md",
+    ]);
+  });
+
   it("checks only the links of a dated record", () => {
     const text = "[gone](../gone.md); `server/ledger/old.ts`; `npm run demo-replay`.";
     const problems = docProblems([{ path: "docs/research/01-usdc.md", text }], repo);
