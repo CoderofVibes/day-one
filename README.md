@@ -294,6 +294,8 @@ A NetSuite adapter behind the existing connector interface; real SMS; a login pr
 
 Built at NEAR HACKATHON (Oct 19 – Nov 14, 2026). Tracks: `realworld`, `business`, `security`, `agents`.
 
+**Other entry by the same builder:** [Everstreet](https://github.com/CoderofVibes/everstreet), a platform for starting, running and selling a small business, is a separate submission to this hackathon. The two projects are independent and share no code, data or deployments.
+
 Built by DadMod, Tony Langford's solo entry. Claude Code wrote the code. Muse, an AI project manager, kept the plan. GPT-6 Astra (OpenAI's Codex CLI) is a second seat that proposes and reviews but does not write code: its passes designed the product's look, Kevin's introduction and the first-shift walkthrough, and reviewed this README and judge mode; Claude built what was taken up (`docs/astra/`, `docs/ASTRA.md`). Tony is a chemical engineer with ten years on manufacturing floors, now a systems engineer at an advanced nuclear reactor startup, building this on paternity leave. Planning docs: `docs/`. Conventions for coding agents: `AGENTS.md`. License: MIT (`LICENSE`).
 
 Two of the Nov 3 additions, settlement bound to the receipt and an enclave signature checked by the contract, were prompted by ideas seen in other public hackathon work; both were designed from Day One's own data model and written from scratch, and no other project's code was read (`docs/REFERENCE_IDEAS_PLAN.md`).

@@ -50,11 +50,11 @@ The voice-over column is the caption burned in on screen; docs/VOICEOVER.md has 
 
 > Built by DadMod: one nuclear-startup engineer running on newborn hours, a project manager that never sleeps, and an engineer that never gets tired of tests. Kevin is the only one of us allowed near the purchase orders.
 
-## X post (draft, ≤280 characters)
+## X post (draft, ≤280 characters; rewritten Nov 4 to HACKATHON.md's demo-post rules)
 
-> Day One: Kevin is an AI purchasing agent for small plants that just changed hands. He reads batch records, gets quotes and drafts POs. Spending limits live on NEAR, approvals come by text, suppliers are paid after receipt and QC. No wallets on the floor. Built at NEAR HACKATHON. 🧵
+> A small plant just changed hands. Its new owner needs purchasing to run on day one. Kevin, an AI agent, buys inside limits the owner sets on NEAR: over the limit, the contract refuses until the director says yes. Built at NEAR HACKATHON @NEARProtocol #NEARHackathon
 
-Attach the video. Reply in thread with the repo link and the refused-transaction explorer link. The human posts it; nothing is posted without explicit confirmation.
+265 characters. It leads with the user problem, names NEAR's concrete role and carries both required tags; @NearLegion and @NearBuilders are optional (they fit only if the post stays under 280). Attach the video (the rules say screenshots are not enough for a local-only demo, Q-012). Reply in thread with the repo link, the refused-transaction explorer link and one real question, for example "Plant people: what would you want an agent like this to never do?" The human posts it; nothing is posted without explicit confirmation.
 
 ---
 
@@ -62,10 +62,14 @@ Attach the video. Reply in thread with the repo link and the refused-transaction
 
 - **Project name:** Day One: AI Purchasing for Acquired Plants
 - **Team lead name:** Anthony Langford (Tony, Oct 27)
-- **Email:** given by Tony Oct 27; kept out of the repo because it goes public. Tony enters it himself on Nov 14.
+- **Email:** given by Tony Oct 27; kept out of the repo because it goes public. Tony enters it himself. One email may send 2 submissions (HACKATHON.md, Nov 4), so the same one can serve Everstreet.
 - **Team size:** 1
 - **NEAR wallet address (payout):** `Tony's prize account` (Meteor Wallet, created by Tony Oct 27; agents never touch it)
-- **Tracks:** `realworld`, `business`, `security`, `agents` (+ `privacy` and `swarms` only if their features exist on Nov 13)
+- **Tracks:** `realworld`, `business`, `security`, `agents`; `privacy` and `swarms` both have built features (attested inference on NEAR AI Cloud; the recorded group buy and sealed round) and wait on Tony's choice (OPEN_QUESTIONS #53). The form shows display names: Real-World Money, Autonomous Business, AI Security & Defense, Agent Economy, Privacy & Private AI, AI Swarms.
+- **Repository link:** the public URL of `github.com/CoderofVibes/day-one`, once Tony makes it public.
+- **Demo post link:** the X post's URL, once posted.
+- **Consent:** Tony ticks it himself.
+- **Order (Tony, Nov 4):** Everstreet is submitted first, then Day One.
 - **Website field:** leave empty. HACKATHON.md says it is a spam honeypot and any value is rejected (research 19).
 - **Description (draft, ≤2000 characters; matches the README's opening, Nov 4):**
 

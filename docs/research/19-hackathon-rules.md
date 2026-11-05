@@ -7,7 +7,7 @@
 - `idea` 20–2000 characters.
 - URLs ≤300 characters.
 - `nearAddress` is a lowercase mainnet named account or a 64-character implicit account.
-- A duplicate project name **or email** is rejected (409), so there is one attempt.
+- A duplicate project name **or email** is rejected (409), so there is one attempt. (Superseded Nov 4: an email may send 2 submissions and the repository is what must be unique; see "Re-read 2026-11-04" below.)
 - Submissions are accepted only during Nov 1–14 UTC.
 - A consent checkbox is required.
 
@@ -135,3 +135,20 @@ Second-hand: Grok's summary of public X posts, not pages we opened. Treat names 
 - **Field size:** 23 unique hackathon posters in #dev-chat, Oct 19–26 (about 16 look like builders; most projects unnamed). Named: Nymira, Scrim, Tidepool. Visible field is small; Discord posters are not entrants.
 - **Not official:** near.army and @NEAR_hckthn. Only nearhackathon.com and its HACKATHON.md count for submission.
 - **Posting decision (Tony, Oct 26):** HOLD, do not post the two questions; Muse watches #dev-chat daily and near.org/blog every 12 hours for the answer.
+
+## Re-read 2026-11-04 (HACKATHON.md pasted by Tony in Claude's chat)
+
+Read as data; nothing submitted, posted or published. Changes against the earlier reads, and what each means for Day One (the to-do list is `docs/SUBMISSION_CHECKLIST.md`):
+
+- **Uniqueness is per repository, not per name or email.** A repeat of the same repository answers 409. An email may send at most 2 submissions. The earlier "duplicate name or email is rejected" no longer holds.
+- **Q-015, one person, several projects:** allowed for at most 2 different, independent projects, and each README must name the other. Tony's second entry is Everstreet; Day One's README and `llms.txt` name it since Nov 4.
+- **Q-003, earlier work:** a dedicated branch, or tags `pre-hackathon` and `hackathon-submission`, plus a README section linking the diff. Day One has `pre-hackathon` and the README's baseline paragraph; the `hackathon-submission` tag and the diff link come at the freeze.
+- **Q-005:** libraries, templates and AI-written code are allowed, listed in the README (Day One's "Libraries and versions" table).
+- **Q-010:** testnet-only projects are eligible in every track.
+- **Q-012:** a local-only demo is fine with a public repo, a reproducible README and an X post with a video; screenshots alone are not enough when judges cannot open the demo. A hosted demo is a plus, kept up to Nov 18, ideally Nov 25.
+- **Q-013:** the team keeps all rights; organizers get non-exclusive promotional rights.
+- **Q-014:** any license; the repo stays public through judging; add a LICENSE file (Day One: MIT).
+- **Q-016:** one payment within 30 days of results. **Q-017:** Claude Code and Codex screen (reproducibility, feature check, report, preliminary score); humans decide.
+- **The demo post** says it was built at NEAR HACKATHON and tags @NEARProtocol and #NEARHackathon (optionally @NearLegion and @NearBuilders), with the video or screenshots attached. Advice: lead with the user problem, show one complete moment, say concretely what NEAR does, and give a next step (repo link, a real question).
+- **Mistakes after submitting** go through https://nearhackathon.com/request-changes (email, NEAR account and repository as submitted, the fields to change, a Discord or Telegram handle); never a second submission.
+- **Track ids** unchanged; NEAR AI credits and a Telegram builders chat are new in the Facts table. Q-000 to Q-017 are the rules section.

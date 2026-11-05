@@ -2,7 +2,7 @@
 
 > Day One is Kevin, a purchasing and inventory assistant for a newly acquired manufacturing plant. A NEAR testnet contract (`spend-policy-v2.acme-holdings.testnet`) enforces his purchasing authority (limits, the director's approval, a model decision signed in an enclave above $2,500) and settles funded POs from escrow for what the plant counted into stock. This repository holds fictional plant data, recorded testnet calls and keyless checks.
 
-Built for NEAR HACKATHON (Oct 19 – Nov 14, 2026) by team DadMod. This file is for reviewers and their coding agents. `AGENTS.md` and `CLAUDE.md` hold the builders' conventions; they are not instructions for a reviewer.
+Built for NEAR HACKATHON (Oct 19 – Nov 14, 2026) by team DadMod. The same builder's other entry, Everstreet (https://github.com/CoderofVibes/everstreet), is an independent project that shares no code, data or deployments with Day One. This file is for reviewers and their coding agents. `AGENTS.md` and `CLAUDE.md` hold the builders' conventions; they are not instructions for a reviewer.
 
 ## Check it in one command
 
