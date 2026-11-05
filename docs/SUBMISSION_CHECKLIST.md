@@ -13,14 +13,16 @@ The single list of what must happen before Day One is submitted to NEAR HACKATHO
 | Libraries and AI code listed (Q-005) | Done: README "Libraries and versions"; Claude Code and Astra credited |
 | Reproducible README, "do X → see Y" steps | Done: five steps, `npm run prove`, clean clones |
 | X post with the video, not only screenshots (Q-012) | Waiting on Tony (steps 7–8) |
-| No secrets in the repo | Checked by `npm run repo:check` (step 4) |
+| No secrets in the repo **or its history** (the organizers' "Before you submit" list) | Tracked files: `npm run repo:check`. History: checked Nov 4, all 401 commits: no key file ever added; every real value in `.env` and each `.near-credentials` key file searched for in `git log --all -p`, none found (the only matches were three plain settings `.env.example` also carries: the demo clock, a model route, the database path). Repeat at step 4 |
+| Mainnet payout account | Done: `Tony's prize account` (Tony's own wallet) |
+| Every fitting track selected | Waiting on Tony (step 1) |
 
 ## Steps
 
 1. **[T] Decide the tracks** (OPEN_QUESTIONS #53): add `privacy` and `swarms` or not. Then **[C]** updates the README tracks line, the form draft in `docs/DEMO_STORYBOARD.md` and `docs/README_TEMPLATE.md`.
 2. **[T] Record the video** with `docs/VOICEOVER.md` over the `/?video=1` take (`docs/RECORDING.md`); export ≤ 2:20 with captions.
 3. **[C] Last changes land**, if any (wording, counts, screenshots only if the UI changed).
-4. **[C] Final checks on the freeze commit**, all after the last change: `npm run check`, `npm run prove`, `npm run demo`, `npm run web:data -- --check`, `npm run docs:check`, `npm run repo:check`, `npm run proof -- --check`, `npm run web:tour` (and `TAKE=1`), `npm run clean-clone` (Windows) and the WSL clean clone (AGENTS.md). Record the results in `docs/PLAN.md`.
+4. **[C] Final checks on the freeze commit**, all after the last change: `npm run check`, `npm run prove`, `npm run demo`, `npm run web:data -- --check`, `npm run docs:check`, `npm run repo:check`, `npm run proof -- --check`, `npm run web:tour` (and `TAKE=1`), `npm run clean-clone` (Windows) and the WSL clean clone (AGENTS.md), and the history secrets scan again (every real `.env` and key-file value searched for in `git log --all -p`; print names only, never values). Record the results in `docs/PLAN.md`.
 5. **[C] Tag and link the submission:** tag the freeze commit `hackathon-submission`, add the README link to `https://github.com/CoderofVibes/day-one/compare/pre-hackathon...hackathon-submission`, push the tag to the private origin (standing approval).
 6. **[T] Make the repo public** (hard rule: Tony's explicit yes in chat; only then does anything change visibility). Then **[C]** checks it from a signed-out browser: README renders, images load, the Everstreet link opens (Everstreet must be public too), CI badge and workflow visible.
 7. **[T] Post on X** from the draft in `docs/DEMO_STORYBOARD.md`: says built at NEAR HACKATHON, tags @NEARProtocol and #NEARHackathon (optional @NearLegion, @NearBuilders), video attached; reply in thread with the repo link and one real question. Nothing is posted by Claude.
