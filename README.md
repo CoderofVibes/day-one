@@ -1,22 +1,26 @@
 # Day One
 
-The ops lead sets Kevin's purchasing limits once. Kevin does the paperwork and buys within them; larger orders wait for the plant director. Day One is Kevin, a purchasing and inventory assistant for a small manufacturing plant its new owner has just acquired.
+**Day One is built for the day a small manufacturing plant changes hands.** The new owner sets spending rules once, and Kevin, an AI agent supervised by plant staff, takes on the plant's purchasing and inventory work inside them, without waiting for an ERP migration.
 
-Kevin reads batch records, checks stock and compares quotes. A NEAR testnet contract enforces his limits, holds each funded PO's money in escrow and, after receipt and QC release, pays the supplier for what the plant counted into stock. Staff see dollars, POs and decisions, never wallets or gas.
+- **Purchasing:** reads batch records and spreadsheets, tracks stock, forecasts needs and compares quotes.
+- **Control:** a NEAR testnet contract enforces the limits, checks Kevin's model-signed decision on large orders, and holds PO money until receipt and QC release.
+- **Plant records:** lot tracing and recall drills across plants, mock ERP reconciliation and a 3D plant twin.
 
-Follow PO-1042 below: Kevin prepared a $5,150 order, the contract refused it against his $2,500 limit, and Linda, the plant director, approved it. Northgate was paid after the plant received and released the lot. Every step is a recorded testnet call that replays with no keys.
+**See one order:** the contract refused PO-1042 ($5,150.00) against Kevin's $2,500 limit. Linda, the director, approved it; Northgate was paid after receipt and QC release. The testnet calls are recorded and replay with no keys, alongside 21 recorded attacks, each stopped.
 
-This is a prototype with fictional plant data. The director's text reply is simulated, staff keys are held by the server, and the ERP is a mock shaped like NetSuite. The main run settles in DTUSD, a labeled test token; a separate $19.00 order settles in Circle testnet USDC on the first contract version.
+**Prototype:** fictional data; simulated director text reply; staff keys held by the server; mock ERP. Main run: DTUSD, a labeled test token. Separate Circle testnet USDC order: first contract version.
 
-Built at NEAR HACKATHON (Oct 19 – Nov 14, 2026). Tracks: `realworld`, `business`, `security`, `agents`.
+[Replay the order](#try-it-no-keys-needed) · [Explore the layers](#layer-index) · [Claims and evidence](#claims-and-evidence) · [Limitations](#limitations)
 
-[Try the recorded run](#try-it-no-keys-needed) · [Claims and evidence](#claims-and-evidence) · [Limitations](#limitations) · `npm ci && npm run prove` checks every claim with no keys.
+<img src="docs/readme/linda-wide.png" alt="The Overview at 5:13 AM on Monday, Nov 9, 1280 px, light: a slim Morning review line (10 read, 3 drafts to sign, 1 refused, 6 need nothing), then the dark desk. Under Needs you, a white card for Linda Park, Ops director, by text message: a bar runs green to Kevin's $2,500 limit and amber beyond it to $5,150, with the line &quot;Over the limit, so it came to Linda. Kevin could not place it alone.&quot; Under it, Approve PO-1042, 700 kg ascorbic acid from Northgate Ingredients, $5,150.00. Why you: PO-1042 is $5,150.00, over the $2,500 Kevin may spend on one order; the spending rules send it to you, and Kevin cannot go around them. What you decide: whether to spend $5,150.00 with Northgate Ingredients at $7.10/kg plus $180.00 freight, delivered in 7 days; Kevin compared 3 quotes and checked the other plants first. What happens next: approve, and the money is set aside, not paid; Northgate is paid only after the delivery passes QC; decline, and nothing is ordered. Buttons Approve PO-1042 and Decline PO-1042. Beside it, Handled for you lists the morning from 5:05 to 5:13: Ray confirmed BR-B-1045, the Riverside correction drafted, the forecast, the quotes, PO-1041 placed inside Kevin's limits, PO-1042 prepared for Linda" width="760">
+
+Kevin is the purchasing agent; spending limits are one enforced layer around him. The escrow is scoped to purchase orders and is not a general multisig. Staff see dollars, POs and decisions, never wallets or gas.
+
+Check the claims: `npm ci && npm run prove` needs no keys; installation and on-chain comparisons need internet. [llms.txt](llms.txt) describes the machine-readable output; [PROOF.md](PROOF.md) lists the recorded transactions.
 
 ## Ray's Monday
 
-Ray Delgado buys for Hollow Pine Tablet Co., the plant Acme Holdings just acquired. Kevin reads this week's batch record, Ray confirms it, and Kevin compares the next batches' material needs with what is on hand. He places a $612.00 lab-supply order within his limits and brings Linda Park, the ops director, one decision: PO-1042 for 700 kg of ascorbic acid, $5,150.00 including freight.
-
-<img src="docs/readme/linda-wide.png" alt="The Overview at 5:13 AM on Monday, Nov 9, 1280 px, light: a slim Morning review line (10 read, 3 drafts to sign, 1 refused, 6 need nothing), then the dark desk. Under Needs you, a white card for Linda Park, Ops director, by text message: a bar runs green to Kevin's $2,500 limit and amber beyond it to $5,150, with the line &quot;Over the limit, so it came to Linda. Kevin could not place it alone.&quot; Under it, Approve PO-1042, 700 kg ascorbic acid from Northgate Ingredients, $5,150.00. Why you: PO-1042 is $5,150.00, over the $2,500 Kevin may spend on one order; the spending rules send it to you, and Kevin cannot go around them. What you decide: whether to spend $5,150.00 with Northgate Ingredients at $7.10/kg plus $180.00 freight, delivered in 7 days; Kevin compared 3 quotes and checked the other plants first. What happens next: approve, and the money is set aside, not paid; Northgate is paid only after the delivery passes QC; decline, and nothing is ordered. Buttons Approve PO-1042 and Decline PO-1042. Beside it, Handled for you lists the morning from 5:05 to 5:13: Ray confirmed BR-B-1045, the Riverside correction drafted, the forecast, the quotes, PO-1041 placed inside Kevin's limits, PO-1042 prepared for Linda" width="760">
+Ray Delgado buys for Hollow Pine Tablet Co., the plant Acme Holdings just acquired, and Linda Park is its ops director. On Monday morning Kevin reads the week's batch record, Ray confirms it, Kevin places a $612.00 lab-supply order within his limits, and PO-1042 for 700 kg of ascorbic acid comes to Linda.
 
 The desk answers what a person asks before deciding. **Why you:** the contract refused PO-1042 because it is over Kevin's $2,500 limit per order, and only the director can approve it. **What you decide:** 700 kg from Northgate Ingredients at $7.10/kg plus $180.00 freight, delivered in 7 days; Kevin compared three quotes, excluded the unqualified supplier and checked that no other plant could spare the stock. **What happens next:** approval lets Kevin fund escrow, and Northgate is paid only after the delivery passes QC. In the recorded run Tommy Reyes counts the 700 kg in a week later, Priya Natarajan releases the lot, and the contract pays Northgate in that call for the quantity counted in.
 
@@ -30,20 +34,9 @@ The desk's model is `web/src/desk.ts`, tested without a browser (`docs/DESK.md`)
 
 ## What else is in it
 
-PO-1042 is one order. Around it, each of these has a keyless command and testnet evidence in the [layer index](#layer-index):
-
-- **Inventory and forecast:** reads batch records and a messy spreadsheet, tracks stock and lots across three plants, and says what to buy before it runs short.
-- **Enforced limits and escrow:** HQ's limits, the director's approval and each PO's escrow are contract rules, not app settings.
-- **Pay for what reached stock:** at QC release the contract pays the smallest of the escrow, the escrow pro rata to the quantity counted in, and the invoice.
-- **Signed decisions:** above $2,500 the contract checks Kevin's decision, signed by his model inside NEAR AI Cloud's enclave for that exact PO.
-- **Supplier credentials and sealed quotes:** HQ-issued credentials gate new POs; suppliers commit a quote before a deadline and reveal it after.
-- **Lot passports and recall:** one Merkle root per plant per day of lot records is anchored on chain, and one lot's records are proved without disclosing the rest.
-- **ERP books:** a mock NetSuite-shaped ERP reconciles with the plant ledger and the contract.
-- **21 recorded attacks,** each stopped by Kevin, the mock ERP or the contract.
-- **Group buying and USDC:** two plants pooling one PO; one $19.00 order in Circle testnet USDC.
-- **A seeded twelve-month history and a 3D plant twin** that lights up as Day One reaches each department.
-
-Kevin is the purchasing agent. The contract limits are one enforced layer around him, not the whole product; the escrow is scoped to purchase orders and is not a general multisig.
+- [Supplier credentials, sealed quotes and group purchasing](#layer-index).
+- [Seeded twelve-month history and the separate USDC order](#layer-index).
+- [Signed decisions and 21 recorded attacks, each stopped](#claims-and-evidence).
 
 ## The problem
 
@@ -298,6 +291,8 @@ The intended buyer is the acquirer, paying per plant for onboarding and ongoing 
 A NetSuite adapter behind the existing connector interface; real SMS; a login provider such as NEAR Auth so each person holds their own key; multi-signer approval for very large POs; quantity and invoice settlement for pooled POs; nightly lot-book anchoring from the running API; more document types.
 
 ## Built with
+
+Built at NEAR HACKATHON (Oct 19 – Nov 14, 2026). Tracks: `realworld`, `business`, `security`, `agents`.
 
 Built by DadMod, Tony Langford's solo entry. Claude Code wrote the code. Muse, an AI project manager, kept the plan. GPT-6 Astra (OpenAI's Codex CLI) is a second seat that proposes and reviews but does not write code: its passes designed the product's look, Kevin's introduction and the first-shift walkthrough, and reviewed this README and judge mode; Claude built what was taken up (`docs/astra/`, `docs/ASTRA.md`). Tony is a chemical engineer with ten years on manufacturing floors, now a systems engineer at an advanced nuclear reactor startup, building this on paternity leave. Planning docs: `docs/`. Conventions for coding agents: `AGENTS.md`. License: MIT (`LICENSE`).
 
