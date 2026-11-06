@@ -27,6 +27,19 @@ import { useRead } from "../series.ts";
 import { PlantView } from "../twin3d/PlantView.tsx";
 import { Loading } from "./common.tsx";
 
+/** A contract method in a reader's words, for "Stopped by". */
+const METHOD_WORDS: Record<string, string> = {
+  submit_po: "when the order was submitted",
+  submit_pooled_po: "when the pooled order was submitted",
+  approve_po: "at the approval",
+  confirm_receipt: "at the receipt",
+  record_invoice: "when the invoice was recorded",
+  qc_release: "at QC release, when it pays",
+  anchor: "when the record was anchored",
+  commit_quote: "when the quote was sealed",
+  reveal_quote: "when the quote was opened",
+};
+
 export function ArenaPage() {
   const { value, error } = useRead(readArena, "arena");
   if (!value) return <Loading error={error} what="the attack suite" />;
@@ -154,6 +167,7 @@ export function ArenaConsole({ arena }: { arena: Arena }) {
                 <li key={x.n}>
                   <button
                     type="button"
+                    aria-label={`Attack ${x.n}: ${x.attack}${done ? ", refused" : ""}`}
                     aria-current={x.n === selected ? "true" : undefined}
                     onClick={() => pick(x.n)}
                   >
@@ -202,7 +216,8 @@ export function ArenaConsole({ arena }: { arena: Arena }) {
             <dd>
               {c.refusedBy === "contract" ? (
                 <>
-                  the contract, <code>{c.method}</code>
+                  the contract, {METHOD_WORDS[c.method ?? ""] ?? "on the call"}{" "}
+                  <code className="small">{c.method}</code>
                 </>
               ) : (
                 `${c.refusedBy === "ERP" ? "the ERP" : "Kevin"}, before anything reaches the chain`

@@ -270,7 +270,9 @@ export function GlobalHeader({
         align="end"
         summary={
           <svg className="gh-dots" viewBox="0 0 18 18" aria-hidden="true">
-            <path d="M3 5h12M3 9h12M3 13h12" />
+            <circle cx="4" cy="9" r="1.6" />
+            <circle cx="9" cy="9" r="1.6" />
+            <circle cx="14" cy="9" r="1.6" />
           </svg>
         }
       >

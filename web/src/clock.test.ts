@@ -155,13 +155,15 @@ describe("the sim clock", () => {
     }
   });
 
-  it("restores the time, speed, seed and session from the URL before storage", () => {
+  it("restores the time, speed and seed from the URL before storage, and the session from storage", () => {
     const clock = make();
     clock.seek(Date.parse("2026-11-13T09:00:00.000Z"));
     clock.setSpeed("10x");
     clock.act("Sign MSG-1");
     const { params, stored } = persisted(clock.get());
     expect(params.t).toBe("2026-11-13T09:00Z");
+    // The session's actions stay out of the address bar (first-use review, finding 51).
+    expect(params.log).toBeNull();
     const q = new URLSearchParams(
       Object.entries(params).flatMap(([k, v]) => (v === null ? [] : [[k, v]])),
     );
@@ -170,14 +172,17 @@ describe("the sim clock", () => {
       simNow: Date.parse("2026-11-13T09:00:00.000Z"),
       speed: "10x",
       seed: 42,
+    });
+    expect(readPersisted("", stored)).toEqual({
+      ...fromUrl,
+      seed: DEFAULT_SEED,
       log: clock.get().log,
     });
-    expect(readPersisted("", stored)).toEqual({ ...fromUrl, seed: DEFAULT_SEED });
     expect(readPersisted("?t=2026-11-10T13:00Z", stored).simNow).toBe(
       Date.parse("2026-11-10T13:00:00.000Z"),
     );
     expect(readPersisted("?t=nonsense&speed=9x", "{not json")).toEqual({});
-    const restored = make(fromUrl);
+    const restored = make(readPersisted("", stored));
     expect(restored.get().simNow).toBe(clock.get().simNow);
     expect(restored.world().actions).toBe(1);
   });

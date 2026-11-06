@@ -14,17 +14,30 @@ export function Spotlight({
   className?: string;
 }) {
   const [box, setBox] = useState<DOMRect | null>(null);
-  const scrolled = useRef(false);
+  /** Where the page was last scrolled to for the subject, or null before the first time. */
+  const aimed = useRef<number | null>(null);
   useEffect(() => {
-    scrolled.current = false;
+    aimed.current = null;
     setBox(null);
+    // The page above the subject can still be loading when it first appears, which pushes it off
+    // screen after the first scroll: for two seconds the scroll follows it, unless the person
+    // scrolls themselves.
+    const until = Date.now() + 2000;
+    let touched = false;
+    const touch = () => {
+      touched = true;
+    };
+    window.addEventListener("wheel", touch, { passive: true });
+    window.addEventListener("touchmove", touch, { passive: true });
     const measure = () => {
       const el = [...document.querySelectorAll(selector)].find(
         (e) => (e as HTMLElement).offsetParent !== null,
       );
       if (!el) return setBox(null);
-      if (!scrolled.current) {
-        scrolled.current = true;
+      const absTop = el.getBoundingClientRect().top + window.scrollY;
+      const settling = !touched && Date.now() < until && aimed.current !== absTop;
+      if (aimed.current === null || settling) {
+        aimed.current = absTop;
         // Fit the subject into what the guide leaves visible: below the sticky header and, on a
         // phone, above the bottom sheet (judge mode's bar or the first shift's dock), measured as
         // it is now rather than assumed. A subject taller than that shows its top.
@@ -54,6 +67,8 @@ export function Spotlight({
       clearInterval(timer);
       window.removeEventListener("resize", measure);
       window.removeEventListener("scroll", measure, true);
+      window.removeEventListener("wheel", touch);
+      window.removeEventListener("touchmove", touch);
     };
   }, [selector]);
   if (!box) return null;

@@ -35,8 +35,9 @@ export interface JudgeStep {
   at: number;
   /** What the spotlight cuts out, as a CSS selector; none when an overlay is the subject. */
   spotlight?: string;
-  /** A page shown first for a few seconds (the workbook Kevin read), before the step's own. */
-  prelude?: { page: PageId; at: number; spotlight: string; ms: number };
+  /** A page shown first (the workbook Kevin read); the step's own page follows on Next, never by
+   *  itself (first-use review, Nov 5: a page that moved with nobody pressing anything confused). */
+  prelude?: { page: PageId; at: number; spotlight: string; next: string };
   /** What opens over the page: Linda's phone, PO-1047's card, Kevin's limits, HQ's plain-words
    *  change, the attestation card or the tour. */
   overlay?: "phone" | "usdc" | "limits" | "policy" | "attestation" | "tour";
@@ -228,7 +229,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
       page: "spreadsheets",
       at: 0,
       spotlight: '[aria-label="The inventory workbook"]',
-      ms: 4000,
+      next: "Next: Ray's desk →",
     },
     spotlight: ".desk",
     curtain: false,
@@ -260,7 +261,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "approve",
     title: "Linda approves; Kevin's signed decision stays the same",
-    body: "Linda's YES 1042 is simulated in this demo and signed with the director key the server holds. Kevin's unchanged retry carries the same model decision, signed in NEAR AI Cloud's enclave for this PO's fingerprint. The signature shows the answer is authentic; Linda's approval let the contract fund it.",
+    body: "Linda said yes, and the contract funded the same order it had refused. Kevin's retry carried the same decision his model signed the first time, word for word: the signature proves where the answer came from, and only Linda's yes made it count. (Her text is simulated in this demo; the server holds her key.)",
     page: "overview",
     at: retriedAt,
     spotlight: ".curtain .decision",
@@ -287,7 +288,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "passport",
     title: "The lot keeps the record",
-    body: "Every receipt, QC decision, batch, shipment and contract payment is hashed into its day's root on the contract. Prove it checks this trace in your browser; Change one record shows a tamper fail. The history is seeded and its roots were anchored together on Nov 3, 2026: the check proves no change since.",
+    body: "Press Prove it: your browser checks every record of this trace against the daily fingerprint sealed on the contract, and Change one record shows the check failing. The history is fictional and was sealed on Nov 3, 2026, so the check proves nothing changed since then.",
     page: "lots",
     at: last,
     spotlight: '[aria-label="Prove it"]',
@@ -308,12 +309,14 @@ export const PROOF_STEPS: JudgeStep[] = [
   {
     id: "attacks",
     title: `${attack.refused} of ${attack.total} attacks refused`,
-    body: `An email asks to send Northgate's payments to a new account. Kevin set it aside and changed nothing; it never reached the chain. All ${attack.total} recorded attacks were stopped by Kevin, the mock ERP or the contract. Press Fire attack to replay this one.`,
+    body: `An email asks to send Northgate's payments to a new account. Kevin set it aside and changed nothing, so it never reached the chain. All ${attack.total} recorded attacks were stopped by Kevin, the mock ERP or the contract. Press Fire attack to replay this one; below are three attacks the contract itself refused.`,
     ...(bank ? { quote: `Kevin: “${bank.reason.split(":")[0]}.”`, attack: bank.n } : {}),
     page: "arena",
     at: last,
     spotlight: ".arena-detail",
-    links: attack.links.slice(0, 3).map((l) => ({ ...l, label: `another case: ${l.label}` })),
+    links: attack.links
+      .slice(0, 3)
+      .map((l) => ({ ...l, label: `refused by the contract: ${l.label}` })),
     seconds: 35,
   },
   {
@@ -379,7 +382,7 @@ export const PROOF_STEPS: JudgeStep[] = [
   {
     id: "attested",
     title: "Attested answers",
-    body: `Kevin's model (${att.model}) ran in a hardware enclave on NEAR AI Cloud: ${att.checks} of ${att.of} enclave checks verified, and each of this run's ${att.answers} recorded answers carries a verified signature. That proves where an answer came from, not that it is right. Re-check with npm run verify:attestation.`,
+    body: `Kevin's model (${att.model}) ran in a hardware enclave on NEAR AI Cloud: ${att.checks} of ${att.of} enclave checks verified, and each of this run's ${att.answers} recorded answers carries a verified signature. That proves where an answer came from, not that it is right.`,
     page: "ask",
     at: last,
     spotlight: ".rail-v2 .attest",
@@ -389,8 +392,8 @@ export const PROOF_STEPS: JudgeStep[] = [
   },
   {
     id: "policy",
-    title: "HQ changes a limit in plain words",
-    body: "HQ types a request; Kevin drafts the owner call the contract needs. Nothing changes until HQ's own key signs it, and Kevin's account cannot sign it.",
+    title: "HQ changes a limit in plain words (a recorded example)",
+    body: "HQ writes a request in plain words; Kevin drafts the exact change the contract needs. Nothing changes until HQ's own key signs it, and Kevin's account cannot sign it. This page has no owner key by design, so the example here is recorded, not typed.",
     page: "hq",
     at: 0,
     overlay: "policy",

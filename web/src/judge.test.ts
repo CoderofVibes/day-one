@@ -143,7 +143,7 @@ describe("judge mode", () => {
       "anchor_batch, 22 daily roots for Acme Riverside (Sep 15 – Nov 12)",
       "anchor_batch, 49 daily roots for Acme Lakeview (Jan 5 – Oct 9)",
     ]);
-    expect(passport?.body).toContain("anchored together on Nov 3, 2026");
+    expect(passport?.body).toContain("sealed on Nov 3, 2026");
   });
 
   it("opens on the plant Acme bought, the limits HQ sets, and the bank-details email", () => {

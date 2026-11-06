@@ -72,11 +72,15 @@ export function SuppliersPage({ source, curtain }: { source: Source; curtain: bo
   const attacks = recorded.attacks.attacks.filter((a) => CREDENTIAL_ATTACKS.includes(a.attack));
   return (
     <>
+      <p className="small muted">
+        HQ issued supplier approvals on the contract for {creds.length} suppliers; the scorecards
+        below cover every supplier in the plants' records.
+      </p>
       <div className="cards-4">
-        <NumberCard label="Approved" value={count("Approved")} />
-        <NumberCard label="Suspended" value={count("Suspended")} />
-        <NumberCard label="Lapsed" value={count("Expired")} />
-        <NumberCard label="Withdrawn" value={count("Revoked")} />
+        <NumberCard label="On the contract: approved" value={count("Approved")} />
+        <NumberCard label="On the contract: suspended" value={count("Suspended")} />
+        <NumberCard label="On the contract: expired" value={count("Expired")} />
+        <NumberCard label="On the contract: revoked" value={count("Revoked")} />
       </div>
       <SupplierScorecards standings={creds} curtain={curtain} />
       <section className="card-v2" aria-label="Supplier approvals HQ issued">
@@ -363,6 +367,7 @@ export function SealedPage({ source, curtain }: { source: Source; curtain: boole
           <span className="right small muted">sealed until the deadline, opened together</span>
         </div>
         <Timeline
+          from="first"
           label="The sealed round, in order"
           items={s.staff.map((l, i) => {
             const [when, ...rest] = l.split(/\s{2,}/);

@@ -34,7 +34,19 @@ export function staffWords(line: string, curtain: boolean): string {
   // "x.testnet is not the account on … credential (y.testnet)" reads as one plain sentence.
   return line
     .replace(/\s*\((?:[a-z0-9_.-]+\.(?:testnet|near))\)/g, "")
-    .replace(ACCOUNT, "a different account");
+    .replace(ACCOUNT, "a different account")
+    .replace(/(^|[.!?]\s+)a different account/g, "$1A different account")
+    .replace(/\bfor Marcy\b(?! Allen)/g, "for Marcy Allen in accounting");
+}
+
+/**
+ * A line Kevin flagged, as staff read it: hidden markup aimed at an AI assistant is named, not
+ * printed, since raw HTML in a mailbox card reads as a fault.
+ */
+export function flaggedWords(line: string, curtain: boolean): string {
+  if (!curtain && /<!--|note to the ai/i.test(line))
+    return "The email also carried hidden instructions for an AI assistant. Kevin ignored them.";
+  return `"${staffWords(line, curtain)}"`;
 }
 
 /** What signing does, in the purchaser's words. */

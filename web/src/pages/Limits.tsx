@@ -32,7 +32,7 @@ export function LimitTiles({ source }: { source: Source }) {
   return (
     <div className="tiles-4">
       <StatTile
-        label={`Committed, ${monthName(month)}`}
+        label={`Hollow Pine's orders, ${monthName(month)} to the clock`}
         value={compactDollars(committed)}
         visual={
           <Gauge

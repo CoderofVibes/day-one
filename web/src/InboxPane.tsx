@@ -64,14 +64,14 @@ export function InboxPane({
   }
   // Someone else's turn: the queue folds to one line so Ray's scans do not crowd their screen.
   return (
-    <details className="panel inbox" aria-label="Waiting for you">
+    <details className="panel inbox" aria-label="Batch-record scans">
       <summary className="panel-head">
-        <h2>Waiting for you</h2>
+        <h2>Batch-record scans</h2>
         <span className="right">
           <Pill tone={mine.length ? "waiting" : "neutral"}>
             {mine.length
               ? `${count(mine.length, "scan")} for ${viewer.split(" ")[0]}`
-              : "nothing waiting"}
+              : "none waiting"}
           </Pill>
         </span>
       </summary>
@@ -172,10 +172,22 @@ function Review({
   const done = (f: InboxFlag) =>
     f.answer === "value" ? (answers[f.fieldPath] ?? "").trim() !== "" : checked[f.fieldPath];
   const ready = asks.every(done);
-  const notes = item.flags.filter((f) => !f.blocking);
+  // A note the summary line already says is not repeated under it.
+  const notes = item.flags.filter((f) => !f.blocking && !item.summary?.includes(f.message));
+  const name = item.file.split("/").at(-1) ?? item.file;
 
   return (
     <div className="inbox-review">
+      <a
+        className="scan-thumb"
+        href={`api/batch-records/${item.id}/scan`}
+        target="_blank"
+        rel="noreferrer"
+        title={`Open ${name} full size`}
+      >
+        <img src={`api/batch-records/${item.id}/scan`} alt={`The scan Kevin read: ${name}`} />
+        <span className="small">The page Kevin read · open full size ↗</span>
+      </a>
       {asks.length > 0 && (
         <ol className="review">
           {asks.map((f) => (
@@ -187,11 +199,11 @@ function Review({
               {f.answer === "value" ? (
                 <div className="actions">
                   <label className="qty">
-                    <span className="small">What the page says:</span>
+                    <span className="small">Type what the page says:</span>
                     <input
                       type="text"
+                      inputMode="decimal"
                       value={answers[f.fieldPath] ?? ""}
-                      placeholder={f.suggestion ?? ""}
                       onChange={(e) =>
                         setAnswers((prev) => ({ ...prev, [f.fieldPath]: e.target.value }))
                       }
@@ -205,7 +217,7 @@ function Review({
                         setAnswers((prev) => ({ ...prev, [f.fieldPath]: f.suggestion ?? "" }))
                       }
                     >
-                      Use {f.suggestion}
+                      Kevin's best reading: {f.suggestion}
                     </button>
                   )}
                 </div>

@@ -331,6 +331,18 @@ export async function confirmInboxItem(
   });
   const batchNo = confirmation.review.batchNo;
   const staffLines = [confirmation.sentence];
+  // Echo what the purchaser typed, so the posted line says which value was taken.
+  const typed = Object.entries(input.resolutions ?? {}).filter(([, v]) => v !== "checked");
+  if (typed.length > 0) {
+    const label = (path: string) => {
+      const m = /^materials\[(\d+)\]\.actual_qty$/.exec(path);
+      const line = m ? extraction.materials[Number(m[1])] : undefined;
+      return line ? `line ${line.line_no || Number(m?.[1]) + 1}` : path;
+    };
+    staffLines.push(
+      `Posted with your answer: ${typed.map(([p, v]) => `${label(p)} ${v}`).join("; ")}.`,
+    );
+  }
   // Consuming a transferred lot is what exposes a transfer discrepancy (SPEC step 3).
   const drawn = [...new Set(confirmation.review.draws.map((d) => d.lotId))];
   for (const lot of db.select().from(lots).where(inArray(lots.id, drawn)).all()) {

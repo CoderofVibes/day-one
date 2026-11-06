@@ -51,7 +51,7 @@ describe("behind the curtain, page by page", () => {
       createElement(Curtain, { data: run, upTo: 0, page: "purchasing" as PageId }),
     );
     expect(html).toContain("Recent on testnet");
-    expect(html).toContain("Nothing on chain for this page yet. Here&#x27;s the latest.");
+    expect(html).toContain("No calls from this page yet. The last calls recorded in the run:");
   });
 
   it("gives Purchasing the PO transactions and ERP connection the connector's steps", () => {

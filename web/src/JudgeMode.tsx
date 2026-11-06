@@ -3,7 +3,8 @@
 // phone) that walks the six core stops of src/judge.ts: each opens its page at its recorded step,
 // cuts a spotlight round what to look at, says what happened in a sentence or two and links the
 // recorded testnet transactions. Then "See every proof" opens any of the other proofs the same way
-// and lists every transaction. Recorded data only: no wallet, no login, no network.
+// and lists every transaction. Recorded data only: no wallet, no login, no network. Nothing moves
+// unless the judge presses something: stop 1's workbook gives way to Ray's desk on Next.
 
 import { useEffect, useRef, useState } from "react";
 import { storedTheme } from "./chrome.ts";
@@ -108,9 +109,8 @@ const units = (u: string) => usd(Number(u) / 1e6);
 function LimitsCard() {
   const p = RECORDED_POLICY;
   return (
-    <section className="judge-card" aria-label="Kevin's limits">
-      <h3>Kevin's limits, on the contract</h3>
-      <p className="small">As the recorded run read them</p>
+    <section className="judge-card inline" aria-label="Kevin's limits">
+      <h3>Kevin's limits, as the contract held them in the recorded run</h3>
       <p className="judge-chips">
         <span>{units(p.perPoLimit)} per order</span>
         <span>{units(p.monthlyLimit)} a month</span>
@@ -124,13 +124,15 @@ function LimitsCard() {
 function PolicyCard() {
   const draft = limitDraft();
   return (
-    <section className="judge-card" aria-label="A limit change in plain words">
+    <section className="judge-card inline" aria-label="A limit change in plain words">
       <h3>A limit change in plain words</h3>
       <p className="small">An unsigned example; the recorded limit stays $2,500</p>
       <p className="small">HQ asks: “{LIMIT_REQUEST}”</p>
       <p className="small">Kevin's draft: {draft.sentence}</p>
-      <p className="small">Try other wording:</p>
-      <pre>npm run policy -- "{LIMIT_REQUEST}"</pre>
+      <details className="judge-terminal">
+        <summary className="small">Try other wording, from a terminal</summary>
+        <pre>npm run policy -- "{LIMIT_REQUEST}"</pre>
+      </details>
     </section>
   );
 }
@@ -148,9 +150,13 @@ function AttestationCard() {
       </p>
       <p className="small">
         {a.model}, report fetched {a.fetchedAt.slice(0, 10)} and verified again after recording.
-        Re-check it, Intel's and NVIDIA's verdicts included:
       </p>
-      <pre>npm run verify:attestation</pre>
+      <details className="judge-terminal">
+        <summary className="small">
+          Re-check it from a terminal, Intel's and NVIDIA's verdicts included
+        </summary>
+        <pre>npm run verify:attestation</pre>
+      </details>
     </section>
   );
 }
@@ -186,10 +192,10 @@ function Summary({
     <div className="judge-summary">
       <h2>See every proof</h2>
       <p className="small">
-        Choose a claim to inspect its recording, checks and limitations.{" "}
+        Choose a claim to see its recording, its checks and its limits.
         {tests
-          ? `${tests.tests.toLocaleString("en-US")} automated tests passed in the last full run (${tests.at.slice(0, 10)}); npm run prove checks every claim with no keys.`
-          : "npm run prove checks every claim with no keys."}
+          ? ` ${tests.tests.toLocaleString("en-US")} automated tests passed in the last full run (${tests.at.slice(0, 10)}).`
+          : ""}
       </p>
       <ol className="judge-proof-list">
         {PROOF_STEPS.map((s, k) => (
@@ -200,8 +206,13 @@ function Summary({
           </li>
         ))}
       </ol>
+      <details className="judge-terminal">
+        <summary className="small">Check every claim from a terminal</summary>
+        <pre>npm ci && npm run prove</pre>
+        <p className="small">No keys needed; one PASS or FAIL row per claim.</p>
+      </details>
       <details className="judge-all">
-        <summary>All {links.length} recorded testnet transactions in judge mode</summary>
+        <summary>For a closer look: all {links.length} recorded testnet transactions</summary>
         <ol className="judge-proofs">
           {links.map((l) => (
             <li key={l.url}>
@@ -269,12 +280,15 @@ export default function JudgeMode({
     }
     setPreluding(true);
     goRef.current(step.prelude.page, step.prelude.at);
-    const t = setTimeout(() => {
-      setPreluding(false);
-      goRef.current(step.page, step.at);
-    }, step.prelude.ms);
-    return () => clearTimeout(t);
   }, [i, proof]);
+  /** Leaves a step's prelude for its own page: on Next, never by itself. */
+  const endPrelude = () => {
+    if (!step) return;
+    setPreluding(false);
+    goRef.current(step.page, step.at);
+  };
+  /** Folded to its controls, so a phone shows the page the card describes. */
+  const [folded, setFolded] = useState(false);
 
   const exit = () => {
     setJudgeParam(null);
@@ -293,21 +307,27 @@ export default function JudgeMode({
 
   const spotlight = preluding ? step?.prelude?.spotlight : step?.spotlight;
   const overlay = preluding ? undefined : step?.overlay;
+  // Kevin's limits and HQ's plain-words example read as part of the card, not a box floating
+  // over the page (first-use review, finding 5).
+  const inline = overlay === "limits" || overlay === "policy" ? overlay : undefined;
+  const floating = inline ? undefined : overlay;
 
   return (
     <>
       {spotlight && <Spotlight key={spotlight} selector={spotlight} />}
-      {overlay && (
-        <div className={`judge-overlay ${overlay}`}>
-          {overlay === "phone" && <LindaPhone curtain replied />}
-          {overlay === "usdc" && <UsdcCard />}
-          {overlay === "limits" && <LimitsCard />}
-          {overlay === "policy" && <PolicyCard />}
-          {overlay === "attestation" && <AttestationCard />}
-          {overlay === "tour" && <TourCard />}
+      {floating && (
+        <div className={`judge-overlay ${floating}`}>
+          {floating === "phone" && <LindaPhone curtain replied />}
+          {floating === "usdc" && <UsdcCard />}
+          {floating === "attestation" && <AttestationCard />}
+          {floating === "tour" && <TourCard />}
         </div>
       )}
-      <section className="judge-bar" aria-label="Judge mode" data-step={step?.id ?? "summary"}>
+      <section
+        className={folded ? "judge-bar folded" : "judge-bar"}
+        aria-label="Judge mode"
+        data-step={step?.id ?? "summary"}
+      >
         <div className="judge-head">
           <span className="judge-badge">Judge mode</span>
           <span className="small">
@@ -333,16 +353,28 @@ export default function JudgeMode({
               </li>
             ))}
           </ol>
+          <button
+            type="button"
+            className="judge-fold"
+            aria-expanded={!folded}
+            onClick={() => setFolded(!folded)}
+          >
+            {folded ? "Show the card" : "Show the page"}
+          </button>
           <button type="button" className="judge-x" onClick={exit} aria-label="Exit judge mode">
             ✕
           </button>
         </div>
         {step ? (
           <>
-            <h2>{step.title}</h2>
-            <p>{step.body}</p>
-            {step.quote && <p className="judge-quote">{step.quote}</p>}
-            <ChainLinks step={step} />
+            <div className="judge-body">
+              <h2>{step.title}</h2>
+              <p>{step.body}</p>
+              {step.quote && <p className="judge-quote">{step.quote}</p>}
+              {inline === "limits" && <LimitsCard />}
+              {inline === "policy" && <PolicyCard />}
+              <ChainLinks step={step} />
+            </div>
             {proof !== null ? (
               <div className="judge-controls">
                 <button type="button" className="judge-primary" onClick={() => setProof(null)}>
@@ -357,8 +389,16 @@ export default function JudgeMode({
                 <button type="button" onClick={() => setI(i - 1)} disabled={i === 0}>
                   ← Back
                 </button>
-                <button type="button" className="judge-primary" onClick={() => setI(i + 1)}>
-                  {i === total - 1 ? "See every proof →" : "Next →"}
+                <button
+                  type="button"
+                  className="judge-primary"
+                  onClick={() => (preluding ? endPrelude() : setI(i + 1))}
+                >
+                  {preluding && step.prelude
+                    ? step.prelude.next
+                    : i === total - 1
+                      ? "See every proof →"
+                      : "Next →"}
                 </button>
                 {i < total - 1 && (
                   <button type="button" onClick={() => setI(total)}>

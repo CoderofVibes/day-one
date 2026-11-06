@@ -249,7 +249,7 @@ export function search(g: Genealogy, query: string, limit = 40, plant = "all"): 
         kind: "lot",
         id: l.code,
         label: l.code,
-        detail: `${l.materialName}${l.vendorName ? ` · ${l.vendorName}` : ""} · ${l.usedIn.length} batches`,
+        detail: `${l.materialName}${l.vendorName ? ` · ${l.vendorName}` : ""} · ${l.usedIn.length} ${l.usedIn.length === 1 ? "batch" : "batches"}`,
         facility: l.facility,
       });
     }

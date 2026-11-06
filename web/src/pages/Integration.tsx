@@ -588,7 +588,7 @@ function Meet({
         <Decide
           act={act}
           busy={busy}
-          label="Start the program"
+          label="Start the onboarding program"
           input={{ stage: 0, item: "start", decision: "started", staff: "Ray Delgado" }}
           done={stage.done}
         />

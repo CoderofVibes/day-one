@@ -266,7 +266,11 @@ function FeedStrip() {
       <span className="avatar kevin" aria-hidden="true">
         K
       </span>
-      {unread > 0 && <span className="feed-unread">{unread > 99 ? "99+" : unread}</span>}
+      {unread > 0 && (
+        <span className="feed-unread" title={`${unread} new entries`}>
+          {unread > 99 ? "99+ new" : `${unread} new`}
+        </span>
+      )}
       <span className="feed-strip-label">Kevin's activity</span>
     </button>
   );
@@ -280,7 +284,11 @@ export function FeedButton() {
   return (
     <button type="button" className="btn feed-open" onClick={openFeed}>
       Kevin's activity
-      {unread > 0 && <span className="feed-unread">{unread > 99 ? "99+" : unread}</span>}
+      {unread > 0 && (
+        <span className="feed-unread" title={`${unread} new entries`}>
+          {unread > 99 ? "99+ new" : `${unread} new`}
+        </span>
+      )}
     </button>
   );
 }

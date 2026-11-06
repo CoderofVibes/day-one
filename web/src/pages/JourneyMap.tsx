@@ -110,7 +110,7 @@ export function JourneyMap({
               ))}
             </div>
             <figcaption className="small muted">
-              {plant.online} of {plant.departments.length} departments online
+              {plant.online} of {plant.departments.length} departments on Day One
             </figcaption>
           </figure>
         </details>

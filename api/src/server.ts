@@ -8,6 +8,7 @@
 //   POST /api/run/reset                        start over from the seed
 //   GET  /api/batch-records                    the watched folder's review queue: what Kevin read, flags, status
 //   POST /api/batch-records                    image/jpeg body, or JSON {"file": "BR-B-1045.jpg"}
+//   GET  /api/batch-records/:id/scan           image/jpeg, the scan Kevin read (the queue's own files only)
 //   POST /api/batch-records/:batchNo/confirm   JSON {"staff"?: "Ray Delgado", "resolutions"?: {"materials[2].actual_qty": "83.040"}}
 //   POST /api/messages                         JSON {"from": "Linda Park", "text": "YES 1042"}
 //   POST /api/deliveries                       JSON {"slipNo": "NG-PS-60417", "staff"?: …}
@@ -146,6 +147,19 @@ async function route(
   if (method === "GET" && path === "/api/imports") return reply(res, 200, desk.state());
   if (method === "GET" && path === "/api/batch-records")
     return reply(res, 200, await session.inbox());
+  // The scan itself, so the person confirming Kevin's reading can see the page he read.
+  const scan = /^\/api\/batch-records\/(\d+)\/scan$/.exec(path);
+  if (method === "GET" && scan) {
+    const item = (await session.inbox()).items.find((i) => i.id === Number(scan[1]));
+    // Only a file the watcher itself listed, and only a photo.
+    const file = item?.file ?? "";
+    if (!/(^|[\\/])[\w-]+\.jpg$/.test(file)) throw new SessionError(404, "no scan with that id");
+    const path = resolve(REPO_ROOT, file);
+    if (!existsSync(path)) throw new SessionError(404, "the scan is no longer in the folder");
+    const bytes = readFileSync(path);
+    res.writeHead(200, { "content-type": "image/jpeg", "cache-control": "no-store" });
+    return res.end(bytes);
+  }
   if (method === "GET" && path === "/api/policy") return reply(res, 200, await session.policy());
   if (method === "GET" && path === "/api/history") return reply(res, 200, session.history());
   if (method === "GET" && path === "/api/catalog") return reply(res, 200, session.catalog());

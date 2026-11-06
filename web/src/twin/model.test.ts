@@ -30,14 +30,14 @@ describe("deriveTwinState over the recorded run", () => {
     ]);
     expect(s.flows).toEqual([]);
     expect(s.lots).toEqual([]);
-    expect(s.summary).toBe("Plant B: 0 of 9 departments online.");
+    expect(s.summary).toBe("Hollow Pine: 0 of 9 departments on Day One.");
   });
 
   it("lights the batch-record departments when Kevin reads the record and Ray confirms", () => {
     const read = at("Upload BR-B-1045");
     for (const d of ["weigh_dispense", "blending", "compression"])
       expect(status(read, d), d).toBe("onboarding");
-    expect(read.summary).toBe("Plant B: 0 of 9 departments online.");
+    expect(read.summary).toBe("Hollow Pine: 0 of 9 departments on Day One.");
     const confirmed = at("Ray confirms");
     for (const d of ["weigh_dispense", "blending", "compression"])
       expect(status(confirmed, d), d).toBe("online");
@@ -181,7 +181,7 @@ describe("deriveTwinState over the recorded run", () => {
 
   it("ends at 6 of 9, the number DEMO_SCRIPT step 14 expects", () => {
     const s = deriveTwinState(run, run.steps.length - 1);
-    expect(s.summary).toBe("Plant B: 6 of 9 departments online.");
+    expect(s.summary).toBe("Hollow Pine: 6 of 9 departments on Day One.");
     expect(
       plantB(s)
         ?.departments.filter((d) => d.status === "offline")
@@ -363,7 +363,7 @@ describe("deriveTwinState over the recorded group purchase (docs/GROUP_BUY.md)",
     const s = deriveTwinState(run, run.steps.length - 1);
     expect(s.flows.every((f) => f.share === undefined)).toBe(true);
     expect(s.pooled).toBeUndefined();
-    expect(s.summary).toBe("Plant B: 6 of 9 departments online.");
+    expect(s.summary).toBe("Hollow Pine: 6 of 9 departments on Day One.");
     expect(at("Linda texts").facilities.find((f) => f.id === "B")?.alerts).toEqual([
       "PO-1042 approved by Linda Park; Kevin retries within the approval.",
     ]);

@@ -37,7 +37,6 @@ import {
   Gauge,
   inWindow,
   jumpTo,
-  MiniBar,
   RecordLink,
   type RecordTarget,
   Ring,
@@ -53,6 +52,7 @@ import {
   WindowPicker,
 } from "../kit.tsx";
 import { audienceOf, type RunData, statusOf } from "../run.ts";
+import { StartStrip } from "../StartStrip.tsx";
 import { type BatchPoint, type History, readHistory, type Source, useRead } from "../series.ts";
 import { PageHeader, type PlantCode } from "../shell.tsx";
 import type { TwinFocus } from "../twin3d/PlantView.tsx";
@@ -134,13 +134,16 @@ export function Overview({
         help="What Kevin handled, what needs you, and where it is on the plant."
         right={
           <>
-            <WindowPicker value={win} onChange={setWin} />
-            <span className={source.live ? "pill held" : "pill neutral"}>
-              {source.live ? "Live" : "Replay of the recorded run"}
+            <span className="ov-mode muted small">
+              {(run as { mode?: string }).mode === "live"
+                ? "Live on NEAR testnet"
+                : "Replay of a recorded run · fictional plant"}
             </span>
+            <WindowPicker value={win} onChange={setWin} />
           </>
         }
       />
+      <StartStrip />
       {error && (
         <ErrorCard what="The plant history" error={error} retry={() => location.reload()} />
       )}
@@ -595,10 +598,12 @@ function RunSoFar({
           action={{ label: "Jump to the run's start", onClick: () => jumpTo(times?.[0] ?? 0) }}
         />
       )}
-      <details className="ov-full">
-        <summary className="small">Every step in full</summary>
-        {activity}
-      </details>
+      {items.length > 1 && (
+        <details className="ov-full">
+          <summary className="small">Every step in full</summary>
+          {activity}
+        </details>
+      )}
     </section>
   );
 }
@@ -672,14 +677,7 @@ function RecentBatches({
       label: "Yield",
       numeric: true,
       render: (b) => (
-        <span className="yield-cell">
-          <MiniBar
-            value={b.yieldBp / 100 - 80}
-            max={20}
-            tick={YIELD_BAND[0] - 80}
-            tone={b.yieldBp >= 8_900 ? "ok" : "waiting"}
-            label={`Yield ${percent(b.yieldBp)}`}
-          />
+        <span className={b.yieldBp >= 8_900 ? "yield-cell" : "yield-cell low"}>
           {percent(b.yieldBp)}
         </span>
       ),

@@ -174,6 +174,13 @@ export function LotsView({
           value={query}
           placeholder="Lot, supplier lot, material, supplier, batch or date (Oct 12)"
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            // Enter opens the first match, as a click on it would.
+            if (e.key === "Enter" && hits[0]) {
+              e.preventDefault();
+              pick(hits[0]);
+            }
+          }}
           autoComplete="off"
         />
         <fieldset className="seg lineage-scope" aria-label="Search at">
@@ -254,6 +261,9 @@ export function LotsView({
       {t && start && (
         <div className="split-wide">
           <Tabs
+            // A trace of more than 40 records draws as a tall, thin column; it opens as the list.
+            key={t.nodes.length > 40 ? "big" : "small"}
+            initial={t.nodes.length > 40 ? "list" : "graph"}
             label="Trace"
             tabs={[
               { key: "graph", label: "Graph" },

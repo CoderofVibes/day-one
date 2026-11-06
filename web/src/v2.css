@@ -2035,6 +2035,14 @@ ul.plain {
   gap: var(--s-2);
   width: min(340px, calc(100vw - 48px));
 }
+.gh-menu-title {
+  margin: 6px 0 2px;
+  color: var(--ink-2);
+  font-size: var(--t-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 .gh-menu {
   list-style: none;
   margin: 0;
@@ -2218,10 +2226,7 @@ ul.plain {
 .gh-dots {
   width: 18px;
   height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
+  fill: currentColor;
 }
 .gh-more-body {
   display: grid;
@@ -2276,7 +2281,8 @@ ul.plain {
   .gh .gh-sub-xl {
     display: flex;
   }
-  .gh-upnext > span:last-child {
+  /* The name stays, so nobody reads a pair of initials they have not met; the role goes. */
+  .gh-upnext > span:last-child small {
     display: none;
   }
   .gh-plant select {

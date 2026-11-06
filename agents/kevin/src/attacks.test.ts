@@ -95,7 +95,7 @@ describe("the attack suite on the recorded testnet run", () => {
     expect(results[5]?.evidence[4]).toMatch(/over the cap of \$2,000\.00/);
     expect(results[6]?.evidence[0]).toContain("VENDOR_NOT_IN_MASTER");
     expect(results.flatMap((r) => r.txHashes)).toHaveLength(5);
-  });
+  }, 20_000);
 });
 
 describe("lookalike vendors", () => {

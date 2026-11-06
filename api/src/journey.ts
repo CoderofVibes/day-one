@@ -76,7 +76,7 @@ export type Decision = (typeof JOURNEY_DECISIONS)[number];
 
 /** What a stage records, beyond what the ledger shows by itself. */
 const ITEMS: Record<StageKey, { key: string; label: string; who: string }[]> = {
-  meet: [{ key: "start", label: "Open the program", who: "Ray Delgado" }],
+  meet: [{ key: "start", label: "Start the onboarding program", who: "Ray Delgado" }],
   sheets: [{ key: "sales", label: "Say which October figure is right", who: "Ray Delgado" }],
   paper: [],
   plan: [{ key: "plan", label: "Confirm the next four weeks", who: "Linda Park" }],
@@ -290,7 +290,15 @@ export function journeyState(input: JourneyInputs): Journey {
 
   // A stage is done when every item is; the order stage when PO-1042 is paid; the last stage
   // when everything before it is.
+  // Meeting Kevin is behind anyone who has already started working with him: once any later
+  // item is done, the first stage counts as done (first-use review, Nov 5, finding 46).
+  const started = stages.slice(1).some((x) => x.items.some((i) => i.done));
   for (const st of stages) {
+    if (st.key === "meet" && started) {
+      st.items = st.items.map((i) =>
+        i.done ? i : { ...i, done: true, detail: "started by working" },
+      );
+    }
     if (st.key === "order") st.done = input.runDone;
     else if (st.key === "daily") st.done = stages.slice(0, -1).every((x) => x.done);
     else st.done = st.items.length > 0 && st.items.every((i) => i.done);

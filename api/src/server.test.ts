@@ -289,7 +289,11 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     const before = await api("GET", "/api/journey");
     expect(before.status).toBe(200);
     expect(before.body.stages).toHaveLength(8);
-    expect(before.body.stages[0]).toMatchObject({ key: "meet", done: false });
+    // Meeting Kevin counts as done once anyone has started working with him.
+    const started = before.body.stages
+      .slice(1)
+      .some((st: { items: { done: boolean }[] }) => st.items.some((i) => i.done));
+    expect(before.body.stages[0]).toMatchObject({ key: "meet", done: started });
     const after = await api("POST", "/api/journey/decisions", {
       stage: 0,
       item: "start",
@@ -740,6 +744,13 @@ describe("the watched folder: Kevin reads the scans and Ray confirms them from h
     });
     // Nothing posted: the run still waits for Ray.
     expect((await call("GET", "/api/run")).body.next.phase).toBe("upload");
+    // The scan itself, so Ray can see the page Kevin read; an unknown id is 404.
+    const id = byFile("BR-B-1044.jpg").id;
+    const scan = await fetch(`${inboxBase}/api/batch-records/${id}/scan`);
+    expect(scan.status).toBe(200);
+    expect(scan.headers.get("content-type")).toBe("image/jpeg");
+    expect((await scan.arrayBuffer()).byteLength).toBeGreaterThan(1000);
+    expect((await fetch(`${inboxBase}/api/batch-records/9999/scan`)).status).toBe(404);
   });
 
   it("refuses BR-B-1046 until Ray answers the smudge, then posts it outside the run", async () => {

@@ -183,7 +183,7 @@ export function PlantMap({
             </text>
             <text className="plant-sub" x={nx} y={ny + 7.4} textAnchor="middle">
               {layout.id === "B"
-                ? `${facility.online} of ${facility.departments.length} departments online`
+                ? `${facility.online} of ${facility.departments.length} departments on Day One`
                 : "online"}
               {facility.alerts.length > 0 && " · ⚠ review"}
             </text>

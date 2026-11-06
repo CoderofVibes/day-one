@@ -90,7 +90,17 @@ export function OrderDesk({
             facts={facts}
             track={selected.track}
             sourcing={turn.kind === "approve" ? sourcingCheck(facts, inventory, groupBuy) : null}
-            actions={actions}
+            // Someone else's decision is shown here for the purchaser to follow, not to make: the
+            // buttons stay on the Overview's desk (first-use review, finding 40).
+            actions={
+              need.who === "Ray Delgado" ? (
+                actions
+              ) : (
+                <span className="muted small">
+                  {need.who.split(" ")[0]} decides this; the buttons are on the Overview.
+                </span>
+              )
+            }
             onShow={onShow}
           />
         ) : (

@@ -364,6 +364,26 @@ a {
   color: var(--paid);
 }
 
+/* The scan beside Kevin's reading: a thumbnail that opens full size. */
+.scan-thumb {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 10px;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.scan-thumb img {
+  display: block;
+  width: 180px;
+  height: 230px;
+  object-fit: cover;
+  object-position: top;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  background: #fff;
+}
+
 /* ---------- Buttons ---------- */
 
 .btn,
@@ -400,11 +420,17 @@ a {
 
 .btn.quiet,
 .actions button.quiet,
-.actions .file {
+.actions .file:not(.btn) {
   border-color: transparent;
   background: transparent;
   color: var(--ink-2);
   font-weight: 500;
+}
+/* A file picker is a button, outlined like one (first-use review, findings 45 and 54). */
+.actions .file.btn {
+  border-color: var(--line-2);
+  background: var(--surface);
+  color: var(--ink);
 }
 
 .btn.sm,

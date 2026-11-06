@@ -67,9 +67,10 @@ export function briefSheet(brief: Brief): Sheet {
     lede,
     tally: [
       { label: "needs a person", count: count("waiting") },
-      { label: "to buy or move", count: count("buying") },
+      // The headline counts materials to order; this section also lists orders already on the way.
+      { label: "to buy, move or receive", count: count("buying") },
       { label: "worth a look", count: count("watch") },
-      { label: "moved", count: count("moved") },
+      { label: "stock movements since then", count: count("moved") },
     ],
     sections,
   };

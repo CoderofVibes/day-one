@@ -140,7 +140,7 @@ export interface TwinState {
   quotes: TwinQuote[];
   /** What the escrow holds right now, in cents. */
   escrowHeldCents: number;
-  /** "Plant B: 6 of 9 departments online." (DEMO_SCRIPT step 14) */
+  /** "Hollow Pine: 6 of 9 departments on Day One." (DEMO_SCRIPT step 14) */
   summary: string;
   /** The pooled PO once the run has one ("PO-G-2001"); the money then moves as plant shares. */
   pooled?: string;
@@ -549,7 +549,7 @@ class Twin {
       return `${po} pooled${total ? ` for ${total}` : ""}: ${parts}.`;
     }
     if (this.options.plantB === "online") return "All three plants on Acme's systems.";
-    return `Plant B: ${b?.online ?? 0} of ${b?.departments.length ?? 0} departments online.`;
+    return `Hollow Pine: ${b?.online ?? 0} of ${b?.departments.length ?? 0} departments on Day One.`;
   }
 }
 

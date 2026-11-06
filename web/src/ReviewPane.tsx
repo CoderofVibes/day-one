@@ -5,10 +5,17 @@
 // email stays on the list with its reason, so the attack is seen, not hidden. Accounts an email
 // named stay behind the curtain.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReviewProposal, ReviewState } from "./api.ts";
 import { KevinNote, Pill } from "./feed.tsx";
-import { reviewPill, senderOf, shortDate, signingDoes, staffWords } from "./review.ts";
+import {
+  flaggedWords,
+  reviewPill,
+  senderOf,
+  shortDate,
+  signingDoes,
+  staffWords,
+} from "./review.ts";
 
 export function ReviewPane({
   review,
@@ -34,10 +41,34 @@ export function ReviewPane({
   show?: string | null;
 }) {
   const [shown, setShown] = useState<string | null>(show);
+  // Opened by the turn, then left as the person left it: signing a draft never folds the panel.
+  const [unfolded, setUnfolded] = useState(open);
+  useEffect(() => setUnfolded(open), [open]);
   const mine = viewer === review.for && onSign !== null;
   const first = review.for.split(" ")[0] ?? review.for;
+  // The drafts, Kevin's questions and the refusal first; messages that need nothing fold below.
+  const quiet = review.proposals.filter((p) => p.decision === "none" && !p.signed);
+  const active = review.proposals.filter((p) => !quiet.includes(p));
+  const row = (p: ReviewProposal, i: number) => (
+    <ReviewRow
+      key={p.messageId}
+      proposal={p}
+      curtain={curtain}
+      canSign={mine}
+      first={i === 0 && p.decision === "sign" && !p.signed}
+      open={shown === p.messageId}
+      busy={busy}
+      onOpen={() => setShown(shown === p.messageId ? null : p.messageId)}
+      onSign={() => onSign?.(p.messageId)}
+    />
+  );
   return (
-    <details className="panel inbox review-pane" aria-label="Morning review" open={open}>
+    <details
+      className="panel inbox review-pane"
+      aria-label="Morning review"
+      open={unfolded}
+      onToggle={(e) => setUnfolded((e.currentTarget as HTMLDetailsElement).open)}
+    >
       <summary className="panel-head">
         <h2>Morning review</h2>
         <span className="right">
@@ -46,22 +77,25 @@ export function ReviewPane({
           </Pill>
         </span>
       </summary>
-      <KevinNote>{review.headline}</KevinNote>
+      <KevinNote>
+        {review.toSign
+          ? `Good morning, ${first}. The drafts to sign are first; open one to see what signing does.`
+          : `Good morning, ${first}. Everything Kevin drafted is signed.`}
+      </KevinNote>
       <ul className="queue" aria-label="Messages Kevin read">
-        {review.proposals.map((p, i) => (
-          <ReviewRow
-            key={p.messageId}
-            proposal={p}
-            curtain={curtain}
-            canSign={mine}
-            first={i === 0 && p.decision === "sign" && !p.signed}
-            open={shown === p.messageId}
-            busy={busy}
-            onOpen={() => setShown(shown === p.messageId ? null : p.messageId)}
-            onSign={() => onSign?.(p.messageId)}
-          />
-        ))}
+        {active.map(row)}
       </ul>
+      {quiet.length > 0 && (
+        <details className="review-quiet">
+          <summary className="small">
+            {count(quiet.length, "more message")} that {quiet.length === 1 ? "needs" : "need"}{" "}
+            nothing
+          </summary>
+          <ul className="queue" aria-label="Messages that need nothing">
+            {quiet.map((p) => row(p, -1))}
+          </ul>
+        </details>
+      )}
       <p className="muted small">
         Nothing is changed until it is signed; a signature changes a vendor's card or the schedule,
         never where an order pays.
@@ -118,7 +152,7 @@ function ReviewRow({
             {p.flagged.length > 0 && (
               <ul className="inbox-notes small muted">
                 {p.flagged.map((line) => (
-                  <li key={line}>⚠ "{staffWords(line, curtain)}"</li>
+                  <li key={line}>⚠ {flaggedWords(line, curtain)}</li>
                 ))}
               </ul>
             )}

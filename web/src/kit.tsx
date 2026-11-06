@@ -762,13 +762,22 @@ export interface TimelineItem {
 }
 
 /** A horizontal, scrollable row of events, oldest first; each opens its record. */
-export function Timeline({ items, label }: { items: TimelineItem[]; label: string }) {
+export function Timeline({
+  items,
+  label,
+  from = "newest",
+}: {
+  items: TimelineItem[];
+  label: string;
+  /** Where the row opens: at the newest event (a run in progress) or the first (a finished story). */
+  from?: "newest" | "first";
+}) {
   const nav = useNav();
   const ref = useRef<HTMLOListElement>(null);
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll to the newest when one arrives
   useEffect(() => {
     const el = ref.current;
-    if (el) el.scrollLeft = el.scrollWidth;
+    if (el) el.scrollLeft = from === "first" ? 0 : el.scrollWidth;
   }, [items.length]);
   if (items.length === 0) return null;
   return (

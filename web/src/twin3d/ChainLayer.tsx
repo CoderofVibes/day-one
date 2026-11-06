@@ -6,7 +6,6 @@
 // so the layer costs a handful of draw calls whatever the run holds; labels are the twin's DOM
 // labels, so they share its overprint pass. Turning the curtain off runs it all backwards.
 
-import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -26,6 +25,7 @@ import {
   SHRINK_MS,
 } from "./chain.ts";
 import { applyGhost, CHAIN_ORDER, disposeGhost, stepGhost } from "./ghost.ts";
+import { ScreenLabel } from "./ScreenLabel.tsx";
 import { ease, type V3 } from "./scene.ts";
 import { Label, RANK, SelectContext, useFrameRef } from "./Twin3D.tsx";
 
@@ -564,9 +564,14 @@ function ChainLayer({
       </instancedMesh>
       {hover && (
         <group position={hover.at}>
-          <Html center pointerEvents="none" zIndexRange={[30, 0]} className="t3-label chain tip">
+          <ScreenLabel
+            center
+            pointerEvents="none"
+            zIndexRange={[30, 0]}
+            className="t3-label chain tip"
+          >
             {hover.text}
-          </Html>
+          </ScreenLabel>
         </group>
       )}
       {kevin && (

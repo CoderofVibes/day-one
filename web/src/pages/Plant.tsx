@@ -175,7 +175,7 @@ export function BatchRecordsPage({
           open={{ id: latest, page: "batches", filter: latest }}
         />
         <StatTile
-          label="Average yield, last 12"
+          label="Yield, last 12 batches, every form"
           value={avgYield ? percent(avgYield) : "—"}
           visual={
             avgYield ? (
@@ -265,6 +265,7 @@ export function BatchRecordsPage({
                 })),
             })).filter((s) => s.points.length > 0)}
             rules={[{ y: 90, label: "expected 90%" }]}
+            yMin={84}
             yFormat={(v) => `${v.toFixed(0)}%`}
             xFormat={shortDay}
           />
@@ -351,7 +352,14 @@ export function InventoryPage({
   const [material, setMaterial] = useState<string | null>(null);
   const decisions =
     forecast && tables
-      ? materialDecisions(plant, forecast.materials, tables.lots, moves, forecast.horizonDays ?? 10)
+      ? materialDecisions(
+          plant,
+          forecast.materials,
+          tables.lots,
+          moves,
+          forecast.horizonDays ?? 10,
+          tables.orders,
+        )
       : [];
   const shownMaterial =
     material ?? decisions[0]?.material ?? forecast?.materials[0]?.material ?? stocked?.[0] ?? "";

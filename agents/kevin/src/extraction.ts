@@ -657,8 +657,11 @@ export function confirmBatchRecord(db: Ledger, batchId: number, input: ConfirmIn
     };
   });
   const low = stock.filter((s) => s.reorderPointBase !== null && s.afterBase < s.reorderPointBase);
+  // With nothing under its reorder point, say what changed rather than only that something did.
   const sentence = [
-    "Inventory updated.",
+    low.length === 0
+      ? `Inventory updated: ${stock.length} ${stock.length === 1 ? "material" : "materials"} taken off stock at ${plant}; none is below its reorder point.`
+      : "Inventory updated.",
     ...low.map(
       (s) =>
         `${s.name} at ${plant}: ${kgText(s.beforeBase)} → ${kgText(s.afterBase)} (reorder point ${Math.round((s.reorderPointBase ?? 0) / 1_000_000).toLocaleString("en-US")} kg).`,

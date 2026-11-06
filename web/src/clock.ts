@@ -353,7 +353,9 @@ export function persisted(state: ClockState): {
       t,
       speed: state.speed === "paused" ? null : state.speed,
       seed: state.seed === DEFAULT_SEED ? null : String(state.seed),
-      log: state.log.length ? JSON.stringify(state.log) : null,
+      // The session's actions stay in this browser's storage, not the address bar (first-use
+      // review, finding 51): a link someone shares is the moment, not a list of clicks.
+      log: null,
     },
     stored: JSON.stringify({ t, speed: state.speed, seed: state.seed, log: state.log }),
   };

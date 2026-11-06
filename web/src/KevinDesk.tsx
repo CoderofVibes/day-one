@@ -85,6 +85,12 @@ export function Desk({
               {waiting.length > 0 && ` · ${waiting.length} more waiting`}
             </span>
           </header>
+          {need && need.who !== "Ray Delgado" && (
+            <p className="desk-playing" role="status">
+              The replay now plays <b>{need.who}</b>'s part ({need.role.toLowerCase()}): this
+              decision and its buttons are {need.who.split(" ")[0]}'s, not Ray's.
+            </p>
+          )}
           {need ? (
             <NeedCard
               key={need.id}
@@ -383,8 +389,12 @@ function Sourcing({ check }: { check: SourcingCheck }) {
         <span className="sourcing-chips">
           {check.options.map((o) => (
             <span key={o.key} className={`verdict v-${o.verdict.replace(" ", "-")}`}>
-              {o.key === "transfer" ? "Move" : o.key === "alone" ? "Buy" : "Pool"}:{" "}
-              {o.verdict === "worth asking" ? "ask" : o.verdict}
+              {o.key === "transfer"
+                ? "Move it from another plant"
+                : o.key === "alone"
+                  ? "Buy it"
+                  : "Pool with other plants"}
+              : {o.verdict}
             </span>
           ))}
         </span>

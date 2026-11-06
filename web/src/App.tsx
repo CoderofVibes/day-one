@@ -118,14 +118,17 @@ const APPROVE = QUERY.get("page") === "approve";
 /** Judge mode (?judge=1, src/JudgeMode.tsx): recorded data only, so it always opens the replay. */
 const JudgeMode = lazy(() => import("./JudgeMode.tsx"));
 const JUDGE_AT = judgeStart(QUERY.toString());
-/** Kevin's introduction opens by itself on a bare first visit only (shiftScript.ts). */
+/** Kevin's introduction on request (?intro=1, the Overview's front door and the menu). */
+const INTRO_ASKED = QUERY.get("intro") === "1";
+/** Kevin's introduction opens by itself on a bare first visit only (shiftScript.ts), or on request. */
 const FIRST_OPEN =
-  typeof location !== "undefined" &&
-  opensByItself(
-    location.search,
-    location.hash,
-    typeof localStorage === "undefined" ? null : localStorage,
-  );
+  INTRO_ASKED ||
+  (typeof location !== "undefined" &&
+    opensByItself(
+      location.search,
+      location.hash,
+      typeof localStorage === "undefined" ? null : localStorage,
+    ));
 
 /**
  * The product look (shift.css, OPEN_QUESTIONS #46) is for the staff and judge pages only: the
@@ -152,7 +155,8 @@ function Screens() {
   useEffect(() => {
     probeApi().then(setLive);
   }, []);
-  if (JUDGE_AT !== null) return <ReplayApp />;
+  // Judge mode and Kevin's introduction run on the recorded data, so both open the replay.
+  if (JUDGE_AT !== null || INTRO_ASKED) return <ReplayApp />;
   if (live === undefined) return <div className="loading">Loading…</div>;
   return live ? <LiveApp initial={live} /> : <ReplayApp />;
 }
@@ -669,6 +673,14 @@ function ReplayApp() {
   const [judge, setJudge] = useState<number | "summary" | null>(JUDGE_AT);
   // The first shift: Kevin's introduction, then the walkthrough (FirstShift.tsx).
   const [shift, setShift] = useState<"intro" | "guide" | null>(FIRST_OPEN ? "intro" : null);
+  // Once the introduction is over, ?intro=1 leaves the address so a reload does not reopen it.
+  useEffect(() => {
+    if (shift !== null) return;
+    const q = new URLSearchParams(location.search);
+    if (!q.has("intro")) return;
+    q.delete("intro");
+    history.replaceState(null, "", q.toString() ? `?${q}` : location.pathname);
+  }, [shift]);
   /** Where a replay opened from the menu started, to return there; null on a first visit. */
   const entry = useRef<{ page: PageId; plant: PlantCode; at: number; curtain: boolean } | null>(
     null,
@@ -1245,6 +1257,11 @@ function LiveApp({ initial }: { initial: LiveState }) {
     moved(`Receive ${transferNo}`, () => postTransferReceipt(transferNo));
 
   const reset = () => {
+    if (
+      typeof window !== "undefined" &&
+      !window.confirm("Start the recorded run over? Everything done in this session is cleared.")
+    )
+      return;
     setMoveNote([]);
     setRuns((n) => n + 1);
     clock.resetSession();
@@ -1333,6 +1350,9 @@ function LiveApp({ initial }: { initial: LiveState }) {
       }
       onJudge={() => {
         location.search = "?judge=1";
+      }}
+      onFirstShift={() => {
+        location.search = "?intro=1";
       }}
     />
   );
@@ -1561,7 +1581,9 @@ function UpNext({
         ? next.action
         : next.phase === "done"
           ? summaryLine(state)
-          : next.action;
+          : next.phase === "reply"
+            ? `Kevin texted ${actor.name.split(" ")[0]} for the approval. In this replay you answer in that role, from the desk above.`
+            : next.action;
 
   return (
     <section className="panel next" aria-label="Next action">
@@ -1601,8 +1623,8 @@ function UpNext({
             <ActionButton key={a.label} action={a} disabled={busy !== null} onAct={onAct} />
           ))}
           {next.phase === "upload" && (
-            <label className={queue ? "file quiet sm" : "file"}>
-              <span>or upload a photo…</span>
+            <label className={queue ? "file btn quiet sm" : "file btn"}>
+              <span>Upload a photo instead</span>
               <input
                 type="file"
                 accept="image/jpeg"

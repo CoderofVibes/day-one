@@ -52,6 +52,8 @@ export interface Turn {
   answer: KevinAnswer | null;
   /** Shown instead of an answer: why there is none. */
   note: string | null;
+  /** What the card says while it waits: a recorded answer is found, a live one is read. */
+  waiting?: string;
   signature: RecordedAsk["questions"][number]["signature"];
   recorded: boolean;
   pending: boolean;
@@ -103,6 +105,9 @@ export function AskKevin({ recorded, live }: { recorded: RecordedAsk; live: bool
       signature: null,
       recorded: false,
       pending: true,
+      waiting: fromRecording?.answer
+        ? "Finding Kevin's recorded answer…"
+        : "Kevin is reading the records…",
     };
     setTurns((t) => [...t, pending]);
     setDraft("");
@@ -130,7 +135,7 @@ export function AskKevin({ recorded, live }: { recorded: RecordedAsk; live: bool
       <section className="card-v2 ask-start" aria-label="Ask Kevin">
         <p className="small muted">
           {live
-            ? "Kevin answers from the plant's records and cites each one. He explains and proposes; he never places, approves or pays from here."
+            ? "Kevin answers from the plant's records and cites each one; he explains and proposes, and never places, approves or pays from here. The suggested questions have recorded answers; any other question needs Kevin's model key on this server."
             : anyRecorded
               ? "Recorded questions · choose one to see Kevin's answer and the records it cites."
               : `This replay answers the suggested questions from Kevin's recorded answers. ${NOT_YET}`}
@@ -189,11 +194,21 @@ export function AskKevin({ recorded, live }: { recorded: RecordedAsk; live: bool
 
 export function AnswerCard({ turn, enclave }: { turn: Turn; enclave: RecordedAsk["enclave"] }) {
   if (turn.pending)
-    return <section className="card-v2 ask-a muted">Kevin is reading the records…</section>;
+    return (
+      <section className="card-v2 ask-a muted">
+        {turn.waiting ?? "Kevin is reading the records…"}
+      </section>
+    );
   const a = turn.answer;
   if (!a) return <section className="card-v2 ask-a muted">{turn.note}</section>;
   return (
     <section className="card-v2 ask-a" aria-label="Kevin's answer">
+      {/* Recorded or live, Kevin reads the end-of-run records (api/src/ask.ts), not the clock's
+          moment (first-use review, finding 35). */}
+      <p className="ask-when small">
+        Kevin read the records as they stood at the end of the recorded run (Mon, Nov 16), not at
+        the moment on the clock, so a number here can differ from the pages.
+      </p>
       <p className="ask-text">
         {withCitations(a.answer, a.citations).map((part) =>
           part.cite ? (

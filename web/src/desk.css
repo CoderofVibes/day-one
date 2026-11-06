@@ -636,6 +636,15 @@
 }
 
 /* ---------- also waiting ---------- */
+.desk-playing {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--r-md, 8px);
+  border: 1px solid color-mix(in srgb, var(--curtain-wait, #f2c46d) 55%, transparent);
+  background: color-mix(in srgb, var(--curtain-wait, #f2c46d) 14%, transparent);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
 .desk-waiting {
   display: flex;
   flex-wrap: wrap;

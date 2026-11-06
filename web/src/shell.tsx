@@ -201,7 +201,9 @@ export function Shell({
   const trust = (
     <label className="trust" title="Every limit, approval and payment here is a contract rule.">
       <span className="trust-mark" aria-hidden="true">
-        ✓
+        <svg viewBox="0 0 18 18" width="12" height="12" fill="currentColor" aria-hidden="true">
+          <path d="M9 2l6 2.2v4.3c0 3.6-2.5 6-6 7.5-3.5-1.5-6-3.9-6-7.5V4.2z" />
+        </svg>
       </span>
       <span className="trust-text">
         <b>Protected</b>
@@ -338,7 +340,7 @@ export function PageHeader({
             title={`About ${title}`}
             onClick={() => setOpen((o) => !o)}
           >
-            ?
+            About this page
           </button>
         )}
       </div>

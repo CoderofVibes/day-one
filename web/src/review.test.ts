@@ -48,7 +48,7 @@ describe("the morning review on Ray's screen", () => {
     const line =
       "northgate-remit.testnet is not the account on Northgate Ingredients' supplier credential (northgate-ingredients.testnet); a line of it is written to an assistant, which Kevin ignored.";
     expect(staffWords(line, false)).toBe(
-      "a different account is not the account on Northgate Ingredients' supplier credential; a line of it is written to an assistant, which Kevin ignored.",
+      "A different account is not the account on Northgate Ingredients' supplier credential; a line of it is written to an assistant, which Kevin ignored.",
     );
     expect(staffWords(line, true)).toBe(line);
     expect(

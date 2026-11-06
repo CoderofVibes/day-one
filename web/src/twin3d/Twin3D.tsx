@@ -5,7 +5,7 @@
 // one step every STEP_MS. Procedural geometry only; labels are DOM, so no font file. Staff see
 // dollars, POs, plants and names; hashes and accounts appear only behind the curtain.
 
-import { CameraControls, type CameraControlsImpl, Edges, Html, Line } from "@react-three/drei";
+import { CameraControls, type CameraControlsImpl, Edges, Line } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -52,6 +52,7 @@ import {
   measureKeepout,
   underControl,
 } from "./keepout.ts";
+import { ScreenLabel } from "./ScreenLabel.tsx";
 import {
   anchor3,
   arc3,
@@ -619,7 +620,7 @@ export function Label({
   });
   return (
     <group ref={anchor}>
-      <Html
+      <ScreenLabel
         ref={div}
         center
         pointerEvents="none"
@@ -628,7 +629,7 @@ export function Label({
         style={stackPx ? { marginTop: -stackPx } : undefined}
       >
         {children}
-      </Html>
+      </ScreenLabel>
     </group>
   );
 }
@@ -1167,7 +1168,7 @@ function Floors({ theme, state }: { theme: Theme; state: TwinState }) {
                 <strong>{facility?.name ?? layout.id}</strong>
                 <span>
                   {layout.id === "B"
-                    ? `${facility?.online ?? 0} of ${facility?.departments.length ?? 0} departments online`
+                    ? `${facility?.online ?? 0} of ${facility?.departments.length ?? 0} departments on Day One`
                     : "online"}
                   {facility && facility.alerts.length > 0 && " · ⚠ review"}
                 </span>
@@ -1642,9 +1643,14 @@ function Pallets({ pallets, theme }: { pallets: Pallet[]; theme: Theme }) {
       </instancedMesh>
       {hovered && at && (
         <group position={[at[0], at[1] + (hovered.run ? 2.4 : 1.4), at[2]]}>
-          <Html center pointerEvents="none" zIndexRange={[30, 0]} className="t3-label lot tip">
+          <ScreenLabel
+            center
+            pointerEvents="none"
+            zIndexRange={[30, 0]}
+            className="t3-label lot tip"
+          >
             {palletLine(hovered)}
-          </Html>
+          </ScreenLabel>
         </group>
       )}
     </>
@@ -1827,6 +1833,10 @@ export default function Twin3D({
   const notes = [...formatTwinState(next, curtain), ...formatQuotes(next, curtain)];
   const [narrow, setNarrow] = useState(() => matchMedia("(max-width: 560px)").matches);
   const command = useRef<CameraCommand>({ zoom: 1, fit: false });
+  // A browser that runs out of WebGL contexts (many tabs, a long session) drops the oldest one and
+  // the canvas goes blank; say so and offer a fresh canvas instead of an empty box.
+  const [lost, setLost] = useState(false);
+  const [canvasKey, setCanvasKey] = useState(0);
   const [layers, setLayers] = useState<Layers>({
     equipment: true,
     money: true,
@@ -1851,6 +1861,7 @@ export default function Twin3D({
       <CommandContext.Provider value={command}>
         <SelectContext.Provider value={onSelect ?? null}>
           <Canvas
+            key={canvasKey}
             flat
             shadows
             dpr={record ? 1 : [1, 1.5]}
@@ -1864,6 +1875,8 @@ export default function Twin3D({
             }}
             aria-label={`3D plant view. ${notes.join(" ")}`}
             onCreated={({ gl }) => {
+              gl.domElement.addEventListener("webglcontextlost", () => setLost(true));
+              gl.domElement.addEventListener("webglcontextrestored", () => setLost(false));
               // For npm run web:shot:3d: the renderer's draw calls and triangles per frame.
               window.dayOneTwin = {
                 info: () => ({ calls: gl.info.render.calls, triangles: gl.info.render.triangles }),
@@ -1892,6 +1905,21 @@ export default function Twin3D({
           </Canvas>
         </SelectContext.Provider>
       </CommandContext.Provider>
+      {lost && (
+        <div className="t3-lost" role="status">
+          <p>The browser stopped drawing the 3D view (it has too many open 3D pages).</p>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              setLost(false);
+              setCanvasKey((k) => k + 1);
+            }}
+          >
+            Draw it again
+          </button>
+        </div>
+      )}
       {!record && (
         <>
           <fieldset className="t3-tools">

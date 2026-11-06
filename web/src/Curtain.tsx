@@ -347,7 +347,9 @@ function CurtainBody({
       {view?.fallback && (
         <div className="recent">
           <h3>Recent on testnet</h3>
-          <p className="dim small">Nothing on chain for this page yet. Here's the latest.</p>
+          <p className="dim small">
+            No calls from this page yet. The last calls recorded in the run:
+          </p>
         </div>
       )}
       <ol className="txs">

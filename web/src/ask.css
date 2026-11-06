@@ -122,6 +122,13 @@
   background: var(--surface-2);
   border-color: var(--line-2);
 }
+.ask-when {
+  margin: 0 0 8px;
+  padding: 6px 10px;
+  border-left: 3px solid var(--curtain-wait, #f2c46d);
+  background: color-mix(in srgb, var(--curtain-wait, #f2c46d) 12%, transparent);
+  color: var(--ink);
+}
 .ask-recorded {
   color: var(--ink-3);
 }

@@ -981,11 +981,11 @@ export function MoneyTile({ clock, plant }: { clock: Clock; plant: PlantCode }) 
   const { paid, savings } = tally(plant, atOf(minute * MINUTE_MS));
   return (
     <a className="stat money-tile overview-money" href="?page=money" aria-label="Savings and cost">
-      <div className="stat-label">Savings and cost</div>
+      <div className="stat-label">Kevin's savings so far</div>
       <div className="stat-value num">{dollars(paid.valueUsdc)}</div>
       <div className="stat-delta">
-        {paid.ratio === null ? "Day One starts Nov 9" : `${paid.ratio}× his cost`} ·{" "}
-        {dollars(savings.identifiedUsdc)} identified
+        {paid.ratio === null ? "Day One starts Nov 9" : `${paid.ratio}× what Kevin costs to run`} ·{" "}
+        {dollars(savings.identifiedUsdc)} more found, not yet saved
       </div>
     </a>
   );

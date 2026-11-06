@@ -85,8 +85,8 @@ export function ImportPane({ onPosted }: { onPosted?: () => void } = {}) {
         >
           Use Ray's sheet
         </button>
-        <label className="file">
-          <span>or choose a file…</span>
+        <label className="file btn">
+          <span>Choose a file (.xlsx or .csv)</span>
           <input
             type="file"
             accept=".xlsx,.csv"

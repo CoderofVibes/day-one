@@ -33,9 +33,9 @@ describe("the brief as a morning sheet", () => {
     ]);
     expect(sheet.tally).toEqual([
       { label: "needs a person", count: 1 },
-      { label: "to buy or move", count: 4 },
+      { label: "to buy, move or receive", count: 4 },
       { label: "worth a look", count: 1 },
-      { label: "moved", count: 1 },
+      { label: "stock movements since then", count: 1 },
     ]);
   });
 

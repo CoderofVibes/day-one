@@ -170,22 +170,32 @@ export function HeaderClock({
                 <ModeChip recorded={mode === "golden"} />
               </span>
             </div>
-            <ul className="gh-menu">
-              {jumps.map((j) => (
-                <li key={j.label}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const at = "at" in j ? j.at : range.steps[j.step];
-                      if (at !== undefined) clock.seek(at);
-                      close();
-                    }}
-                  >
-                    {j.label}
-                  </button>
-                </li>
+            {[
+              { title: "This run", list: jumps.filter((j) => !("at" in j)) },
+              { title: "The year before", list: jumps.filter((j) => "at" in j) },
+            ]
+              .filter((g) => g.list.length > 0)
+              .map((g) => (
+                <div key={g.title}>
+                  <p className="gh-menu-title">{g.title}</p>
+                  <ul className="gh-menu">
+                    {g.list.map((j) => (
+                      <li key={j.label}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const at = "at" in j ? j.at : range.steps[j.step];
+                            if (at !== undefined) clock.seek(at);
+                            close();
+                          }}
+                        >
+                          {j.label}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
             <div className="clock-row">
               <span className="clock-end">{shortDay(range.start)}</span>
               <div className="clock-track">

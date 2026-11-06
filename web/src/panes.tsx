@@ -707,7 +707,7 @@ export function HqPane({ policy, live }: { policy: PolicyState | null; live: boo
         <h2>Acme HQ · Kevin's limits on the contract</h2>
         <span className="right small muted">
           {policy?.reachable
-            ? `read from the chain at ${policy.policy.readAt.slice(11, 16)} UTC · Jordan Pike`
+            ? `the contract as it is today on testnet, not at the replay's clock · read ${policy.policy.readAt.slice(11, 16)} UTC`
             : live
               ? "reading the contract…"
               : "Jordan Pike"}
@@ -722,7 +722,7 @@ export function HqPane({ policy, live }: { policy: PolicyState | null; live: boo
               <Pill tone="neutral">over that, {who(agent.approver, policy.names)} approves</Pill>
             </div>
             <div className="tile">
-              <small>This month</small>
+              <small>Kevin's spend on the contract, this calendar month</small>
               <b>
                 {usd(spent)} <small>of {usd(monthly)}</small>
               </b>
@@ -758,7 +758,7 @@ export function HqPane({ policy, live }: { policy: PolicyState | null; live: boo
                 <tr>
                   <th>Category</th>
                   <th className="n">Monthly cap</th>
-                  <th className="n">Spent this month</th>
+                  <th className="n">Spent on the contract this calendar month</th>
                 </tr>
               </thead>
               <tbody>
@@ -795,8 +795,8 @@ export function HqPane({ policy, live }: { policy: PolicyState | null; live: boo
       ) : (
         <KevinNote>
           The contract refused PO-1042 over my $2,500.00 per-PO limit in this run until Linda
-          approved it (the refused step, behind the curtain). npm run escrow reads the limits and
-          this month's spend from testnet as they are now; the API shows them here.
+          approved it (the refused step, behind the curtain). With the app running on its own
+          server, this panel reads the limits and this month's spend from the contract on testnet.
         </KevinNote>
       )}
 
@@ -804,19 +804,23 @@ export function HqPane({ policy, live }: { policy: PolicyState | null; live: boo
 
       <h3>Acme's books</h3>
       <p style={{ margin: 0 }}>
-        Purchase orders, receipts and payments flow to the acquirer's ERP through the connector,
-        where vendor bills are matched three ways. {live ? "It runs beside the API: " : ""}
-        <code>npm run erp</code>
+        Purchase orders, receipts and payments flow to the acquirer's ERP (a mock in this demo)
+        through the connector, where vendor bills are matched three ways. The Reconciliation page
+        checks Day One, the ERP and the contract against each other.
+      </p>
+      <details className="small muted">
+        <summary>From a terminal</summary>
+        <code>npm run erp</code> serves the ERP's own view
         {live ? (
           <>
-            , then <a href="http://localhost:8087/">the ERP view</a>.
+            {" "}
+            at <a href="http://localhost:8087/">localhost:8087</a>
           </>
         ) : (
-          " serves its view (docs/ERP.md)."
-        )}{" "}
-        <code>npm run erp:reconcile</code> checks Day One, the ERP and the contract against each
-        other.
-      </p>
+          " (docs/ERP.md)"
+        )}
+        ; <code>npm run erp:reconcile</code> runs the same checks.
+      </details>
     </section>
   );
 }

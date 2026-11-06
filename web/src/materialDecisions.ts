@@ -6,7 +6,7 @@
 
 import type { TransferSuggestion } from "./api.ts";
 import { qty } from "./charts.tsx";
-import type { LotView } from "./reads.ts";
+import type { LotView, PoView } from "./reads.ts";
 import type { MaterialForecast } from "./series.ts";
 
 export interface MaterialDecision {
@@ -47,10 +47,49 @@ export function materialDecisions(
   lots: LotView[],
   moves: TransferSuggestion[],
   horizon = 10,
+  /** The plant's orders: one Kevin already drafted for a material answers its decision. */
+  orders: PoView[] = [],
 ): MaterialDecision[] {
   const ranked: { score: number; d: MaterialDecision }[] = [];
   for (const m of forecast) {
     if (!m.short && !m.reorder) continue;
+    // An order Kevin drafted that waits on an approval is not on order yet, but the purchaser has
+    // nothing left to decide (first-use review, finding 39): say who it waits on instead.
+    const drafted = orders.find(
+      (o) =>
+        o.approval?.state === "requested" &&
+        !o.approval.response &&
+        o.lines.some((l) => l.material === m.material),
+    );
+    if (drafted?.approval) {
+      const line = drafted.lines.find((l) => l.material === m.material);
+      ranked.push({
+        score: 250,
+        d: {
+          id: `order-${m.material}`,
+          kind: "order",
+          material: m.material,
+          lot: null,
+          who: drafted.approval.approver,
+          title: `${drafted.poNo} is drafted${line ? ` for ${qty(line.qtyBase, m.dimension)} ${unitName(m.name, m.dimension)}` : ""}`,
+          subtitle: `${m.name} · waits on ${drafted.approval.approver}`,
+          pill: { label: "waiting on approval", tone: "held" },
+          why: `${qty(m.onHandBase, m.dimension)} on hand; the plan needs ${qty(m.needBase, m.dimension)} in the next ${horizon} days. Kevin drafted ${drafted.poNo}, and it is over his limit.`,
+          deciding: `Nothing for ${PURCHASER[plant] ?? "purchasing"}: ${drafted.approval.approver} decides whether ${drafted.poNo} goes ahead.`,
+          after:
+            "Once approved, the contract sets the money aside and the supplier ships; it pays after receipt and QC.",
+          gauge: {
+            onHand: m.onHandBase,
+            onOrder: m.onOrderBase,
+            need: m.needBase,
+            reorder: m.reorderPointBase,
+            dimension: m.dimension,
+          },
+          move: null,
+        },
+      });
+      continue;
+    }
     const move = moves.find((t) => t.material === m.material && t.to === plant) ?? null;
     const after = m.onHandBase + m.onOrderBase - m.needBase;
     const batches = m.plannedBatches.length;
