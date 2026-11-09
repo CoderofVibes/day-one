@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="456" viewBox="0 0 420 456" role="img" aria-labelledby="title desc">
+  <title id="title">PO-1042 from refusal to payment</title>
+  <desc id="desc">A $5,150 order exceeds Kevin’s $2,500 limit. Linda approves and Kevin funds escrow. After staff confirm 700 kg and QC releases the lot, Northgate receives 5,150 DTUSD on NEAR testnet.</desc>
+  <rect width="420" height="456" rx="12" fill="#f4f6f3"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="18" y="29" font-size="15" font-weight="700" fill="#344c43">PO-1042 · RECORDED ON NEAR TESTNET</text>
+    <rect x="14" y="44" width="392" height="112" rx="10" fill="#fff" stroke="#d7dfd8"/>
+    <text x="30" y="77" font-size="25" font-weight="700" fill="#892f26">1. Refused</text>
+    <text x="30" y="108" font-size="22" font-weight="700" fill="#162c25">$5,150 order · $2,500 limit</text>
+    <text x="30" y="136" font-size="17" fill="#43564e">Model approved. Linda still has to decide.</text>
+    <rect x="14" y="166" width="392" height="112" rx="10" fill="#fff" stroke="#d7dfd8"/>
+    <text x="30" y="199" font-size="25" font-weight="700" fill="#7b5817">2. Approved → funded</text>
+    <text x="30" y="230" font-size="22" font-weight="700" fill="#162c25">Linda says yes. Kevin retries.</text>
+    <text x="30" y="258" font-size="17" fill="#43564e">Same model decision. Money in escrow.</text>
+    <rect x="14" y="288" width="392" height="112" rx="10" fill="#173e31"/>
+    <text x="30" y="321" font-size="25" font-weight="700" fill="#e2f1e5">3. Received → paid</text>
+    <text x="30" y="352" font-size="22" font-weight="700" fill="#fff">700 kg counted in. QC releases.</text>
+    <text x="30" y="380" font-size="17" fill="#d4e5da">5,150 DTUSD paid to Northgate.</text>
+    <text x="18" y="423" font-size="14" fill="#43564e">Fictional plant · Simulated reply · DTUSD test token</text>
+    <text x="18" y="443" font-size="14" fill="#43564e">Staff keys held by the server</text>
+  </g>
+</svg>

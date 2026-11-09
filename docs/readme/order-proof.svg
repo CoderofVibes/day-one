@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="342" viewBox="0 0 960 342" role="img" aria-labelledby="title desc">
+  <title id="title">One order from refusal to payment</title>
+  <desc id="desc">Recorded PO-1042. Kevin's $5,150 order exceeds his $2,500 limit and is refused. Linda approves and Kevin's retry funds escrow. After receipt and QC release, Northgate receives 5,150 DTUSD. The plant is fictional and the transactions are on NEAR testnet.</desc>
+  <rect width="960" height="342" rx="16" fill="#f4f6f3"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="28" y="36" fill="#344c43" font-size="16" font-weight="700" letter-spacing="1.5">ONE ORDER · PO-1042 · RECORDED ON NEAR TESTNET</text>
+    <g transform="translate(24 58)">
+      <rect width="288" height="246" rx="12" fill="#fff" stroke="#d7dfd8"/>
+      <rect width="288" height="7" rx="3" fill="#ab4938"/>
+      <text x="20" y="47" font-size="29" font-weight="700" fill="#892f26">Refused</text>
+      <text x="20" y="98" font-size="40" font-weight="700" fill="#162c25">$5,150</text>
+      <text x="20" y="127" font-size="20" fill="#43564e">Kevin’s limit is $2,500</text>
+      <rect x="20" y="149" width="244" height="12" rx="6" fill="#f4ded2"/>
+      <rect x="20" y="149" width="118" height="12" rx="6" fill="#28765e"/>
+      <path d="M138 144v22" stroke="#162c25" stroke-width="2"/>
+      <text x="20" y="197" font-size="19" fill="#43564e">Model signed APPROVE.</text>
+      <text x="20" y="222" font-size="19" fill="#43564e">Linda still has to decide.</text>
+    </g>
+    <g transform="translate(336 58)">
+      <rect width="288" height="246" rx="12" fill="#fff" stroke="#d7dfd8"/>
+      <rect width="288" height="7" rx="3" fill="#b6852c"/>
+      <text x="20" y="47" font-size="26" font-weight="700" fill="#7b5817">Approved → funded</text>
+      <text x="20" y="98" font-size="32" font-weight="700" fill="#162c25">Linda says yes</text>
+      <text x="20" y="127" font-size="20" fill="#43564e">Kevin retries the order</text>
+      <path d="M20 155h244" stroke="#e1e7e1"/>
+      <text x="20" y="197" font-size="19" fill="#43564e">Same model decision.</text>
+      <text x="20" y="222" font-size="19" fill="#43564e">Money waits in escrow.</text>
+    </g>
+    <g transform="translate(648 58)">
+      <rect width="288" height="246" rx="12" fill="#173e31"/>
+      <text x="20" y="47" font-size="29" font-weight="700" fill="#e2f1e5">Received → paid</text>
+      <text x="20" y="98" font-size="40" font-weight="700" fill="#fff">700 kg</text>
+      <text x="20" y="127" font-size="20" fill="#d4e5da">Counted in · released by QC</text>
+      <path d="M20 155h244" stroke="#507562"/>
+      <text x="20" y="197" font-size="19" fill="#fff">5,150 DTUSD to Northgate.</text>
+      <text x="20" y="222" font-size="19" fill="#d4e5da">Payment recorded on chain.</text>
+    </g>
+    <text x="28" y="328" fill="#43564e" font-size="14">Fictional plant · Simulated text reply · Server-held staff keys · DTUSD test token</text>
+  </g>
+</svg>

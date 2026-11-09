@@ -324,3 +324,53 @@ fn hq_can_retire_an_enclave_key() {
     let bad = panic_message(|| c.set_attested_signer("0x12".into(), true));
     assert_eq!(bad, "A signing address is 0x and 40 hex characters.");
 }
+
+/// Documents the v2 trust boundary for reviewers. The caller supplies the PO hash, and
+/// neither the director approval nor the model signature independently binds `qty` to it.
+/// Keep this case with the README limitation until a versioned terms-binding change ships.
+#[test]
+fn v2_trusts_the_agent_to_bind_quantity_to_the_approved_hash() {
+    let mut c = setup();
+    require_signed(&mut c);
+    let signed = decision(&enclave(), &format!("APPROVE {}", hash(1)));
+    as_(&kevin());
+    let refusal = panic_message(|| {
+        c.submit_po(
+            "PO-1042".into(),
+            northgate(),
+            U128(5_150 * DOLLAR),
+            "raw_material".into(),
+            hash(1),
+            Some(U64(700 * KG)),
+            Some(signed.clone()),
+        );
+    });
+    assert!(refusal.contains("director approval required"));
+    assert!(c.get_po("PO-1042".into()).is_none());
+    approve(&mut c, "PO-1042", 5_150);
+
+    // Same hash, amount, supplier and signed response, but half the original quantity.
+    as_(&kevin());
+    c.submit_po(
+        "PO-1042".into(),
+        northgate(),
+        U128(5_150 * DOLLAR),
+        "raw_material".into(),
+        hash(1),
+        Some(U64(350 * KG)),
+        Some(signed),
+    );
+    let po = c.get_po("PO-1042".into()).unwrap();
+    assert_eq!(po.approved_by, Some(director()));
+    assert_eq!(po.qty, Some(U64(350 * KG)));
+    assert_eq!(po.po_hash, hash(1));
+
+    // Settlement uses the quantity accepted at funding, so this counts as a full delivery.
+    ship(&mut c);
+    receive(&mut c, 350);
+    release(&mut c);
+    assert_eq!(
+        c.get_po("PO-1042".into()).unwrap().paid,
+        Some(U128(5_150 * DOLLAR))
+    );
+}

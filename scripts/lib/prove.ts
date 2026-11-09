@@ -51,9 +51,9 @@ export const CLAIMS: Claim[] = [
   {
     id: "attacks",
     claim:
-      "Twenty-one attacks on Kevin, the ERP path, supplier credentials, sealed bids and the plant itself (over-orders, recalled lots, a supplier settling its own order, a short delivery invoiced in full, price spikes, over-deliveries) all fail.",
+      "Twenty-one recorded attack scenarios are stopped by Kevin, the mock ERP or the contract, including a short delivery settling at a reduced amount.",
     evidence:
-      "Each attack replays its recorded testnet transaction or model answer and asserts the refusal (data/attacks/, data/sealed/, data/replay/review-llm.json).",
+      "Each case checks its recorded transaction or model answer and the expected hold, refusal or reduced settlement (data/attacks/, data/sealed/, data/replay/review-llm.json).",
     steps: [cleanCloneStep("test-attacks")],
   },
   {
@@ -65,7 +65,7 @@ export const CLAIMS: Claim[] = [
   },
   {
     id: "ask",
-    claim: "Kevin answers questions from the plant's records and cites them.",
+    claim: "Kevin answers six recorded questions from the plant's records and cites them.",
     evidence: "Six recorded questions, each answer with the record ids it cites and its signature.",
     steps: [cleanCloneStep("ask")],
   },
@@ -79,7 +79,7 @@ export const CLAIMS: Claim[] = [
   {
     id: "lots",
     claim:
-      "Every lot's story, from the supplier and the payment to each batch and customer shipment, is anchored on chain as one Merkle root per plant per day, and one lot's records can be proved without disclosing the rest.",
+      "The seeded lot book matches its recorded daily Merkle roots, and PO-1042's lot passport verifies against the roots read from testnet.",
     evidence:
       "The lot book (data/lots/lot-book.json) is checked against the genealogy, then PO-1042's lot is proved record by record against the roots the contract holds on testnet.",
     steps: [cleanCloneStep("lots"), cleanCloneStep("verify-lot")],
@@ -87,7 +87,7 @@ export const CLAIMS: Claim[] = [
   {
     id: "erp",
     claim:
-      "Day One, the acquirer's ERP and the contract agree on every PO, bill, payment and supplier.",
+      "Seven reconciliation checks agree across Day One's ledger, the mock ERP and recorded contract views.",
     evidence: "Seven reconciliation checks against the recorded contract views.",
     steps: [cleanCloneStep("erp-reconcile")],
   },
@@ -122,7 +122,7 @@ export const CLAIMS: Claim[] = [
   },
   {
     id: "ui-data",
-    claim: "The web UI shows the recorded run, not invented numbers.",
+    claim: "The web replay export matches the committed recordings and seed data.",
     evidence: "The UI's data export is regenerated from the recordings and compared.",
     steps: [cleanCloneStep("web-data-check")],
   },

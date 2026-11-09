@@ -76,7 +76,7 @@ describe("judge mode", () => {
     expect(seconds).toBeLessThanOrEqual(240);
     const titles = PROOF_STEPS.map((s) => s.title);
     expect(PROOF_STEPS[0]?.id).toBe("attacks");
-    expect(titles).toContain("21 of 21 attacks refused");
+    expect(titles).toContain("21 of 21 attack scenarios stopped");
     expect(titles).toContain("Group buy PO-G-2001, $9,490.00");
     expect(titles).toContain("7 of 7 reconciliation checks agree");
     const usdcStep = PROOF_STEPS.find((s) => s.id === "usdc");

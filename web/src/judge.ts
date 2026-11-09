@@ -249,7 +249,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   },
   {
     id: "refused",
-    title: "The contract sends this order to Linda",
+    title: "The model approved. The contract still refused.",
     body: "Kevin prepared PO-1042: 700 kg of ascorbic acid from Northgate, $5,150.00 including freight. The contract refused it against his $2,500 limit, even with his model's signed approval attached. Linda decides; approval sets the money aside, and payment waits for receipt and QC.",
     ...(po.refused?.error ? { quote: `Contract: “${po.refused.error}”` } : {}),
     page: "overview",
@@ -261,7 +261,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "approve",
     title: "Linda approves; Kevin's signed decision stays the same",
-    body: "Linda said yes, and the contract funded the same order it had refused. Kevin's retry carried the same decision his model signed the first time, word for word: the signature proves where the answer came from, and only Linda's yes made it count. (Her text is simulated in this demo; the server holds her key.)",
+    body: "Linda approved, then Kevin retried with the same signed model response. The contract funded PO-1042. It checks the signer and supplied PO fingerprint, trusting Kevin to bind that fingerprint to the order's terms. Linda's text is simulated and the server holds her key.",
     page: "overview",
     at: retriedAt,
     spotlight: ".curtain .decision",
@@ -308,7 +308,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
 export const PROOF_STEPS: JudgeStep[] = [
   {
     id: "attacks",
-    title: `${attack.refused} of ${attack.total} attacks refused`,
+    title: `${attack.refused} of ${attack.total} attack scenarios stopped`,
     body: `An email asks to send Northgate's payments to a new account. Kevin set it aside and changed nothing, so it never reached the chain. All ${attack.total} recorded attacks were stopped by Kevin, the mock ERP or the contract. Press Fire attack to replay this one; below are three attacks the contract itself refused.`,
     ...(bank ? { quote: `Kevin: “${bank.reason.split(":")[0]}.”`, attack: bank.n } : {}),
     page: "arena",
@@ -321,7 +321,7 @@ export const PROOF_STEPS: JudgeStep[] = [
   },
   {
     id: "short",
-    title: "A short delivery pays only for what reached stock",
+    title: "Half delivered, half paid",
     body: `Attack ${short19.n ?? 19}: a supplier ships half and invoices in full. The receiving lead counts what arrived, and at QC release the contract pays escrow pro rata to that quantity and returns the rest to the budget.`,
     ...(short19.settled ? { quote: `Attack ${short19.n}: “${short19.settled}”` } : {}),
     page: "arena",
@@ -404,7 +404,7 @@ export const PROOF_STEPS: JudgeStep[] = [
   {
     id: "recall",
     title: "Run a recall drill",
-    body: "The recall drill traces a fictional supplier recall through the recorded lot history across the plants, without changing the ledger.",
+    body: "The recall drill traces a fictional supplier recall through the seeded lot history across the plants. The drill leaves the ledger unchanged.",
     page: "lots",
     at: last,
     spotlight: '[aria-label="Recall drill"]',
