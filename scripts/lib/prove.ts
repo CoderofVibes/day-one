@@ -170,21 +170,37 @@ export function scriptsUsed(claims: Claim[] = CLAIMS): Set<string> {
   return names;
 }
 
+/**
+ * pass: every step printed what it must. fail: a step disagreed with the evidence. unverified: a
+ * step could not reach testnet, so the on-chain comparison never ran; that is not evidence against
+ * the claim, and it is not a pass either.
+ */
+export type ClaimStatus = "pass" | "fail" | "unverified";
+
 export interface ClaimResult {
   id: string;
   claim: string;
   evidence: string;
+  status: ClaimStatus;
+  /** True only for a pass. */
   ok: boolean;
   seconds: number;
   commands: string[];
-  /** Set when a step failed: which one and why. */
+  /** Set when a step did not pass: which one and why. */
   reason?: string;
 }
 
+/** The word a reviewer sees for each status. */
+export const STATUS_LABEL: Record<ClaimStatus, string> = {
+  pass: "PASS",
+  fail: "FAIL",
+  unverified: "UNVERIFIED",
+};
+
 /**
  * Why a failed step failed, when its output says more than an exit code: an unreachable testnet
- * RPC is named as such, so a reviewer in a sandbox without network can tell that the local replay
- * passed and only the chain comparison did not run. The claim stays failed either way.
+ * RPC is named as such, and the claim is UNVERIFIED rather than FAIL, so a reviewer in a sandbox
+ * without network can tell that the local replay passed and only the chain comparison did not run.
  */
 export function failureCause(output: string): string | null {
   if (
@@ -201,22 +217,40 @@ export function scope(count: number, quick: boolean): string {
   return `Checking ${count} claims from the recordings and read-only testnet queries. No keys required.${quick ? " Quick mode skips lint, typecheck and tests." : ""}`;
 }
 
-/** The scorecard as Markdown: the result first, then failures and skips, then one row per claim. */
+/** The counts behind the result line and the JSON. */
+export function tally(results: ClaimResult[]) {
+  const count = (s: ClaimStatus) => results.filter((r) => r.status === s).length;
+  return { proved: count("pass"), failed: count("fail"), unverified: count("unverified") };
+}
+
+/**
+ * The scorecard as Markdown: the result first, then failures, unverified claims and skips, then
+ * one row per claim.
+ */
 export function markdown(results: ClaimResult[], meta: { commit: string; skipped: string[] }) {
-  const passed = results.filter((r) => r.ok).length;
+  const { proved, unverified } = tally(results);
   const lines = [
     `# Day One proof scorecard (commit ${meta.commit})`,
     "",
-    `**${passed} of ${results.length} claims proved.**`,
-    ...results.filter((r) => !r.ok).map((r) => `- FAIL ${r.id}: ${r.reason ?? "failed"}`),
+    `**${proved} of ${results.length} claims proved.**`,
+    ...(unverified
+      ? [
+          `${unverified} could not be checked because testnet was unreachable. That is not a failure of the claim; run again with internet.`,
+        ]
+      : []),
+    ...results
+      .filter((r) => r.status !== "pass")
+      .map((r) => `- ${STATUS_LABEL[r.status]} ${r.id}: ${r.reason ?? "failed"}`),
     ...meta.skipped.map((s) => `- Skipped: ${s}`),
     "",
     "| | Claim | Evidence | Command |",
     "|---|---|---|---|",
-    ...results.map(
-      (r) =>
-        `| ${r.ok ? "PASS" : "FAIL"} | ${r.claim} | ${r.evidence}${r.reason ? ` **Failed:** ${r.reason}` : ""} | ${r.commands.map((c) => `\`${c}\``).join("<br>")} |`,
-    ),
+    ...results.map((r) => {
+      const note = r.reason
+        ? ` **${r.status === "unverified" ? "Not checked" : "Failed"}:** ${r.reason}`
+        : "";
+      return `| ${STATUS_LABEL[r.status]} | ${r.claim} | ${r.evidence}${note} | ${r.commands.map((c) => `\`${c}\``).join("<br>")} |`;
+    }),
   ];
   return lines.join("\n");
 }

@@ -32,7 +32,7 @@ To inspect the evidence further, continue with these steps. Verification reads N
 
 **Open the replay in a browser.** Run `npm run web:build`, then `npm run web`. Open [the refusal](http://localhost:5173/?judge=3) for the moment above, or [the full walkthrough](http://localhost:5173/?judge=1) from the plant handover. Vite prints the actual local address if that port is occupied. The [captioned tour](http://localhost:5173/?video=1&tour=1) follows the recorded flows. For staff actions such as confirming scans and signing mailbox drafts, use `npm run api` after the build and open [the local app](http://localhost:8787/). [Replay and API behavior](docs/HOSTING.md)
 
-**Run the evidence scorecard.** `npm run prove` checks the replay, record integrity, attack cases, model signatures, lot passport, mock ERP reconciliation and more. It prints PASS or FAIL with a cause for each claim. It also runs lint, typecheck and TypeScript tests. `-- --quick` skips that code check, and `-- --contract` adds Rust tests. The anchor, lot and sealed-round comparisons make read-only testnet calls. A failed RPC read is reported as a failed check.
+**Run the evidence scorecard.** `npm run prove` checks the replay, record integrity, attack cases, model signatures, lot passport, mock ERP reconciliation and more. It prints PASS or FAIL with a cause for each claim. It also runs lint, typecheck and TypeScript tests. `-- --quick` skips that code check, and `-- --contract` adds Rust tests. The anchor, lot and sealed-round comparisons make read-only testnet calls. A claim whose testnet read could not connect is marked UNVERIFIED, not FAIL, and still counts against the exit code.
 
 For machine-readable results, use `npm run --silent prove -- --json`. The [reviewer map](llms.txt) points to the code and its trust boundaries. [PROOF.md](PROOF.md) lists each recorded transaction with signer, gas payer, events and explorer link. The scorecard’s [claim definitions](scripts/lib/prove.ts) say exactly what each check tests.
 
@@ -89,6 +89,16 @@ The same order crosses company and role boundaries. Kevin submits it from the pl
 
 NEAR AI Cloud supplies the signed model response, and the contract recovers its signer with `env::ecrecover`. HQ registers that address after off-chain attestation verification. The record fingerprint stays with the lot after payment, so a reviewer can check its history later. [Signature verification](contracts/spend-policy/src/attest.rs), [lot proofs](server/src/lots)
 
+The NEAR features used:
+
+- **Function-call key.** Kevin's working key can call only nine purchasing methods on the contract. It cannot transfer tokens or change keys. `near account list-keys kevin.plant-b.acme-holdings.testnet network-config testnet now` shows it. [Key setup](scripts/setup-testnet.ts)
+- **Sub-accounts.** Each plant is a sub-account of the acquirer's account. Its agent, director, receiving and QC accounts sit beneath it, for example `kevin.plant-b.acme-holdings.testnet`.
+- **NEP-366 meta transactions.** Staff approvals, receipts and QC releases are signed delegate actions. The relayer submits them and pays their gas. [Relayer](server/src/relayer/relayer.ts)
+- **NEP-141 tokens.** Budgets and payments use DTUSD, a labeled test token, and Circle testnet USDC.
+- **Agents coordinating on chain.** Plant B's Kevin opens a pooled order, and Plant A's Kevin joins from its own account. The contract checks each plant's share against that plant's limits. Supplier agents quote from their own accounts and take part in a commit-and-reveal round. [Group purchase](docs/GROUP_BUY.md), [sealed round](PROOF.md#sealed-quote-round-rfq-2611-02)
+
+NEAR Intents and Chain Signatures are not used. Intents has no testnet, and this build signs nothing on mainnet.
+
 <a id="layer-index"></a>
 
 ## How far it goes
@@ -141,7 +151,7 @@ Bind all submitted PO terms to the authorized fingerprint in a versioned contrac
 
 ## Built with
 
-Built for NEAR HACKATHON by DadMod, Tony Langford’s solo entry, for the realworld, business, security and agents tracks. Tony is a chemical engineer with ten years on manufacturing floors, now a systems engineer at an advanced nuclear reactor startup, building this on paternity leave.
+Built for NEAR HACKATHON by DadMod, Tony Langford’s solo entry, for the realworld, business, security, agents and swarms tracks. Tony is a chemical engineer with ten years on manufacturing floors, now a systems engineer at an advanced nuclear reactor startup, building this on paternity leave.
 
 Claude Code built the application. Muse assisted with early planning. GPT-6 Astra contributed design and review passes, then implemented this README, evidence visual, judge-facing copy and contract boundary test with Tony’s authorization. Tony directs the product and approves decisions. [Design passes](docs/astra/INDEX.md)
 

@@ -65,7 +65,7 @@ The voice-over column is the caption burned in on screen; docs/VOICEOVER.md has 
 - **Email:** given by Tony Oct 27; kept out of the repo because it goes public. Tony enters it himself. One email may send 2 submissions (HACKATHON.md, Nov 4), so the same one can serve Everstreet.
 - **Team size:** 1
 - **NEAR wallet address (payout):** `Tony's prize account` (Meteor Wallet, created by Tony Oct 27; agents never touch it)
-- **Tracks:** `realworld`, `business`, `security`, `agents`; `privacy` and `swarms` both have built features (attested inference on NEAR AI Cloud; the recorded group buy and sealed round) and wait on Tony's choice (OPEN_QUESTIONS #53). The form shows display names: Real-World Money, Autonomous Business, AI Security & Defense, Agent Economy, Privacy & Private AI, AI Swarms.
+- **Tracks:** `realworld`, `business`, `security`, `agents`, `swarms` (Tony, Nov 8, OPEN_QUESTIONS #53: swarms added for the recorded group buy and sealed round; privacy not added). The form shows display names: Real-World Money, Autonomous Business, AI Security & Defense, Agent Economy, AI Swarms.
 - **Repository link:** the public URL of `github.com/CoderofVibes/day-one`, once Tony makes it public.
 - **Demo post link:** the X post's URL, once posted.
 - **Consent:** Tony ticks it himself.

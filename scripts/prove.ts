@@ -4,7 +4,8 @@
 // Markdown, or one JSON line with --json (`npm run --silent prove -- --json` for a parser). --quick skips lint, typecheck and the test suite (the slowest claim); --contract
 // adds the contract's Rust tests (WSL on Windows). Needs no keys, no .env and no network except
 // what the README's replay commands already read; signs nothing and writes nothing tracked.
-// Exit code = failed claims.
+// A claim whose step could not reach testnet is UNVERIFIED, not FAIL. Exit code = claims not
+// proved (failed or unverified), so nothing unproved passes silently.
 
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -16,10 +17,13 @@ import {
   CLAIMS,
   type Claim,
   type ClaimResult,
+  type ClaimStatus,
   contractClaim,
   failureCause,
   markdown,
+  STATUS_LABEL,
   scope,
+  tally,
 } from "./lib/prove.ts";
 
 const root = fileURLToPath(new URL("../", import.meta.url)).replace(/[\\/]$/, "");
@@ -47,6 +51,7 @@ function prove(claim: Claim): ClaimResult {
   const t0 = Date.now();
   const commands: string[] = [];
   let reason: string | undefined;
+  let status: ClaimStatus = "pass";
   for (const step of claim.steps) {
     let command = step.command;
     if (step.name === "tamper") {
@@ -56,6 +61,7 @@ function prove(claim: Claim): ClaimResult {
       );
       if (tampered === null) {
         reason = "tamper: no actual_mg in data/batch-records/BR-B-1045.json";
+        status = "fail";
         break;
       }
       const file = join(scratch, "BR-B-1045.tampered.json");
@@ -70,17 +76,19 @@ function prove(claim: Claim): ClaimResult {
     if (why) {
       const cause = failureCause(outcome.output);
       reason = `${step.name}: ${why}${cause ? ` (${cause})` : ""}`;
+      status = cause ? "unverified" : "fail";
       progress(tail(outcome.output, 12));
       break;
     }
   }
   const seconds = Math.round((Date.now() - t0) / 1000);
-  progress(`${reason ? "FAIL" : "PASS"} ${claim.id} (${seconds} s)${reason ? `: ${reason}` : ""}`);
+  progress(`${STATUS_LABEL[status]} ${claim.id} (${seconds} s)${reason ? `: ${reason}` : ""}`);
   return {
     id: claim.id,
     claim: claim.claim,
     evidence: claim.evidence,
-    ok: !reason,
+    status,
+    ok: status === "pass",
     seconds,
     commands,
     ...(reason ? { reason } : {}),
@@ -99,7 +107,7 @@ progress(scope(claims.length, quick));
 const results = claims.map(prove);
 rmSync(scratch, { recursive: true, force: true });
 
-const failed = results.filter((r) => !r.ok).length;
+const { proved, failed, unverified } = tally(results);
 if (json) {
   console.log(
     JSON.stringify({
@@ -107,12 +115,13 @@ if (json) {
       node: process.version,
       platform: process.platform,
       claims: results,
-      proved: results.length - failed,
+      proved,
       failed,
+      unverified,
       skipped,
     }),
   );
 } else {
   console.log(markdown(results, { commit, skipped }));
 }
-process.exit(Math.min(failed, 255));
+process.exit(Math.min(failed + unverified, 255));

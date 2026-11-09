@@ -9,6 +9,7 @@ import {
   markdown,
   scope,
   scriptsUsed,
+  tally,
   wslPath,
 } from "./prove.ts";
 
@@ -63,6 +64,7 @@ describe("the proof scorecard", () => {
           id: "a",
           claim: "A works.",
           evidence: "e",
+          status: "pass",
           ok: true,
           seconds: 1,
           commands: ["npm run a"],
@@ -71,6 +73,7 @@ describe("the proof scorecard", () => {
           id: "b",
           claim: "B works.",
           evidence: "e",
+          status: "fail",
           ok: false,
           seconds: 1,
           commands: ["npm run b"],
@@ -89,6 +92,40 @@ describe("the proof scorecard", () => {
     expect(md.indexOf("1 of 2 claims proved.")).toBeLessThan(table);
     expect(md.indexOf("- FAIL b: b: exit 1")).toBeLessThan(table);
     expect(md.indexOf("- Skipped: the contract")).toBeLessThan(table);
+    expect(md).not.toContain("unreachable");
+  });
+
+  it("marks a claim testnet could not check as UNVERIFIED, apart from FAIL", () => {
+    const results = [
+      {
+        id: "a",
+        claim: "A works.",
+        evidence: "e",
+        status: "pass" as const,
+        ok: true,
+        seconds: 1,
+        commands: ["npm run a"],
+      },
+      {
+        id: "lots",
+        claim: "Lots verify on chain.",
+        evidence: "e",
+        status: "unverified" as const,
+        ok: false,
+        seconds: 1,
+        commands: ["npm run lots"],
+        reason:
+          "verify-lot: exit 1 (testnet RPC unavailable; the on-chain comparison was not completed)",
+      },
+    ];
+    expect(tally(results)).toEqual({ proved: 1, failed: 0, unverified: 1 });
+    const md = markdown(results, { commit: "abc1234", skipped: [] });
+    expect(md).toContain("1 of 2 claims proved.");
+    expect(md).toContain("1 could not be checked because testnet was unreachable");
+    expect(md).toContain("- UNVERIFIED lots: verify-lot");
+    expect(md).toContain("| UNVERIFIED | Lots verify on chain.");
+    expect(md).toContain("**Not checked:** verify-lot");
+    expect(md).not.toContain("FAIL");
   });
 
   it("names an unreachable RPC and says what it will check", () => {
