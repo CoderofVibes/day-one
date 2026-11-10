@@ -8,6 +8,7 @@
 import "./redesign.css";
 import { useCallback, useRef, useState } from "react";
 import type { InboxState, PlantInventory, ReviewState } from "../api.ts";
+import { BatchHandoff } from "../BatchHandoff.tsx";
 import {
   BarChart,
   ChartCard,
@@ -160,6 +161,7 @@ export function Overview({
           onShow={show}
         />
       )}
+      {plant === "B" && <BatchHandoff run={run} at={at} showExample={!source.live} />}
       <div className="ov-row">
         <div className="ov-main ov-twin" ref={twin}>
           {map(focus)}
@@ -816,7 +818,7 @@ function Charts({ plant, history }: { plant: PlantCode; history: History }) {
       </ChartCard>
       <ChartCard
         title="Yield by batch"
-        unit="% of theoretical units · 90% expected"
+        unit="% of theoretical units, by production form"
         table={{
           columns: ["Batch", "Date", "Yield"],
           rows: mine.slice(-20).map((b) => [b.batchNo, shortDay(b.date), percent(b.yieldBp)]),
@@ -825,7 +827,6 @@ function Charts({ plant, history }: { plant: PlantCode; history: History }) {
         <LineChart
           label="Yield of each batch over time"
           series={forms}
-          rules={[{ y: 90, label: "expected 90%" }]}
           yMin={84}
           yFormat={(v) => `${v.toFixed(0)}%`}
           xFormat={(x) => shortDay(x)}

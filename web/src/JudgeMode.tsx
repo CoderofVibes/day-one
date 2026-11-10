@@ -61,9 +61,9 @@ function ChainLinks({ step }: { step: JudgeStep }) {
       {step.links.map((l) => (
         <li key={l.url}>
           <a href={l.url} target="_blank" rel="noreferrer">
-            See it on chain ↗
+            {l.label} ↗
           </a>{" "}
-          <small>{l.label}</small>
+          <small>NEAR testnet</small>
         </li>
       ))}
       {step.open && (
@@ -208,8 +208,11 @@ function Summary({
       </ol>
       <details className="judge-terminal">
         <summary className="small">Check every claim from a terminal</summary>
-        <pre>npm ci && npm run prove</pre>
-        <p className="small">No keys needed; one PASS or FAIL row per claim.</p>
+        <pre>npm ci && npm run prove -- --quick --offline</pre>
+        <p className="small">
+          After installation this checks the local evidence. Run <code>npm run prove</code> for the
+          full scorecard with read-only testnet comparisons.
+        </p>
       </details>
       <details className="judge-all">
         <summary>For a closer look: all {links.length} recorded testnet transactions</summary>

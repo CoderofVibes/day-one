@@ -11,6 +11,7 @@ Built Oct 31 on `upgrade/judge` (brief §5.12, §5.9 item 1, §5.6 "Plant map �
 | `?page=approve&po=1042` | Linda's phone alone, 390×844 (the whole screen on a phone); `&curtain=1` shows "Approved on testnet ✓", `&replied=1` opens on her recorded YES |
 | `?page=map` | The Plant twin page |
 | `?video=1&tour=1` | The tour (docs/RECORDING.md §7) |
+| `?video=1&cut=order` | The 2:07 submission cut, from the Day One Overview and plant handover to NEAR verification |
 
 The header's pine-green **Judge mode** button opens it from 1440 px; under that it is in the header's menu. On the live UI it reloads into `?judge=1`.
 

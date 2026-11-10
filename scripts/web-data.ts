@@ -322,6 +322,22 @@ async function recordedJourney() {
     await session.confirm("BR-B-1046", "Ray Delgado", { "materials[2].actual_qty": "83.040" });
     // 5. The first order, as recorded on testnet.
     await session.message("Linda Park", "YES 1042");
+    // Compare two estimates on the same funded order before delivery. These are planning
+    // scenarios, not dates supplied by Northgate or additional recorded transactions.
+    const ascorbic = () => {
+      const forecast = session.forecast("B").materials.find((m) => m.material === "ASC");
+      if (!forecast) throw new Error("The handover forecast is missing ascorbic acid.");
+      return forecast;
+    };
+    const unknown = ascorbic();
+    const first = unknown.firstShort;
+    if (!first) throw new Error("Undated PO-1042 must leave a batch at risk.");
+    const nextDay = new Date(Date.parse(first.date) + 86_400_000).toISOString().slice(0, 10);
+    await session.planSupply("order", "PO-1042", nextDay);
+    const late = ascorbic();
+    await session.planSupply("order", "PO-1042", first.date);
+    const onTime = ascorbic();
+    await session.planSupply("order", "PO-1042", null);
     await session.delivery("NG-PS-60417");
     await session.qcDecision("ASC-261116-01", "release");
     // 3, 4 and 6: the people who own each answer confirm it.
@@ -348,6 +364,7 @@ async function recordedJourney() {
       workbook: { name: sheet?.name ?? "", rows: (sheet?.rows ?? []).slice(0, 14) },
       importView: view,
       scans: (await session.inbox()).items,
+      availabilityExample: { unknown, late, onTime },
       limits: {
         perPo: `${(plantB?.perPoUsd ?? 0).toLocaleString("en-US")}`,
         monthly: `${(plantB?.monthlyUsd ?? 0).toLocaleString("en-US")}`,

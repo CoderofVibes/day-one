@@ -11,11 +11,40 @@ import {
   clockLabel,
   FRAME_MS,
   frameAt,
+  ORDER_BEATS,
   skipTo,
   startOf,
   TOUR_BEATS,
   totalMs,
 } from "./video.ts";
+
+describe("the order cut", () => {
+  it("opens on the product, shows the handover, then reveals the chain evidence", () => {
+    expect(beatsFor("?video=1&cut=order")).toBe(ORDER_BEATS);
+    expect(ORDER_BEATS.map((beat) => beat.id)).toEqual([
+      "morning-review",
+      "workbook",
+      "batch-record",
+      "transfer",
+      "one-truth",
+      "quotes",
+      "erp-handoff",
+      "refusal",
+      "approve",
+      "signed",
+      "delivery",
+      "paid",
+      "curtain",
+      "group-buy",
+      "close",
+    ]);
+    expect(ORDER_BEATS[0]?.productPage).toBe("overview");
+    expect(startOf("refusal", ORDER_BEATS)).toBe(59_000);
+    expect(ORDER_BEATS.slice(0, 7).every((b) => !b.curtain)).toBe(true);
+    expect(ORDER_BEATS.find((b) => b.id === "refusal")?.shots).toEqual([{ step: 7, ms: 10_000 }]);
+    expect(totalMs(ORDER_BEATS)).toBe(127_000);
+  });
+});
 
 describe("the video timeline", () => {
   it("fits X's 2:20 limit and keeps the storyboard's length", () => {

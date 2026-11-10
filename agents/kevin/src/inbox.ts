@@ -63,6 +63,8 @@ export interface InboxItem {
   /** Why a read failed, for the log; staff see the summary. */
   error: string | null;
   flags: InboxFlag[];
+  reading: BatchRecordExtraction | null;
+  postedReading: BatchRecordExtraction | null;
   /** Blocking flags: what the purchaser must answer before the record can post. */
   questions: number;
   receivedAt: string;
@@ -380,6 +382,14 @@ function itemView(db: Ledger, row: InboxRow): InboxItem {
   const extraction = row.extractionJson
     ? (JSON.parse(row.extractionJson) as BatchRecordExtraction)
     : null;
+  const posted =
+    row.status === "confirmed" && row.batchNo
+      ? db
+          .select({ json: batchRecords.extractionJson })
+          .from(batchRecords)
+          .where(eq(batchRecords.batchNo, row.batchNo))
+          .get()?.json
+      : null;
   const facility = row.facilityId
     ? db.select().from(facilities).where(eq(facilities.id, row.facilityId)).get()
     : undefined;
@@ -412,6 +422,8 @@ function itemView(db: Ledger, row: InboxRow): InboxItem {
     summary: row.summary,
     error: row.error,
     flags: view,
+    reading: extraction,
+    postedReading: posted ? (JSON.parse(posted) as BatchRecordExtraction) : null,
     questions: view.filter((f) => f.blocking).length,
     receivedAt: row.receivedAt,
     outcome: row.outcome,

@@ -103,6 +103,8 @@ Cut to **≤ 2:20** (X's limit for a standard account) in Clipchamp: H.264 MP4, 
 
 ## 7. The tour and clean capture (Oct 31)
 
+For the submission take, open `/?video=1&cut=order&capture=1` on the built UI. The 2:07 cut opens on the actual Overview, then visits Spreadsheets, the batch review, the transfer discrepancy, the shortage, supplier quotes and the mock ERP. The NEAR refusal appears at 0:59, Linda’s simulated approval at 1:09, the funded retry at 1:19, delivery at 1:27 and QC release and payment at 1:33. Record verification and a pooled purchase follow. Run `npm run web:tour` with `TAKE=order` to check the screens and captions in Edge.
+
 The tour is the take with more in it, for judges and for a longer cut: `?video=1&tour=1` (judge mode's last step opens it with `&autostart=1`). Same recorded run, same fixed clock, 2:41 in all; `web/src/video.ts` `TOUR_BEATS`, the take's `BEATS` untouched.
 
 - **What changes from the take:** the curtain is on at the refusal (the twin's red shield), at Linda's approval and at the payout; "Approve by text" shows Linda's phone in the panel in place of the desk (the same `LindaPhone` as `?page=approve&po=1042`); the camera flies to the twin's "HQ & Escrow" view for the approval and "Receiving & Warehouse" for the delivery; and three beats come after "Behind the curtain": Group buy (2:07, `from=group-buy`), Real USDC (2:16, `from=usdc`), 21 of 21 refused (2:23, `from=attacks`; the count is read from the arena recording), then the close (2:33).

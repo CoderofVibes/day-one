@@ -99,8 +99,7 @@ export function plantSchedule(
     .orderBy(asc(productionPlan.plannedFor), asc(productionPlan.batchNo))
     .all();
 
-  // Stock on hand and on order, per material, as Kevin's forecast counts it.
-  const left = new Map<string, number>();
+  const coverage = new Map<string, Omit<Forecast, "id">>();
   const prices = new Map<number, number>();
   const batches = planned.map((p) => {
     const lines = db
@@ -123,18 +122,19 @@ export function plantSchedule(
     let costUsdc = 0;
     const unpriced: string[] = [];
     const draws = lines.map((l) => {
-      if (!left.has(l.code)) {
-        const f = projectMaterial(db, {
+      let forecast = coverage.get(l.code);
+      if (!forecast) {
+        forecast = projectMaterial(db, {
           facility: plant.code,
           material: l.code,
           now: input.now,
-          horizonDays: 0,
+          horizonDays: days,
         });
-        left.set(l.code, f.onHandBase + f.onOrderBase);
+        coverage.set(l.code, forecast);
       }
-      const needBase = Math.round((l.qty * p.units) / (p.standard || p.units));
-      const afterBase = (left.get(l.code) ?? 0) - needBase;
-      left.set(l.code, afterBase);
+      const draw = forecast.plannedBatches.find((b) => b.batchNo === p.batchNo);
+      const needBase = draw?.needBase ?? Math.round((l.qty * p.units) / (p.standard || p.units));
+      const afterBase = draw?.availableAfterBase ?? forecast.onHandBase - needBase;
       const price = prices.get(l.materialId) ?? lastPrice(db, l.materialId);
       prices.set(l.materialId, price);
       const perUnit = l.dimension === "mass" ? 1_000_000 : 1;
@@ -162,7 +162,7 @@ export function plantSchedule(
       ? `Nothing planned at ${plant.name} from ${from} to ${to}.`
       : `${batches.length} batch${batches.length === 1 ? "" : "es"} planned at ${plant.name} to ${to}; ` +
         (shortBatches.length === 0
-          ? "stock on hand and on order covers every one."
+          ? "stock on hand and scheduled usable supply cover every one."
           : `${shortBatches.length} would run short: ${shortBatches
               .map((b) => `${b.batchNo} (${b.short.join(", ")})`)
               .join("; ")}.`);

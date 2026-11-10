@@ -19,7 +19,10 @@ const pkg = JSON.parse(
 
 describe("the proof scorecard", () => {
   it("runs only npm scripts package.json defines", () => {
-    const missing = [...scriptsUsed()].filter((n) => !(n in pkg.scripts));
+    const offline = CLAIMS.map((claim) =>
+      claim.offline ? { id: claim.id, ...claim.offline } : claim,
+    );
+    const missing = [...scriptsUsed(), ...scriptsUsed(offline)].filter((n) => !(n in pkg.scripts));
     expect(missing).toEqual([]);
   });
 
@@ -133,6 +136,7 @@ describe("the proof scorecard", () => {
       "testnet RPC unavailable; the on-chain comparison was not completed",
     );
     expect(failureCause("MISMATCH BR-B-1045")).toBeNull();
+    expect(failureCause("ASC-261116-01: testnet RPC unreachable.")).toContain("not completed");
     expect(scope(13, true)).toBe(
       "Checking 13 claims from the recordings and read-only testnet queries. No keys required. Quick mode skips lint, typecheck and tests.",
     );

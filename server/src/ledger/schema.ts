@@ -370,6 +370,7 @@ export const transfers = sqliteTable(
       .references(() => facilities.id),
     qtyShippedBase: integer().notNull(),
     qtyReceivedBase: integer(),
+    expectedUsableOn: text(),
     state: text({ enum: TRANSFER_STATES }).notNull(),
     outEventId: integer().references(() => lotEvents.id),
     inEventId: integer().references(() => lotEvents.id),
@@ -837,6 +838,7 @@ export const purchaseOrders = sqliteTable(
     poHash: text(),
     createdBy: text({ enum: ACTOR_TYPES }).notNull(),
     needBy: text(),
+    expectedUsableOn: text(),
   },
   (t) => [
     oneOf("purchase_orders_category", t.category, PO_CATEGORIES),

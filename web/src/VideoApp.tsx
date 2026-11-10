@@ -7,12 +7,14 @@
 // ?tour=1 plays the tour (brief §4.10, video.ts TOUR_BEATS): the same beats with camera
 // keyframes, the curtain where the chain makes the point, Linda's phone, and the group buy, USDC
 // and attack-montage beats; T starts it, → and ← skip a beat, and buttons do the same for a
-// mouse. ?capture=1 hides everything but the frame and the captions and draws a 16:9 safe frame;
+// mouse. ?capture=1 hides the controls and, for the longer videos, draws a 16:9 safe frame;
 // ?speed=<n> runs the clock n times faster (npm run web:tour checks every caption at 10).
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import batchRecordPhoto from "../../data/batch-records/BR-B-1045.jpg?url";
 import packingSlipPhoto from "../../data/packing-slips/NG-PS-60417.jpg?url";
+import { BatchHandoff } from "./BatchHandoff.tsx";
+import { BatchReading } from "./BatchReading.tsx";
 import { Curtain } from "./Curtain.tsx";
 import arena from "./data/arena.json";
 import { turnFromStep } from "./desk.ts";
@@ -25,18 +27,20 @@ import { LindaPhone } from "./Phone.tsx";
 import { fundingOf, HeldInvoiceCard, MassBalanceBlock } from "./panes.tsx";
 import { plantsSnapshot } from "./plants.ts";
 import { ReviewPane } from "./ReviewPane.tsx";
+import { recordedBatchReview } from "./recordedBatchReview.ts";
 import { audienceOf, type RunData, run as recorded } from "./run.ts";
 import { PlantView } from "./twin3d/PlantView.tsx";
 import type { CameraRequest } from "./twin3d/Twin3D.tsx";
 import {
-  BEATS as BEATS_TAKE,
   type Beat,
   beatsFor,
   clockLabel,
   FRAME_MS,
   frameAt,
+  ORDER_BEATS,
   skipTo,
   startOf,
+  TOUR_BEATS,
   totalMs,
   type VideoFrame,
 } from "./video.ts";
@@ -48,7 +52,8 @@ export default function VideoApp() {
   const data = recorded;
   const query = useMemo(() => new URLSearchParams(location.search), []);
   const beats = useMemo(() => beatsFor(location.search), []);
-  const tour = beats !== BEATS_TAKE;
+  const tour = beats === TOUR_BEATS;
+  const order = beats === ORDER_BEATS;
   const capture = query.get("capture") === "1";
   const speed = Math.max(1, Number(query.get("speed")) || 1);
   const from = useMemo(() => startOf(query.get("from"), beats), [query, beats]);
@@ -133,6 +138,8 @@ export default function VideoApp() {
   const { beat, step } = frame;
   const shownStep = beat.run === "group" ? 14 : step;
   const card = beat.panel === "before" || beat.panel === "title" || beat.panel === "close";
+  const paper = beat.panel === "batch-reading" || beat.panel === "batch-handoff";
+  const product = beat.productPage;
   const curtain = Boolean(beat.curtain);
 
   return (
@@ -142,6 +149,7 @@ export default function VideoApp() {
         curtain && "curtain-on",
         beat.panel === "desk" && "desk-on",
         tour && "tour",
+        order && "order-cut",
         capture && "capture",
       ]
         .filter(Boolean)
@@ -161,14 +169,19 @@ export default function VideoApp() {
       </header>
 
       <main className="video-main">
-        <div className="video-map" style={card ? { visibility: "hidden" } : undefined}>
-          <PlantView
-            run={data}
-            at={shownStep}
-            curtain={curtain}
-            camera={camera}
-            {...(beat.run === "group" ? { groupAt: step } : {})}
-          />
+        <div
+          className="video-map"
+          style={card || paper || product ? { visibility: "hidden" } : undefined}
+        >
+          {!product && (
+            <PlantView
+              run={data}
+              at={shownStep}
+              curtain={curtain}
+              camera={camera}
+              {...(beat.run === "group" ? { groupAt: step } : {})}
+            />
+          )}
         </div>
         <div className="video-panel" ref={panel}>
           {beat.panel === "desk" && <DeskPanel data={data} at={step} />}
@@ -196,21 +209,39 @@ export default function VideoApp() {
           {beat.panel === "attacks" && <Montage u={frame.beatU} />}
         </div>
         {card && <Card beat={beat} />}
+        {product && (
+          <iframe
+            className="video-product"
+            title={beat.title}
+            tabIndex={-1}
+            src={`?recordedFrame=1&page=${product}&t=2026-11-09T13%3A00Z`}
+          />
+        )}
+        {paper && (
+          <div className="video-paper">
+            {beat.panel === "batch-reading" && recordedBatchReview && (
+              <BatchReading scan={recordedBatchReview.scan} reading={recordedBatchReview.reading} />
+            )}
+            {beat.panel === "batch-handoff" && (
+              <BatchHandoff run={data} at={step} showExample={false} />
+            )}
+          </div>
+        )}
       </main>
 
       <p className="video-caption" aria-live="polite">
         {frame.caption}
       </p>
 
-      {!started && (
+      {!started && !order && (
         <p className="video-hint">
           {tour ? "T or Space to start the tour" : "Space to start"} · R to go back ·{" "}
           {clockLabel(totalMs(beats))} in all
           {from ? ` · starting at ${clockLabel(from)}` : ""}
         </p>
       )}
-      {tour && (
-        <div className="video-controls" role="toolbar" aria-label="Tour">
+      {(tour || order) && (
+        <div className="video-controls" role="toolbar" aria-label="Video controls">
           <button type="button" onClick={restart}>
             Restart
           </button>
@@ -228,7 +259,7 @@ export default function VideoApp() {
           </span>
         </div>
       )}
-      {capture && <div className="video-safe" aria-hidden="true" />}
+      {capture && !order && <div className="video-safe" aria-hidden="true" />}
     </div>
   );
 }

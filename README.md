@@ -1,15 +1,14 @@
 # Day One
 
-**Bring a newly acquired factory’s purchasing under the new owner’s spending rules, before the ERP migration.**
+**Kevin reads the paperwork, spots material shortages, and handles purchasing within rules people set.**
 
-Meet Kevin, the AI purchasing and inventory assistant. He reads the plant’s paper records, works out what to buy and compares suppliers. Staff supervise the work. A NEAR contract controls purchasing authority and holds the order’s money through receipt and QC.
+Acme has just bought Hollow Pine. Ray still has a plant to run, and the batch records are still on paper. He checks Kevin’s reading against the scan and confirms it. The inventory update exposes an ascorbic acid shortage in the production plan. Kevin asks supplier agents for quotes and brings the order to the person who can approve it.
 
-Acme has just bought Hollow Pine. Ray still has a plant to run. Here is one order from his first week.
+Day One grew out of years spent retyping batch records and catching shortages by hand. It began as “Kevin’s Survival Guide to the Agentic Economy.”
 
-<picture>
-  <source media="(max-width: 600px)" srcset="docs/readme/order-proof-phone.svg">
-  <img src="docs/readme/order-proof.svg" alt="PO-1042 is refused over Kevin’s limit, funded after Linda’s approval, and paid to Northgate after receipt and QC. Recorded NEAR testnet transactions, fictional plant, simulated reply, server-held staff keys and DTUSD test token.">
-</picture>
+**[Watch the 2:07 submission walkthrough](#try-it-no-keys-needed)** or follow the [batch record](data/batch-records/BR-B-1045.json) and [recorded workflow](data/replay/transcript.txt). The NEAR testnet contract controls who can fund the order and holds payment through receipt and QC.
+
+![The fictional BR-B-1045 scan beside Kevin’s reading, with the material, lot, target and actual quantity ready for Ray to review.](docs/readme/kevin-batch-review.png)
 
 [See the refusal](https://testnet.nearblocks.io/txns/3bYd13vyu89wuD299y6gvmZMu1rV1vbBGQpKVEZdp1UC) → [Linda’s approval](https://testnet.nearblocks.io/txns/FpXXzZBkeCNouQgJn7eF8k7oe57dzgd3n21yhvFzGAtt) → [Funded retry](https://testnet.nearblocks.io/txns/3TzgR7iY2zrbYHvnbNphFfeJJaLQwLi4tPfGkQCH1oee) → [QC release and payment](https://testnet.nearblocks.io/txns/3F2TYKZ1bZPsKmrNt5aqJSQi49RaN9wTMUYdXDr1Hd6e)
 
@@ -30,11 +29,13 @@ To inspect the evidence further, continue with these steps. Verification reads N
 4. Copy that file, add 1 g (`1000` mg) to one `actual_mg` in the copy, and verify the copy → `MISMATCH`, exit code 1.
 5. `cd contracts && cargo test` → contract unit tests and purchasing, credential and sealed-round tests on a local NEAR sandbox.
 
-**Open the replay in a browser.** Run `npm run web:build`, then `npm run web`. Open [the refusal](http://localhost:5173/?judge=3) for the moment above, or [the full walkthrough](http://localhost:5173/?judge=1) from the plant handover. Vite prints the actual local address if that port is occupied. The [captioned tour](http://localhost:5173/?video=1&tour=1) follows the recorded flows. For staff actions such as confirming scans and signing mailbox drafts, use `npm run api` after the build and open [the local app](http://localhost:8787/). [Replay and API behavior](docs/HOSTING.md)
+**Open the replay in a browser.** Run `npm run web:build`, then `npm run web`. Play [the 2:07 walkthrough](http://localhost:5173/?video=1&cut=order), or open [Ray’s desk at the start of the run](http://localhost:5173/?page=overview&t=2026-11-09T13%3A00Z) and choose **Upload the batch record**, then **Review BR-B-1045**. Confirm the recorded reading and advance to the forecast. **What if the shipment misses the batch?** compares unknown, late and on-time estimates for the same order. Vite prints the actual local address if that port is occupied. The [judge walkthrough](http://localhost:5173/?judge=1) and [refusal](http://localhost:5173/?judge=3) link the receipts. Use `npm run api` after the build and open [the local app](http://localhost:8787/) to confirm inbox scans, set expected usable dates in Inventory’s Forecast tab, or sign mailbox drafts. [Replay and API behavior](docs/HOSTING.md)
 
-**Run the evidence scorecard.** `npm run prove` checks the replay, record integrity, attack cases, model signatures, lot passport, mock ERP reconciliation and more. It prints PASS or FAIL with a cause for each claim. It also runs lint, typecheck and TypeScript tests. `-- --quick` skips that code check, and `-- --contract` adds Rust tests. The anchor, lot and sealed-round comparisons make read-only testnet calls. A claim whose testnet read could not connect is marked UNVERIFIED, not FAIL, and still counts against the exit code.
+**Check the evidence after installation.** `npm run prove -- --quick --offline` checks the recorded replay, rejects a one-gram edit to the batch record, and verifies local lot paths, sealed quotes, model signatures and the other recorded evidence. Its results are limited to the committed evidence. It skips the live testnet comparisons.
 
-For machine-readable results, use `npm run --silent prove -- --json`. The [reviewer map](llms.txt) points to the code and its trust boundaries. [PROOF.md](PROOF.md) lists each recorded transaction with signer, gas payer, events and explorer link. The scorecard’s [claim definitions](scripts/lib/prove.ts) say exactly what each check tests.
+**Recheck against testnet.** `npm run prove` also runs lint, typecheck and TypeScript tests, and compares the batch record, lot passport and sealed round with read-only testnet data. Unreachable testnet reads show UNVERIFIED and count against the exit code. Add `-- --contract` for Rust tests.
+
+For machine-readable results, use `npm run --silent prove -- --json`. Add `--quick --offline` for local evidence only. The [reviewer map](llms.txt) points to the code and its trust boundaries. [PROOF.md](PROOF.md) lists each recorded transaction with signer, gas payer, events and explorer link. The scorecard’s [claim definitions](scripts/lib/prove.ts) say exactly what each check tests.
 
 <details><summary>More replay commands and record checks</summary>
 
@@ -69,6 +70,11 @@ Ray confirms Kevin’s reading of batch record BR-B-1045. Ascorbic acid falls fr
 Linda approves, Kevin funds escrow and Northgate ships. Tommy reports receipt, the invoice is recorded, and Priya’s QC release causes payment to the supplier fixed on the order. The main run uses DTUSD, a labeled test token. Its story takes place Nov 9–16, 2026. Its transactions were recorded Nov 4 UTC. [Full purchase proof](PROOF.md#the-purchasing-loop-po-1041-and-po-1042)
 
 ## Claims and evidence
+
+<picture>
+  <source media="(max-width: 600px)" srcset="docs/readme/order-proof-phone.svg">
+  <img src="docs/readme/order-proof.svg" alt="PO-1042 is refused over Kevin’s limit, funded after Linda’s approval, and paid to Northgate after receipt and QC. Recorded NEAR testnet transactions, fictional plant, simulated reply, server-held staff keys and DTUSD test token.">
+</picture>
 
 These are the checks behind that order. Follow the transaction to inspect what the contract did, or run the script to replay it. Unit tests exercise additional conditions. UI locations refer to the local walkthrough above.
 
@@ -105,13 +111,15 @@ NEAR Intents and Chain Signatures are not used. Intents has no testnet, and this
 
 | Layer | What is built | Run the proof | Evidence and screen |
 |---|---|---|---|
-| Plant intake and planning | Spreadsheet import, batch-record vision, review questions, forecast, suggested transfers and morning mail drafts | `npm run demo`, `npm run import -- "data/imports/INVENTORY_FINAL_v7_USE_THIS_ONE (1).xlsx"`, `npm run review`, `npm run brief` | [Batch record anchor](https://testnet.nearblocks.io/txns/6s1dZ5pxjB8vLwdQge7VPXF6bqeeuU4uh87podFzJQao). Parsing, planning and mail review operate locally on fictional fixtures. Spreadsheets, Overview, Inventory. |
+| Plant intake and planning | Spreadsheet import, source scan beside extracted fields, batch-date coverage, suggested transfers and mail drafts | `npm run demo`, [forecast cases](agents/kevin/src/forecast.test.ts), `npm run review`, `npm run brief` | [Batch record anchor](https://testnet.nearblocks.io/txns/6s1dZ5pxjB8vLwdQge7VPXF6bqeeuU4uh87podFzJQao). Planning is local. Shipment estimates in the Overview example are hypothetical. |
 | Supplier controls and pooled buying | HQ credentials, QC suspension, suppliers anchoring quotes, commit-and-reveal rounds and each plant approving its pooled share | `npm run test:attacks`, `npm run sealed`, `npm run demo:group` | [Credential refusals and suspension](PROOF.md#supplier-credentials), [sealed-round transactions](PROOF.md#sealed-quote-round-rfq-2611-02), [both directors’ approvals and pooled payout](PROOF.md#group-purchase-po-g-2001). Suppliers, Sealed round, Group buy. |
 | Settlement in another token | PO-1047 paid 19.00 Circle testnet USDC on a separate deployment of the earlier contract | `npm run usdc` | [19.00 USDC payout](https://testnet.nearblocks.io/txns/5utQmP8fo5tmf3A1wQjTDZsfdXjWy861EXfp8KvXY9Xf). Every proof → USDC. |
 | Traceability and books | Lot passports, a recall drill and seven reconciliation checks across the ledger, mock ERP and recorded chain views | `npm run lots`, `npm run erp:reconcile`, `npm run books` | [Lot-root transactions](PROOF.md#lot-book-one-anchored-root-per-plant-per-day), [matched PO-1042 payment](https://testnet.nearblocks.io/txns/3F2TYKZ1bZPsKmrNt5aqJSQi49RaN9wTMUYdXDr1Hd6e). Recall and reconciliation run locally. Lots & recall, ERP connection. |
 | Model provenance and plant context | Signed recorded answers with citations, deterministic twelve-month histories and a 3D plant twin showing the replay | `npm run ask`, `npm run verify:attestation -- --offline`, `npm run world -- --check` | [Attestation report and answer signatures](data/replay/attestation.json). History is seeded, and the twin visualizes app state. Talk to Kevin, Inventory, Plant twin. |
 
 ## Limitations
+
+- **Planning inputs.** Supply dates are staff estimates of when goods will be usable, including any expected QC time. Undated and overdue shipments, and lots actually waiting on QC, do not count as usable supply. The forecast flags a threatened batch and includes existing supply when sizing additional purchases. The replay’s date comparison is a fictional planning exercise on the recorded order.
 
 - **Prototype and tokens.** All companies, people, prices and records are invented. All transactions are on NEAR testnet. The main and pooled runs use DTUSD. The separate Circle testnet USDC run uses the earlier contract, before quantity settlement and signed decisions. The old DTUSD deployment also remains readable. [Deployment evidence](PROOF.md)
 - **People and authority.** SMS is simulated and the server holds staff keys. Suppliers are rule-based agents. HQ chooses policies, authorized roles, supplier credentials and model signer addresses. Operator-held full-access keys remain on accounts. Those keys and HQ are trusted. [Account design](docs/CONTRACTS.md)
@@ -150,6 +158,8 @@ Bind all submitted PO terms to the authorized fingerprint in a versioned contrac
 </details>
 
 ## Built with
+
+Codex helped implement and verify the document review and dated inventory forecast.
 
 Built for NEAR HACKATHON by DadMod, Tony Langford’s solo entry, for the realworld, business, security, agents and swarms tracks. Tony is a chemical engineer with ten years on manufacturing floors, now a systems engineer at an advanced nuclear reactor startup, building this on paternity leave.
 

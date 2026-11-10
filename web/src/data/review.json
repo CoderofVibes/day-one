@@ -152,7 +152,7 @@
       "action": null,
       "flagged": [],
       "decision": "none",
-      "kevin": "Acetonitrile, HPLC grade, 4 L: 1 on hand and on order, under its reorder point of 2. It is on today's buying list already: Kevin recommends ordering 4. Nothing more to sign here.",
+      "kevin": "Acetonitrile, HPLC grade, 4 L: 1 usable or scheduled, with a reorder point of 2. Kevin recommends ordering 4.",
       "signed": null
     }
   ],

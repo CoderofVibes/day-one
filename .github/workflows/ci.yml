@@ -23,8 +23,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
-      - name: Prove every claim from the recordings (no keys; lint and tests ran above)
-        run: npm run prove -- --quick
+      - name: Check the recorded evidence without testnet (lint and tests ran above)
+        run: npm run prove -- --quick --offline
 
   contract:
     name: Contract unit and sandbox tests

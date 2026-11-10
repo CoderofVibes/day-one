@@ -197,6 +197,7 @@ export function GlobalHeader({
   saved,
   onJudge,
   onFirstShift,
+  snapshot = false,
 }: {
   /** The page's short name, shown under 1024 px (wider, the page's own eyebrow says it). */
   title: string;
@@ -216,6 +217,7 @@ export function GlobalHeader({
   onJudge?: () => void;
   /** Kevin's introduction and the first-shift walkthrough again (src/FirstShift.tsx). */
   onFirstShift?: () => void;
+  snapshot?: boolean;
 }) {
   const [theme, setTheme] = useThemeChoice();
   return (
@@ -227,10 +229,12 @@ export function GlobalHeader({
         <PlantSelect plant={plant} onPlant={onPlant} />
       </span>
       {clock}
-      <span className="gh-wide">
-        <KevinChip status={kevin} onOpen={onKevin} />
-      </span>
-      {saved && <span className="gh-wide gh-saved-wrap">{saved}</span>}
+      {!snapshot && (
+        <span className="gh-wide">
+          <KevinChip status={kevin} onOpen={onKevin} />
+        </span>
+      )}
+      {!snapshot && saved && <span className="gh-wide gh-saved-wrap">{saved}</span>}
       {onJudge && (
         <button
           type="button"
@@ -244,26 +248,28 @@ export function GlobalHeader({
       <span className="gh-curtain-wrap">
         <CurtainSwitch on={curtain} set={setCurtain} />
       </span>
-      <span className="gh-wide">
-        <Popover
-          label="People"
-          className="gh-people-pop"
-          align="end"
-          summary={
-            <span className="gh-upnext">
-              <span className="avatar" aria-hidden="true">
-                {initials(upNext.name)}
+      {!snapshot && (
+        <span className="gh-wide">
+          <Popover
+            label="People"
+            className="gh-people-pop"
+            align="end"
+            summary={
+              <span className="gh-upnext">
+                <span className="avatar" aria-hidden="true">
+                  {initials(upNext.name)}
+                </span>
+                <span>
+                  <b>{upNext.name}</b>
+                  <small>{upNext.role ? `${upNext.role} · up next` : "up next"}</small>
+                </span>
               </span>
-              <span>
-                <b>{upNext.name}</b>
-                <small>{upNext.role ? `${upNext.role} · up next` : "up next"}</small>
-              </span>
-            </span>
-          }
-        >
-          {(close) => <PeopleList people={people} close={close} />}
-        </Popover>
-      </span>
+            }
+          >
+            {(close) => <PeopleList people={people} close={close} />}
+          </Popover>
+        </span>
+      )}
       <Popover
         label="Menu"
         className="gh-more"
@@ -286,17 +292,21 @@ export function GlobalHeader({
                   close();
                 }}
               />
-              <KevinChip
-                status={kevin}
-                onOpen={() => {
-                  onKevin();
-                  close();
-                }}
-              />
+              {!snapshot && (
+                <KevinChip
+                  status={kevin}
+                  onOpen={() => {
+                    onKevin();
+                    close();
+                  }}
+                />
+              )}
             </div>
-            <div className="gh-narrow">
-              <PeopleList people={people} close={close} />
-            </div>
+            {!snapshot && (
+              <div className="gh-narrow">
+                <PeopleList people={people} close={close} />
+              </div>
+            )}
             {onJudge && (
               <button
                 type="button"

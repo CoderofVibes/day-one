@@ -97,10 +97,12 @@ const PAGE_IDS = new Set([...NAV.flatMap((g) => g.items.map((i) => i.id)), ASK_I
 
 const NAV_CLOSED_KEY = "day-one:nav-closed";
 function readClosed(): string[] {
+  const defaults = NAV.filter((group) => group.group !== "Plant").map((group) => group.group);
   try {
-    return JSON.parse(localStorage.getItem(NAV_CLOSED_KEY) ?? "[]") as string[];
+    const saved = localStorage.getItem(NAV_CLOSED_KEY);
+    return saved ? (JSON.parse(saved) as string[]) : defaults;
   } catch {
-    return [];
+    return defaults;
   }
 }
 

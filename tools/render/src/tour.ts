@@ -3,18 +3,20 @@
 // Edge at 1920x1080, every request outside the built files refused, and checks that each beat of
 // web/src/video.ts TOUR_BEATS came on screen with each of its captions, in order, and that the
 // page logged no errors and asked for nothing on the network. TAKE=1 plays the video take
-// (?video=1) instead. With an out dir it also saves the first frame of every beat, one by one.
+// (?video=1) instead. TAKE=order plays the short order cut. With an out dir it also saves
+// the first frame of every beat, one by one.
 
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { extname, join } from "node:path";
 import { chromium, type Page } from "playwright-core";
-import { BEATS, TOUR_BEATS } from "../../../web/src/video.ts";
+import { beatsFor } from "../../../web/src/video.ts";
 
 const dist = join(import.meta.dirname, "../../../web/dist");
 const out = process.argv[2];
 const take = process.env.TAKE === "1";
-const beats = take ? BEATS : TOUR_BEATS;
-const base = take ? "?video=1" : "?video=1&tour=1";
+const order = process.env.TAKE === "order";
+const base = order ? "?video=1&cut=order" : take ? "?video=1" : "?video=1&tour=1";
+const beats = beatsFor(base);
 const types: Record<string, string> = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -85,7 +87,7 @@ for (const beat of beats) {
 }
 const captions = beats.reduce((n, b) => n + b.captions.length, 0);
 console.log(
-  `${take ? "take" : "tour"} at 10x: ${beats.length} beats, ${captions - missing.length} of ${captions} captions in order, ${((Date.now() - started) / 1000).toFixed(0)} s`,
+  `${order ? "order cut" : take ? "take" : "tour"} at 10x: ${beats.length} beats, ${captions - missing.length} of ${captions} captions in order, ${((Date.now() - started) / 1000).toFixed(0)} s`,
 );
 for (const m of missing) console.log(`missing ${m}`);
 
@@ -98,6 +100,24 @@ if (out) {
     await shot.close();
   }
   console.log(`${beats.length} frames in ${out}`);
+}
+if (order) {
+  for (const beat of beats.filter((b) => b.productPage)) {
+    const shot = await open(`${base}&from=${beat.id}`);
+    const frame = shot.frameLocator("iframe.video-product");
+    await frame.getByRole("main").waitFor({ state: "visible" });
+    const landmark =
+      beat.productPage === "overview"
+        ? frame.getByRole("heading", { name: "Needs you", exact: true })
+        : frame.getByRole("heading", {
+            name: beat.productPage === "erp" ? "ERP connection" : "Spreadsheets",
+            exact: true,
+            level: 1,
+          });
+    await landmark.waitFor({ state: "visible" });
+    await shot.close();
+  }
+  console.log("Verified the Overview, Spreadsheets, and ERP connection screens in the cut.");
 }
 await browser.close();
 

@@ -37,12 +37,21 @@ import { explainFailure } from "@day-one/server/chain/explain";
 import { LiveTransport } from "@day-one/server/chain/live";
 import { type PolicyView, readPolicy, type ViewFn } from "@day-one/server/chain/policy";
 import { summarizeChainTx } from "@day-one/server/chain/summary";
+import type { BatchRecordExtraction } from "@day-one/server/extraction/schema";
 import { areaViews } from "@day-one/server/ledger/areas";
 import { books, booksCsv } from "@day-one/server/ledger/books";
 import { catalog } from "@day-one/server/ledger/catalog";
 import { buildGenealogy, genealogyTables } from "@day-one/server/ledger/genealogy";
 import { plantInventory } from "@day-one/server/ledger/inventory";
-import { approvals, chainTx, staff, vendors } from "@day-one/server/ledger/schema";
+import {
+  approvals,
+  batchRecords,
+  chainTx,
+  purchaseOrders,
+  staff,
+  transfers,
+  vendors,
+} from "@day-one/server/ledger/schema";
 import { historySeries, stockedMaterials, stockSeries } from "@day-one/server/ledger/series";
 import {
   batchRecordViews,
@@ -53,7 +62,7 @@ import {
 import { ReplayLlm } from "@day-one/server/llm/client";
 import { readWorlds } from "@day-one/server/world/files";
 import { mergeGenealogyTables, worldGenealogyTables } from "@day-one/server/world/genealogy";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   ALL_SCANS,
   DEMO_INBOX,
@@ -113,6 +122,7 @@ export interface RunState {
   mode: "replay" | "live";
   network: string;
   next: NextAction;
+  draftReading: BatchRecordExtraction | null;
   stopped: string | null;
   /** When the run stopped on a failure we can explain: what happened and what to do, plainly. */
   help: string | null;
@@ -187,6 +197,7 @@ export interface InboxState {
 }
 
 export class DemoSession {
+  private uploadImage: string | null = null;
   private env!: DemoEnv;
   private machine!: ReturnType<typeof startDemo>;
   private queue: Promise<unknown> = Promise.resolve();
@@ -202,6 +213,7 @@ export class DemoSession {
 
   /** Seeds a fresh ledger and plays step 0; the folder is read again into the new ledger. */
   async start() {
+    this.uploadImage = null;
     this.watch?.stop();
     this.watch = null;
     this.env = await openDemoEnv(this.options);
@@ -328,13 +340,20 @@ export class DemoSession {
 
   /** Step 1: the purchaser's photo, as bytes or as a committed file under data/batch-records/. */
   upload(page: { bytes: Buffer; name?: string } | { file: string }) {
-    return this.run(() =>
-      this.machine.upload(
+    return this.run(async () => {
+      const source =
         "file" in page
           ? loadBatchRecord(this.env.root, page.file)
-          : pageOf(`uploads/${page.name ?? "batch-record.jpg"}`, page.bytes),
-      ),
-    );
+          : pageOf(`uploads/${page.name ?? "batch-record.jpg"}`, page.bytes);
+      const steps = await this.machine.upload(source);
+      if (this.machine.draft) this.uploadImage = source.image.base64;
+      return steps;
+    });
+  }
+
+  draftScan() {
+    if (!this.machine.draft || !this.uploadImage) throw new SessionError(404, "no uploaded draft");
+    return Buffer.from(this.uploadImage, "base64");
   }
 
   /**
@@ -353,6 +372,7 @@ export class DemoSession {
         throw new SessionError(400, `the draft waiting for confirmation is ${draft.batchNo}`);
       }
       const confirmed = await this.machine.confirm(staffName);
+      this.uploadImage = null;
       if (this.machine.stopped) return confirmed;
       return [...confirmed, ...(await this.machine.purchase())];
     });
@@ -660,6 +680,39 @@ export class DemoSession {
     }
   }
 
+  /** Staff estimate when an existing shipment will be usable, including any expected QC time. */
+  planSupply(kind: unknown, ref: unknown, date: unknown) {
+    return this.run(async () => {
+      if (typeof ref !== "string" || !ref || (kind !== "order" && kind !== "transfer")) {
+        throw new SessionError(400, "Choose an incoming order or transfer.");
+      }
+      if (
+        date !== null &&
+        (typeof date !== "string" ||
+          !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+          !Number.isFinite(Date.parse(date)) ||
+          new Date(date).toISOString().slice(0, 10) !== date)
+      ) {
+        throw new SessionError(400, "Enter a valid usable date or clear it.");
+      }
+      const db = this.env.db;
+      const change =
+        kind === "order"
+          ? db
+              .update(purchaseOrders)
+              .set({ expectedUsableOn: date })
+              .where(and(eq(purchaseOrders.poNo, ref), eq(purchaseOrders.status, "funded")))
+              .run()
+          : db
+              .update(transfers)
+              .set({ expectedUsableOn: date })
+              .where(and(eq(transfers.transferNo, ref), eq(transfers.state, "in_transit")))
+              .run();
+      if (change.changes === 0) throw new SessionError(404, "That shipment is no longer incoming.");
+      return { ref, expectedUsableOn: date };
+    });
+  }
+
   /** The plant's planned batches from the run's clock, with their draws, cover and cost. */
   schedule(facility = "B", days?: number) {
     try {
@@ -743,6 +796,13 @@ export class DemoSession {
   state(): RunState {
     const { db } = this.env;
     const m = this.machine;
+    const draftJson = m.draft
+      ? db
+          .select({ json: batchRecords.extractionJson })
+          .from(batchRecords)
+          .where(eq(batchRecords.id, m.draft.batchId))
+          .get()?.json
+      : null;
     const rows = db.select().from(chainTx).all();
     const finished = m.next === "done";
     const summary = finished ? summarizeChainTx(rows) : null;
@@ -750,6 +810,7 @@ export class DemoSession {
       mode: this.env.live ? "live" : "replay",
       network: this.env.accounts.network,
       next: this.nextAction(),
+      draftReading: draftJson ? (JSON.parse(draftJson) as BatchRecordExtraction) : null,
       stopped: m.stopped,
       help: m.stopped ? helpFor(m.stopped, rows) : null,
       ok:

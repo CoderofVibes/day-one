@@ -155,6 +155,12 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
       who: "Ray Delgado",
       action: "Confirm BR-B-1045.",
     });
+    const draft = (await api("GET", "/api/run")).body.draftReading;
+    expect(draft.batch_number.raw).toBe("BR-B-1045");
+    expect(draft.materials.length).toBeGreaterThan(0);
+    const scan = await fetch(`${base}/api/batch-records/draft/scan`);
+    expect(scan.status).toBe(200);
+    expect(Buffer.from(await scan.arrayBuffer())).toEqual(jpg);
   });
 
   it("Ray confirms, and Kevin forecasts, asks for quotes and submits both POs", async () => {
@@ -228,6 +234,32 @@ describe("the HTTP API drives the recorded run, one staff action at a time", () 
     expect(approve.paidBy).toBe("dayone-relayer.testnet");
     expect(approve.signer).toMatch(/^director\.plant-b\./);
     expect(state.approvals[0].response).toBe("YES 1042");
+  });
+
+  it("uses the expected usable date in the forecast and schedule without changing the order", async () => {
+    const save = (date: string | null) =>
+      api("POST", "/api/forecast/supply", {
+        kind: "order",
+        ref: "PO-1042",
+        expectedUsableOn: date,
+      });
+    const ascorbic = async () =>
+      (await api("GET", "/api/forecast")).body.materials.find(
+        (m: { material: string }) => m.material === "ASC",
+      );
+    const unknown = await ascorbic();
+    expect(unknown.firstShort).toMatchObject({ batchNo: "BR-B-1047", date: "2026-11-17" });
+    expect(unknown.recommendQtyBase).toBeNull();
+    expect((await save("2026-11-31")).status).toBe(400);
+    expect((await save("2026-11-18")).status).toBe(200);
+    expect((await ascorbic()).firstShort).toEqual(unknown.firstShort);
+    const late = (await api("GET", "/api/schedule")).body.batches.find(
+      (b: { batchNo: string }) => b.batchNo === "BR-B-1047",
+    );
+    expect(late.short).toContain("ASC");
+    expect((await save("2026-11-17")).status).toBe(200);
+    expect((await ascorbic()).firstShort).toBeNull();
+    expect((await save(null)).status).toBe(200);
   });
 
   it("Tommy's packing slip puts the lot in quarantine", async () => {

@@ -147,6 +147,11 @@ async function route(
   if (method === "GET" && path === "/api/imports") return reply(res, 200, desk.state());
   if (method === "GET" && path === "/api/batch-records")
     return reply(res, 200, await session.inbox());
+  if (method === "GET" && path === "/api/batch-records/draft/scan") {
+    const bytes = session.draftScan();
+    res.writeHead(200, { "content-type": "image/jpeg", "cache-control": "no-store" });
+    return res.end(bytes);
+  }
   // The scan itself, so the person confirming Kevin's reading can see the page he read.
   const scan = /^\/api\/batch-records\/(\d+)\/scan$/.exec(path);
   if (method === "GET" && scan) {
@@ -226,6 +231,10 @@ async function route(
   if (path === "/api/run/reset") {
     desk.reset();
     return steps(res, session, await session.reset());
+  }
+  if (path === "/api/forecast/supply") {
+    const body = await readJson(req, maxBody);
+    return reply(res, 200, await session.planSupply(body.kind, body.ref, body.expectedUsableOn));
   }
 
   if (path === "/api/imports") {

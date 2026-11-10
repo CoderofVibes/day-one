@@ -25,10 +25,13 @@ What reached the build, against the original plan and its cut list. Every "shipp
 | Natural-language policy changes | Shipped as a CLI draft (no request box on HQ's page; the server holds no owner key by design) | `npm run policy -- "raise Kevin's per-PO limit to $3,000"` |
 | HQ policy view | Shipped (read-only) | Spending limits page; `npm run escrow` |
 | Morning mailbox review | Shipped | `npm run review`; the Overview's "Morning review" |
+| Batch review and dated material coverage | Shipped | Ray's desk shows the scan beside the extracted rows. Inventory and Schedule check estimated usable dates, with QC-held stock kept separate. See the late-shipment example after the forecast on the Overview. |
+| Submission cut | Shipped | `?video=1&cut=order&capture=1` opens on Ray’s desk, follows the plant handover and reveals the NEAR evidence in 2:07. |
 | Mock ERP and reconciliation | Shipped (a mock, not a live integration) | `npm run erp:reconcile` |
 | Trust ramp and on-chain policy history | Cut: the ramp is in the fiction only, and RPC cannot list past events without an indexer (OPEN_QUESTIONS #34) | — |
 | NEAR Auth for staff keys | Cut: every signature needs a person at an Auth0 sign-in; staff keys are held by the server and the README says so (OPEN_QUESTIONS #43) | README Limitations and Roadmap |
 | Real ERP adapter | Not built: roadmap | README Roadmap |
+| Stability report intake and QA export | Roadmap | Validate a source report, review uncertain values and export reviewed rows with source references. |
 
 ## In progress
 

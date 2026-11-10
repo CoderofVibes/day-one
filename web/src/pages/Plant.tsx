@@ -4,7 +4,8 @@
 
 import "./redesign.css";
 import { useState } from "react";
-import type { InboxState, PlantInventory, TransferSuggestion } from "../api.ts";
+import { type InboxState, type PlantInventory, postJson, type TransferSuggestion } from "../api.ts";
+import { BatchReadingDialog } from "../BatchReading.tsx";
 import {
   BarChart,
   ChartCard,
@@ -12,7 +13,6 @@ import {
   dollars,
   dollarsShort,
   LineChart,
-  NumberCard,
   percent,
   qty,
   SERIES,
@@ -36,6 +36,7 @@ import {
 import { MaterialDesk } from "../MaterialDesk.tsx";
 import { materialDecisions } from "../materialDecisions.ts";
 import { type BatchRecordView, readBrief } from "../reads.ts";
+import { recordedBatchReview } from "../recordedBatchReview.ts";
 import {
   type MaterialForecast,
   type PlantSchedule,
@@ -96,16 +97,26 @@ export function BatchRecordsPage({
       text: (b) => `${b.batchNo} ${b.completedAt?.slice(0, 7) ?? ""}`,
       render: (b) => (
         <>
-          <RecordLink
-            id={b.batchNo}
-            page="batches"
-            preview={[
-              { label: "Product", value: b.productName },
-              { label: "Completed", value: day(b.completedAt) },
-              { label: "Yield", value: b.yieldBp === null ? "—" : percent(b.yieldBp) },
-              { label: "Status", value: b.status },
-            ]}
-          />
+          {!source.live && b.batchNo === "BR-B-1045" && recordedBatchReview ? (
+            <BatchReadingDialog
+              label={b.batchNo}
+              scan={recordedBatchReview.scan}
+              reading={recordedBatchReview.reading}
+              posted={recordedBatchReview.posted ?? null}
+              note={`Posted to inventory in the recorded run${b.confirmedBy ? ` by ${b.confirmedBy}` : ""}.`}
+            />
+          ) : (
+            <RecordLink
+              id={b.batchNo}
+              page="batches"
+              preview={[
+                { label: "Product", value: b.productName },
+                { label: "Completed", value: day(b.completedAt) },
+                { label: "Yield", value: b.yieldBp === null ? "—" : percent(b.yieldBp) },
+                { label: "Status", value: b.status },
+              ]}
+            />
+          )}
           {b.fromScan && <small className="sub">read from a scan</small>}
         </>
       ),
@@ -183,21 +194,19 @@ export function BatchRecordsPage({
                 value={avgYield / 100}
                 min={84}
                 max={100}
-                band={[89, 92]}
                 label="Average yield, last 12 batches"
                 format={(v) => `${v.toFixed(1)}%`}
               />
             ) : undefined
           }
-          context="tablets 89–92% standard"
-          why="Units made over theoretical units, averaged over the last 12 batches of every form; capsules and powder run near 97%, the tablet line's standard is 89–92%."
+          context="all production forms"
+          why="This averages actual yield across forms. The chart compares each batch with its own product target."
           spark={
             <Sparkline
               values={recent.map((b) => (b.yieldBp ?? 0) / 100)}
               label="Yield by batch, last 20"
               points={recent.map((b) => b.batchNo)}
               format={(v) => `${v.toFixed(1)}%`}
-              band={[89, 92]}
             />
           }
         />
@@ -240,19 +249,20 @@ export function BatchRecordsPage({
       {plant === "B" && queue}
       <div className="charts-2">
         <ChartCard
-          title="Yield by batch"
-          unit="% of the theoretical units, last 20 batches"
+          title="Yield against product target"
+          unit="Percentage points above or below each product’s expected yield, last 20 batches"
           table={{
-            columns: ["Batch", "Completed", "Yield"],
+            columns: ["Batch", "Completed", "Yield", "Product target"],
             rows: recent.map((b) => [
               b.batchNo,
               day(b.completedAt),
               b.yieldBp === null ? "—" : percent(b.yieldBp),
+              percent(b.expectedYieldBp),
             ]),
           }}
         >
           <LineChart
-            label="Yield by batch"
+            label="Yield against product target"
             series={FORMS.map((form, i) => ({
               name: form,
               color: SERIES[i] ?? "var(--chart-1)",
@@ -260,13 +270,12 @@ export function BatchRecordsPage({
                 .filter((b) => formOf(b.batchNo) === form && b.completedAt && b.yieldBp !== null)
                 .map((b) => ({
                   x: Date.parse(b.completedAt ?? ""),
-                  y: (b.yieldBp ?? 0) / 100,
+                  y: ((b.yieldBp ?? 0) - b.expectedYieldBp) / 100,
                   note: b.batchNo,
                 })),
             })).filter((s) => s.points.length > 0)}
-            rules={[{ y: 90, label: "expected 90%" }]}
-            yMin={84}
-            yFormat={(v) => `${v.toFixed(0)}%`}
+            rules={[{ y: 0, label: "product target" }]}
+            yFormat={(v) => `${v.toFixed(0)} pp`}
             xFormat={shortDay}
           />
         </ChartCard>
@@ -346,7 +355,8 @@ export function InventoryPage({
 }) {
   const key = `${source.live}-${source.version}-${plant}`;
   const { value: tables, error } = usePlant(source, plant);
-  const { value: forecast } = useRead(() => readForecast(source, plant), key);
+  const [supplyVersion, setSupplyVersion] = useState(0);
+  const { value: forecast } = useRead(() => readForecast(source, plant), `${key}-${supplyVersion}`);
   const { value: stocked } = useRead(() => readStockedMaterials(source, plant), key);
   const [onlyLow, setOnlyLow] = useState(false);
   const [material, setMaterial] = useState<string | null>(null);
@@ -376,6 +386,19 @@ export function InventoryPage({
     ["approved", "funded", "authorized"].includes(o.status),
   );
   const fm = forecast?.materials ?? [];
+  const renderSupply = (material: string) => {
+    const entry = fm.find((m) => m.material === material);
+    if (!entry?.incoming?.length || !forecast) return null;
+    return (
+      <SupplyTiming
+        key={`${plant}-${material}`}
+        entry={entry}
+        today={forecast.at.slice(0, 10)}
+        editable={source.live}
+        onSaved={() => setSupplyVersion((v) => v + 1)}
+      />
+    );
+  };
   const covered = fm.filter((m) => !m.short).length;
   const byState = new Map<string, number>();
   for (const l of tables.lots) byState.set(l.state, (byState.get(l.state) ?? 0) + 1);
@@ -388,6 +411,7 @@ export function InventoryPage({
           onPick={setMaterial}
           go={go}
           onShow={onShow}
+          supply={renderSupply}
         />
       )}
       <div className="tiles-4">
@@ -448,8 +472,7 @@ export function InventoryPage({
             fm
               .filter((m) => m.short)
               .map((m) => m.sentence)
-              .join(" ") ||
-            "Every material the plan draws on is covered by stock and orders on the way."
+              .join(" ") || "Usable stock and dated incoming supply cover the planned batches."
           }
         />
       </div>
@@ -568,6 +591,12 @@ export function InventoryPage({
                             <Pill tone="held">reorder</Pill>
                           ) : null}{" "}
                           {m.sentence}
+                          {m.incoming?.length ? (
+                            <details>
+                              <summary>Incoming supply</summary>
+                              {renderSupply(m.material)}
+                            </details>
+                          ) : null}
                         </td>
                       </tr>
                     ))}
@@ -678,6 +707,85 @@ export function InventoryPage({
   );
 }
 
+function SupplyTiming({
+  entry,
+  today,
+  editable,
+  onSaved,
+}: {
+  entry: MaterialForecast;
+  today: string;
+  editable: boolean;
+  onSaved: () => void;
+}) {
+  return (
+    <ul className="supply-timing">
+      {entry.incoming?.map((s) => (
+        <li key={`${s.kind}-${s.ref}`}>
+          <b>{s.ref}</b> · {qty(s.qtyBase, entry.dimension)} ·{" "}
+          {s.kind === "qc"
+            ? "waiting for QC release"
+            : !s.expectedUsableOn
+              ? "usable date unknown"
+              : s.expectedUsableOn < today
+                ? `overdue since ${s.expectedUsableOn}`
+                : `expected usable ${s.expectedUsableOn}`}
+          {editable && s.kind !== "qc" && (
+            <SupplyDate key={`${s.ref}-${s.expectedUsableOn}`} supply={s} onSaved={onSaved} />
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function SupplyDate({
+  supply,
+  onSaved,
+}: {
+  supply: NonNullable<MaterialForecast["incoming"]>[number];
+  onSaved: () => void;
+}) {
+  const [date, setDate] = useState(supply.expectedUsableOn ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  return (
+    <form
+      className="supply-date"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setBusy(true);
+        setError("");
+        try {
+          await postJson("api/forecast/supply", {
+            kind: supply.kind,
+            ref: supply.ref,
+            expectedUsableOn: date || null,
+          });
+          onSaved();
+        } catch (err) {
+          setError(err instanceof Error ? err.message : String(err));
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      <label>
+        Expected usable date for {supply.ref}{" "}
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} disabled={busy} />
+      </label>
+      <button
+        type="submit"
+        className="btn"
+        disabled={busy || date === (supply.expectedUsableOn ?? "")}
+      >
+        {busy ? "Saving…" : "Save date"}
+      </button>
+      {error && <span role="alert">{error}</span>}
+    </form>
+  );
+}
+
 /** A material's stock at the plant over time, with its reorder point as a rule. */
 function StockHistory({ stock, height }: { stock: StockSeries; height?: number }) {
   const scale = stock.dimension === "mass" ? 1_000_000 : 1;
@@ -745,12 +853,12 @@ function StockLevels({
       <ul className="stock-levels">
         {shown.map((m) => {
           const lo = m.onHandBase - m.needBase;
-          const hi = lo + m.onOrderBase;
+          const hi = lo + (m.scheduledBase ?? m.onOrderBase);
           const top = Math.max(m.onHandBase, hi, m.reorderPointBase, 1) * 1.1;
           const bottom = Math.min(0, lo);
           const y = (v: number) => H - 2 - ((v - bottom) / (top - bottom)) * (H - 4);
           const tone = lo < 0 ? "bad" : lo < m.reorderPointBase ? "wait" : "ok";
-          const tip = `${m.name}: ${qty(m.onHandBase, m.dimension)} on hand, reorder at ${qty(m.reorderPointBase, m.dimension)}; the plan needs ${qty(m.needBase, m.dimension)} in ${horizon} days, ${qty(m.onOrderBase, m.dimension)} on order, so it ends between ${qty(lo, m.dimension)} and ${qty(hi, m.dimension)}.`;
+          const tip = `${m.name}: ${qty(m.onHandBase, m.dimension)} usable now, reorder at ${qty(m.reorderPointBase, m.dimension)}. At the end of the ${horizon}-day plan the balance is ${qty(hi, m.dimension)} with dated supply. Batch shortages are checked on their own dates.`;
           return (
             <li key={m.material}>
               <button type="button" className="link-btn sl-name" onClick={() => onPick(m.material)}>

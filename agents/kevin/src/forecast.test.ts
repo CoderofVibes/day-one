@@ -1,5 +1,5 @@
 import { type Ledger, openLedger } from "@day-one/server/ledger/db";
-import { forecasts, poLines, purchaseOrders, vendors } from "@day-one/server/ledger/schema";
+import { forecasts, lots, poLines, purchaseOrders, vendors } from "@day-one/server/ledger/schema";
 import { seedLedger } from "@day-one/server/seed";
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -42,7 +42,7 @@ describe("forecast", () => {
     expect(f.recommendQtyBase).toBe(700 * KG);
   });
 
-  it("counts open POs as on order", () => {
+  it("distinguishes unknown, late, overdue and on-time supply without ordering twice", () => {
     confirmBr1045(db);
     const before = forecastMaterial(db, { facility: "B", material: "ASC", now: NOW });
     expect(before.onOrderBase).toBe(0);
@@ -70,11 +70,43 @@ describe("forecast", () => {
         extendedUsdc: 4_970_000_000,
       })
       .run();
-    const after = forecastMaterial(db, { facility: "B", material: "ASC", now: NOW });
-    expect(after.onOrderBase).toBe(700 * KG);
-    expect(after.shortfallBase).toBe(0);
-    expect(after.needBy).toBeNull();
-    expect(after.sentence).not.toMatch(/Short/);
+    const check = () => forecastMaterial(db, { facility: "B", material: "ASC", now: NOW });
+    const unknown = check();
+    expect(unknown.onOrderBase).toBe(700 * KG);
+    expect(unknown.shortfallBase).toBe(before.shortfallBase);
+    expect(unknown.firstShort).toMatchObject({ batchNo: "BR-B-1047", date: "2026-11-17" });
+    expect(unknown.recommendQtyBase).toBeNull();
+
+    db.update(purchaseOrders)
+      .set({ expectedUsableOn: "2026-11-18" })
+      .where(eq(purchaseOrders.id, po.id))
+      .run();
+    const late = check();
+    expect(late.firstShort).toEqual(unknown.firstShort);
+    expect(late.plannedBatches[1]?.availableAfterBase).toBeGreaterThan(0);
+    expect(late.recommendQtyBase).toBeNull();
+
+    db.update(purchaseOrders)
+      .set({ expectedUsableOn: "2026-11-08" })
+      .where(eq(purchaseOrders.id, po.id))
+      .run();
+    expect(check().scheduledBase).toBe(0);
+
+    db.update(purchaseOrders)
+      .set({ expectedUsableOn: "2026-11-17" })
+      .where(eq(purchaseOrders.id, po.id))
+      .run();
+    expect(check()).toMatchObject({ scheduledBase: 700 * KG, firstShort: null, shortfallBase: 0 });
+  });
+
+  it("keeps QC-held material separate from usable and in-transit supply", () => {
+    confirmBr1045(db);
+    const f = forecastMaterial(db, { facility: "B", material: "ASC", now: NOW });
+    db.update(lots).set({ state: "quarantine" }).where(eq(lots.materialId, f.materialId)).run();
+    const held = forecastMaterial(db, { facility: "B", material: "ASC", now: NOW });
+    expect(held).toMatchObject({ onHandBase: 0, scheduledBase: 0, onOrderBase: 0 });
+    expect(held.incoming.reduce((sum, s) => sum + s.qtyBase, 0)).toBe(f.onHandBase);
+    expect(held.firstShort?.qtyBase).toBe(f.plannedBatches[0]?.needBase);
   });
 
   it("asks for nothing when the plan does not use the material", () => {

@@ -301,13 +301,14 @@ export function morningBrief(db: Ledger, input: BriefInput): Brief {
     .orderBy(asc(materials.category), asc(materials.code))
     .all()) {
     const f = projectMaterial(db, { facility: plant.code, material: m.code, now });
-    if (f.recommendQtyBase === null) continue;
+    if (f.recommendQtyBase === null && !f.firstShort) continue;
     if (!f.plannedBatches.length && !stocked.has(m.code)) continue;
-    const text = f.plannedBatches.length
-      ? `${m.name}: ${f.sentence}${f.needBy ? ` Needed by ${shortDate(f.needBy)}.` : ""}`
-      : `${m.name}: ${amount(f.onHandBase + f.onOrderBase, m.dimension)} on hand and on order, ` +
-        `under the reorder point of ${amount(f.reorderPointBase, m.dimension)}. ` +
-        `Recommend ordering ${amount(f.recommendQtyBase, m.dimension)}.`;
+    const text =
+      f.plannedBatches.length || f.recommendQtyBase === null
+        ? `${m.name}: ${f.sentence}${f.needBy ? ` Needed by ${shortDate(f.needBy)}.` : ""}`
+        : `${m.name}: ${amount(f.onHandBase, m.dimension)} usable on hand, ` +
+          `under the reorder point of ${amount(f.reorderPointBase, m.dimension)}. ` +
+          `Recommend ordering ${amount(f.recommendQtyBase, m.dimension)}.`;
     buying.push({ ref: m.code, text });
     for (const s of transfers.filter((s) => s.material === m.code)) {
       buying.push({ ref: s.key, text: s.sentence });

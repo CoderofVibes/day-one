@@ -73,7 +73,7 @@ for (const [name, width, scheme] of [
     for (let i = 0; i < steps; i++) {
       const primary = page
         .locator(
-          '.desk .card-actions > button[data-action="primary"]:not([disabled]), [aria-label="Next action"] button[data-action="primary"]:not([disabled])',
+          '.desk .card-actions > button:is([data-action="primary"], [data-action="review"]):not([disabled]), [aria-label="Next action"] button[data-action="primary"]:not([disabled])',
         )
         .first();
       await primary.waitFor({ timeout: 30_000 }).catch(async (e: unknown) => {
@@ -83,7 +83,9 @@ for (const [name, width, scheme] of [
       });
       const label = await primary.textContent();
       if (label === "Start over") break;
+      const review = (await primary.getAttribute("data-action")) === "review";
       await primary.click();
+      if (review) await page.locator('dialog[open] button[data-action="confirm-reading"]').click();
       await page.waitForFunction(
         (was) =>
           !document.querySelector('button[data-action="primary"][disabled]') &&
@@ -143,7 +145,8 @@ for (const [name, width, scheme] of [
     const nodes = await page.evaluate(() => document.querySelectorAll(".feed-rail *").length);
     console.log(name, "feed nodes:", nodes);
   }
-  const threeD = process.env.VIEW === "3d" || (await page.locator(".map-frame").count()) > 0;
+  const threeD =
+    process.env.VIEW === "3d" || (await page.locator(".map-frame:visible").count()) > 0;
   if (threeD) await page.locator(".t3-stage canvas").waitFor();
   await page.waitForTimeout(Number(process.env.WAIT ?? (threeD ? 2400 : 600)));
   await page.screenshot({ path: join(out, `${name}.png`), fullPage: Boolean(process.env.FULL) });

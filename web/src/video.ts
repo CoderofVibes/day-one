@@ -7,6 +7,9 @@
 export type Panel =
   | "before"
   | "title"
+  | "batch-reading"
+  | "batch-handoff"
+  | "product"
   | "desk"
   | "review"
   | "feed"
@@ -38,6 +41,8 @@ export interface Beat {
   camera?: string;
   /** The shots are steps of the recorded group purchase (src/groupBuy.ts), not of this run. */
   run?: "group";
+  /** An actual Day One replay page shown inside the video frame. */
+  productPage?: "overview" | "spreadsheets" | "erp";
 }
 
 /**
@@ -150,8 +155,8 @@ export const BEATS: Beat[] = [
     hold: true,
     shots: [{ step: 9, ms: 8_000 }],
     captions: [
-      "Kevin's model signed its approval in a secure enclave, for this exact order.",
-      "A signature isn't permission: it was refused until Linda said yes.",
+      "The model signed APPROVE in a hardware enclave. The contract checked the supplied PO fingerprint.",
+      "Linda's separate authorization let Kevin fund it.",
     ],
   },
   {
@@ -189,8 +194,8 @@ export const BEATS: Beat[] = [
       { step: 13, ms: 5_000 },
     ],
     captions: [
-      "Priya releases the lot. The supplier is paid that second, for what was counted in, not in net-30.",
-      "Accounting sees it matched and paid.",
+      "Priya releases the lot. The contract pays Northgate $5,150 in DTUSD, the demo's test token.",
+      "Accounting sees the matched payment.",
     ],
   },
   {
@@ -272,14 +277,14 @@ const TOUR_EXTRA: Beat[] = [
   },
   {
     id: "attacks",
-    title: "21 of 21 refused",
+    title: "21 recorded scenarios stopped",
     panel: "attacks",
     curtain: true,
     camera: "money",
     shots: [{ step: 14, ms: 10_000 }],
     captions: [
       "Then we attacked it: lookalike vendors, fake invoices, new bank details, a supplier paying itself.",
-      "Twenty-one attacks, twenty-one refusals: by Kevin, the mock ERP or the contract.",
+      "All twenty-one were stopped by Kevin, the mock ERP or the contract. A short delivery paid only for what arrived.",
     ],
   },
 ];
@@ -289,9 +294,118 @@ export const TOUR_BEATS: Beat[] = BEATS.flatMap((b) => {
   return b.id === "close" ? [...TOUR_EXTRA, beat] : [beat];
 });
 
-/** The take or the tour, as the address asks (?tour=1). */
+/** The submission cut shows the plant's workflow before revealing its NEAR evidence. */
+const ORDER_CUT: Record<string, Partial<Beat>> = {
+  "morning-review": {
+    title: "Day One at Hollow Pine",
+    panel: "product",
+    productPage: "overview",
+    shots: [{ step: 0, ms: 11_000 }],
+    captions: [
+      "Acme just bought Hollow Pine. Ray still has a plant to run.",
+      "Kevin’s desk shows what he handled and what needs Ray, from batch records to weekend mail.",
+    ],
+  },
+  "batch-record": {
+    panel: "batch-reading",
+    shots: [{ step: 1, ms: 10_000 }],
+    captions: [
+      "Kevin reads the scan and checks the material quantities against the formula. Ray reviews the reading before posting.",
+    ],
+  },
+  "one-truth": {
+    title: "What production needs",
+    panel: "batch-handoff",
+    shots: [{ step: 4, ms: 6_000 }],
+    captions: ["The stock update exposes an ingredient shortage in the upcoming production plan."],
+  },
+  quotes: {
+    shots: [{ step: 5, ms: 7_000 }],
+    captions: [
+      "Supplier agents return quotes. Kevin compares qualified suppliers on price and delivery.",
+    ],
+  },
+  refusal: {
+    panel: "curtain",
+    curtain: true,
+    hold: true,
+    shots: [{ step: 7, ms: 10_000 }],
+    captions: [
+      "Kevin's model approved a $5,150 order for an ingredient the plant needs.",
+      "The NEAR testnet contract refused it. Kevin's limit is $2,500.",
+    ],
+  },
+  approve: {
+    captions: [
+      "Linda's reply is simulated. The server signs with the director's key.",
+      "Kevin's key cannot authorize the order. A relayer pays the gas.",
+    ],
+  },
+  signed: {},
+  delivery: { shots: [{ step: 11, ms: 6_000 }] },
+  paid: {},
+  curtain: {
+    title: "Verify the records",
+    shots: [{ step: 14, ms: 8_000 }],
+    captions: [
+      "NEAR stores record fingerprints. Reviewers can check the batch record and trace a lot back to its anchored records.",
+    ],
+  },
+  "group-buy": {},
+  close: {
+    captions: [
+      "Day One. From a paper batch record to a purchase with human approval and a verifiable payment.",
+    ],
+  },
+};
+
+const WORKBOOK: Beat = {
+  id: "workbook",
+  title: "Bring over the old workbook",
+  panel: "product",
+  productPage: "spreadsheets",
+  shots: [{ step: 0, ms: 9_000 }],
+  captions: [
+    "Kevin reads the inventory workbook and flags duplicate lots, unit conversions, and numbers that disagree.",
+  ],
+};
+
+const TRANSFER: Beat = {
+  id: "transfer",
+  title: "Check stock across plants",
+  panel: "feed",
+  shots: [{ step: 3, ms: 8_000 }],
+  captions: [
+    "Kevin spots a transfer that left stock on the wrong plant’s books and asks staff to review the correction.",
+  ],
+};
+
+const ERP: Beat = {
+  id: "erp-handoff",
+  title: "Carry the work into accounting",
+  panel: "product",
+  productPage: "erp",
+  shots: [{ step: 14, ms: 8_000 }],
+  captions: [
+    "The order, receipt, invoice, and payment reconcile in the mock ERP. Here’s how NEAR enforces the handoffs.",
+  ],
+};
+
+export const ORDER_BEATS: Beat[] = TOUR_BEATS.flatMap((b) => {
+  const cut = ORDER_CUT[b.id];
+  if (!cut) return [];
+  const beat = { ...b, ...cut };
+  if (b.id === "morning-review") return [beat, WORKBOOK];
+  if (b.id === "batch-record") return [beat, TRANSFER];
+  if (b.id === "quotes") return [beat, ERP];
+  return [beat];
+});
+
+/** Choose a video from the address. */
 export function beatsFor(search: string): Beat[] {
-  return new URLSearchParams(search).get("tour") === "1" ? TOUR_BEATS : BEATS;
+  const query = new URLSearchParams(search);
+  if (query.get("cut") === "order") return ORDER_BEATS;
+  return query.get("tour") === "1" ? TOUR_BEATS : BEATS;
 }
 
 /** The start of the beat after (or before) the one at clock time `t`: where → and ← jump. */

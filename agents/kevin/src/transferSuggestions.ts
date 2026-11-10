@@ -134,12 +134,12 @@ export function suggestTransfers(db: Ledger, input: SuggestInput): TransferSugge
         .orderBy(sql`${lots.expiresOn} is null`, asc(lots.expiresOn), asc(lots.lotCode))
         .all();
       const movableBase = movable.reduce((s, l) => s + l.qtyBase, 0);
-      const after = f.onHandBase + f.onOrderBase - f.needBase;
+      const expectedTotal = f.onHandBase + f.incoming.reduce((sum, s) => sum + s.qtyBase, 0);
       return {
         plant: p,
         forecast: f,
         movable,
-        shortBase: Math.max(0, reorderPoint - after),
+        shortBase: Math.max(f.shortfallBase, reorderPoint + f.needBase - expectedTotal),
         // Surplus counts usable stock only: what is on order is not there to send.
         surplusBase: Math.max(0, Math.min(f.onHandBase - f.needBase - reorderPoint, movableBase)),
       };

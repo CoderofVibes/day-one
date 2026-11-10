@@ -3,7 +3,7 @@
 // bought, the limits HQ sets, the refusal, Linda's approval beside Kevin's signed decision, receipt
 // and payment, the lot's record), then "See every proof" for everything else (PROOF_STEPS). Each
 // step has the page it opens, the recorded step it seeks to, what it spotlights, one or two
-// sentences, and its "See it on chain" links. Every link is taken from the
+// sentences, and its named transaction links. Every link is taken from the
 // recordings the pages already read (demo-run.json, arena.json, group-buy.json, usdc.json,
 // lot-anchors.json), never typed here; src/judge.test.ts checks each one against the files under
 // data/. Pure data, so the tests read it without a page.
@@ -221,19 +221,22 @@ const monthDay = (iso: string) =>
 export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "takeover",
-    title: "Kevin takes on the purchasing work",
-    body: `Acme has just bought Hollow Pine, where stock lived in paper records and one messy workbook (${book.rows} rows; Kevin asked Ray about ${book.questions}). Ray confirms the batch record Kevin read; Kevin checks the plan, compares quotes and places a $612.00 order within his limits.`,
+    title: "One batch record exposes a shortage",
+    body: `Acme just bought Hollow Pine. Kevin reads its paper records and inventory workbook (${book.rows} rows, ${book.questions} questions for Ray). Ray confirms BR-B-1045, stock comes off the books, and Kevin finds the shortage that leads to PO-1042.`,
     page: "overview",
-    at: refusedAt - 1,
+    at: recorded.steps.findIndex((s) => s.title === "Forecast"),
     prelude: {
       page: "spreadsheets",
       at: 0,
       spotlight: '[aria-label="The inventory workbook"]',
       next: "Next: Ray's desk →",
     },
-    spotlight: ".desk",
+    spotlight: ".batch-handoff",
     curtain: false,
-    links: link(po.small, "submit_po PO-1041, funded"),
+    links: link(
+      recorded.transactions.find((t) => t.method === "anchor_batch"),
+      "Batch record fingerprint",
+    ),
     seconds: 25,
   },
   {
@@ -250,12 +253,12 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "refused",
     title: "The model approved. The contract still refused.",
-    body: "Kevin prepared PO-1042: 700 kg of ascorbic acid from Northgate, $5,150.00 including freight. The contract refused it against his $2,500 limit, even with his model's signed approval attached. Linda decides; approval sets the money aside, and payment waits for receipt and QC.",
+    body: "Kevin prepared PO-1042: 700 kg of ascorbic acid from Northgate, $5,150.00 including freight. The contract refused it against his $2,500 limit, even with his model's signed approval attached. Linda's authorization lets Kevin retry and fund escrow. Payment waits for receipt and QC.",
     ...(po.refused?.error ? { quote: `Contract: “${po.refused.error}”` } : {}),
     page: "overview",
     at: refusedAt,
     spotlight: ".desk-card.need",
-    links: link(po.refused, "submit_po, refused"),
+    links: link(po.refused, "Refused purchase order"),
     seconds: 30,
   },
   {
@@ -266,8 +269,8 @@ export const JUDGE_STEPS: JudgeStep[] = [
     at: retriedAt,
     spotlight: ".curtain .decision",
     links: [
-      ...link(po.approved, `approve_po by ${short(po.approved?.signer ?? "")}`),
-      ...link(po.funded, "submit_po, funded; its decision argument is the signed text"),
+      ...link(po.approved, "Director's authorization"),
+      ...link(po.funded, "Funded retry with the same signed decision"),
     ],
     seconds: 50,
   },
@@ -279,16 +282,16 @@ export const JUDGE_STEPS: JudgeStep[] = [
     at: releasedAt,
     spotlight: ".map-frame",
     links: [
-      ...link(po.received, "confirm_receipt, 700 kg counted in"),
-      ...link(po.invoiced, "record_invoice"),
-      ...link(po.released, "qc_release, Northgate paid"),
+      ...link(po.received, "Receiving confirmation"),
+      ...link(po.invoiced, "Invoice recorded"),
+      ...link(po.released, "QC release and supplier payment"),
     ],
     seconds: 40,
   },
   {
     id: "passport",
     title: "The lot keeps the record",
-    body: "Press Prove it: your browser checks every record of this trace against the daily fingerprint sealed on the contract, and Change one record shows the check failing. The history is fictional and was sealed on Nov 3, 2026, so the check proves nothing changed since then.",
+    body: "Press Prove it to compare these records with their daily roots on testnet. Change one record shows the check failing. The fictional history was sealed on Nov 3, 2026. A match shows that the records agree with those anchored roots.",
     page: "lots",
     at: last,
     spotlight: '[aria-label="Prove it"]',

@@ -1,0 +1,160 @@
+.batch-reading {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.batch-reading .scan-thumb img {
+  width: 100%;
+  height: auto;
+  max-height: 28rem;
+  object-fit: contain;
+  display: block;
+}
+
+.batch-reading-fields {
+  min-width: 0;
+}
+
+.batch-reading-fields small.sub {
+  display: block;
+  color: var(--ink-2);
+}
+
+.batch-reading-fields .table-wrap {
+  margin: 0;
+  padding: 0;
+}
+
+.batch-reading-dialog {
+  box-sizing: border-box;
+  width: min(64rem, calc(100% - 2rem));
+  max-height: calc(100% - 2rem);
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.batch-reading-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.batch-reading-body {
+  overflow: auto;
+  min-height: 0;
+}
+
+.batch-mobile-label {
+  display: none;
+}
+
+.batch-handoff {
+  padding: 1rem 1.25rem;
+}
+
+.batch-handoff dl {
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+}
+
+.batch-handoff dt {
+  font-weight: 650;
+}
+
+.batch-handoff dd {
+  margin: .25rem 0 0;
+}
+
+.batch-availability summary,
+.supply-timing summary {
+  cursor: pointer;
+}
+
+.supply-timing {
+  padding-inline-start: 1.25rem;
+}
+
+.supply-date {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin-block: .4rem .75rem;
+}
+
+.batch-reading-dialog::backdrop {
+  background: rgb(0 0 0 / 65%);
+}
+
+.batch-reading-dialog header,
+.batch-reading-dialog footer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.batch-reading-dialog h2 {
+  margin: 0;
+}
+
+.batch-reading-dialog footer {
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.batch-reading-dialog footer .primary {
+  border: 1px solid var(--brand);
+  border-radius: .5rem;
+  padding: .6rem .9rem;
+  background: var(--brand);
+  color: var(--brand-ink);
+  font-weight: 650;
+}
+
+@media (max-width: 680px) {
+  .batch-reading {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .batch-reading-fields thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .batch-reading-fields .data,
+  .batch-reading-fields tbody {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .batch-reading-fields tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-bottom: 1px solid var(--line);
+    padding-block: .4rem;
+  }
+
+  .batch-reading-fields td {
+    display: block;
+    padding: .3rem;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .batch-mobile-label {
+    display: block;
+    color: var(--ink-2);
+  }
+}

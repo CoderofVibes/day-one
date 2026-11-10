@@ -684,10 +684,12 @@ function batchSizeChange(ctx: Context, reading: MessageReading): Verdict {
       now: ctx.now,
     });
     const shortNow = projected.shortfallBase;
-    const shortThen = Math.max(
-      0,
-      projected.needBase + delta - projected.onHandBase - projected.onOrderBase,
-    );
+    const shortThen = projectMaterial(ctx.db, {
+      facility: ctx.facility,
+      material: a.material.code,
+      now: ctx.now,
+      batchOverride: { batchNo: batch.batchNo, units: tablets },
+    }).shortfallBase;
     return shortThen > 0
       ? [{ ...a, delta, shortNow, shortThen, recommend: projected.recommendQtyBase }]
       : [];
@@ -706,7 +708,7 @@ function batchSizeChange(ctx: Context, reading: MessageReading): Verdict {
           );
         })
         .join(" ")
-    : "Stock on hand and on order covers every material it needs in the next 10 days.";
+    : "Usable stock and dated supply cover every material it needs in the next 10 days.";
   return {
     decision: "sign",
     flagged: [],
@@ -730,11 +732,13 @@ function stockRequest(ctx: Context, reading: MessageReading): Verdict {
     material: material.code,
     now: ctx.now,
   });
-  const have = quantity(p.onHandBase + p.onOrderBase, material.dimension);
+  const have = quantity(p.onHandBase + p.scheduledBase, material.dimension);
   const point = p.reorderPointBase ? quantity(p.reorderPointBase, material.dimension) : null;
-  const kevin = p.recommendQtyBase
-    ? `${material.name}: ${have} on hand and on order${point ? `, under its reorder point of ${point}` : ""}. It is on today's buying list already: Kevin recommends ordering ${quantity(p.recommendQtyBase, material.dimension)}${p.needBy ? `, needed by ${shortDate(p.needBy)}` : ""}. Nothing more to sign here.`
-    : `${material.name}: ${have} on hand and on order, enough for the plan${point ? ` and above its reorder point of ${point}` : ""}. Nothing to order.`;
+  const kevin = p.firstShort
+    ? `${material.name}: ${p.sentence} First at risk is ${p.firstShort.batchNo} on ${shortDate(p.firstShort.date)}.`
+    : p.recommendQtyBase
+      ? `${material.name}: ${have} usable or scheduled${point ? `, with a reorder point of ${point}` : ""}. Kevin recommends ordering ${quantity(p.recommendQtyBase, material.dimension)}.`
+      : `${material.name}: ${have} usable or scheduled, enough for the plan on each batch date.`;
   return { decision: "none", action: null, flagged: [], kevin };
 }
 

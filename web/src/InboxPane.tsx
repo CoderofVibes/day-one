@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import type { InboxFlag, InboxItem, InboxState } from "./api.ts";
+import { BatchReading } from "./BatchReading.tsx";
 import { KevinNote, Pill } from "./feed.tsx";
 import type { Tone } from "./run.ts";
 
@@ -134,10 +135,23 @@ function InboxRow({
         </span>
         {item.status !== "confirmed" && item.batchNo && <span className="file">{name}</span>}
       </span>
-      {waiting &&
+      {(waiting || (item.status === "confirmed" && item.reading)) &&
         (open ? (
           <div className="review-box">
-            <Review item={item} busy={busy} onConfirm={onConfirm} onClose={onOpen} />
+            {waiting ? (
+              <Review item={item} busy={busy} onConfirm={onConfirm} onClose={onOpen} />
+            ) : (
+              <>
+                <BatchReading
+                  scan={`api/batch-records/${item.id}/scan`}
+                  reading={item.reading ?? null}
+                  posted={item.postedReading ?? null}
+                />
+                <button type="button" onClick={onOpen}>
+                  Close
+                </button>
+              </>
+            )}
           </div>
         ) : (
           <button
@@ -174,20 +188,13 @@ function Review({
   const ready = asks.every(done);
   // A note the summary line already says is not repeated under it.
   const notes = item.flags.filter((f) => !f.blocking && !item.summary?.includes(f.message));
-  const name = item.file.split("/").at(-1) ?? item.file;
-
   return (
     <div className="inbox-review">
-      <a
-        className="scan-thumb"
-        href={`api/batch-records/${item.id}/scan`}
-        target="_blank"
-        rel="noreferrer"
-        title={`Open ${name} full size`}
-      >
-        <img src={`api/batch-records/${item.id}/scan`} alt={`The scan Kevin read: ${name}`} />
-        <span className="small">The page Kevin read · open full size ↗</span>
-      </a>
+      <BatchReading
+        scan={`api/batch-records/${item.id}/scan`}
+        reading={item.reading ?? null}
+        flags={item.flags}
+      />
       {asks.length > 0 && (
         <ol className="review">
           {asks.map((f) => (

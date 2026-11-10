@@ -66,6 +66,14 @@ export interface MaterialForecast {
   needBase: number;
   onHandBase: number;
   onOrderBase: number;
+  scheduledBase?: number;
+  incoming?: {
+    kind: "order" | "transfer" | "qc";
+    ref: string;
+    qtyBase: number;
+    expectedUsableOn: string | null;
+  }[];
+  firstShort?: { batchNo: string; date: string; qtyBase: number } | null;
   shortfallBase: number;
   reorderPointBase: number;
   recommendQtyBase: number | null;

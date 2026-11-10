@@ -11,7 +11,7 @@ import type { MaterialForecast } from "./series.ts";
 
 export interface MaterialDecision {
   id: string;
-  kind: "order" | "qc";
+  kind: "order" | "qc" | "supply";
   /** The material it is about, for the stock history beside it. */
   material: string;
   lot: string | null;
@@ -53,6 +53,30 @@ export function materialDecisions(
   const ranked: { score: number; d: MaterialDecision }[] = [];
   for (const m of forecast) {
     if (!m.short && !m.reorder) continue;
+    if (m.firstShort && m.incoming?.length) {
+      ranked.push({
+        score: 500,
+        d: {
+          id: `supply-${m.material}`,
+          kind: "supply",
+          material: m.material,
+          lot: null,
+          who: PURCHASER[plant] ?? "Purchasing",
+          title: `Check ${m.name.toLowerCase()} for ${m.firstShort.batchNo}`,
+          subtitle: `Needed ${m.firstShort.date}`,
+          pill: { label: "batch at risk", tone: "stop" },
+          why: m.sentence,
+          deciding:
+            "Confirm the usable date with receiving or QC. If it will miss the batch, consider expediting, a transfer, or rescheduling.",
+          after: m.recommendQtyBase
+            ? `Kevin suggests ${qty(m.recommendQtyBase, m.dimension)} in addition to the existing supply. Review the timing before placing it.`
+            : "The existing supply covers the quantity needed. Kevin leaves the purchase unchanged while you check timing.",
+          gauge: null,
+          move: moves.find((t) => t.material === m.material && t.to === plant) ?? null,
+        },
+      });
+      continue;
+    }
     // An order Kevin drafted that waits on an approval is not on order yet, but the purchaser has
     // nothing left to decide (first-use review, finding 39): say who it waits on instead.
     const drafted = orders.find(
@@ -80,7 +104,7 @@ export function materialDecisions(
             "Once approved, the contract sets the money aside and the supplier ships; it pays after receipt and QC.",
           gauge: {
             onHand: m.onHandBase,
-            onOrder: m.onOrderBase,
+            onOrder: m.scheduledBase ?? m.onOrderBase,
             need: m.needBase,
             reorder: m.reorderPointBase,
             dimension: m.dimension,
@@ -91,11 +115,12 @@ export function materialDecisions(
       continue;
     }
     const move = moves.find((t) => t.material === m.material && t.to === plant) ?? null;
-    const after = m.onHandBase + m.onOrderBase - m.needBase;
+    const scheduled = m.scheduledBase ?? m.onOrderBase;
+    const after = m.onHandBase + scheduled - m.needBase;
     const batches = m.plannedBatches.length;
     const rec = m.recommendQtyBase;
     const name = m.name;
-    const stock = `${qty(m.onHandBase, m.dimension)} on hand${m.onOrderBase ? ` and ${qty(m.onOrderBase, m.dimension)} on order` : ""}.`;
+    const stock = `${qty(m.onHandBase, m.dimension)} on hand${scheduled ? ` and ${qty(scheduled, m.dimension)} scheduled` : ""}.`;
     const reorderAt = `the reorder point of ${qty(m.reorderPointBase, m.dimension)}`;
     const why = batches
       ? `${stock} ${count(batches)} planned ${batches === 1 ? "batch needs" : "batches need"} ${qty(m.needBase, m.dimension)} in the next ${horizon} days, which leaves ${qty(Math.max(0, after), m.dimension)}: ${m.short ? "short of the plan" : `under ${reorderAt}`}.`
@@ -125,7 +150,7 @@ export function materialDecisions(
           : "Kevin gets quotes and drafts the order. Inside his limits he places it; over them, the plant's director approves first.",
         gauge: {
           onHand: m.onHandBase,
-          onOrder: m.onOrderBase,
+          onOrder: scheduled,
           need: m.needBase,
           reorder: m.reorderPointBase,
           dimension: m.dimension,

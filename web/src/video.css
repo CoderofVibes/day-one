@@ -63,6 +63,50 @@
   overflow: hidden;
 }
 
+.video-paper {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  overflow: auto;
+  padding: 1em;
+}
+
+.video-product {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--line);
+  border-radius: .6em;
+  background: var(--surface);
+  pointer-events: none;
+}
+
+.video-paper > .batch-reading {
+  width: min(100%, 72em);
+  padding: 1.25em;
+  border: 1px solid var(--line);
+  border-radius: 1em;
+  background: var(--surface);
+}
+
+.video-paper .batch-reading .scan-thumb img {
+  max-height: 56vh;
+}
+
+.video-paper .batch-reading td,
+.video-paper .batch-reading th {
+  font-size: .82em;
+  padding-block: .36em;
+}
+
+.video-paper .batch-handoff {
+  width: min(100%, 46em);
+  font-size: 1.4em;
+}
+
 .video-panel .feed {
   gap: 0.7vw;
 }
@@ -281,4 +325,54 @@
 
 .video.desk-on .video-panel {
   overflow: hidden;
+}
+
+.video.order-cut:not(.capture) {
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  cursor: auto;
+}
+
+.video.order-cut:not(.capture) .video-controls {
+  position: static;
+  justify-self: center;
+  font-size: max(0.85em, 0.875rem);
+}
+
+/* The short replay is also a link judges can open on a phone. Give its evidence and captions
+   the full width. The landscape recording still has the twin alongside the staff screens. */
+@media (max-width: 700px) {
+  .video.order-cut {
+    gap: 0.6rem;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+  .video.order-cut .video-main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .video.order-cut .video-map {
+    display: none;
+  }
+  .video.order-cut .video-panel {
+    overflow: auto;
+  }
+  .video.order-cut .video-caption {
+    max-width: 100%;
+    font-size: 1rem;
+  }
+  .video.order-cut .video-controls {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .video.order-cut .video-card h1 {
+    font-size: 2.5rem;
+  }
+  .video.order-cut .video-card :is(.tagline, .who-kevin, .credit) {
+    max-width: 100%;
+    font-size: 1rem;
+  }
+  .video.order-cut .video-phone .phone-frame {
+    width: min(100%, 390px);
+    height: auto;
+    font-size: 0.9rem;
+  }
 }

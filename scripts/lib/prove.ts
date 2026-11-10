@@ -16,6 +16,8 @@ export interface Claim {
   evidence: string;
   /** The commands that must all pass. */
   steps: Step[];
+  /** A narrower claim backed by local evidence when the chain is not queried. */
+  offline?: Omit<Claim, "id" | "offline">;
 }
 
 /** A step from the clean-clone table, by name. */
@@ -47,6 +49,16 @@ export const CLAIMS: Claim[] = [
     evidence:
       "A batch record verifies against its on-chain anchor (MATCH); the same record with one more gram fails (MISMATCH, exit 1).",
     steps: [cleanCloneStep("verify"), cleanCloneStep("tamper")],
+    offline: {
+      claim:
+        "The batch record matches the anchor in the purchasing replay, and changing it breaks the match.",
+      evidence:
+        "Recomputes BR-B-1045's fingerprint and compares it with the recorded anchor event. The one-gram edit returns MISMATCH.",
+      steps: ["verify", "tamper"].map((name) => {
+        const step = cleanCloneStep(name);
+        return { ...step, command: `${step.command} --offline` };
+      }),
+    },
   },
   {
     id: "attacks",
@@ -83,6 +95,19 @@ export const CLAIMS: Claim[] = [
     evidence:
       "The lot book (data/lots/lot-book.json) is checked against the genealogy, then PO-1042's lot is proved record by record against the roots the contract holds on testnet.",
     steps: [cleanCloneStep("lots"), cleanCloneStep("verify-lot")],
+    offline: {
+      claim:
+        "The seeded lot book matches its recorded daily roots, and each path in PO-1042's lot passport leads to its recorded root.",
+      evidence: "Checks the genealogy and the passport's local Merkle paths.",
+      steps: [
+        cleanCloneStep("lots"),
+        {
+          ...cleanCloneStep("verify-lot"),
+          command: "npm run verify:lot -- ASC-261116-01 --offline",
+          expect: "3 of 3 records lead to their day's root.",
+        },
+      ],
+    },
   },
   {
     id: "erp",
@@ -104,6 +129,13 @@ export const CLAIMS: Claim[] = [
       "Suppliers commit a quote's fingerprint before the deadline and reveal after it; the contract refuses an early award, a reveal that does not match its commitment and a late quote.",
     evidence: "Replays the recorded commit-and-reveal round and checks it from its file (VALID).",
     steps: [cleanCloneStep("sealed"), cleanCloneStep("verify-round")],
+    offline: {
+      claim:
+        "The recorded sealed round has valid commitments and reveals, and the replay reproduces three recorded refusals.",
+      evidence:
+        "Checks the round locally and compares the replay with the committed proof and transcript.",
+      steps: [cleanCloneStep("sealed")],
+    },
   },
   {
     id: "usdc",
@@ -204,7 +236,7 @@ export const STATUS_LABEL: Record<ClaimStatus, string> = {
  */
 export function failureCause(output: string): string | null {
   if (
-    /fetch failed|ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ETIMEDOUT|getaddrinfo|network request failed|socket hang up/i.test(
+    /testnet RPC unreachable|fetch failed|ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ETIMEDOUT|getaddrinfo|network request failed|socket hang up/i.test(
       output,
     )
   )
@@ -213,8 +245,9 @@ export function failureCause(output: string): string | null {
 }
 
 /** What the run is about to check, before it starts: the count and mode, derived. */
-export function scope(count: number, quick: boolean): string {
-  return `Checking ${count} claims from the recordings and read-only testnet queries. No keys required.${quick ? " Quick mode skips lint, typecheck and tests." : ""}`;
+export function scope(count: number, quick: boolean, offline = false): string {
+  const source = offline ? "local evidence only" : "the recordings and read-only testnet queries";
+  return `Checking ${count} claims from ${source}. No keys required.${quick ? " Quick mode skips lint, typecheck and tests." : ""}`;
 }
 
 /** The counts behind the result line and the JSON. */
@@ -227,12 +260,15 @@ export function tally(results: ClaimResult[]) {
  * The scorecard as Markdown: the result first, then failures, unverified claims and skips, then
  * one row per claim.
  */
-export function markdown(results: ClaimResult[], meta: { commit: string; skipped: string[] }) {
+export function markdown(
+  results: ClaimResult[],
+  meta: { commit: string; skipped: string[]; offline?: boolean },
+) {
   const { proved, unverified } = tally(results);
   const lines = [
     `# Day One proof scorecard (commit ${meta.commit})`,
     "",
-    `**${proved} of ${results.length} claims proved.**`,
+    `**${proved} of ${results.length} ${meta.offline ? "local checks passed" : "claims proved"}.**`,
     ...(unverified
       ? [
           `${unverified} could not be checked because testnet was unreachable. That is not a failure of the claim; run again with internet.`,

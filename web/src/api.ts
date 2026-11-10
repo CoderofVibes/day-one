@@ -2,6 +2,7 @@
 // runs live: each button sends one staff action and redraws from the state that comes back.
 // When it does not answer (a static host), the UI replays the recorded run instead.
 
+import type { BatchRecordExtraction } from "@day-one/server/extraction/schema";
 import type { RunData, Step } from "./run.ts";
 
 export interface NextAction {
@@ -16,6 +17,7 @@ export interface NextAction {
 export interface LiveState extends RunData {
   mode: "replay" | "live";
   next: NextAction;
+  draftReading?: BatchRecordExtraction | null;
   stopped: string | null;
   /** What a stop means and what to do, when the API can explain it. */
   help?: string | null;
@@ -321,6 +323,8 @@ export interface InboxItem {
   waitingFor: string | null;
   summary: string;
   flags: InboxFlag[];
+  reading?: BatchRecordExtraction | null;
+  postedReading?: BatchRecordExtraction | null;
   questions: number;
   receivedAt: string;
   outcome: string | null;

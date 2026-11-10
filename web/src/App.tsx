@@ -47,6 +47,7 @@ import {
   type ReviewState,
   type TransferSuggestions,
 } from "./api.ts";
+import { BatchReadingDialog } from "./BatchReading.tsx";
 import {
   HeaderClock,
   HeaderClockLine,
@@ -98,6 +99,7 @@ import { BooksPane, HqPane, PlantsPane } from "./panes.tsx";
 import { plantsSnapshot, STATIC_BOOKS_URL, STATIC_BRIEF_URL } from "./plants.ts";
 import { RecordNav } from "./RecordNav.tsx";
 import { ReviewPane } from "./ReviewPane.tsx";
+import { recordedBatchReview } from "./recordedBatchReview.ts";
 import { audienceOf, type RunData, run as recorded, type Step, type Tone } from "./run.ts";
 import { SavedCounter } from "./SavedCounter.tsx";
 import type { Source } from "./series.ts";
@@ -113,6 +115,7 @@ type MapProps = Partial<MapPick> & { focus?: TwinFocus | null };
 const VideoApp = lazy(() => import("./VideoApp.tsx"));
 const QUERY = new URLSearchParams(typeof location === "undefined" ? "" : location.search);
 const VIDEO = QUERY.get("video") === "1";
+const RECORDED_FRAME = QUERY.get("recordedFrame") === "1";
 /** Linda's phone on its own (?page=approve&po=1042), for a judge's phone: src/Phone.tsx. */
 const APPROVE = QUERY.get("page") === "approve";
 /** Judge mode (?judge=1, src/JudgeMode.tsx): recorded data only, so it always opens the replay. */
@@ -147,6 +150,7 @@ export function App() {
     );
   }
   if (APPROVE) return <ApproveApp />;
+  if (RECORDED_FRAME) return <ReplayApp />;
   return <Screens />;
 }
 
@@ -563,9 +567,13 @@ const SNAPSHOT_PAGES = new Set<PageId>([
   "invoices",
   "plants",
   "export",
+  "brief",
+  "erp",
+  "reconciliation",
+  "ask",
 ]);
 
-function SnapshotNote() {
+function SnapshotNote({ header = false }: { header?: boolean }) {
   const when = new Date(plantsSnapshot.at).toLocaleString("en-US", {
     weekday: "short",
     month: "short",
@@ -579,7 +587,7 @@ function SnapshotNote() {
       className="src-note"
       title="These figures are the plant's records as they stood at the end of the recorded run, not at the clock's time."
     >
-      Recorded snapshot · {when}
+      {header ? "End-of-week snapshot" : `End-of-week snapshot · ${when}`}
     </span>
   );
 }
@@ -653,12 +661,12 @@ function ReplayApp() {
       history: plantsSnapshot,
       span: WORLD_SPAN,
       steps: data.steps,
-      initial: readPersisted(location.search, storedClock()),
+      initial: readPersisted(location.search, RECORDED_FRAME ? null : storedClock()),
     }),
   );
   useEffect(() => {
     shareClock(clock);
-    const stop = persist(clock);
+    const stop = RECORDED_FRAME ? () => undefined : persist(clock);
     // The twelve-month worlds load month by month onto the clock (worldEvents.ts).
     const unload = attachWorld(clock);
     return () => {
@@ -723,6 +731,7 @@ function ReplayApp() {
     // While Kevin is showing Ray around, the arrows do not step the run.
     if (shift !== null) return;
     const onKey = (e: KeyboardEvent) => {
+      if (document.querySelector("dialog[open]")) return;
       if (e.key === "ArrowRight") go(at + 1);
       else if (e.key === "ArrowLeft") go(at - 1);
     };
@@ -732,15 +741,24 @@ function ReplayApp() {
 
   const current = data.steps[at] as Step;
   const turn = turnFromStep(data.steps, at + 1);
-  const deskActions = (
-    <ReplayDeskActions
-      turn={turn}
-      data={data}
-      at={at}
-      onNext={() => go(at + 1)}
-      onReplay={() => go(0)}
-    />
-  );
+  const deskActions =
+    turn.kind === "confirm" && recordedBatchReview ? (
+      <BatchReadingDialog
+        label="Review BR-B-1045"
+        scan={recordedBatchReview.scan}
+        reading={recordedBatchReview.reading}
+        note="Recorded reading. Confirming advances this replay to Ray’s recorded inventory posting."
+        onConfirm={() => go(at + 1)}
+      />
+    ) : (
+      <ReplayDeskActions
+        turn={turn}
+        data={data}
+        at={at}
+        onNext={() => go(at + 1)}
+        onReplay={() => go(0)}
+      />
+    );
   // The header's chip reads the same status as the feed's top line (one source).
   const kevinNow = useKevinStatus(clock, REPLAY_FEED);
   const upNext = at < last ? audienceOf(data.steps[at + 1] as Step) : null;
@@ -799,7 +817,8 @@ function ReplayApp() {
       title={titleOf(route.page)}
       plant={route.plant}
       onPlant={(plant) => route.go({ plant })}
-      clock={headerClock}
+      clock={SNAPSHOT_PAGES.has(route.page) ? <SnapshotNote header /> : headerClock}
+      snapshot={SNAPSHOT_PAGES.has(route.page)}
       kevin={kevinNow}
       onKevin={() => {
         route.go({ page: "overview" });
@@ -1291,6 +1310,15 @@ function LiveApp({ initial }: { initial: LiveState }) {
           embedded
         />
       </div>
+    ) : state.next.phase === "confirm" && state.draftReading ? (
+      <BatchReadingDialog
+        label={`Review ${state.next.subject ?? "batch record"}`}
+        scan="api/batch-records/draft/scan"
+        reading={state.draftReading}
+        note="Check the extracted values against the scan. Confirming posts the batch’s material usage to inventory."
+        onConfirm={() => state.next.subject && confirmScan(state.next.subject, {})}
+        disabled={busy !== null}
+      />
     ) : onDesk ? (
       actionsFor(state.next).map((a) => (
         <ActionButton

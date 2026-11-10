@@ -18,6 +18,7 @@ export function MaterialDesk({
   onPick,
   go,
   onShow,
+  supply,
 }: {
   decisions: MaterialDecision[];
   /** The selected material's stock over time, drawn by the page. */
@@ -26,6 +27,7 @@ export function MaterialDesk({
   onPick: (material: string) => void;
   go: (page: PageId) => void;
   onShow: (where: Where) => void;
+  supply?: (material: string) => React.ReactNode;
 }) {
   const [picked, setPicked] = useState<string | null>(null);
   const selected = decisions.find((d) => d.id === picked) ?? decisions[0];
@@ -97,6 +99,7 @@ export function MaterialDesk({
               <dd>{selected.after}</dd>
             </div>
           </dl>
+          {selected.kind === "supply" && supply?.(selected.material)}
           {selected.move && (
             <div className="bs-instead md-move">
               <span className="bs-instead-label">Or move it instead</span>
@@ -171,7 +174,7 @@ function StockGauge({ gauge }: { gauge: NonNullable<MaterialDecision["gauge"]> }
         </span>
         {onOrder > 0 && (
           <span>
-            <i className="k-order" /> {qty(onOrder, dimension)} on order
+            <i className="k-order" /> {qty(onOrder, dimension)} scheduled
           </span>
         )}
         <span>

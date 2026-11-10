@@ -30,12 +30,13 @@ export function orderAgainstPlan(
   dimension: string,
   materialName: string,
 ): PlanVerdict {
-  const usableBase = Math.max(
-    forecast.recommendQtyBase ?? 0,
-    forecast.shortfallBase,
-    forecast.needBase + forecast.reorderPointBase - forecast.onHandBase - forecast.onOrderBase,
-    0,
-  );
+  const incoming = forecast.incoming.reduce((total, s) => total + s.qtyBase, 0);
+  const held = incoming - forecast.onOrderBase;
+  const unfilled = forecast.needBase - forecast.onHandBase - incoming;
+  const usableBase =
+    forecast.firstShort && incoming > 0 && unfilled <= 0
+      ? 0
+      : Math.max(forecast.recommendQtyBase ?? 0, unfilled + forecast.reorderPointBase, 0);
   const ok = requestedBase <= Math.max(usableBase, 1) * OVER_ORDER_FACTOR;
   const asked = amount(requestedBase, dimension);
   const usable = amount(usableBase, dimension);
@@ -45,7 +46,7 @@ export function orderAgainstPlan(
     usableBase,
     sentence: ok
       ? `${asked} of ${materialName.toLowerCase()} fits the plan: ${batches} planned batches in the next ${forecast.horizonDays} days can use up to ${usable} beyond stock on hand and on order.`
-      : `I won't draft ${asked} of ${materialName.toLowerCase()}. The ${batches} batches planned in the next ${forecast.horizonDays} days need ${amount(forecast.needBase, dimension)}; with ${amount(forecast.onHandBase, dimension)} on hand, ${amount(forecast.onOrderBase, dimension)} on order and the ${amount(forecast.reorderPointBase, dimension)} reorder point, the plan can use ${usable} more. Anything bigger needs a production plan that calls for it.`,
+      : `I won't draft ${asked} of ${materialName.toLowerCase()}. The ${batches} batches planned in the next ${forecast.horizonDays} days need ${amount(forecast.needBase, dimension)}; with ${amount(forecast.onHandBase, dimension)} on hand, ${amount(forecast.onOrderBase, dimension)} on order${held ? `, ${amount(held, dimension)} waiting on QC` : ""} and the ${amount(forecast.reorderPointBase, dimension)} reorder point, the plan can use ${usable} more. Anything bigger needs a production plan that calls for it.`,
   };
 }
 
