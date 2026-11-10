@@ -12,6 +12,8 @@ export interface NextAction {
   action: string;
   subject: string | null;
   choices: string[];
+  /** What each choice is where its name alone does not say: "675 of 700 kg shipped". */
+  notes?: Record<string, string>;
 }
 
 export interface LiveState extends RunData {

@@ -240,6 +240,32 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+/* Why a choice is off in the replay, and a refusal, under the buttons that were pressed. */
+.card-actions .desk-off,
+.card-actions .desk-error {
+  flex: 1 1 100%;
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.card-actions .desk-off {
+  color: inherit;
+  opacity: 0.8;
+}
+.card-actions .desk-error {
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: 1px solid rgb(214 69 56 / 0.55);
+  border-left-width: 3px;
+  background: rgb(214 69 56 / 0.1);
+  color: inherit;
+}
+.card-actions .desk-error .muted {
+  color: inherit;
+  opacity: 0.85;
+}
 .desk-queue {
   flex: 1 1 100%;
   min-width: 0;

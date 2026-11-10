@@ -287,6 +287,8 @@ describe("record and replay", () => {
     await new ChainClient(openLedger(), recorder).call(submit("PO-1041", "1890000000"));
     const chain = new ChainClient(db, new ReplayTransport(recorder.fixture(T)));
     await expect(chain.call(submit("PO-1041", "1890000001"))).rejects.toThrow(/differs/);
+    // Nothing was sent, so nothing is logged as a failed transaction.
+    expect(db.select().from(chainTx).all()).toHaveLength(0);
   });
 
   it("refuses calls past the end and reports unplayed calls", async () => {

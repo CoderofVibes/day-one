@@ -45,12 +45,22 @@ export function actionsFor(next: NextAction): Action[] {
         body: { from: next.who, text },
       }));
     case "receive":
-      return next.choices.map((slipNo, i) => ({
-        label: `Photograph slip ${slipNo}`,
-        kind: i === 0 ? "primary" : "secondary",
-        path: "api/deliveries",
-        body: { slipNo },
-      }));
+      // Each slip says what it shows, so Tommy can tell the one that came from a short one.
+      return next.choices.map((slipNo, i) => {
+        const note = next.notes?.[slipNo];
+        const [shipped, ordered] = note ? note.split(" of ") : [];
+        const short = Boolean(
+          shipped && ordered && Number.parseFloat(shipped) < Number.parseFloat(ordered),
+        );
+        return {
+          label: note
+            ? `${short ? "Try the short slip" : "Photograph the slip"} ${slipNo} (${note})`
+            : `Photograph slip ${slipNo}`,
+          kind: i === 0 ? "primary" : "secondary",
+          path: "api/deliveries",
+          body: { slipNo },
+        };
+      });
     case "qc": {
       const lotCode = next.subject;
       if (!lotCode) return [];
@@ -66,6 +76,23 @@ export function actionsFor(next: NextAction): Action[] {
     default:
       return [];
   }
+}
+
+/**
+ * Why a choice is off in the replay, or null when it can be taken. The replay can only make the
+ * calls the recorded week made: Linda approved PO-1042 and Priya released the lot, so a decline
+ * or a reject would be refused. The button stays in sight, off, with this line beside it.
+ */
+export function offInReplay(next: NextAction, mode: string, label: string): string | null {
+  if (mode !== "replay") return null;
+  const who = next.who?.split(" ")[0] ?? "they";
+  if (next.phase === "reply" && /^NO\b/i.test(label.trim())) {
+    return `Off in this replay: in the recorded week ${who} approved ${next.subject ?? "the order"}, so the replay can only approve.`;
+  }
+  if (next.phase === "qc" && /^Reject\b/.test(label)) {
+    return `Off in this replay: in the recorded week ${who} released the lot, so the replay can only release.`;
+  }
+  return null;
 }
 
 /** A stock quantity in the unit people say: kg, L, or a plain count (base units are mg, µL, each). */

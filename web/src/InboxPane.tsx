@@ -183,8 +183,15 @@ function Review({
   // Empty until Ray answers: Kevin's reading is offered, never assumed.
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [checked, setChecked] = useState<Record<string, boolean>>({});
+  // A quantity is answered by a number; words ("eighty three") are refused in the box itself.
+  const wrong = (f: InboxFlag) => {
+    const typed = (answers[f.fieldPath] ?? "").trim();
+    return typed !== "" && wantsNumber(f) && !NUMBER.test(typed);
+  };
   const done = (f: InboxFlag) =>
-    f.answer === "value" ? (answers[f.fieldPath] ?? "").trim() !== "" : checked[f.fieldPath];
+    f.answer === "value"
+      ? (answers[f.fieldPath] ?? "").trim() !== "" && !wrong(f)
+      : checked[f.fieldPath];
   const ready = asks.every(done);
   // A note the summary line already says is not repeated under it.
   const notes = item.flags.filter((f) => !f.blocking && !item.summary?.includes(f.message));
@@ -210,12 +217,19 @@ function Review({
                     <input
                       type="text"
                       inputMode="decimal"
+                      aria-invalid={wrong(f) || undefined}
                       value={answers[f.fieldPath] ?? ""}
                       onChange={(e) =>
                         setAnswers((prev) => ({ ...prev, [f.fieldPath]: e.target.value }))
                       }
                     />
                   </label>
+                  {wrong(f) && (
+                    <span className="answer-wrong small" role="alert">
+                      Type the number as the page shows it, in digits
+                      {f.suggestion ? ` (for example ${f.suggestion})` : ""}.
+                    </span>
+                  )}
                   {f.suggestion && answers[f.fieldPath] !== f.suggestion && (
                     <button
                       type="button"
@@ -280,6 +294,14 @@ function Review({
       </div>
     </div>
   );
+}
+
+/** Digits with an optional decimal part: "83.040", "1,250", "83". */
+const NUMBER = /^\d{1,3}(,\d{3})*(\.\d+)?$|^\d+(\.\d+)?$/;
+
+/** A flag on a quantity, or one whose suggestion is a number, wants a number back. */
+function wantsNumber(f: InboxFlag): boolean {
+  return /(qty|quantity|yield|weight)$/i.test(f.fieldPath) || NUMBER.test(f.suggestion ?? "");
 }
 
 const count = (n: number, noun: string) => `${n === 1 ? "one" : n} ${noun}${n === 1 ? "" : "s"}`;

@@ -116,6 +116,8 @@ export interface NextAction {
   subject: string | null;
   /** The inputs a screen can offer: photos on file, YES/NO, slip numbers, release/reject. */
   choices: string[];
+  /** What each choice is, in a few words, where its name alone does not say (the slips). */
+  notes?: Record<string, string>;
 }
 
 export interface RunState {
@@ -904,15 +906,31 @@ export class DemoSession {
           choices: po ? [`YES ${po}`, `NO ${po}`] : [],
         };
       }
-      case "receive":
+      case "receive": {
+        const slips = files("data/packing-slips", ".truth.json");
+        const notes: Record<string, string> = {};
+        for (const slip of slips) {
+          try {
+            const truth = JSON.parse(
+              readFileSync(join(this.env.root, "data/packing-slips", `${slip}.truth.json`), "utf8"),
+            ) as { ordered?: string; shipped?: string };
+            if (truth.ordered && truth.shipped) {
+              notes[slip] = `${truth.shipped.replace(/ kg$/, "")} of ${truth.ordered} shipped`;
+            }
+          } catch {
+            // A slip without a readable truth file keeps its number alone.
+          }
+        }
         return {
           phase: "receive",
           who: "Tommy Reyes",
           role: role("Tommy Reyes"),
           action: "Photograph the packing slip.",
           subject: null,
-          choices: files("data/packing-slips", ".truth.json"),
+          choices: slips,
+          notes,
         };
+      }
       case "qc":
         return {
           phase: "qc",

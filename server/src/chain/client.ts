@@ -123,6 +123,12 @@ export class ChainClient {
         blockHeight: null,
       };
     }
+    // A replay asked for a call the recording never made: nothing was sent, so nothing is
+    // logged; a row marked failed would count as a failed transaction in the run's summary.
+    if (programError && this.transport.mode === "replay") {
+      this.db.delete(chainTx).where(eq(chainTx.id, row.id)).run();
+      throw programError;
+    }
     const url = explorerUrl(this.transport.network, outcome.txHash);
     this.db
       .update(chainTx)

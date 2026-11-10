@@ -668,15 +668,23 @@ export function needOf(
       const big = f.big;
       const po = f.funded?.po ?? big?.po;
       const what = orderLine(f);
+      // A slip Kevin just held: what he found, so the next photo is not a guess.
+      const last = run.steps[at];
+      const held =
+        last?.title === "Delivery" && /on hold until someone decides/.test(text(last))
+          ? text(last).replace(/\s*Receipt of .*$/, "")
+          : null;
       return {
-        id: `receive-${po ?? "delivery"}`,
+        id: `receive-${po ?? "delivery"}${held ? "-held" : ""}`,
         who: turn.who,
         role: role(turn.who),
         channel: "screen",
         title: po ? `Receive ${po} at the dock` : "Receive the delivery at the dock",
         subtitle: [what, big ? `from ${big.supplier}` : null].filter(Boolean).join(" · ") || null,
         why: "Someone has to see the pallets come off the truck. Kevin checks your photo of the packing slip against the order.",
-        deciding: `Whether what arrived matches ${po ?? "the order"}${what ? `: ${what}` : ""}.`,
+        deciding: held
+          ? `Kevin held the last slip: ${held} Nothing was received. Photograph the slip that came with the pallets.`
+          : `Whether what arrived matches ${po ?? "the order"}${what ? `: ${what}` : ""}.`,
         after: "The lot goes into quarantine until QC tests it. The money stays set aside.",
         where: {
           label: "Receiving dock, Hollow Pine",
@@ -930,12 +938,16 @@ export function handledFromRun(run: Pick<RunData, "steps" | "approvals">, at: nu
         records: f.big ? [f.big.po] : [],
       });
     } else if (t === "Delivery") {
+      // Each slip on its own: a slip Kevin held stays held after a later one matches.
+      const held = /on hold until someone decides/.test(line);
       out.push({
         ...base,
-        kind: "done",
-        title: f.delivery
-          ? `Matched Tommy's packing slip to ${f.delivery.po}; lot ${f.delivery.lot} into quarantine`
-          : "Checked the packing slip against the order",
+        kind: held ? "guard" : "done",
+        title: held
+          ? `Held a packing slip that did not match the order: ${line.replace(/\s*Receipt of .*$/, "")}`
+          : f.delivery
+            ? `Matched Tommy's packing slip to ${f.delivery.po}; lot ${f.delivery.lot} into quarantine`
+            : "Checked the packing slip against the order",
         where: {
           label: "Receiving dock, Hollow Pine",
           focus: "dept-B-receiving",

@@ -79,7 +79,7 @@ import { InboxPane } from "./InboxPane.tsx";
 import { postDecision, postDropScans } from "./journey.ts";
 import { judgeStart } from "./judgeRoute.ts";
 import { ReplayDeskActions, type Where } from "./KevinDesk.tsx";
-import { type Action, actionsFor, actorOf, roleLabel } from "./live.ts";
+import { type Action, actionsFor, actorOf, offInReplay, roleLabel } from "./live.ts";
 import { REVIEW_READ_ONLY, reviewSnapshot } from "./mail.ts";
 import ApproveApp from "./Phone.tsx";
 import { ErpPage, ThreeSchedules } from "./pages/Acme.tsx";
@@ -1299,7 +1299,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
   // The desk carries the decision's buttons; Up next keeps the upload, the queue and Start over.
   const onDesk = DESK_PHASES.has(state.next.phase);
   // At Ray's turn with scans in the folder, the queue itself is the desk's action.
-  const deskActions =
+  const deskButtons =
     atUpload && queue ? (
       <div className="desk-queue">
         <InboxPane
@@ -1320,15 +1320,16 @@ function LiveApp({ initial }: { initial: LiveState }) {
         disabled={busy !== null}
       />
     ) : onDesk ? (
-      actionsFor(state.next).map((a) => (
-        <ActionButton
-          key={a.label}
-          action={{ ...a, label: friendlyAction(a.label) }}
-          disabled={busy !== null}
-          onAct={act}
-        />
-      ))
+      <DeskButtons next={state.next} mode={state.mode} busy={busy !== null} onAct={act} />
     ) : null;
+  // A refusal shows where the person clicked: on the desk when the desk holds the buttons.
+  const deskActions =
+    deskButtons === null ? null : (
+      <>
+        {deskButtons}
+        {error && <DeskError error={error} />}
+      </>
+    );
   const feedContext = useMemo(
     () => ({
       steps: state.steps,
@@ -1410,7 +1411,13 @@ function LiveApp({ initial }: { initial: LiveState }) {
                 go: route.go,
                 plant: route.plant,
                 actions: actionsFor(state.next).map((a) => (
-                  <ActionButton key={a.label} action={a} disabled={busy !== null} onAct={act} />
+                  <ActionButton
+                    key={a.label}
+                    action={a}
+                    disabled={busy !== null}
+                    off={offInReplay(state.next, state.mode, a.label)}
+                    onAct={act}
+                  />
                 )),
               }
             : null
@@ -1467,7 +1474,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
                   state={state}
                   onDesk={onDesk}
                   busy={busy}
-                  error={error}
+                  error={deskButtons === null ? error : null}
                   onAct={act}
                   onUpload={uploadFile}
                   onReset={reset}
@@ -1641,14 +1648,25 @@ function UpNext({
           <p className="bubble">{request}</p>
           <div className="actions">
             {[...actions].reverse().map((a) => (
-              <ActionButton key={a.label} action={a} onAct={onAct} />
+              <ActionButton
+                key={a.label}
+                action={a}
+                off={offInReplay(next, state.mode, a.label)}
+                onAct={onAct}
+              />
             ))}
           </div>
         </div>
       ) : (
         <div className="actions">
           {actions.map((a) => (
-            <ActionButton key={a.label} action={a} disabled={busy !== null} onAct={onAct} />
+            <ActionButton
+              key={a.label}
+              action={a}
+              disabled={busy !== null}
+              off={offInReplay(next, state.mode, a.label)}
+              onAct={onAct}
+            />
           ))}
           {next.phase === "upload" && (
             <label className={queue ? "file btn quiet sm" : "file btn"}>
@@ -1691,10 +1709,13 @@ function UpNext({
 function ActionButton({
   action,
   disabled,
+  off,
   onAct,
 }: {
   action: Action;
   disabled?: boolean;
+  /** Why the replay cannot take this choice; the button is shown off, with the reason. */
+  off?: string | null;
   onAct: (a: Action) => void;
 }) {
   // A refusal (NO, reject) is outlined in the refused colour, never the brand green.
@@ -1704,7 +1725,8 @@ function ActionButton({
       type="button"
       className={refuses ? "danger" : action.kind}
       data-action={action.kind}
-      disabled={disabled}
+      disabled={disabled || Boolean(off)}
+      title={off ?? undefined}
       onClick={() => onAct(action)}
     >
       {action.label}
@@ -1712,10 +1734,59 @@ function ActionButton({
   );
 }
 
+/** The decision's buttons on the desk; a choice the replay cannot take is off, with why. */
+function DeskButtons({
+  next,
+  mode,
+  busy,
+  onAct,
+}: {
+  next: LiveState["next"];
+  mode: string;
+  busy: boolean;
+  onAct: (a: Action) => void;
+}) {
+  const actions = actionsFor(next).map((a) => ({
+    action: { ...a, label: friendlyAction(a.label) },
+    off: offInReplay(next, mode, a.label),
+  }));
+  const reasons = [...new Set(actions.flatMap((a) => (a.off ? [a.off] : [])))];
+  return (
+    <>
+      {actions.map((a) => (
+        <ActionButton
+          key={a.action.label}
+          action={a.action}
+          disabled={busy}
+          off={a.off}
+          onAct={onAct}
+        />
+      ))}
+      {reasons.map((r) => (
+        <p key={r} className="desk-off muted small">
+          {r}
+        </p>
+      ))}
+    </>
+  );
+}
+
+/** A refusal, in one plain sentence, beside the button that was pressed. */
+function DeskError({ error }: { error: { message: string; hint?: string } }) {
+  return (
+    <p className="desk-error" role="alert">
+      {error.message}
+      {error.hint && <span className="muted"> {error.hint}</span>}
+    </p>
+  );
+}
+
 function summaryLine(state: LiveState) {
   const s = state.summary;
   if (!s) return "The run is complete.";
-  return `Done: ${s.transactions} actions recorded, ${s.refusedByDesign} refused on purpose, ${s.failed} failed.`;
+  // A failure is named where it can be read (behind the curtain), never only counted.
+  const failed = s.failed > 0 ? `, ${s.failed} failed (each one is listed behind the curtain)` : "";
+  return `Done: ${s.transactions} actions recorded, ${s.refusedByDesign} refused on purpose${failed}.`;
 }
 
 /** The phases whose buttons sit on the desk's decision card. */

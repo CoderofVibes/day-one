@@ -485,6 +485,7 @@ a {
   background: var(--refused-bg);
   color: var(--refused);
   font-size: var(--t-sm);
+  overflow-wrap: anywhere;
 }
 
 .error .muted {
@@ -841,6 +842,16 @@ details.inbox[open] > summary {
 
 .review-pane > p.small {
   margin: var(--s-3) 0 0;
+}
+
+/* Kevin's question refuses a non-number where it was typed. */
+.answer-wrong {
+  flex: 1 1 100%;
+  color: var(--refused);
+}
+input[aria-invalid="true"] {
+  border-color: var(--refused);
+  outline-color: var(--refused);
 }
 
 /* ---------- The run (feed) ---------- */

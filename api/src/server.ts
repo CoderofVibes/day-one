@@ -487,13 +487,14 @@ function statusOf(error: unknown, session: DemoSession): [number, unknown] {
   if (error instanceof DemoEnvError) return [400, withHelp(message)];
   if (error instanceof ExtractionError) return [422, { error: message }];
   if (!session.live) {
+    // Staff screens show `error` as it is: one plain sentence, no recorded call or command.
+    // The mismatch itself stays in `detail` for whoever reads the API.
     return [
       409,
       {
-        error: message,
-        hint:
-          "In replay mode the run follows the recorded testnet run; this action was not recorded. " +
-          "Start the API with --live to take it on testnet.",
+        error:
+          "The recorded week did not do this, so the replay cannot. Nothing changed; choose what the recording did, or start over.",
+        detail: message,
       },
     ];
   }

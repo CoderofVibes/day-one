@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { NextAction } from "./api.ts";
-import { actionsFor, actorOf, quantity } from "./live.ts";
+import { actionsFor, actorOf, offInReplay, quantity } from "./live.ts";
 
 const next = (partial: Partial<NextAction>): NextAction => ({
   phase: "upload",
@@ -76,6 +76,31 @@ describe("what the live screens offer whoever is up", () => {
       "Reject lot ASC-261116-01",
     ]);
     expect(qc[1]?.body).toEqual({ lotCode: "ASC-261116-01", decision: "reject" });
+  });
+
+  it("says what each slip shows, so the short one is not a guess", () => {
+    const slips = actionsFor(
+      next({
+        phase: "receive",
+        who: "Tommy Reyes",
+        choices: ["NG-PS-60417", "NG-PS-60417-X"],
+        notes: { "NG-PS-60417": "700 of 700 kg shipped", "NG-PS-60417-X": "675 of 700 kg shipped" },
+      }),
+    );
+    expect(slips.map((a) => a.label)).toEqual([
+      "Photograph the slip NG-PS-60417 (700 of 700 kg shipped)",
+      "Try the short slip NG-PS-60417-X (675 of 700 kg shipped)",
+    ]);
+  });
+
+  it("turns off, with the reason, the choices the recorded week did not make", () => {
+    const reply = next({ phase: "reply", who: "Linda Park", subject: "PO-1042" });
+    expect(offInReplay(reply, "replay", "NO 1042")).toContain("Linda approved PO-1042");
+    expect(offInReplay(reply, "replay", "YES 1042")).toBeNull();
+    expect(offInReplay(reply, "live", "NO 1042")).toBeNull();
+    const qc = next({ phase: "qc", who: "Priya Natarajan", subject: "ASC-261116-01" });
+    expect(offInReplay(qc, "replay", "Reject lot ASC-261116-01")).toContain("Priya released");
+    expect(offInReplay(qc, "replay", "Release lot ASC-261116-01")).toBeNull();
   });
 
   it("offers nothing while Kevin works and Start over when the run is done", () => {
