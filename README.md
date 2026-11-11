@@ -6,7 +6,7 @@ Acme has just bought Hollow Pine. Ray still has a plant to run, and the batch re
 
 Day One grew out of years spent retyping batch records and catching shortages by hand. It began as “Kevin’s Survival Guide to the Agentic Economy.”
 
-**[Watch the 2:07 submission walkthrough](#try-it-no-keys-needed)** or follow the [batch record](data/batch-records/BR-B-1045.json) and [recorded workflow](data/replay/transcript.txt). The NEAR testnet contract controls who can fund the order and holds payment through receipt and QC.
+**[Open the hosted replay](https://day-one-kevin.vercel.app/?judge=3)** (no install, no keys; it opens on the contract's refusal), **[watch the 2:07 submission walkthrough](#try-it-no-keys-needed)**, or follow the [batch record](data/batch-records/BR-B-1045.json) and [recorded workflow](data/replay/transcript.txt). The NEAR testnet contract controls who can fund the order and holds payment through receipt and QC.
 
 ![The fictional BR-B-1045 scan beside Kevin’s reading, with the material, lot, target and actual quantity ready for Ray to review.](docs/readme/kevin-batch-review.png)
 
@@ -167,7 +167,7 @@ Claude Code built the application. Muse assisted with early planning. GPT-6 Astr
 
 Day One is a separate project from the same team’s other hackathon entry, [Everstreet](https://github.com/CoderofVibes/everstreet), a platform to build, run and sell a digital business. The projects share no code, data, accounts, or deployments. Receipt-based settlement and the contract-checked enclave signature were prompted by ideas in public hackathon work and implemented from Day One’s own data model. [Implementation history](docs/REFERENCE_IDEAS_PLAN.md)
 
-Nothing in Day One is built on another chain: the contracts, escrow, payments and record anchors are all on NEAR testnet, and PO-1047's USDC is Circle's testnet USDC on NEAR. The build window runs Oct 19–Nov 14, 2026. The `pre-hackathon` tag marks the planning-only baseline. [MIT license](LICENSE)
+Nothing in Day One is built on another chain: the contracts, escrow, payments and record anchors are all on NEAR testnet, and PO-1047's USDC is Circle's testnet USDC on NEAR. The build window runs Oct 19–Nov 14, 2026. The `pre-hackathon` tag marks the planning-only baseline of Oct 28 (docs and repo settings, no code); the `hackathon-submission` tag marks what was submitted. **[Everything built in the window: the diff between the two tags](https://github.com/CoderofVibes/day-one/compare/pre-hackathon...hackathon-submission)**. [MIT license](LICENSE)
 
 <details><summary>Libraries and versions</summary>
 
