@@ -52,11 +52,19 @@ The **2:07 submission cut** opens on the Day One Overview (0:00), then shows the
 
 > Built by DadMod: one nuclear-startup engineer running on newborn hours, a project manager that never sleeps, and an engineer that never gets tired of tests. Kevin is the only one of us allowed near the purchase orders.
 
-## X post (draft, ≤280 characters; rewritten Nov 4 to HACKATHON.md's demo-post rules)
+## X post (final, Tony Nov 11; replaces the Nov 4 draft)
 
-> Ray has a plant to run and a stack of batch records to enter. Kevin reads the scans, spots shortages, and asks supplier agents for quotes. A NEAR contract enforces who can fund the order. Built at NEAR HACKATHON @NEARProtocol #NEARHackathon
+**Post 1, the main post** (274 of 280 characters; attach `Videos\Day One cut\Day One - cut v2 with voice.mp4`):
 
-Attach the video. Reply in thread with the repo link and the refused transaction’s explorer link.
+> Kevin's Survival Guide to the Agentic Economy. Day One takes a newly acquired plant from paper to agents: Kevin reads the paperwork and buys within limits people set, enforced by a NEAR contract. Built at NEAR HACKATHON @NEARProtocol @NearLegion @NearBuilders #NEARHackathon
+
+**Post 2, a reply under it, posted right after** (151 characters; X counts each link as 23):
+
+> Try it, no keys needed: https://github.com/CoderofVibes/day-one
+> Hosted demo: https://day-one-kevin.vercel.app
+> My other entry this hackathon, Everstreet: https://github.com/CoderofVibes/everstreet
+
+Post only after the repo is public and the hosted demo is live (checklist steps 6 and 6a); keep the Everstreet line only if its repo is public by then. The form's demo-post link is Post 1's URL. @NearLegion and @NearBuilders are optional tags (HACKATHON.md), kept for reach.
 
 ---
 
