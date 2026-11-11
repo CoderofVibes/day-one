@@ -100,7 +100,14 @@ import { plantsSnapshot, STATIC_BOOKS_URL, STATIC_BRIEF_URL } from "./plants.ts"
 import { RecordNav } from "./RecordNav.tsx";
 import { ReviewPane } from "./ReviewPane.tsx";
 import { recordedBatchReview } from "./recordedBatchReview.ts";
-import { audienceOf, type RunData, run as recorded, type Step, type Tone } from "./run.ts";
+import {
+  audienceOf,
+  plainTitle,
+  type RunData,
+  run as recorded,
+  type Step,
+  type Tone,
+} from "./run.ts";
 import { SavedCounter } from "./SavedCounter.tsx";
 import type { Source } from "./series.ts";
 import { PageHeader, type PageId, type PlantCode, Shell, useRoute } from "./shell.tsx";
@@ -163,6 +170,13 @@ function Screens() {
   if (JUDGE_AT !== null || INTRO_ASKED) return <ReplayApp />;
   if (live === undefined) return <div className="loading">Loading…</div>;
   return live ? <LiveApp initial={live} /> : <ReplayApp />;
+}
+
+/** The API marks the pages it serves (api/src/server.ts); a static host has no live desk. */
+function servedByApi(): boolean {
+  return (
+    typeof document !== "undefined" && document.querySelector('meta[name="day-one-api"]') !== null
+  );
 }
 
 function Foot({ children }: { children: React.ReactNode }) {
@@ -775,13 +789,17 @@ function ReplayApp() {
         onPlants={() => route.go({ page: "plants" })}
       />
     ) : (
-      <section className="panel next" aria-label="Demo steps">
+      <section className="panel next" aria-label="Replay steps">
         <div className="panel-head">
-          <h2>
+          <h2>Replay of the recorded week</h2>
+          <span className="right small muted">
             Step {at + 1} of {last + 1}
-          </h2>
-          <span className="right small muted">{current.title}</span>
+          </span>
         </div>
+        <p className="small muted">
+          This desk replays what happened at Hollow Pine. Next steps through it; nothing you press
+          here changes a record.
+        </p>
         <div className="transport">
           <button type="button" className="btn" onClick={() => go(at - 1)} disabled={at === 0}>
             ← Back
@@ -790,9 +808,7 @@ function ReplayApp() {
             Next →
           </button>
           <FeedButton />
-          <span className="step-count">
-            {at + 1} / {last + 1} · {current.title}
-          </span>
+          <span className="step-count">{plainTitle(current)}</span>
         </div>
       </section>
     );
@@ -859,6 +875,12 @@ function ReplayApp() {
    * the menu puts the person back where they were (Astra's first pass, B4).
    */
   const leaveShift = () => {
+    // Served by the API, the desk to work is the live one the front door opened: go back to it
+    // rather than stay on the recorded replay the introduction plays on.
+    if (servedByApi()) {
+      location.assign(location.pathname);
+      return;
+    }
     const was = entry.current;
     entry.current = null;
     if (!was) return toDesk();

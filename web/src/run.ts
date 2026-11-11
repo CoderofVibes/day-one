@@ -133,6 +133,30 @@ export const AUDIENCE: Record<string, Audience> = {
   Stopped: { name: "Day One", role: "Run stopped", channel: "screen" },
 };
 
+/** A recorded step's title in staff words; the demo runner's titles are for the transcript. */
+const PLAIN_TITLES: Record<string, string> = {
+  "Load seed": "The plant's records loaded",
+  Discrepancy: "Kevin checked the stock",
+  Forecast: "Kevin forecast the batches",
+  Quotes: "Kevin asked for quotes",
+  "Small PO": "Kevin placed a small order",
+  "Big PO": "Kevin prepared the big order",
+  "Kevin retries": "Kevin sent the approved order",
+  "Supplier ships": "The supplier shipped",
+  Delivery: "Tommy received the delivery",
+  "QC release": "Priya released the lot",
+  "QC reject": "Priya rejected the lot",
+  Paid: "Kevin paid the invoice",
+  Summary: "The run's summary",
+};
+export function plainTitle(step: Step): string {
+  const t = step.title;
+  if (PLAIN_TITLES[t]) return PLAIN_TITLES[t];
+  if (t.startsWith("Upload ")) return `Kevin read ${t.slice(7)}`;
+  if (t.endsWith(" texts")) return `${t.replace(/ texts$/, "")} answered Kevin's text`;
+  return t;
+}
+
 export function audienceOf(step: Step): Audience {
   const who = AUDIENCE[step.title];
   if (who) return who;

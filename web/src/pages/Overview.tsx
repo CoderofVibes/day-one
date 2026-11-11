@@ -52,7 +52,7 @@ import {
   type WindowKey,
   WindowPicker,
 } from "../kit.tsx";
-import { audienceOf, type RunData, statusOf } from "../run.ts";
+import { audienceOf, plainTitle, type RunData, statusOf } from "../run.ts";
 import { StartStrip } from "../StartStrip.tsx";
 import { type BatchPoint, type History, readHistory, type Source, useRead } from "../series.ts";
 import { PageHeader, type PlantCode } from "../shell.tsx";
@@ -138,7 +138,9 @@ export function Overview({
             <span className="ov-mode muted small">
               {(run as { mode?: string }).mode === "live"
                 ? "Live on NEAR testnet"
-                : "Replay of a recorded run · fictional plant"}
+                : source.live
+                  ? "Your desk, on the recorded week · fictional plant"
+                  : "Recorded replay: Next steps through it · fictional plant"}
             </span>
             <WindowPicker value={win} onChange={setWin} />
           </>
@@ -565,14 +567,15 @@ function RunSoFar({
   const items: TimelineItem[] = run.steps
     .slice(0, at + 1)
     .map((step, i) => ({ step, i }))
-    .filter(({ step }) => audienceOf(step).channel !== "none")
+    // Loading the records is setup, not a step on the plant floor.
+    .filter(({ step }) => audienceOf(step).channel !== "none" && step.title !== "Load seed")
     .map(({ step, i }) => {
       const st = statusOf(step);
       const po = /\bPO-[\w-]*\d\b/.exec(step.staff.join(" "))?.[0];
       const who = audienceOf(step).name;
       return {
         key: String(i),
-        title: step.title,
+        title: plainTitle(step),
         who: initials(who),
         chip: { label: st.label, tone: st.tone },
         ...(times?.[i] ? { when: readout(times[i] as number) } : {}),

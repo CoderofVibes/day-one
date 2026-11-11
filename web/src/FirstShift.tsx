@@ -22,12 +22,10 @@ export function FirstShiftIntro({
 }) {
   const [caption, setCaption] = useState(-1);
   const [waveFrom, setWaveFrom] = useState<number | null>(null);
-  const [readAll, setReadAll] = useState(false);
   const primary = useRef<HTMLButtonElement>(null);
 
   // Each caption starts on its time; the line moves as it lands, then rests while it is read.
   useEffect(() => {
-    if (readAll) return;
     const start = performance.now();
     const timers = INTRO_LINES.map((l, i) =>
       setTimeout(() => {
@@ -39,7 +37,7 @@ export function FirstShiftIntro({
     return () => {
       for (const t of timers) clearTimeout(t);
     };
-  }, [readAll]);
+  }, []);
 
   useEffect(() => {
     primary.current?.focus();
@@ -50,9 +48,9 @@ export function FirstShiftIntro({
     return () => window.removeEventListener("keydown", onKey);
   }, [onDesk]);
 
-  const shown = readAll ? INTRO_LINES.length - 1 : caption;
+  const shown = caption;
   const fade = FADE[Math.max(0, shown)] ?? 0;
-  const done = readAll || caption === INTRO_LINES.length - 1;
+  const done = caption === INTRO_LINES.length - 1;
   return (
     <div
       className="fs-intro"
@@ -62,29 +60,18 @@ export function FirstShiftIntro({
       style={{ "--fs-show": fade } as React.CSSProperties}
     >
       <div className="fs-backdrop" aria-hidden="true" />
-      <div className="fs-top">
-        <button type="button" className="fs-quiet" onClick={() => setReadAll(true)}>
-          Read introduction
-        </button>
-        <button type="button" className="fs-quiet" onClick={onDesk}>
-          Skip intro
-        </button>
-      </div>
+      {/* Two ways on, both below: the walkthrough or the desk (Escape is the desk too). */}
       <div className="fs-stage">
         <p className="fs-who">Acme Holdings · Hollow Pine Tablet Co.</p>
         <KevinPresence
-          waveFrom={readAll ? null : waveFrom}
+          waveFrom={waveFrom}
           waveMs={WAVE_MS}
           state={done ? "finished" : caption < 0 ? "idle" : "presenting"}
         />
         <div className="fs-captions">
-          {readAll ? (
-            INTRO_LINES.map((l) => <p key={l.text}>{l.text}</p>)
-          ) : (
-            <p key={shown} className={shown >= 0 ? "fs-caption on" : "fs-caption"}>
-              {INTRO_LINES[shown]?.text ?? " "}
-            </p>
-          )}
+          <p key={shown} className={shown >= 0 ? "fs-caption on" : "fs-caption"}>
+            {INTRO_LINES[shown]?.text ?? " "}
+          </p>
         </div>
         <div className="fs-actions">
           <button ref={primary} type="button" className="fs-primary" onClick={onTour}>
@@ -220,8 +207,8 @@ export function FirstShiftGuide({
               That's your first shift
             </h2>
             <p className="fs-line">
-              Your desk is ready: the batch record first, then the three drafts. Everything I showed
-              you is in the pages on the left.
+              Your desk is ready: the batch records I read first, then the three drafts from the
+              mail. Everything I showed you is in the pages on the left.
             </p>
             <div className="fs-controls">
               <button type="button" onClick={onProof}>
