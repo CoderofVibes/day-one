@@ -363,6 +363,8 @@ export interface ReviewProposal {
   date: string;
   /** What the message states, in the model's reading. */
   says: string;
+  /** The message as it arrived (absent in exports made before Nov 10). */
+  body?: string;
   /** Kevin's check against the ledger. */
   kevin: string;
   decision: "sign" | "none" | "refused" | "ask";

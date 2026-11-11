@@ -145,6 +145,8 @@ export interface Proposal {
   date: string;
   /** What the message states, in the model's reading. */
   says: string;
+  /** The message as it arrived, so a person signs on its words, not only Kevin's reading. */
+  body: string;
   /** Kevin's check against the ledger, in plain words. */
   kevin: string;
   /**
@@ -400,6 +402,7 @@ export function reviewMessage(
     subject: message.subject,
     date: message.date,
     says: saysOf(reading, message),
+    body: message.body,
     action: null,
     flagged: [] as string[],
   };

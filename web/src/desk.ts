@@ -17,6 +17,8 @@ export type Turn =
   | { kind: "upload"; who: string }
   | { kind: "confirm"; who: string; subject: string | null }
   | { kind: "approve"; who: string }
+  /** Ray's batch record exposed a shortage: shown to him before the desk passes to Linda. */
+  | { kind: "shortage"; who: string }
   | { kind: "receive"; who: string }
   | { kind: "qc"; who: string; subject: string | null }
   | { kind: "supplier"; who: string }
@@ -593,14 +595,10 @@ export function needOf(
           title: `Check the ${scans.length} batch ${scans.length === 1 ? "record" : "records"} Kevin read`,
           subtitle: "From the scan folder, read overnight",
           why: "Kevin read the scans, but stock changes only when someone who knows the batches says he read them right.",
-          deciding: `${scans
-            .map(
-              (i) =>
-                `${i.batchNo}: ${i.questions > 0 ? `${i.questions} ${i.questions === 1 ? "question" : "questions"}` : "ready to confirm"}`,
-            )
-            .join(
-              "; ",
-            )}.${asks.length ? " Kevin could not read every line, so he asks rather than guesses." : ""}`,
+          // Each scan's state is on its own row below; here only what the rows do not say.
+          deciding: asks.length
+            ? `Whether Kevin read each one right. Where he could not read a line (${asks.map((i) => i.batchNo).join(", ")}), he asks rather than guesses.`
+            : "Whether Kevin read each one right.",
           after:
             "Each one posts when you confirm it: what the batch used comes off stock, and Kevin checks what needs ordering.",
           where: PRESSES,
@@ -645,6 +643,51 @@ export function needOf(
         records: [batch],
       };
     }
+    case "shortage": {
+      // The reason the product exists, as its own moment on Ray's desk (first-use review,
+      // finding 25): his record exposed a shortage, Kevin sourced it, and the big order needs Linda.
+      const big = f.big;
+      const fc = f.forecast;
+      if (!big || !fc) return null;
+      const q = f.quotes;
+      // The record Ray confirmed: the confirm line names stock, the upload's title names the record.
+      const upload = run.steps
+        .slice(0, at + 1)
+        .reverse()
+        .find((s) => s.title.startsWith("Upload "));
+      const record = upload ? upload.title.slice("Upload ".length) : null;
+      return {
+        id: "shortage",
+        who: turn.who,
+        role: role(turn.who),
+        channel: "screen",
+        title: `${f.material ?? "A material"} runs short: about ${fc.shortKg} in the next 10 days`,
+        subtitle: f.stock
+          ? `${f.stock.before} before ${record ?? "your batch record"}, ${f.stock.after} after; reorder point ${f.stock.reorder}`
+          : null,
+        why: [
+          `${record ?? "The batch record you confirmed"} used what the next batches need, and Kevin checked the plan the moment it posted.`,
+          q
+            ? `He asked ${q.count} suppliers and picked ${q.supplier} at ${q.price}/kg, ${q.days} days${q.excluded ? `, leaving out ${q.excluded}, not qualified` : ""}.`
+            : null,
+          f.small
+            ? `He placed ${f.small.po} (${f.small.supplier}, ${f.small.amount}) inside his limits.`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" "),
+        deciding: `Nothing to sign here: ${big.po} for ${fc.orderKg} is ${big.amount}, over Kevin's ${big.limit.replace(".00", "")} limit, so he texted Linda Park to approve it.`,
+        after:
+          "Linda approves or declines on her phone; nothing is paid until the delivery passes QC.",
+        where: {
+          label: "Purchasing office, Hollow Pine",
+          focus: "dept-B-purchasing",
+          fallback: "plant-B",
+          also: ["escrow"],
+        },
+        records: [record, f.small?.po, big.po].filter((x): x is string => Boolean(x)),
+      };
+    }
     case "approve": {
       const big = f.big;
       if (!big) return null;
@@ -657,7 +700,8 @@ export function needOf(
         channel: "phone",
         title: `Approve ${big.po}`,
         subtitle: [what, `from ${big.supplier}`, big.amount].filter(Boolean).join(" · "),
-        why: `${big.po} is ${big.amount}, over the ${big.limit.replace(".00", "")} Kevin may spend on one order. The spending rules send it to you, and Kevin cannot go around them.`,
+        // The bar above says it is over the limit; this says only why that makes it Linda's.
+        why: "The spending rules send any order over Kevin's limit to you, and Kevin cannot go around them.",
         deciding: q
           ? `Whether to spend ${big.amount} with ${big.supplier} at ${q.price}/kg${freightOf(f) ? ` plus ${freightOf(f)} freight` : ""}, delivered in ${q.days} days. Kevin compared ${q.count} quotes and checked the other plants first.`
           : `Whether to spend ${big.amount} with ${big.supplier}.`,
@@ -739,6 +783,8 @@ export function primaryLabel(turn: Turn, f: RunFacts): string {
       return `Confirm ${turn.subject ?? "the batch record"}`;
     case "approve":
       return `Approve ${f.big?.po ?? "the order"}`;
+    case "shortage":
+      return `See ${f.big?.po ?? "the order"} go to Linda`;
     case "receive":
       return "Photograph the packing slip";
     case "qc":

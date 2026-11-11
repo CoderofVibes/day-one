@@ -4,7 +4,7 @@
 // with Kevin's reason, so a misfiled scan is never silently lost. At Ray's turn the queue sits
 // inside "Up next" (embedded); at other turns it is its own panel.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { InboxFlag, InboxItem, InboxState } from "./api.ts";
 import { BatchReading } from "./BatchReading.tsx";
 import { KevinNote, Pill } from "./feed.tsx";
@@ -55,14 +55,9 @@ export function InboxPane({
       ))}
     </ul>
   );
-  if (embedded) {
-    return (
-      <>
-        <p className="lead">{line}</p>
-        {list}
-      </>
-    );
-  }
+  // On the desk the card above already says what the scans are and that nothing posts until
+  // Ray confirms; the list is enough (first-use review, finding 19).
+  if (embedded) return list;
   // Someone else's turn: the queue folds to one line so Ray's scans do not crowd their screen.
   return (
     <details className="panel inbox" aria-label="Batch-record scans">
@@ -119,8 +114,16 @@ function InboxRow({
   const name = item.file.split("/").at(-1) ?? item.file;
   const pill = pillFor(item, viewer);
   const waiting = item.status === "waiting";
+  // An opened record comes into view, so the first "Open" never looks dead below the fold
+  // (first-use review, finding 18).
+  const row = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    row.current?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+  }, [open]);
   return (
-    <li className={`${waiting ? "" : "dim"}${open ? " open" : ""}`.trim() || undefined}>
+    <li ref={row} className={`${waiting ? "" : "dim"}${open ? " open" : ""}`.trim() || undefined}>
       <span className="doc" aria-hidden="true" />
       <span className="t">
         <b>

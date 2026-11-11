@@ -844,6 +844,26 @@ details.inbox[open] > summary {
   margin: var(--s-3) 0 0;
 }
 
+/* The morning review's original message under Kevin's reading of it. */
+.review-original {
+  margin: 0 0 var(--s-2);
+}
+.review-original summary {
+  cursor: pointer;
+  color: var(--brand);
+}
+.review-original .review-body {
+  white-space: pre-wrap;
+  padding: 8px 10px;
+  border-left: 3px solid var(--line);
+  margin: 4px 0 0;
+}
+
+/* An opened scan scrolls to its top, clear of the sticky header. */
+.queue > li {
+  scroll-margin-top: 88px;
+}
+
 /* Kevin's question refuses a non-number where it was typed. */
 .answer-wrong {
   flex: 1 1 100%;

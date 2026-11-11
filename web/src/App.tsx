@@ -1132,6 +1132,8 @@ function LiveApp({ initial }: { initial: LiveState }) {
   const [mail, setMail] = useState<ReviewState | null>(null);
   /** Bumped by every action, so the program's stages read again after a decision. */
   const [acted, setActed] = useState(0);
+  /** The step count at which Ray moved on from the shortage; -1 until he does. */
+  const [shortageSeen, setShortageSeen] = useState(-1);
   // The API moves the run and its clock; the sim clock follows the last step on the recorded
   // run's times and keeps what people did this session.
   const [clock] = useState(() =>
@@ -1304,6 +1306,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
     )
       return;
     setMoveNote([]);
+    setShortageSeen(-1);
     setRuns((n) => n + 1);
     clock.resetSession();
     send("Start over", () => postJson("api/run/reset"));
@@ -1317,33 +1320,44 @@ function LiveApp({ initial }: { initial: LiveState }) {
       (i) => i.status === "waiting" && (i.waitingFor === null || i.waitingFor === "Ray Delgado"),
     ).length ?? 0;
   const actor = actorOf(state.next);
-  const deskTurn = turnFromLive(state.next);
+  // Ray's record exposed a shortage: he sees it, the quotes and the orders on his own desk
+  // before it passes to Linda (first-use review, finding 25). One click moves on.
+  const shortageMoment =
+    state.next.phase === "reply" &&
+    shortageSeen !== state.steps.length &&
+    state.steps.some((s) => s.title === "Forecast");
+  const deskTurn: Turn = shortageMoment
+    ? { kind: "shortage", who: "Ray Delgado" }
+    : turnFromLive(state.next);
   // The desk carries the decision's buttons; Up next keeps the upload, the queue and Start over.
   const onDesk = DESK_PHASES.has(state.next.phase);
   // At Ray's turn with scans in the folder, the queue itself is the desk's action.
-  const deskButtons =
-    atUpload && queue ? (
-      <div className="desk-queue">
-        <InboxPane
-          inbox={queue}
-          busy={busy !== null}
-          viewer="Ray Delgado"
-          onConfirm={confirmScan}
-          embedded
-        />
-      </div>
-    ) : state.next.phase === "confirm" && state.draftReading ? (
-      <BatchReadingDialog
-        label={`Review ${state.next.subject ?? "batch record"}`}
-        scan="api/batch-records/draft/scan"
-        reading={state.draftReading}
-        note="Check the extracted values against the scan. Confirming posts the batch’s material usage to inventory."
-        onConfirm={() => state.next.subject && confirmScan(state.next.subject, {})}
-        disabled={busy !== null}
+  const deskButtons = shortageMoment ? (
+    <button type="button" className="primary" onClick={() => setShortageSeen(state.steps.length)}>
+      Next: Linda's approval
+    </button>
+  ) : atUpload && queue ? (
+    <div className="desk-queue">
+      <InboxPane
+        inbox={queue}
+        busy={busy !== null}
+        viewer="Ray Delgado"
+        onConfirm={confirmScan}
+        embedded
       />
-    ) : onDesk ? (
-      <DeskButtons next={state.next} mode={state.mode} busy={busy !== null} onAct={act} />
-    ) : null;
+    </div>
+  ) : state.next.phase === "confirm" && state.draftReading ? (
+    <BatchReadingDialog
+      label={`Review ${state.next.subject ?? "batch record"}`}
+      scan="api/batch-records/draft/scan"
+      reading={state.draftReading}
+      note="Check the extracted values against the scan. Confirming posts the batch’s material usage to inventory."
+      onConfirm={() => state.next.subject && confirmScan(state.next.subject, {})}
+      disabled={busy !== null}
+    />
+  ) : onDesk ? (
+    <DeskButtons next={state.next} mode={state.mode} busy={busy !== null} onAct={act} />
+  ) : null;
   // A refusal shows where the person clicked: on the desk when the desk holds the buttons.
   const deskActions =
     deskButtons === null ? null : (

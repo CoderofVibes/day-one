@@ -185,6 +185,11 @@ export function NeedCard({
       {limit && <LimitMeter amount={limit.amount} limit={limit.limit} who={need.who} />}
       <h3 className="card-title">{need.title}</h3>
       {need.subtitle && <p className="card-sub">{need.subtitle}</p>}
+      {/* The work first, the reasons after (first-use review, finding 19). */}
+      <footer className="card-foot">
+        <div className="card-actions">{actions}</div>
+        <WhereButton where={need.where} onShow={onShow} />
+      </footer>
       <dl className="three">
         <div style={{ "--i": 0 } as React.CSSProperties}>
           <dt>Why you</dt>
@@ -200,10 +205,6 @@ export function NeedCard({
         </div>
       </dl>
       {track && !limit && <Track track={track} />}
-      <footer className="card-foot">
-        <div className="card-actions">{actions}</div>
-        <WhereButton where={need.where} onShow={onShow} />
-      </footer>
       {sourcing && <Sourcing check={sourcing} />}
       {need.channel === "phone" && facts.request && (
         <details className="card-text">

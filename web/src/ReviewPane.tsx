@@ -146,6 +146,20 @@ function ReviewRow({
             <p className="small">
               <b>Says:</b> {p.says}
             </p>
+            {p.body && (
+              // The message itself, one click away: Ray signs on its words, not only Kevin's
+              // reading of them (first-use review, finding 33).
+              <details className="review-original small">
+                <summary>
+                  Read the {p.kind === "note" ? "note" : "email"} from{" "}
+                  {p.from.replace(/\s*<.*>$/, "")}
+                </summary>
+                <p className="review-subject">
+                  <b>{p.subject}</b>
+                </p>
+                <p className="review-body">{p.body}</p>
+              </details>
+            )}
             <p className="small">
               <b>Kevin:</b> {staffWords(p.kevin, curtain)}
             </p>

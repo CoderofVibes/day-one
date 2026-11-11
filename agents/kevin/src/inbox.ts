@@ -345,6 +345,16 @@ export async function confirmInboxItem(
       `Posted with your answer: ${typed.map(([p, v]) => `${label(p)} ${v}`).join("; ")}.`,
     );
   }
+  // What Kevin does about a material the confirm just took under its reorder point, so the
+  // person who confirmed is not left with the drop and no next step (first-use review, finding 24).
+  const nowLow = confirmation.stock.filter(
+    (s) => s.reorderPointBase !== null && s.afterBase < s.reorderPointBase,
+  );
+  if (nowLow.length > 0) {
+    staffLines.push(
+      `Kevin recommends an order for ${nowLow.length === 1 ? "it" : "each"} in Inventory's forecast and the next 5am brief; nothing is ordered until someone approves it.`,
+    );
+  }
   // Consuming a transferred lot is what exposes a transfer discrepancy (SPEC step 3).
   const drawn = [...new Set(confirmation.review.draws.map((d) => d.lotId))];
   for (const lot of db.select().from(lots).where(inArray(lots.id, drawn)).all()) {

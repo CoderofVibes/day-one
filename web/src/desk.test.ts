@@ -154,12 +154,23 @@ describe("what needs a person", () => {
       title: "Approve PO-1042",
       subtitle: "700 kg ascorbic acid · from Northgate Ingredients · $5,150.00",
     });
-    expect(n?.why).toContain("over the $2,500 Kevin may spend on one order");
+    // The limit bar carries the amount against the limit; "why" says only why it is Linda's.
+    expect(n?.why).toContain("any order over Kevin's limit to you");
     expect(n?.deciding).toContain("at $7.10/kg plus $180.00 freight, delivered in 7 days");
     expect(n?.after).toContain("paid only after the delivery passes QC");
     expect(primaryLabel(turnFromStep(run.steps, LINDA), runFacts(run, BIG))).toBe(
       "Approve PO-1042",
     );
+  });
+
+  it("shows Ray the shortage his record exposed before the order goes to Linda", () => {
+    const n = needOf({ kind: "shortage", who: "Ray Delgado" }, runFacts(run, BIG), run, BIG);
+    expect(n?.who).toBe("Ray Delgado");
+    expect(n?.title).toBe("Ascorbic acid runs short: about 514 kg in the next 10 days");
+    expect(n?.why).toContain("He asked 3 suppliers and picked Northgate");
+    expect(n?.why).toContain("PO-1041");
+    expect(n?.deciding).toContain("so he texted Linda Park to approve it");
+    expect(n?.records).toEqual(["BR-B-1045", "PO-1041", "PO-1042"]);
   });
 
   it("points Priya at the lot in quarantine", () => {
