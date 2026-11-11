@@ -338,7 +338,7 @@ export default function JudgeMode({
             {proof !== null
               ? "Every proof"
               : step
-                ? `Step ${i + 1} of ${total} · ${remaining(i)}`
+                ? `Step ${i + 1}${step.prelude ? (preluding ? "a" : "b") : ""} of ${total} · ${remaining(i)}`
                 : "Every proof"}
           </span>
           <ol className="judge-dots" aria-label="Steps">
@@ -372,8 +372,9 @@ export default function JudgeMode({
         {step ? (
           <>
             <div className="judge-body">
-              <h2>{step.title}</h2>
-              <p>{step.body}</p>
+              {/* A step's first page has its own words, so Next changes the caption too (8). */}
+              <h2>{preluding && step.prelude ? step.prelude.title : step.title}</h2>
+              <p>{preluding && step.prelude ? step.prelude.body : step.body}</p>
               {step.quote && <p className="judge-quote">{step.quote}</p>}
               {inline === "limits" && <LimitsCard />}
               {inline === "policy" && <PolicyCard />}

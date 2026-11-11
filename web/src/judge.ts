@@ -37,7 +37,15 @@ export interface JudgeStep {
   spotlight?: string;
   /** A page shown first (the workbook Kevin read); the step's own page follows on Next, never by
    *  itself (first-use review, Nov 5: a page that moved with nobody pressing anything confused). */
-  prelude?: { page: PageId; at: number; spotlight: string; next: string };
+  /** A page shown first, with its own caption, so Next changes the words as well as the page. */
+  prelude?: {
+    page: PageId;
+    at: number;
+    spotlight: string;
+    next: string;
+    title: string;
+    body: string;
+  };
   /** What opens over the page: Linda's phone, PO-1047's card, Kevin's limits, HQ's plain-words
    *  change, the attestation card or the tour. */
   overlay?: "phone" | "usdc" | "limits" | "policy" | "attestation" | "tour";
@@ -206,7 +214,6 @@ const short19 = shortDelivery();
 const lots = lotBook();
 const refusedAt = recorded.steps.findIndex((s) => s.title === "Big PO");
 const retriedAt = recorded.steps.findIndex((s) => s.title === "Kevin retries");
-const releasedAt = recorded.steps.findIndex((s) => s.title === "QC release");
 const last = recorded.steps.length - 1;
 const plantName = (code: string) => PLANTS.find((p) => p.code === code)?.name ?? code;
 const monthDay = (iso: string) =>
@@ -222,7 +229,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "takeover",
     title: "One batch record exposes a shortage",
-    body: `Acme just bought Hollow Pine. Kevin reads its paper records and inventory workbook (${book.rows} rows, ${book.questions} questions for Ray). Ray confirms BR-B-1045, stock comes off the books, and Kevin finds the shortage that leads to PO-1042.`,
+    body: "Ray confirms Kevin's reading of batch record BR-B-1045. The stock it used comes off the books, and Kevin sees the next batches will run short of ascorbic acid: the shortage that leads to PO-1042.",
     page: "overview",
     at: recorded.steps.findIndex((s) => s.title === "Forecast"),
     prelude: {
@@ -230,6 +237,8 @@ export const JUDGE_STEPS: JudgeStep[] = [
       at: 0,
       spotlight: '[aria-label="The inventory workbook"]',
       next: "Next: Ray's desk →",
+      title: "Kevin starts from the plant's own spreadsheet",
+      body: `Acme just bought Hollow Pine, whose stock lived in this workbook. Kevin read its ${book.rows} rows and asked Ray ${book.questions} questions instead of guessing.`,
     },
     spotlight: ".batch-handoff",
     curtain: false,
@@ -253,7 +262,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "refused",
     title: "The model approved. The contract still refused.",
-    body: "Kevin prepared PO-1042: 700 kg of ascorbic acid from Northgate, $5,150.00 including freight. The contract refused it against his $2,500 limit, even with his model's signed approval attached. Linda's authorization lets Kevin retry and fund escrow. Payment waits for receipt and QC.",
+    body: "Kevin prepared PO-1042: 700 kg of ascorbic acid from Northgate, $5,150.00 with freight. His AI model had signed off on it, but the $2,500 limit is the contract's rule, so the contract refused the order. Linda can approve it; then Kevin sends it again and the money is set aside, paid only after receipt and QC.",
     ...(po.refused?.error ? { quote: `Contract: “${po.refused.error}”` } : {}),
     page: "overview",
     at: refusedAt,
@@ -264,7 +273,7 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "approve",
     title: "Linda approves; Kevin's signed decision stays the same",
-    body: "Linda approved, then Kevin retried with the same signed model response. The contract funded PO-1042. It checks the signer and supplied PO fingerprint, trusting Kevin to bind that fingerprint to the order's terms. Linda's text is simulated and the server holds her key.",
+    body: "Linda approved and Kevin resent PO-1042 with the same signed decision; the contract funded it. It checks who signed and which order the decision names, by a code computed from the order, and relies on Kevin to compute that code from the real order. Linda's text is simulated; the server holds her key.",
     page: "overview",
     at: retriedAt,
     spotlight: ".curtain .decision",
@@ -277,10 +286,13 @@ export const JUDGE_STEPS: JudgeStep[] = [
   {
     id: "paid",
     title: "Received, released, paid",
-    body: "Tommy counted 700 kg of lot ASC-261116-01 into stock and the $5,150.00 invoice was recorded. When Priya released the lot, the contract paid Northgate the smallest of the escrow, the escrow pro rata to what was counted in, and the invoice: $5,150.00.",
-    page: "map",
-    at: releasedAt,
-    spotlight: ".map-frame",
+    body: "Tommy counted 700 kg of lot ASC-261116-01 into stock and the $5,150.00 invoice was recorded. When Priya released the lot, the contract paid Northgate for what arrived, never more than the money set aside or the invoice: $5,150.00.",
+    // The order's own track, not the plant twin: the twin at this step also carries the other
+    // plant's open discrepancy and the refused order, two red marks on the success step (13).
+    page: "overview",
+    // The step after the release, where the track reads Paid and the condition met.
+    at: recorded.steps.findIndex((s) => s.title === "Paid"),
+    spotlight: ".desk .track",
     links: [
       ...link(po.received, "Receiving confirmation"),
       ...link(po.invoiced, "Invoice recorded"),

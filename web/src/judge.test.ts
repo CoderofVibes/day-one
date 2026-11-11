@@ -176,7 +176,9 @@ describe("judge mode", () => {
     const takeover = JUDGE_STEPS.find((s) => s.id === "takeover");
     expect(takeover?.curtain).toBe(false);
     expect(takeover?.prelude?.page).toBe("spreadsheets");
-    expect(takeover?.body).toContain("19 rows");
+    // The workbook has its own words on its own page, so Next changes the caption too.
+    expect(takeover?.prelude?.body).toContain("19 rows");
+    expect(takeover?.body).toContain("BR-B-1045");
     // The core limits stop shows the recorded limits only; the plain-words change is a proof.
     expect(JUDGE_STEPS.find((s) => s.id === "limits")?.overlay).toBe("limits");
     expect(JUDGE_STEPS.find((s) => s.id === "limits")?.body).not.toContain("3,000");

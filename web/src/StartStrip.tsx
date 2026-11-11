@@ -30,7 +30,7 @@ export function StartStrip() {
       </p>
       <div className="start-actions">
         <a className="btn primary" href="?judge=1">
-          Take the five-minute tour
+          Take the three-minute tour
         </a>
         <a className="btn" href="?intro=1">
           Meet Kevin

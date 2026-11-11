@@ -29,11 +29,18 @@ export function Spotlight({
     };
     window.addEventListener("wheel", touch, { passive: true });
     window.addEventListener("touchmove", touch, { passive: true });
+    let target: Element | null = null;
     const measure = () => {
       const el = [...document.querySelectorAll(selector)].find(
         (e) => (e as HTMLElement).offsetParent !== null,
       );
       if (!el) return setBox(null);
+      // Judge mode lets the page take clicks only here (judge.css).
+      if (target !== el) {
+        target?.removeAttribute("data-spot-target");
+        target = el;
+        el.setAttribute("data-spot-target", "");
+      }
       const absTop = el.getBoundingClientRect().top + window.scrollY;
       const settling = !touched && Date.now() < until && aimed.current !== absTop;
       if (aimed.current === null || settling) {
@@ -41,16 +48,34 @@ export function Spotlight({
         // Fit the subject into what the guide leaves visible: below the sticky header and, on a
         // phone, above the bottom sheet (judge mode's bar or the first shift's dock), measured as
         // it is now rather than assumed. A subject taller than that shows its top.
+        // Judge mode's bar floats above the bottom edge on a wide screen and covers the middle
+        // of it, so it counts too (first-use review, finding 9: Approve and Prove it under it).
         const header = 80;
         const sheet = [...document.querySelectorAll<HTMLElement>(".judge-bar, .fs-dock")]
           .map((s) => s.getBoundingClientRect())
-          .find((s) => s.width >= window.innerWidth * 0.9 && s.bottom >= window.innerHeight - 4);
+          .find(
+            (s) =>
+              s.bottom >= window.innerHeight - 24 &&
+              s.left < window.innerWidth / 2 &&
+              s.right > window.innerWidth / 2,
+          );
         const bottom = sheet ? sheet.top : window.innerHeight;
         const room = Math.max(120, bottom - header);
         const r = el.getBoundingClientRect();
         const top = r.top + window.scrollY;
         const offset = r.height > room ? 0 : (room - r.height) / 2;
         window.scrollTo({ top: Math.max(0, top - header - offset) });
+        // A subject inside a panel that scrolls on its own (the curtain rail beside a wide page)
+        // is brought to that panel's top as well; the window cannot reach it (finding 9, step 4).
+        let box: HTMLElement | null = el.parentElement;
+        while (box && box !== document.body) {
+          const style = getComputedStyle(box);
+          if (/(auto|scroll)/.test(style.overflowY) && box.scrollHeight > box.clientHeight + 4) {
+            box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+            break;
+          }
+          box = box.parentElement;
+        }
       }
       const r = el.getBoundingClientRect();
       setBox((was) =>
@@ -64,6 +89,7 @@ export function Spotlight({
     window.addEventListener("resize", measure);
     window.addEventListener("scroll", measure, true);
     return () => {
+      target?.removeAttribute("data-spot-target");
       clearInterval(timer);
       window.removeEventListener("resize", measure);
       window.removeEventListener("scroll", measure, true);

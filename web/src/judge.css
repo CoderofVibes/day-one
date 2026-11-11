@@ -6,6 +6,29 @@ body.judge-open .main {
   padding-bottom: 300px;
 }
 
+/* First-use review, Nov 10. The top bar is solid, so the page does not show through it (11). The
+   page under the panel takes no clicks except the spotlit element, and the desk's own step
+   buttons are off, so the panel's Next is the only Next (10). */
+body.judge-open .gh {
+  background: var(--surface);
+  backdrop-filter: none;
+}
+body.judge-open .main {
+  pointer-events: none;
+}
+body.judge-open .main [data-spot-target],
+body.judge-open .main [data-spot-target] *,
+body.judge-open .judge-bar,
+body.judge-open .judge-bar *,
+body.judge-open .judge-overlay,
+body.judge-open .judge-overlay * {
+  pointer-events: auto;
+}
+body.judge-open .main .card-actions,
+body.judge-open .main .card-actions * {
+  pointer-events: none;
+}
+
 .judge-spot {
   position: fixed;
   z-index: 1100;
@@ -35,6 +58,15 @@ body.judge-open .main {
   background: var(--surface);
   box-shadow: var(--shadow);
   color: var(--ink);
+}
+/* On a wide screen the panel docks over the page, left of the curtain rail, so the refused
+   transaction the step names stays in view beside it (first-use review, finding 9). */
+@media (min-width: 1200px) {
+  .judge-bar {
+    left: 232px;
+    transform: none;
+    width: min(680px, calc(100% - 700px));
+  }
 }
 .judge-bar h2 {
   margin: 8px 0 4px;
