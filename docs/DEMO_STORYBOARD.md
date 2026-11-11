@@ -66,12 +66,12 @@ Attach the video. Reply in thread with the repo link and the refused transaction
 - **Team lead name:** Anthony Langford (Tony, Oct 27)
 - **Email:** given by Tony Oct 27; kept out of the repo because it goes public. Tony enters it himself. One email may send 2 submissions (HACKATHON.md, Nov 4), so the same one can serve Everstreet.
 - **Team size:** 1
-- **NEAR wallet address (payout):** `Tony's prize account` (Meteor Wallet, created by Tony Oct 27; agents never touch it)
+- **NEAR wallet address (payout):** Tony's prize account (Meteor Wallet, created by Tony Oct 27; agents never touch it). Kept out of the repo like the email (Nov 11); Tony gives it at submit time and it is checked character by character.
 - **Tracks:** `realworld`, `business`, `security`, `agents`, `swarms` (Tony, Nov 8, OPEN_QUESTIONS #53: swarms added for the recorded group buy and sealed round; privacy not added). The form shows display names: Real-World Money, Autonomous Business, AI Security & Defense, Agent Economy, AI Swarms.
 - **Repository link:** the public URL of `github.com/CoderofVibes/day-one`, once Tony makes it public.
 - **Demo post link:** the X post's URL, once posted.
 - **Consent:** Tony ticks it himself.
-- **Order (Tony, Nov 4):** Everstreet is submitted first, then Day One.
+- **Order (Tony's guide, Nov 10; replaces Nov 4's):** on Fri Nov 13 Day One's public steps and form come first, then Everstreet's.
 - **Website field:** leave empty. HACKATHON.md says it is a spam honeypot and any value is rejected (research 19).
 - **Description (draft, ≤2000 characters; matches the README's opening, Nov 4):**
 

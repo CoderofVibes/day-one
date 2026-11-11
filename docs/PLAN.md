@@ -111,7 +111,7 @@ From the first scheduled review (range `pre-hackathon`..`ceb21bf`, 90 commits). 
 7. ~~**NEAR AI Cloud**~~ Done Oct 27: key in `.env` (gitignored); verified with a free attestation call for `z-ai/glm-5.3-flash` (HTTP 200).
 8. ~~**Anthropic API (fallback)**~~ Done Oct 27: Console org linked to the Max plan ($200/month credit), key in `.env`; verified with the free models list (HTTP 200, `claude-sonnet-5-5` available).
 9. ~~**NEAR Discord**~~ Done Oct 27: prep question already asked by many; organizers say a blog post is coming (OPEN_QUESTIONS #8).
-10. ~~**Payout account**~~ Done Oct 27: `Tony's prize account` in Meteor Wallet; recovery phrase kept offline by Tony.
+10. ~~**Payout account**~~ Done Oct 27: Tony's account in Meteor Wallet (name kept out of the repo, Nov 11); recovery phrase kept offline by Tony.
 11. ~~**X account**~~ Done Oct 27: Tony confirmed it can post video. Keep the export ≤2:20 (standard-account limit) as planned.
 12. ~~**Run `npm run setup:testnet` once in your session**~~ Done Oct 28 (OPEN_QUESTIONS #31): `dayone-relayer.testnet` has the server's key; the live relayed steps can run.
 

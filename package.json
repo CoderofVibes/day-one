@@ -27,6 +27,7 @@
     "verify": "tsx scripts/verify.ts",
     "docs:check": "tsx scripts/docs-check.ts",
     "repo:check": "tsx scripts/repo-check.ts",
+    "history:scan": "tsx scripts/history-scan.ts",
     "clean-clone": "tsx scripts/clean-clone.ts",
     "prove": "tsx scripts/prove.ts",
     "proof": "tsx scripts/proof-log.ts",
