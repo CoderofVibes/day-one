@@ -10,7 +10,8 @@ const KEY = "day-one-start-strip";
 function hidden(): boolean {
   if (typeof location === "undefined") return true;
   const q = new URLSearchParams(location.search);
-  if (q.has("video") || q.has("judge")) return true;
+  // recordedFrame is the app shown inside the video page: no front door in the film.
+  if (q.has("video") || q.has("judge") || q.has("recordedFrame")) return true;
   try {
     return localStorage.getItem(KEY) === "dismissed";
   } catch {

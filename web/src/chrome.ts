@@ -42,7 +42,11 @@ export function storedTheme(): ThemeChoice {
     // Blocked storage: the default below.
   }
   const q = new URLSearchParams(typeof location === "undefined" ? "" : location.search);
-  return q.get("video") === "1" || q.get("page") === "approve" ? "system" : "dark";
+  // The app framed inside the video page follows the device like the video page itself, so a
+  // take does not cut between a light frame and a dark app.
+  return q.get("video") === "1" || q.get("page") === "approve" || q.get("recordedFrame") === "1"
+    ? "system"
+    : "dark";
 }
 
 /** Sets the stored (or default) theme before the first paint, without remembering it. */
