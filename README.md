@@ -167,7 +167,7 @@ Claude Code built the application. Muse assisted with early planning. GPT-6 Astr
 
 Day One is a separate project from the same team’s other hackathon entry, [Everstreet](https://github.com/CoderofVibes/everstreet), a platform to build, run and sell a digital business. The projects share no code, data, accounts, or deployments. Receipt-based settlement and the contract-checked enclave signature were prompted by ideas in public hackathon work and implemented from Day One’s own data model. [Implementation history](docs/REFERENCE_IDEAS_PLAN.md)
 
-The build window runs Oct 19–Nov 14, 2026. The `pre-hackathon` tag marks the planning-only baseline. [MIT license](LICENSE)
+Nothing in Day One is built on another chain: the contracts, escrow, payments and record anchors are all on NEAR testnet, and PO-1047's USDC is Circle's testnet USDC on NEAR. The build window runs Oct 19–Nov 14, 2026. The `pre-hackathon` tag marks the planning-only baseline. [MIT license](LICENSE)
 
 <details><summary>Libraries and versions</summary>
 
