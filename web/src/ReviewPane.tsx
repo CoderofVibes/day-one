@@ -17,6 +17,16 @@ import {
   staffWords,
 } from "./review.ts";
 
+/** Opens the morning review and brings it into view: the strip and the "drafts to sign" line
+ *  above the desk lead here (first-use review, finding 32). */
+export function openReviewPane() {
+  const pane = document.querySelector<HTMLDetailsElement>(".review-pane");
+  if (!pane) return;
+  pane.open = true;
+  const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  pane.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+}
+
 export function ReviewPane({
   review,
   busy,

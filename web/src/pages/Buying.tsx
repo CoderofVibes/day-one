@@ -352,7 +352,9 @@ function Pipeline({ orders, end }: { orders: PoView[]; end: string }) {
                       </span>
                       <span className="small">{o.vendorName}</span>
                       <span className="small muted">
-                        {approvalPath(o).icon} {age === null ? "" : `${age} d old`}
+                        {/* Words, not symbols with no key (first-use review, finding 43). */}
+                        {approvalPath(o).label}
+                        {age === null ? "" : ` · ${age === 1 ? "1 day" : `${age} days`} old`}
                       </span>
                     </li>
                   );

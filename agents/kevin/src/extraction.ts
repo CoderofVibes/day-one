@@ -418,10 +418,12 @@ export function reviewBatchRecord(
       : [outside && `${outside} outside tolerance`, unchecked && `${unchecked} not checked`]
           .filter(Boolean)
           .join(", ");
+  // A yield under the expected one is said once, by its own line (first-use review, finding 22).
+  const yieldLow = flags.some((f) => f.kind === "yield_variance");
   const head =
     `Kevin read ${batchNo} (${productCode.replace(/^P-/, "")}, ${theoretical.toLocaleString("en-US")} tablets). ` +
     `${lineReads.size} materials, ${tolerance}.` +
-    (yieldBp === null ? "" : ` Yield ${pct(yieldBp)}.`);
+    (yieldBp === null || yieldLow ? "" : ` Yield ${pct(yieldBp)}.`);
   const detail = flags
     .filter((f) => f.kind !== "out_of_tolerance" || !f.fieldPath.startsWith("formula."))
     .filter((f) => f.kind !== "yield_variance")

@@ -244,13 +244,16 @@ function Unread({
   const { items } = useFeed(clock, context);
   const { seenAt } = useRail();
   const newest = items.at(-1)?.at ?? 0;
+  // A first visit counts from now: the months of history before it are not "new" (first-use
+  // review, finding 50: "99+ new" on minute one).
+  const firstVisit = seenAt === 0;
   let unread = 0;
-  if (!visible)
+  if (!visible && !firstVisit)
     for (let i = items.length - 1; i >= 0 && (items[i] as FeedItem).at > seenAt; i--) unread++;
   useEffect(() => {
-    if (visible) setRail({ seenAt: newest, unread: 0 });
+    if (visible || (firstVisit && newest > 0)) setRail({ seenAt: newest, unread: 0 });
     else setRail({ unread });
-  }, [visible, newest, unread]);
+  }, [visible, newest, unread, firstVisit]);
   return null;
 }
 

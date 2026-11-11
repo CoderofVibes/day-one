@@ -129,8 +129,10 @@ describe("Kevin's reading of Ray's sheet (FICTIONAL_DATA §12)", () => {
       ["F8", 18, "unknown_material"],
       ["F9", 19, "totals_row"],
     ]);
-    expect(analysis.flags[2]?.proposal).toBe("110.2 lb = 49.985 879 kg");
-    expect(analysis.flags[3]?.proposal).toBe("55.1 lb = 24.992 940 kg");
+    expect(analysis.flags[2]?.proposal).toBe(
+      "110.2 lb = 49.99 kg (posted exactly as 49.985879 kg)",
+    );
+    expect(analysis.flags[3]?.proposal).toBe("55.1 lb = 24.99 kg (posted exactly as 24.992940 kg)");
     expect(analysis.flags[6]?.proposal).toContain("STA-261001-01");
     expect(analysis.flags[5]?.proposal).toBeNull();
     expect(analysis.flags[7]?.answers).toEqual(["review"]);

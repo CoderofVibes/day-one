@@ -52,6 +52,7 @@ import {
   type WindowKey,
   WindowPicker,
 } from "../kit.tsx";
+import { openReviewPane } from "../ReviewPane.tsx";
 import { audienceOf, plainTitle, type RunData, statusOf } from "../run.ts";
 import { StartStrip } from "../StartStrip.tsx";
 import { type BatchPoint, type History, readHistory, type Source, useRead } from "../series.ts";
@@ -128,6 +129,7 @@ export function Overview({
     });
     twin.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, []);
+  const nav = useNav();
   return (
     <main className="page v2 overview2" aria-label="Overview">
       <PageHeader
@@ -161,6 +163,11 @@ export function Overview({
           inventory={inventory}
           actions={deskActions}
           onShow={show}
+          onWaiting={(id) => {
+            if (id === "drafts") openReviewPane();
+            else if (id === "scans") nav.open({ id: "batches", page: "batches" });
+            else nav.open({ id: "plants", page: "plants" });
+          }}
         />
       )}
       {plant === "B" && <BatchHandoff run={run} at={at} showExample={!source.live} />}
@@ -198,7 +205,12 @@ function MorningSummary({ review }: { review: ReviewState }) {
   const read = review.proposals.length;
   const c = review.counts;
   return (
-    <p className="morning-summary" data-guide="morning-summary">
+    <button
+      type="button"
+      className="morning-summary"
+      data-guide="morning-summary"
+      onClick={openReviewPane}
+    >
       <b>Morning review</b>
       <span>{read} read</span>
       <span className="ms-sign">
@@ -206,7 +218,8 @@ function MorningSummary({ review }: { review: ReviewState }) {
       </span>
       <span className="ms-refused">{c.refused} refused</span>
       <span>{c.none} need nothing</span>
-    </p>
+      <span className="ms-go">Open the drafts →</span>
+    </button>
   );
 }
 

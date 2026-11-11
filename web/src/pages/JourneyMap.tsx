@@ -67,9 +67,12 @@ export function JourneyMap({
                 onClick={() => onPick(s.stage)}
                 aria-current={s.stage === shown ? "step" : undefined}
               >
+                {/* Always the stage's number, so the row counts 1 to 7; done is the dot's colour
+                    and a tick after it (first-use review, finding 44). */}
                 <span className="jm-dot" aria-hidden="true">
-                  {s.done ? "✓" : s.stage}
+                  {s.stage}
                 </span>
+                {s.done && <span className="sr-only">done</span>}
                 <span className="jm-title">{s.title}</span>
                 <span className="jm-art small">{artifactOf(s, poNo)}</span>
                 {who.length > 0 && (

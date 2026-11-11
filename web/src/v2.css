@@ -623,14 +623,19 @@ tr.formula span {
   margin-left: auto;
   min-width: 20px;
   height: 20px;
-  padding: 0 6px;
+  padding: 0 7px;
   border-radius: 999px;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
   font-size: 11px;
   font-weight: 600;
   background: var(--waiting-bg);
   color: var(--waiting);
+}
+.nav .count .count-word {
+  margin-left: 3px;
+  font-weight: 500;
 }
 .nav .count.problem {
   background: var(--refused-bg);

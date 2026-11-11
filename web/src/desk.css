@@ -581,7 +581,9 @@
   width: 100%;
   padding: 10px 12px;
   border: 0;
-  background: #fafbfc;
+  /* The theme's raised surface, not a fixed near-white: on a dark phone the head was a white box
+     with near-white text (first-use review, finding 46). */
+  background: var(--surface-2, #fafbfc);
   font: inherit;
   text-align: left;
   color: inherit;
@@ -593,8 +595,10 @@
 }
 .sourcing-chips {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-left: auto;
+  min-width: 0;
 }
 .chev {
   font-size: 18px;

@@ -416,7 +416,9 @@ export function analyzeInventorySheet(sheet: Sheet, options: AnalyzeOptions): An
             row,
             "unit_conversion",
             `Row ${row.row} (${row.item}) is in pounds.`,
-            `${qty} lb = ${formatKg(base)}`,
+            // Read as people say it, with the exact posted figure kept beside it
+            // (first-use review, finding 51: "49.985 879 kg").
+            `${qty} lb = ${(base / 1_000_000).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kg (posted exactly as ${formatKg(base).replace(/ (\d{3}) kg$/, "$1 kg")})`,
           );
         }
       }

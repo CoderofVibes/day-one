@@ -129,7 +129,11 @@ function InboxRow({
         <b>
           {item.batchNo ?? name}
           <Pill tone={pill.tone}>{pill.label}</Pill>
-          {item.facility && waiting && <span className="muted small">Plant {item.facility}</span>}
+          {/* Ray's own plant goes without saying; another plant's scan is named the way the
+              header names plants (first-use review, finding 22). */}
+          {item.facility && item.facility !== "B" && waiting && (
+            <span className="muted small">{PLANT_NAMES[item.facility] ?? item.facility}</span>
+          )}
         </b>
         <span className="sum">
           {item.status === "confirmed"
@@ -298,6 +302,8 @@ function Review({
     </div>
   );
 }
+
+const PLANT_NAMES: Record<string, string> = { A: "Riverside", B: "Hollow Pine", C: "Lakeview" };
 
 /** Digits with an optional decimal part: "83.040", "1,250", "83". */
 const NUMBER = /^\d{1,3}(,\d{3})*(\.\d+)?$|^\d+(\.\d+)?$/;

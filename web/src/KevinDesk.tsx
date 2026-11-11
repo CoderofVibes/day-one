@@ -51,6 +51,7 @@ export function Desk({
   inventory,
   actions,
   onShow,
+  onWaiting,
 }: {
   run: RunData;
   at: number;
@@ -62,6 +63,8 @@ export function Desk({
   actions: React.ReactNode;
   /** Point the plant twin at a place. */
   onShow: (where: Where) => void;
+  /** Open what an "also waiting" line names: the drafts, the scans, a correction. */
+  onWaiting?: (id: string) => void;
 }) {
   const facts = useMemo(() => runFacts(run, at), [run, at]);
   const track = poTrack(facts);
@@ -119,7 +122,15 @@ export function Desk({
                   <span className="mini-avatar" aria-hidden="true">
                     {initials(w.who)}
                   </span>
-                  <b>{w.who}</b> {w.text}
+                  <b>{w.who}</b>{" "}
+                  {/* Each line goes where the work is (first-use review, finding 32). */}
+                  {onWaiting ? (
+                    <button type="button" className="waiting-go" onClick={() => onWaiting(w.id)}>
+                      {w.text}
+                    </button>
+                  ) : (
+                    w.text
+                  )}
                 </li>
               ))}
             </ul>
@@ -497,7 +508,8 @@ function HandledList({
                       : KIND_LABEL[resolved ? "done" : h.kind]}
                   </span>
                   {h.outcome && <span className="h-outcome">{h.outcome}</span>}
-                  {when && <span className="h-when">{when.split(" · ")[1]}</span>}
+                  {/* The day as well as the time: the run spans a week (finding 30). */}
+                  {when && <span className="h-when">{when}</span>}
                 </p>
                 {isOpen && (
                   <div className="h-detail">

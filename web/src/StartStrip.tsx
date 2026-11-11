@@ -37,7 +37,7 @@ export function StartStrip() {
         </a>
         <button
           type="button"
-          className="quiet sm"
+          className="btn"
           onClick={() => {
             try {
               localStorage.setItem(KEY, "dismissed");

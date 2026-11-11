@@ -191,9 +191,13 @@ export function Shell({
         <Icon name={item.icon} />
         {item.label}
         {badge && badge.count > 0 ? (
-          <span className={`count ${badge.tone}`}>
+          // The count says what it counts (first-use review, finding 52: "Six what?").
+          <span
+            className={`count ${badge.tone}`}
+            title={`${badge.count} ${BADGE_WORDS[item.id] ?? "waiting"}`}
+          >
             {badge.count}
-            <span className="sr-only"> waiting</span>
+            <span className="count-word"> {BADGE_WORDS[item.id] ?? "waiting"}</span>
           </span>
         ) : null}
       </a>
@@ -312,6 +316,15 @@ export function Shell({
     </div>
   );
 }
+
+/** What a sidebar count counts, said after the number. */
+const BADGE_WORDS: Partial<Record<PageId, string>> = {
+  overview: "to do",
+  batches: "to confirm",
+  inventory: "low",
+  invoices: "held",
+  plants: "to review",
+};
 
 /**
  * A page's header: its title, the page's own controls on the right, and what the page is for

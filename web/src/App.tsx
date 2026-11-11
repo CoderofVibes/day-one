@@ -813,7 +813,8 @@ function ReplayApp() {
       </section>
     );
 
-  const person = upNext ?? { name: "Day One", role: "Run complete" };
+  // A finished run hands the header back to Ray at his desk, not to the product (finding 17).
+  const person = upNext ?? { name: "Ray Delgado", role: "Purchaser" };
   const people: Person[] = PEOPLE.map((p) => {
     const turn = nextTurn(data.steps, at, p.name);
     const when = turn === null ? undefined : clock.range.steps[turn];
@@ -1383,7 +1384,11 @@ function LiveApp({ initial }: { initial: LiveState }) {
     </Foot>
   );
 
-  const person = { name: actor.name, role: actor.role ?? null };
+  // A finished run hands the header back to Ray at his desk, not to the product (finding 17).
+  const person =
+    state.next.phase === "done" || state.next.phase === "finish"
+      ? { name: "Ray Delgado", role: "Purchaser" }
+      : { name: actor.name, role: actor.role ?? null };
   // The live run moves through the API: each person's turn is a line, not a seek.
   const people: Person[] = PEOPLE.map((p) => ({
     ...p,
@@ -1515,6 +1520,7 @@ function LiveApp({ initial }: { initial: LiveState }) {
                   onUpload={uploadFile}
                   onReset={reset}
                   queue={null}
+                  deskHasQueue={atUpload && queue !== null}
                 />
                 {!atUpload && queue && (
                   <InboxPane
@@ -1626,8 +1632,11 @@ function UpNext({
   onUpload,
   onReset,
   queue,
+  deskHasQueue = false,
 }: {
   state: LiveState;
+  /** The desk above holds the scans Kevin read: this panel points there, not to an upload. */
+  deskHasQueue?: boolean;
   /** The decision's buttons are on the desk above; this panel keeps the rest. */
   onDesk: boolean;
   busy: string | null;
@@ -1654,7 +1663,9 @@ function UpNext({
           ? summaryLine(state)
           : next.phase === "reply"
             ? `Kevin texted ${actor.name.split(" ")[0]} for the approval. In this replay you answer in that role, from the desk above.`
-            : next.action;
+            : deskHasQueue
+              ? "Start on your desk above, with the batch records Kevin read. A record that is not there yet can come in as a photo."
+              : next.action;
 
   return (
     <section className="panel next" aria-label="Next action">

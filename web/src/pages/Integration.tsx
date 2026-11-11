@@ -182,7 +182,9 @@ export function Integration({
         right={
           <>
             <span className={journey.current >= 7 ? "pill paid" : "pill waiting"}>
-              {journey.current >= 7 ? "all stages done" : `stage ${journey.current} of 7`}
+              {journey.current >= 7
+                ? "all stages done"
+                : `${journey.stages.filter((s) => s.done).length} of 7 stages done · next: stage ${journey.current}`}
             </span>
             {!source.live && <span className="src-note">Recorded program outcome</span>}
           </>
