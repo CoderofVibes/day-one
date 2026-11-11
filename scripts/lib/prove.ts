@@ -145,6 +145,32 @@ export const CLAIMS: Claim[] = [
     steps: [cleanCloneStep("usdc")],
   },
   {
+    id: "locked",
+    claim:
+      "The spend-policy contract's code cannot change: its account has no access keys. HQ governs only through the contract's owner methods.",
+    evidence:
+      "Asks testnet for spend-policy-v2.acme-holdings.testnet's access keys and expects none (the only key was deleted Nov 11, data/contract-lock.json).",
+    steps: [
+      {
+        name: "locked",
+        command: "npm run locked",
+        expect: "has no access keys on testnet, so its code cannot change.",
+      },
+    ],
+    offline: {
+      claim: "The contract account's only access key was deleted, as recorded.",
+      evidence:
+        "Reads the recorded deletion (data/contract-lock.json); run `npm run locked` online to see the account has no keys.",
+      steps: [
+        {
+          name: "locked-offline",
+          command: "npm run locked -- --offline",
+          expect: "its only key was deleted on 2026-11-11",
+        },
+      ],
+    },
+  },
+  {
     id: "inventory",
     claim:
       "Kevin works from the plant's own records: an imported spreadsheet, scanned batch records and twelve months of history (all fictional).",

@@ -1,0 +1,9 @@
+{
+  "account": "spend-policy-v2.acme-holdings.testnet",
+  "network": "testnet",
+  "deletedKey": "ed25519:GZt9TxyyKHNWLdkymCs12u6Luu8nvxJ33o3r6CqxCKcY",
+  "deletedAt": "2026-11-11",
+  "transaction": "dUyRgg9mGbmT89utFPFA6YuakKmdxpB3QMwZLtQXHaR",
+  "explorer": "https://testnet.nearblocks.io/txns/dUyRgg9mGbmT89utFPFA6YuakKmdxpB3QMwZLtQXHaR",
+  "note": "The account's only access key (full access) was deleted with Tony's approval, so no one can deploy new code to the contract or sign as it. HQ (acme-holdings.testnet) still sets policy, cancels POs and withdraws the budget through the contract's own owner methods."
+}
