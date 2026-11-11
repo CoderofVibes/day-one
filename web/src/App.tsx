@@ -789,7 +789,7 @@ function ReplayApp() {
         onPlants={() => route.go({ page: "plants" })}
       />
     ) : (
-      <section className="panel next" aria-label="Replay steps">
+      <section className="panel next" aria-label="Demo steps">
         <div className="panel-head">
           <h2>Replay of the recorded week</h2>
           <span className="right small muted">
@@ -808,7 +808,10 @@ function ReplayApp() {
             Next →
           </button>
           <FeedButton />
-          <span className="step-count">{plainTitle(current)}</span>
+          {/* "N / M ·" stays: web:shot, web:shot:3d and judge mode read this counter. */}
+          <span className="step-count">
+            {at + 1} / {last + 1} · {plainTitle(current)}
+          </span>
         </div>
       </section>
     );

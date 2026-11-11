@@ -84,8 +84,12 @@
   pointer-events: none;
 }
 
-.video-paper > .batch-reading {
+/* The reading sits in a size container (batchReading.css), which needs a width of its own:
+   centred in this grid without one, it collapsed to nothing. */
+.video-paper > .batch-reading-wrap {
   width: min(100%, 72em);
+}
+.video-paper .batch-reading {
   padding: 1.25em;
   border: 1px solid var(--line);
   border-radius: 1em;

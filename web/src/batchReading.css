@@ -2,7 +2,9 @@
    place (the desk's column, ~600 px) the scan goes on top at full width and the lines under it,
    so neither is squeezed (first-use review, finding 20: a 215 px scan and lot codes on three lines). */
 .batch-reading-wrap {
+  /* A size container does not take its width from its content, so it always fills its parent. */
   container-type: inline-size;
+  width: 100%;
 }
 
 .batch-reading {
