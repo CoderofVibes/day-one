@@ -8,12 +8,12 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
-import { envSecrets, HEADERS, type HostFile, hostProblems } from "./lib/host-check.ts";
+import { envSecrets, HEADERS, type HostFile, hostProblems, VERCEL_JSON } from "./lib/host-check.ts";
 
 const root = resolve(import.meta.dirname, "..");
 const dist = join(root, "web/dist");
 const json = process.argv.includes("--json");
-/** The Cloudflare Pages project the hosted demo would live in (docs/HOSTING.md). */
+/** The Vercel project the hosted demo lives in (docs/HOSTING.md; Tony, Nov 11). */
 const PROJECT = "day-one-kevin";
 
 /** Runs a Node script (no shell), as npm run web:data -- --check and npm run web:build do. */
@@ -46,6 +46,7 @@ let problems: string[] = [];
 let files: HostFile[] = [];
 if (built.ok) {
   writeFileSync(join(dist, "_headers"), HEADERS);
+  writeFileSync(join(dist, "vercel.json"), VERCEL_JSON);
   const walk = (dir: string): string[] =>
     readdirSync(dir).flatMap((name) => {
       const path = join(dir, name);
@@ -73,8 +74,9 @@ const bytes = files.reduce((sum, f) => sum + f.text.length, 0);
 if (ok) {
   console.log(
     `\nweb/dist is ready to publish (${files.length} files, ${(bytes / 1024 / 1024).toFixed(1)} MB). ` +
-      "Nothing was published. To go live (Tony's call, docs/OPEN_QUESTIONS.md #39):\n" +
-      `  npx --yes wrangler@4.152.0 pages deploy web/dist --project-name ${PROJECT} --branch main`,
+      "Nothing was published. To deploy (Tony's call, docs/HOSTING.md): a protected preview\n" +
+      `  npx --yes vercel@65.5.0 deploy web/dist --yes\n` +
+      `and on submission day, the public address: add --prod (Vercel project ${PROJECT}).`,
   );
 }
 if (json) console.log(JSON.stringify({ ok, steps, files: files.length, bytes, project: PROJECT }));

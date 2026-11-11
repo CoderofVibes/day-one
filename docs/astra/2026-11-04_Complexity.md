@@ -1,6 +1,6 @@
 # Complexity and polish: make one order carry the story
 
-Pass for Tony and Claude, November 4, 2026. Seats 1, 3 and 5, plus Tony's request to make the signed decision visible behind the curtain. Reviewed commit `36fd59c`; the checkout was clean before the pass and remained at that commit through the review. Proposals only; no application changes.
+Pass for Tony and Claude, November 4, 2026. Seats 1, 3 and 5, plus Tony's request to make the signed decision visible behind the curtain. Reviewed commit `b7a7824`; the checkout was clean before the pass and remained at that commit through the review. Proposals only; no application changes.
 
 **Assessment: the product has a clear idea, but its presentation gives too many proofs equal billing.** The opening paragraph works. Linda's decision card works. The fourteen-row map between them makes the reader do the organizing. Judge mode then walks thirteen stops, including two different subjects on several stops, and ends by offering another tour. The strongest improvement is to follow one order from need to payment, and let everything else be reference.
 

@@ -26,15 +26,16 @@ The explorer links go to `testnet.nearblocks.io`, so a judge can check every cla
 
 The API adds two things a judge could not get from the static page: the import wizard and pressing the buttons. Both run from a clean clone with `npm run api` (README), so the hosted page does not need them. **Recommendation: host the static replay only.**
 
-## Recommended host: Cloudflare Pages, direct upload
+## Host: Vercel (Tony, Nov 11: one host for both projects)
 
-- **Why:** Tony already has a Cloudflare account (the muse-claude-bridge relay runs on `coderofvibes.workers.dev`, logged in with `wrangler login` on the dev PC). Direct upload with Wrangler needs no Git connection, so the private repo stays private.
-- **Limits that matter** (developers.cloudflare.com/pages/platform/limits, checked Oct 29): 20,000 files per site and 25 MiB per file on the free plan; direct uploads are not builds, so the 500 builds a month do not apply. We upload 11 files.
-- **How long it stays up:** a Pages deployment stays until it is deleted. Nothing to renew for Nov 18 or Nov 25.
-- **URL:** `https://day-one-kevin.pages.dev` (the project name in `scripts/host-build.ts`; any free name works).
-- **Kept out of search:** `_headers` sends `X-Robots-Tag: noindex`, so the page is reachable by link but not indexed while the repo is private.
+- **How:** the Vercel CLI uploads the built `web/dist` from a folder named `day-one-kevin` (the project name), with the `vercel.json` that `npm run host:build` writes (the same headers as `_headers`). No Git connection, so the private repo stays private.
+- **Private until Friday:** a plain `vercel deploy` makes a **preview**. With Vercel's default Deployment Protection, a preview opens only for someone signed in to Tony's Vercel account; anyone else gets a Vercel sign-in page. On Fri Nov 13, `vercel deploy --prod` publishes the same files at the project's public address (`https://day-one-kevin.vercel.app` if the name is free).
+- **Kept out of search:** `X-Robots-Tag: noindex` on every file, so even the public address is reachable by link, not by search, until the repo is public.
+- **How long it stays up:** until it is deleted. Nothing to renew for Nov 18 or Nov 25.
 
-## Steps for Tony (about 5 minutes)
+The Cloudflare steps below were the plan until Nov 11 and still work as a fallback.
+
+## Steps for Tony on Cloudflare (fallback)
 
 1. From the repo root on the branch that will be submitted:
 

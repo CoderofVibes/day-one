@@ -1,6 +1,6 @@
 # README opening: purpose, breadth, then one order
 
-Drafting pass for Tony and Claude, November 4, 2026. Seats 1 and 3. Reviewed commit `a68ffa8`; the checkout was clean at the start and before writing. Proposal only.
+Drafting pass for Tony and Claude, November 4, 2026. Seats 1 and 3. Reviewed commit `02b38a0`; the checkout was clean at the start and before writing. Proposal only.
 
 **Recommendation: take Claude's proposed order and tighten its wording. Tony is right that the acquisition handover should be understood before the reader is asked to follow a PO.** My earlier pass made the evidence easier to reach, but its opening gave too little space to the purpose and breadth of the product. Keep the order as the concrete example after a compact view of what Kevin takes on.
 

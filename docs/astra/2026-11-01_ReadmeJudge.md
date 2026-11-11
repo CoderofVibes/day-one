@@ -2,7 +2,7 @@
 
 Recommendation to Tony: keep the new premise-first order. Before treating this as the public-facing story, narrow the supplier-credential, sealed-quote and ERP-payment claims; put the simulated phone and server-held keys beside the approval story; then shorten the README. The recorded purchasing loop is substantially better supported than several of the general guarantees surrounding it.
 
-Seats 1 and 5, with adversarial reading only to test public claims. Proposals only; no implementation or git writes. References below use the line numbers read during this pass, around HEAD `6d4866b`.
+Seats 1 and 5, with adversarial reading only to test public claims. Proposals only; no implementation or git writes. References below use the line numbers read during this pass, around HEAD `cc81d55`.
 
 **Verification stopped under the overlap rule.** At entry, `git status --short` showed only the supplied, untracked brief. At the final overlap check, it showed edits to `AGENTS.md`, `api/src/main.ts`, `api/src/session.ts`, `api/src/watcher.ts`, `api/src/watcher.test.ts`, and `docs/LESSONS.md`, plus new API log-file files. `AGENTS.md` is expressly in this brief. [ASTRA.md](../ASTRA.md), “Never work where Claude is editing,” says: “if the brief touches those files, say so in the pass and stop.” I stopped further investigation, did not read those new changes, and wrote up the evidence already obtained. This is a bounded review, not a full green verification of the moving tree.
 

@@ -153,7 +153,7 @@ npm run docs:check; npm run repo:check; npm run clean-clone
 cd contracts && cargo test         # Rust in Linux/WSL; 93 unit + 4 sandbox tests
 ```
 
-Final run on `main` before handoff (Oct 31, commit `fe3cb73`; this file and the plan note came after, docs only): every command exited 0.
+Final run on `main` before handoff (Oct 31, commit `c16dd0a`; this file and the plan note came after, docs only): every command exited 0.
 
 | Command | Last line |
 |---|---|

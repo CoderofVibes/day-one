@@ -92,3 +92,31 @@ export const HEADERS = `/*
 /index.html
   Cache-Control: no-cache
 `;
+
+/**
+ * The same headers for Vercel (Tony, Nov 11: Vercel hosts both projects), as the vercel.json a
+ * static deployment of web/dist reads. No rewrites: every page is ?page= on index.html, so a
+ * path that is not a file is a real 404.
+ */
+export const VERCEL_JSON = `${JSON.stringify(
+  {
+    headers: [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        ],
+      },
+      {
+        source: "/assets/(.*)",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      { source: "/", headers: [{ key: "Cache-Control", value: "no-cache" }] },
+      { source: "/index.html", headers: [{ key: "Cache-Control", value: "no-cache" }] },
+    ],
+  },
+  null,
+  2,
+)}\n`;

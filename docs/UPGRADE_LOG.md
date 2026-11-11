@@ -28,7 +28,7 @@ Not built in this upgrade: the what-if planner (§3.4), the supplier disruption 
 - Replay fixtures: `data/replay/` (`demo-chain.json`, `demo-llm.json`, `demo-salts.json`, `transcript.txt`; `group-chain.json`, `group-salts.json`, `group-transcript.txt`; `attacks-chain.json`, `attacks-llm.json`; `review-llm.json`; `inbox-llm.json`; `reconcile-chain.json`; `attestation.json`). Also `data/attacks/`, `data/sealed/`, `data/usdc/`, `data/quotes/`.
 - Web data: `npm run web:data` (`scripts/web-data.ts`) replays the recorded run with no keys and writes `web/src/data/demo-run.json`, `plants.json`, `series.json`, `journey.json`, `pages.json`, `review.json` and `web/public/books.csv`; `npm run demo:group -- --web` writes `group-buy.json`. The pages read them through `web/src/reads.ts` and `web/src/series.ts` (live from the API when it runs).
 
-**3D stack.** `web/src/twin3d/` (`Twin3D.tsx` 1,610 lines, `PlantView.tsx`, `buildings.ts`, `scene.ts`, `twin3d.css`): react-three-fiber 9.8.2, drei 10.7.9, three 0.186.1, React 19.3.1 (`web/package.json`). Camera framing per step (`StoryCamera`), record mode `?record=1`. The flat map `web/src/twin/PlantMap.tsx` (SVG, same `layout.ts`/`model.ts`) is now only the fallback when WebGL is missing (`PlantView.tsx`, since commit 2253edc).
+**3D stack.** `web/src/twin3d/` (`Twin3D.tsx` 1,610 lines, `PlantView.tsx`, `buildings.ts`, `scene.ts`, `twin3d.css`): react-three-fiber 9.8.2, drei 10.7.9, three 0.186.1, React 19.3.1 (`web/package.json`). Camera framing per step (`StoryCamera`), record mode `?record=1`. The flat map `web/src/twin/PlantMap.tsx` (SVG, same `layout.ts`/`model.ts`) is now only the fallback when WebGL is missing (`PlantView.tsx`, since commit 4a3fdad).
 
 **Styling.** `web/src/tokens.css` (about 110 custom properties, light and dark with `data-theme`), `web/src/v2.css` (v2 pages, frosted glass), `web/src/styles.css`, `web/src/video.css`; `web/src/shell.tsx` holds the sidebar nav (sections PLANT, ACROSS ACME, ACME HQ) and shared shell pieces.
 
@@ -87,7 +87,7 @@ All six are frozen in `data/proof-points.json`, built by `scripts/lib/proofPoint
 
 **§5.6 "Today:"**
 
-- Overview: "Batches, last 4 weeks", "Tablet yield, last 4 weeks" (the brief drops "last 4 weeks" from the second), "Below reorder point", "Spend this month": confirmed (`web/src/pages/Overview.tsx`). The Flat/3D toggle in the brief is gone: since 2253edc the 3D twin is the only map.
+- Overview: "Batches, last 4 weeks", "Tablet yield, last 4 weeks" (the brief drops "last 4 weeks" from the second), "Below reorder point", "Spend this month": confirmed (`web/src/pages/Overview.tsx`). The Flat/3D toggle in the brief is gone: since 4a3fdad the 3D twin is the only map.
 - Purchasing: "Received this month", per-PO limit, open POs, last quotes: confirmed (`web/src/pages/Buying.tsx`).
 - ERP connection: "Brought over at cutover", "Bills matched", reconciliation: confirmed (`web/src/pages/Acme.tsx`).
 - Three plants: "Three plants · one truth" (upper-cased by CSS), mass balance: confirmed (`web/src/panes.tsx`); the "Before you buy" moves come from the ledger through `web/src/data/plants.json`.

@@ -8,7 +8,7 @@ From Claude, on Tony's instructions in Claude's chat. Seat 1 (judge's read) and 
 
 ## Where things stand
 
-Your complexity pass (`docs/astra/2026-11-04_Complexity.md`) was applied in commit `0548e17` (OPEN_QUESTIONS #51). The README now opens with four short paragraphs: the human benefit, the mechanism, the PO-1042 story, the prototype caveats. Then come links, Ray's Monday with Linda's screenshot, and "What else is in it" (a ten-bullet list of layers, shown, not folded). The layer index and the claims table are folded further down.
+Your complexity pass (`docs/astra/2026-11-04_Complexity.md`) was applied in commit `84337f5` (OPEN_QUESTIONS #51). The README now opens with four short paragraphs: the human benefit, the mechanism, the PO-1042 story, the prototype caveats. Then come links, Ray's Monday with Linda's screenshot, and "What else is in it" (a ten-bullet list of layers, shown, not folded). The layer index and the claims table are folded further down.
 
 Claude's view, given to Tony: he is partly right. The current opening says what Day One does and shows one order before it says why it matters or how much it covers. Breadth first appears about a screen down, and the intent (bring a small acquired manufacturer onto an AI agent on the day the deal closes, years before an ERP migration reaches it) is never stated outright. But a feature list without the order reads as marketing; PO-1042 is what makes the list believable. Claude proposed reordering to **purpose → what it brings → see it in one order → proof**, and drafted:
 
