@@ -355,7 +355,9 @@ function Tiles({
   const low = (inventory?.materials ?? []).filter((m) => m.byPlant[plant]?.low);
   const reorderWeeks = history.belowReorder.filter((w) => w.facility === plant && w.week <= end);
   const lowNow = inventory ? low.length : (reorderWeeks.at(-1)?.below ?? 0);
-  const lowBefore = reorderWeeks.at(-2)?.below ?? lowNow;
+  // A week-on-week change only where both counts come from the same weekly history; live stock
+  // after today's batches is not comparable with last week's weekly count (finding 35).
+  const lowBefore = inventory ? null : (reorderWeeks.at(-2)?.below ?? null);
 
   const month = end.slice(0, 7);
   const spendIn = (m: string) =>
@@ -449,15 +451,17 @@ function Tiles({
         value={lowNow}
         unit={lowNow === 1 ? "material" : "materials"}
         tone={lowNow > 0 ? "waiting" : undefined}
-        delta={{ value: lowNow - lowBefore, goodWhenUp: false, vs: "vs a week ago" }}
+        {...(lowBefore !== null
+          ? { delta: { value: lowNow - lowBefore, goodWhenUp: false, vs: "vs a week ago" } }
+          : {})}
         context={
           lowNow > 0 ? (
             <Pill tone={lowNow > 2 ? "refused" : "waiting"}>
               {low
                 .slice(0, 2)
-                .map((m) => m.code)
+                .map((m) => m.name)
                 .join(", ")}
-              {low.length > 2 ? ` +${low.length - 2}` : ""}
+              {low.length > 2 ? ` +${low.length - 2} more` : ""}
             </Pill>
           ) : (
             "all above reorder"
@@ -481,11 +485,14 @@ function Tiles({
         open={{ id: "inventory", page: "inventory" }}
       />
       <StatTile
-        label="Spend this month"
+        label="Paid this month"
         value={compactDollars(spent)}
-        context={
-          limits ? `of ${compactDollars(limits.monthly)} Kevin may commit` : monthName(month)
-        }
+        context={[
+          held ? `+ ${compactDollars(held)} set aside, not paid` : null,
+          limits ? `of ${compactDollars(limits.monthly)} Kevin may commit` : monthName(month),
+        ]
+          .filter(Boolean)
+          .join(" · ")}
         why={`${dollars(spent)} received in ${monthName(month)}${limits ? `; Kevin may commit ${dollars(limits.monthly)} a month, and any single PO over ${dollars(limits.perPo)} goes to ${limits.approver}` : ""}. ${held ? `${dollars(held)} is held for orders on the way.` : `${dollars(spendIn(prev))} in ${monthName(prev)}.`}`}
         open={{ id: "purchasing", page: "purchasing" }}
       >
@@ -519,7 +526,7 @@ function Tiles({
         }
         context={
           dated.length
-            ? `${receipts.length} received, ${dated.length} dated`
+            ? `${dated.length} of ${receipts.length} received had a need-by date`
             : receipts.length
               ? "no need-by dates set"
               : "none in 90 days"

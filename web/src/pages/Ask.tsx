@@ -8,7 +8,9 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import "../ask.css";
 import {
+  type AskMode,
   askApi,
+  askMode,
   type Check,
   type KevinAnswer,
   type RecordedAsk,
@@ -67,6 +69,11 @@ export function AskPage({ source }: { source: Source }) {
 
 export function AskKevin({ recorded, live }: { recorded: RecordedAsk; live: boolean }) {
   const [turns, setTurns] = useState<Turn[]>([]);
+  // Behind the API: does this server ask Kevin's model now, or replay the recorded answers?
+  const [mode, setMode] = useState<AskMode | null>(null);
+  useEffect(() => {
+    if (live) void askMode().then(setMode);
+  }, [live]);
   const [draft, setDraft] = useState("");
   const counter = useRef(0);
   const end = useRef<HTMLDivElement>(null);
@@ -135,7 +142,13 @@ export function AskKevin({ recorded, live }: { recorded: RecordedAsk; live: bool
       <section className="card-v2 ask-start" aria-label="Ask Kevin">
         <p className="small muted">
           {live
-            ? "Kevin answers from the plant's records and cites each one; he explains and proposes, and never places, approves or pays from here. The suggested questions have recorded answers; any other question needs Kevin's model key on this server."
+            ? `Kevin answers from the plant's records and cites each one; he explains and proposes, and never places, approves or pays from here. ${
+                mode === "live"
+                  ? "Answers here are live: each question is asked of Kevin's model now and signed in its enclave."
+                  : mode === "recorded"
+                    ? "Answers here are recorded: only the suggested questions have one."
+                    : "Kevin cannot answer on this server."
+              }`
             : anyRecorded
               ? "Recorded questions · choose one to see Kevin's answer and the records it cites."
               : `This replay answers the suggested questions from Kevin's recorded answers. ${NOT_YET}`}
@@ -206,8 +219,9 @@ export function AnswerCard({ turn, enclave }: { turn: Turn; enclave: RecordedAsk
       {/* Recorded or live, Kevin reads the end-of-run records (api/src/ask.ts), not the clock's
           moment (first-use review, finding 35). */}
       <p className="ask-when small">
-        Kevin read the records as they stood at the end of the recorded run (Mon, Nov 16), not at
-        the moment on the clock, so a number here can differ from the pages.
+        {turn.recorded ? "Recorded answer. " : "Live answer, asked just now. "}
+        Kevin answers from the records at the end of the recorded week (Mon, Nov 16). What was
+        confirmed on this desk since is not in them, so a stock figure can differ from Inventory.
       </p>
       <p className="ask-text">
         {withCitations(a.answer, a.citations).map((part) =>
@@ -274,7 +288,7 @@ function ModelChip({
       >
         {m.attested ? "Signed in enclave ✓" : "Fallback model · not attested"}
       </button>
-      {recorded && <span className="ask-recorded small">recorded answer</span>}
+      <span className="ask-recorded small">{recorded ? "recorded answer" : "live answer"}</span>
       {open && (
         <dl className="ask-details small">
           <dt>Model</dt>

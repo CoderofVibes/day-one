@@ -104,8 +104,9 @@ export class AskDesk {
       return { ...answer, recorded: this.mode === "recorded" };
     } catch (error) {
       if (this.mode === "recorded" && /no recorded/.test((error as Error).message)) {
+        // Shown on the staff page as it is: plain words, no key names or commands.
         throw new AskUnavailableError(
-          "This API replays the recorded answers to the suggested questions; with NEARAI_API_KEY in .env Kevin answers any question live.",
+          "On this server Kevin has recorded answers to the suggested questions only. Choose one of them above.",
         );
       }
       throw error;

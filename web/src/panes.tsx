@@ -722,7 +722,10 @@ export function HqPane({ policy, live }: { policy: PolicyState | null; live: boo
               <Pill tone="neutral">over that, {who(agent.approver, policy.names)} approves</Pill>
             </div>
             <div className="tile">
-              <small>Kevin's spend on the contract, this calendar month</small>
+              <small>
+                Kevin's spend on the testnet contract, this calendar month: every recorded run and
+                rehearsal, not only this replay's orders
+              </small>
               <b>
                 {usd(spent)} <small>of {usd(monthly)}</small>
               </b>
@@ -758,7 +761,9 @@ export function HqPane({ policy, live }: { policy: PolicyState | null; live: boo
                 <tr>
                   <th>Category</th>
                   <th className="n">Monthly cap</th>
-                  <th className="n">Spent on the contract this calendar month</th>
+                  <th className="n">
+                    Spent on the testnet contract this calendar month, every plant's agent
+                  </th>
                 </tr>
               </thead>
               <tbody>

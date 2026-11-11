@@ -7,6 +7,33 @@ const value = (field: Read) => field.raw || (field.legibility === "clear" ? "—
 const withUnit = (field: Read, unit: Read) =>
   field.raw && unit.raw ? `${field.raw} ${unit.raw}` : value(field);
 
+/**
+ * One material drawn from more than one lot is one target over several lines: the first line
+ * carries the target, the others none. Each line is told its group, so the first one reads as
+ * part of a total and not as a miss (first-use review, finding 21: 187.45 kg of 412 kg).
+ */
+function lotGroups(reading: BatchRecordExtraction) {
+  const byCode = new Map<string, number[]>();
+  reading.materials.forEach((line, i) => {
+    const code = line.material_code.raw;
+    if (code) byCode.set(code, [...(byCode.get(code) ?? []), i]);
+  });
+  const groups = new Map<number, { first: number; count: number; total: string | null }>();
+  for (const indexes of byCode.values()) {
+    if (indexes.length < 2) continue;
+    const lines = indexes.map((i) => reading.materials[i]);
+    const numbers = lines.map((l) => Number((l?.actual_qty.raw ?? "").replace(/,/g, "")));
+    const unit = lines[0]?.unit.raw ?? "";
+    const total = numbers.every(Number.isFinite)
+      ? `${numbers.reduce((s, n) => s + n, 0).toLocaleString("en-US", { minimumFractionDigits: 3, maximumFractionDigits: 3 })} ${unit}`.trim()
+      : null;
+    for (const i of indexes) {
+      groups.set(i, { first: indexes[0] as number, count: indexes.length, total });
+    }
+  }
+  return groups;
+}
+
 export function BatchReading({
   scan,
   reading,
@@ -18,6 +45,7 @@ export function BatchReading({
   posted?: BatchRecordExtraction | null;
   flags?: InboxFlag[];
 }) {
+  const groups = reading ? lotGroups(reading) : new Map();
   return (
     <div className="batch-reading">
       <a className="scan-thumb" href={scan} target="_blank" rel="noreferrer">
@@ -48,6 +76,7 @@ export function BatchReading({
               </thead>
               <tbody>
                 {reading.materials.map((line, index) => {
+                  const group = groups.get(index);
                   const answer = posted?.materials[index];
                   const fields = [
                     line.material_code,
@@ -73,11 +102,23 @@ export function BatchReading({
                       </td>
                       <td>
                         <small className="batch-mobile-label">Target</small>
-                        {withUnit(line.target_qty, line.unit)}
+                        {group && group.first !== index && !line.target_qty.raw ? (
+                          <small className="sub">same target as the line above</small>
+                        ) : (
+                          withUnit(line.target_qty, line.unit)
+                        )}
+                        {group && group.first === index && (
+                          <small className="sub">for all {group.count} lots</small>
+                        )}
                       </td>
                       <td>
                         <small className="batch-mobile-label">Actual</small>
                         {withUnit(line.actual_qty, line.unit)}
+                        {group && group.first === index && group.total && (
+                          <small className="sub">
+                            {group.total} in all, from {group.count} lots
+                          </small>
+                        )}
                         {line.correction.present && (
                           <small className="sub">
                             Corrected on paper from {line.correction.struck_value} (

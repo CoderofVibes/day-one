@@ -157,10 +157,18 @@ export function plantSchedule(
   const costUsdc = batches.reduce((s, b) => s + b.costUsdc, 0);
   const unpriced = [...new Set(batches.flatMap((b) => b.unpriced))].sort();
   const shortBatches = batches.filter((b) => b.short.length > 0);
+  // The window is said in full, so the line is not read against a shorter window's count
+  // beside it (first-use review, finding 42).
+  const day = (iso: string) =>
+    new Date(`${iso.slice(0, 10)}T12:00:00Z`).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    });
   const sentence =
     batches.length === 0
-      ? `Nothing planned at ${plant.name} from ${from} to ${to}.`
-      : `${batches.length} batch${batches.length === 1 ? "" : "es"} planned at ${plant.name} to ${to}; ` +
+      ? `Nothing planned at ${plant.name} from ${day(from)} to ${day(to)}.`
+      : `${batches.length} batch${batches.length === 1 ? "" : "es"} planned at ${plant.name} from ${day(from)} to ${day(to)}; ` +
         (shortBatches.length === 0
           ? "stock on hand and scheduled usable supply cover every one."
           : `${shortBatches.length} would run short: ${shortBatches

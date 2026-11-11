@@ -130,7 +130,7 @@ describe("behind the curtain, page by page", () => {
     const html = renderToStaticMarkup(
       createElement(Curtain, { data: run, upTo: last, page: "purchasing" as PageId }),
     );
-    expect(html).toMatch(/\d+ on this page · \d+ total recorded/);
+    expect(html).toMatch(/\d+ on this page · \d+ recorded across every run/);
     expect(html).toContain("15 enclave checks");
   });
 });

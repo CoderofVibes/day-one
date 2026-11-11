@@ -191,12 +191,7 @@ function Summary({
   return (
     <div className="judge-summary">
       <h2>See every proof</h2>
-      <p className="small">
-        Choose a claim to see its recording, its checks and its limits.
-        {tests
-          ? ` ${tests.tests.toLocaleString("en-US")} automated tests passed in the last full run (${tests.at.slice(0, 10)}).`
-          : ""}
-      </p>
+      <p className="small">Choose a claim to see its recording, its checks and its limits.</p>
       <ol className="judge-proof-list">
         {PROOF_STEPS.map((s, k) => (
           <li key={s.id}>
@@ -212,10 +207,16 @@ function Summary({
         <p className="small">
           After installation this checks the local evidence. Run <code>npm run prove</code> for the
           full scorecard with read-only testnet comparisons.
+          {tests
+            ? ` The last full run there passed ${tests.tests.toLocaleString("en-US")} automated tests (${tests.at.slice(0, 10)}).`
+            : ""}
         </p>
       </details>
       <details className="judge-all">
-        <summary>For a closer look: all {links.length} recorded testnet transactions</summary>
+        <summary>
+          For a closer look: the {links.length} testnet transactions these proofs cite (PROOF.md
+          lists every recorded call)
+        </summary>
         <ol className="judge-proofs">
           {links.map((l) => (
             <li key={l.url}>

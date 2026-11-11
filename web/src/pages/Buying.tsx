@@ -766,10 +766,10 @@ export function InvoicesPage({
           why={`${toApprove} bills matched to their PO and receipt and waiting for approval in the ERP.`}
         />
         <StatTile
-          label="Held for Marcy"
+          label="Requests held"
           value={books.held.length}
           tone={books.held.length ? "refused" : undefined}
-          context={books.held.length ? "waiting on Marcy" : "nothing held"}
+          context={books.held.length ? "waiting on Marcy Allen, accounting" : "nothing held"}
           why={
             books.held.map((h) => `${h.invoiceNo}: ${h.staff.join(" ")}`).join(" ") ||
             "No invoice is held."
@@ -813,8 +813,13 @@ export function InvoicesPage({
       {books.held.length > 0 && (
         <section className="card-v2" aria-label="Held invoices">
           <div className="chart-head">
-            <h3>Held for Marcy</h3>
+            <h3>Held for Marcy Allen, accounting</h3>
           </div>
+          <p className="small muted">
+            What is held is the request, not the invoice it names: an order pays only the supplier
+            account fixed when Kevin placed it, so the invoice below can show as matched and paid
+            while a request to pay it elsewhere waits here.
+          </p>
           <ul className="review">
             {books.held.map((inv) => (
               <HeldInvoiceCard key={inv.invoiceNo} invoice={inv} curtain={curtain} />

@@ -257,7 +257,14 @@ function buildTrack(t: TrackInput): PoTrack {
   const raw: [TrackStage["key"], string, boolean, string | undefined, boolean][] = [
     ["drafted", "Drafted", true, t.amount, false],
     ["limit", t.limit.label, t.limit.done, t.limit.note, t.limit.stopped],
-    ["funded", "Money set aside", t.funded, t.funded ? "not paid yet" : undefined, false],
+    // "not paid yet" only while it is true: a paid order's track says paid once (finding 28).
+    [
+      "funded",
+      "Money set aside",
+      t.funded,
+      t.funded && !t.paid ? "not paid yet" : undefined,
+      false,
+    ],
     ["shipped", "Shipped", t.shipped, undefined, false],
     ["received", "Received", t.received, t.received && !t.qc ? "in quarantine" : undefined, false],
     [
@@ -856,7 +863,7 @@ export function handledFromRun(run: Pick<RunData, "steps" | "approvals">, at: nu
         ...base,
         kind: "suggestion",
         title: f.forecast
-          ? `${f.material ?? "Stock"} runs short by about ${f.forecast.shortKg} in the next 10 days; order ${f.forecast.orderKg}`
+          ? `${f.material ?? "Stock"} runs short by about ${f.forecast.shortKg} in the next 10 days, counting the batch record Ray confirmed; order ${f.forecast.orderKg}`
           : "Forecast the next batches' materials",
         ...(f.big ? { outcome: `became ${f.big.po}` } : {}),
       });

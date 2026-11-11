@@ -287,13 +287,21 @@ export function projectMaterial(db: Ledger, input: ForecastInput): Omit<Forecast
   const products_ = [...new Set(plannedBatches.map((b) => b.product.replace(/^P-/, "")))];
   const count = NUMBER_WORDS[plannedBatches.length] ?? String(plannedBatches.length);
   const fmt = (base: number) => amount(base, material.dimension);
+  // "Calcium carbonate" reads lower case mid-sentence; "150 cc HDPE bottle" and "pH 7.00 buffer"
+  // keep their own case.
+  const midSentence = material.name.replace(/^([A-Z])(?=[a-z])/, (c) => c.toLowerCase());
   const sentence = [
     plannedBatches.length
       ? `${count} more ${products_.join(" and ")} batch${plannedBatches.length === 1 ? "" : "es"} in the next ${horizonDays} days need${plannedBatches.length === 1 ? "s" : ""} about ${fmt(needBase)}.`
-      : `No planned batches use ${material.name.toLowerCase()} in the next ${horizonDays} days.`,
+      : `No planned batches use ${midSentence} in the next ${horizonDays} days.`,
     shortfallBase > 0 ? `Short about ${fmt(shortfallBase)}.` : "",
     firstShort && incoming.length
       ? `${firstShort.batchNo} needs ${fmt(firstShort.qtyBase)} more by ${firstShort.date}. Check when incoming material will be usable or review the schedule.`
+      : "",
+    // Nothing runs short, so the order is for the reorder point: say what is left and why, so a
+    // fresh recommendation is not read as a stale one (first-use review, findings 36 and 37).
+    recommendQtyBase && netShort === 0 && shortfallBase === 0
+      ? `That leaves about ${fmt(afterBase)} on hand and on order, under the ${fmt(reorderPointBase)} reorder point.`
       : "",
     recommendQtyBase ? `Recommend ordering ${fmt(recommendQtyBase)}.` : "",
   ]

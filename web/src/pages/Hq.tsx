@@ -73,14 +73,17 @@ export function SuppliersPage({ source, curtain }: { source: Source; curtain: bo
   return (
     <>
       <p className="small muted">
-        HQ issued supplier approvals on the contract for {creds.length} suppliers; the scorecards
-        below cover every supplier in the plants' records.
+        HQ issued time-limited supplier credentials on the contract for {creds.length} suppliers;
+        the scorecards below cover every supplier in the plants' records, credentialed or not. Three
+        words, three things: a <b>credential</b> is HQ's dated approval on the contract;{" "}
+        <b>qualified</b> on Spending limits is a supplier's standing in Kevin's policy; the
+        scorecards' <b>active</b> means in good standing, with or without a credential.
       </p>
       <div className="cards-4">
-        <NumberCard label="On the contract: approved" value={count("Approved")} />
-        <NumberCard label="On the contract: suspended" value={count("Suspended")} />
-        <NumberCard label="On the contract: expired" value={count("Expired")} />
-        <NumberCard label="On the contract: revoked" value={count("Revoked")} />
+        <NumberCard label="Credential current" value={count("Approved")} />
+        <NumberCard label="Credential suspended" value={count("Suspended")} />
+        <NumberCard label="Credential expired" value={count("Expired")} />
+        <NumberCard label="Credential revoked" value={count("Revoked")} />
       </div>
       <SupplierScorecards standings={creds} curtain={curtain} />
       <section className="card-v2" aria-label="Supplier approvals HQ issued">

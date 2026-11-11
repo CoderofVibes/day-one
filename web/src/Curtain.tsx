@@ -297,7 +297,7 @@ function CurtainBody({
   const cards: Card[] =
     view?.cards ?? txs.map(({ stepIndex, tx }) => ({ kind: "tx", tx, stepIndex }));
   const count = view
-    ? `${view.fallback ? 0 : view.cards.length} on this page · ${view.total} total recorded`
+    ? `${view.fallback ? 0 : view.cards.length} on this page · ${view.total} recorded across every run`
     : txs.length === 1
       ? "1 transaction"
       : `${txs.length} transactions`;
@@ -305,7 +305,14 @@ function CurtainBody({
   const notes = (from: number, to: number) =>
     data.steps
       .slice(from, to)
-      .flatMap((s) => s.chain.filter((c) => !c.tx).map((c) => c.line.replace(/^chain:\s*/, "")))
+      .flatMap((s) =>
+        s.chain
+          .filter((c) => !c.tx)
+          // The closing count is this order's run alone, not every recorded run.
+          .map((c) =>
+            c.line.replace(/^chain:\s*/, "").replace(/^(\d+ transactions)/, "This order's run: $1"),
+          ),
+      )
       .map((n) => (
         <p key={n} className="ledger">
           {n}

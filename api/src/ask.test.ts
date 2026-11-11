@@ -293,7 +293,7 @@ describe("the desk", () => {
   it("says when a question was not recorded", async () => {
     const desk = new AskDesk({ cards, llm: new ReplayLlm(handFixture(cards)), mode: "recorded" });
     await expect(desk.ask("Who is Kevin?", { session: "a", address: "x" })).rejects.toThrow(
-      "NEARAI_API_KEY",
+      "suggested questions only",
     );
   });
 });

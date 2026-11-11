@@ -499,6 +499,13 @@ export function inspectObject(
       const money = flows.filter((f) => f.kind === "money");
       const paid = money.some((f) => f.id.startsWith("paid-") || f.id.startsWith("refund-"));
       const refused = money.length > 0 && money.every((f) => f.status === "refused");
+      // An order the contract refused once for its size, then funded on a director's approval:
+      // the refused coin is dropped on approval, so the run's own line says it (finding 29).
+      const approvedOver =
+        !refused &&
+        run.steps
+          .slice(0, upTo + 1)
+          .some((s) => s.title === "Big PO" && s.staff.join(" ").includes(po));
       const now = paid
         ? 6
         : ship?.status === "arrived"
@@ -512,7 +519,9 @@ export function inspectObject(
         ...base,
         summary: refused
           ? "Over Kevin's limit, so the spending policy refused it; it waits for a director's approval."
-          : "A purchase order Kevin placed within the limits HQ set.",
+          : approvedOver
+            ? "Over Kevin's limit: the spending policy refused it until the ops director approved it, then funded it."
+            : "A purchase order Kevin placed within the limits HQ set.",
         fields: [
           ...money.map((f) => ({ label: moneyLabel(f), value: f.label.replace(`${po} · `, "") })),
           ...(ship ? [{ label: "Delivery", value: ship.label }] : []),

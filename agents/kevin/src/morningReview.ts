@@ -701,7 +701,9 @@ function batchSizeChange(ctx: Context, reading: MessageReading): Verdict {
           const covered = e.recommend !== null && e.recommend >= e.shortThen;
           return (
             `${e.material.name} need in the next 10 days ${e.delta >= 0 ? "rises" : "falls"} by ${quantity(Math.abs(e.delta), e.material.dimension)}: ` +
-            `short about ${quantity(e.shortThen, e.material.dimension)}${e.shortNow ? ` instead of ${quantity(e.shortNow, e.material.dimension)}` : ""}` +
+            // Said against this morning's stock, so it is not read against the larger shortage
+            // the forecast shows once the day's batch records post (first-use review, finding 34).
+            `short about ${quantity(e.shortThen, e.material.dimension)}${e.shortNow ? ` instead of ${quantity(e.shortNow, e.material.dimension)}` : ""} on this morning's stock, before today's batch records post` +
             (covered
               ? `; the ${quantity(e.recommend as number, e.material.dimension)} Kevin recommends ordering still covers it.`
               : "; the order Kevin recommends would not cover it.")

@@ -60,6 +60,19 @@ function sessionId(): string {
 }
 
 /** Asks the running API; an error carries the API's own sentence. */
+/** How the running API answers: "live" asks Kevin's model now, "recorded" replays the
+ *  suggested questions only, "off" answers nothing. */
+export type AskMode = "live" | "recorded" | "off";
+export async function askMode(): Promise<AskMode> {
+  try {
+    const res = await fetch("api/ask");
+    const body = (await res.json()) as { mode?: AskMode };
+    return body.mode ?? "off";
+  } catch {
+    return "off";
+  }
+}
+
 export async function askApi(question: string): Promise<KevinAnswer> {
   const res = await fetch("api/ask", {
     method: "POST",

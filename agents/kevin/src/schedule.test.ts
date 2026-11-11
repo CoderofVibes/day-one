@@ -41,14 +41,14 @@ describe("the plant's schedule (docs/VISION.md §6.6)", () => {
     expect(s.costUsdc).toBe(s.batches.reduce((sum, b) => sum + b.costUsdc, 0));
     expect(s.unpriced).toEqual(["ASC"]);
     expect(s.sentence).toBe(
-      "5 batches planned at Hollow Pine Tablet Co. to 2026-11-23; 1 would run short: BR-B-1048 (ASC).",
+      "5 batches planned at Hollow Pine Tablet Co. from Nov 9 to Nov 23; 1 would run short: BR-B-1048 (ASC).",
     );
   });
 
   it("says when nothing is planned", () => {
     const s = plantSchedule(db, { facility: "C", now: NOW, days: 14 });
     expect(s.batches).toEqual([]);
-    expect(s.sentence).toBe("Nothing planned at Acme Lakeview from 2026-11-09 to 2026-11-23.");
+    expect(s.sentence).toBe("Nothing planned at Acme Lakeview from Nov 9 to Nov 23.");
   });
 });
 
