@@ -12,10 +12,10 @@ For Tony, reading over the cut you record from `/?video=1&cut=order&capture=1` (
 | 4 | 0:30 | Check stock across plants | 8 | Kevin also catches a transfer still on the other plant's books, and asks them to review the fix. |
 | 5 | 0:38 | What production needs | 6 | The posted batch exposes a shortage in the next production run. |
 | 6 | 0:44 | Quotes | 7 | Supplier agents send quotes. Kevin compares the qualified ones on price and delivery. |
-| 7 | 0:51 | Carry the work into accounting | 8 | Order, receipt, invoice and payment line up in the mock ERP. Here's how NEAR enforces each handoff. |
+| 7 | 0:51 | Carry the work into accounting | 8 | Order, invoice and payment match in the mock ERP. Here's where NEAR comes in. *(shortened Nov 11: the first take needed 19% more speed)* |
 | 8 | 0:59 | The refusal | 10 | Kevin's model approved a fifty-one-fifty order. The contract on NEAR testnet refused it: Kevin's limit is twenty-five hundred. |
 | 9 | 1:09 | Approve by text | 10 | So it goes to Linda. In this demo her reply is simulated, and the server signs for her. Kevin's own key can't approve it. |
-| 10 | 1:19 | Signed decision | 8 | The model's approval was signed in a hardware enclave. Linda's separate approval is what let Kevin fund the order. |
+| 10 | 1:19 | Signed decision | 8 | The model's approval was signed in a hardware enclave. Linda's approval let Kevin fund it. *(shortened Nov 11: the first take needed 18% more speed)* |
 | 11 | 1:27 | Delivery | 6 | The truck arrives. Tommy checks the slip, and Kevin matches it to the order. |
 | 12 | 1:33 | QC release, paid | 10 | Priya releases the lot, and the contract pays Northgate fifty-one fifty, in the demo's test token. Accounting sees it matched. |
 | 13 | 1:43 | Verify the records | 8 | The records' fingerprints are on NEAR, so anyone can check a batch record [and trace a lot]. |
