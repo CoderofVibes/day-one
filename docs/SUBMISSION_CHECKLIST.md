@@ -43,7 +43,7 @@ The questions as asked:
 | Line endings for a Windows clone (guide §3b) | Done: `.gitattributes` starts `* text=auto eol=lf`; `npm run clean-clone` clones on Windows with the system's `core.autocrlf=true` |
 | Windows clean clone (guide §3b) | Nov 11: `failures: 0`, 996 tests. A first run beside the history scan timed out two ERP-sync tests at vitest's 5 s default (they take 3–4 s); the suite's timeout is now 20 s so a slower judge machine passes too. The clone is of local HEAD, the same commit as the private origin; repeat from the public URL on Nov 13 (step 6) |
 | Mainnet payout account | Done: Tony's own wallet; the account name is kept out of the repo (Nov 11) and given by Tony at submit time |
-| Every fitting track selected | Done Nov 8: `realworld`, `business`, `security`, `agents`, `swarms` (OPEN_QUESTIONS #53) |
+| Every fitting track selected | Done Nov 8: `realworld`, `business`, `security`, `agents`, `swarms` (OPEN_QUESTIONS #53); Tony added `open` (Open Innovation) as the sixth on Nov 12 |
 | Hosted demo (Q-012: a plus; keep it up to Nov 18, ideally Nov 25) | Agreed Nov 8; walk-through and deploy at steps 2a and 6a |
 
 ## Steps

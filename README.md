@@ -189,7 +189,7 @@ Bind all submitted PO terms to the authorized fingerprint in a versioned contrac
 
 Codex helped implement and verify the document review and dated inventory forecast.
 
-Built for NEAR HACKATHON by DadMod, Tony Langford’s solo entry, for the realworld, business, security, agents and swarms tracks. Tony is a chemical engineer with ten years on manufacturing floors, now a systems engineer at an advanced nuclear reactor startup, building this on paternity leave.
+Built for NEAR HACKATHON by DadMod, Tony Langford’s solo entry, for the realworld, business, security, agents, swarms and open (Open Innovation) tracks. Tony is a chemical engineer with ten years on manufacturing floors, now a systems engineer at an advanced nuclear reactor startup, building this on paternity leave.
 
 Claude Code built the application. Muse assisted with early planning. GPT-6 Astra contributed design and review passes, then implemented this README, evidence visual, judge-facing copy and contract boundary test with Tony’s authorization. Tony directs the product and approves decisions. [Design passes](docs/astra/INDEX.md)
 

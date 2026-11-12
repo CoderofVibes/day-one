@@ -75,7 +75,7 @@ Post only after the repo is public and the hosted demo is live (checklist steps 
 - **Email:** given by Tony Oct 27; kept out of the repo because it goes public. Tony enters it himself. One email may send 2 submissions (HACKATHON.md, Nov 4), so the same one can serve Everstreet.
 - **Team size:** 1
 - **NEAR wallet address (payout):** Tony's prize account (Meteor Wallet, created by Tony Oct 27; agents never touch it). Kept out of the repo like the email (Nov 11); Tony gives it at submit time and it is checked character by character.
-- **Tracks:** `realworld`, `business`, `security`, `agents`, `swarms` (Tony, Nov 8, OPEN_QUESTIONS #53: swarms added for the recorded group buy and sealed round; privacy not added). The form shows display names: Real-World Money, Autonomous Business, AI Security & Defense, Agent Economy, AI Swarms.
+- **Tracks:** `realworld`, `business`, `security`, `agents`, `swarms`, `open` (Tony, Nov 8, OPEN_QUESTIONS #53: swarms added for the recorded group buy and sealed round; privacy not added. Tony, Nov 12: `open` added as the sixth). The form shows display names: Real-World Money, Autonomous Business, AI Security & Defense, Agent Economy, AI Swarms, Open Innovation.
 - **Repository link:** the public URL of `github.com/CoderofVibes/day-one`, once Tony makes it public.
 - **Demo post link:** the X post's URL, once posted.
 - **Consent:** Tony ticks it himself.
