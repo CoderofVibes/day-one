@@ -1,12 +1,38 @@
 # Day One
 
-**Kevin reads the paperwork, spots material shortages, and handles purchasing within rules people set.**
+**Day One gives a small manufacturing plant an AI purchasing and inventory agent, Kevin, who buys within limits that people set and a NEAR contract enforces.**
 
-Acme has just bought Hollow Pine. Ray still has a plant to run, and the batch records are still on paper. He checks Kevin’s reading against the scan and confirms it. The inventory update exposes an ascorbic acid shortage in the production plan. Kevin asks supplier agents for quotes and brings the order to the person who can approve it.
+Small firms are 98% of American manufacturers and employ nearly 5 million people (SBA Office of Advocacy 2025 profile, from 2022 Census data; [how the figure was checked](docs/research/22-pitch-stats-verification.md)). In the plants Day One was built for, production is still written on paper batch records, inventory lives in spreadsheets, and a person retypes both into the ERP. A material shortage is caught when someone notices it, and the order that fixes it is chased by email. Day One grew out of years on those floors, retyping batch records and catching shortages by hand.
 
-Day One grew out of years spent retyping batch records and catching shortages by hand. It began as “Kevin’s Survival Guide to the Agentic Economy.”
+**Day One brings a plant like that into the agentic economy.** Kevin takes over the paperwork and the purchasing. He reads the plant’s records, keeps its inventory, and buys from supplier agents on NEAR. People set his spending limits once and approve what goes over them. The contract holds the budget, refuses what Kevin is not allowed to buy, and pays a supplier only after the goods arrive and pass quality control. Plant staff never see a wallet, a token or gas.
 
-**[Open the hosted replay](https://day-one-kevin.vercel.app/?judge=3)** (no install, no keys; it opens on the contract's refusal), **[watch the 2:07 submission walkthrough](#try-it-no-keys-needed)**, or follow the [batch record](data/batch-records/BR-B-1045.json) and [recorded workflow](data/replay/transcript.txt). The NEAR testnet contract controls who can fund the order and holds payment through receipt and QC.
+The first customer is a company that has just bought such a plant and needs its purchasing under company rules from the day the deal closes, before any ERP migration. That is where the name comes from.
+
+## What Kevin does
+
+- **Reads the paperwork.** Kevin reads scanned batch records, the plant’s inventory spreadsheet and the purchasing mailbox. A person checks each reading beside the original and confirms it before anything is posted.
+- **Keeps inventory and catches shortages.** He tracks every lot across the company’s plants, compares stock with the production plan, and flags a material that will run short. He suggests a transfer from a sister plant when that is the better fix.
+- **Buys within limits people set.** He asks supplier agents for quotes, leaves out suppliers HQ has not qualified, and places small orders on his own. An order over his limit goes to the director. The NEAR contract refuses to fund it until that director approves.
+- **Pays only for what arrived and passed.** The contract holds each payment in escrow. It pays the supplier named on the order after receiving confirms the delivery and QC releases the lot, and pays less for a short delivery.
+- **Keeps the chain out of the way.** Staff work on ordinary screens. Their approvals, receipts and QC releases become NEAR transactions, and a relayer pays the gas. Kevin’s own key can call only the contract’s purchasing methods. It cannot transfer tokens.
+- **Leaves records anyone can check.** Each batch record and each lot’s history has a fingerprint on chain, so a one-gram edit shows up. Kevin’s model answers are signed inside a NEAR AI Cloud enclave, and the contract checks that signature on a large order.
+- **Works with other plants and other agents.** Two plants’ agents pool one order, and each plant’s director approves its own share. Supplier agents quote from their own NEAR accounts and take part in a sealed-bid round. The results reconcile with a mock of the acquirer’s ERP.
+
+[What is built at each layer, with its proof](#layer-index) · [What the demo does not do](#limitations)
+
+## See it: one order at a fictional plant
+
+The demo runs Day One at an invented plant on NEAR testnet, with test tokens. Every company and person in it is fictional:
+
+- **Acme Holdings** is the acquirer. It has just bought **Hollow Pine Tablet Co**, a small maker of supplement tablets, now one of Acme’s three plants.
+- **Ray Delgado** is Hollow Pine’s purchaser. Kevin works for him.
+- **Linda Park** is the ops director. She approves orders over Kevin’s $2,500 limit.
+- **Tommy Reyes** in receiving and **Priya Natarajan** in QC confirm what was delivered and release it for use.
+- **Northgate Ingredients** is a supplier. Each supplier is an agent with its own NEAR account.
+
+Ray uploads a paper batch record and confirms Kevin’s reading against the scan. The inventory update exposes an ascorbic acid shortage in the production plan. Kevin gets three quotes and prepares a $5,150 order with Northgate, which is over his limit.
+
+**[Open the hosted replay](https://day-one-kevin.vercel.app/?judge=3)** (no install, no keys; it opens on the contract’s refusal), **[watch the 2:07 submission walkthrough](#try-it-no-keys-needed)**, or follow the [batch record](data/batch-records/BR-B-1045.json) and [recorded workflow](data/replay/transcript.txt).
 
 ![The fictional BR-B-1045 scan beside Kevin’s reading, with the material, lot, target and actual quantity ready for Ray to review.](docs/readme/kevin-batch-review.png)
 

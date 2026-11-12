@@ -2,8 +2,8 @@
 
 Tony authorized the Nov 7 rewrite in Codex. The current [README](../README.md) is the maintained version. This guide describes its structure for future edits.
 
-1. Lead with the acquisition handover and the plant’s work before ERP migration. Introduce Kevin in plain words.
-2. Use PO-1042 as the opening proof. Its model-signed response accompanied both the refused and funded attempts. Linda’s authorization changes the outcome. Receipt and QC lead to payment. The [proof strip](readme/order-proof.svg) summarizes the committed recording, with transaction links in the README caption.
+1. Lead with what Day One is and why it exists (Tony, Nov 12): one sentence on the product, the small-manufacturer problem with its sourced figure, what Day One changes, and who deploys it. Then list what Kevin does in plain words. A reader with five minutes and no context must know what Day One is before any name appears.
+2. Introduce the fictional cast (Acme Holdings, Hollow Pine, Ray, Linda, Tommy, Priya, Northgate) by role, as the demo’s invented companies and people, before the story uses them. Then use PO-1042 as the opening proof. Its model-signed response accompanied both the refused and funded attempts. Linda’s authorization changes the outcome. Receipt and QC lead to payment. The [proof strip](readme/order-proof.svg) summarizes the committed recording, with transaction links in the README caption.
 3. Keep the keyless replay first in Try it. Preserve the five numbered steps covered by the clean-clone runner. State which checks need network access. Link the JSON scorecard for automated inspection.
 4. Show the core claims table, then group the broader build under How far it goes. Give every claim its script or test and its relevant transaction or local evidence. Explain pre-chain holds and unit-test-only branches.
 5. State the deployed trust boundaries beside the relevant claims and in Limitations. Retain the on-chain and off-chain table, sustainability, implementation references and AI disclosure below the main story.
