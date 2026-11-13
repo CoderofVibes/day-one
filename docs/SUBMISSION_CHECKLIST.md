@@ -74,6 +74,8 @@ The questions as asked:
     - **Website: leave empty** (spam trap). Consent: Tony ticks it.
 11. **[T] Keep the 201 confirmation** (or the form's success message). One attempt per repository: a mistake is fixed at https://nearhackathon.com/request-changes, never by submitting again.
 
+**Submitted Nov 13 (Tony, through the form).** Name "Day One: AI Purchasing for Acquired Manufacturing Plants", six tracks (realworld, business, security, agents, swarms, open), repo https://github.com/CoderofVibes/day-one at tag `hackathon-submission`, demo post https://x.com/CoderofVibes/status/2121303854788857875, the Nov 13 description; the prize account checked against Tony's wallet before he sent it. Not yet in the public project list on the evening of Nov 13; check again Nov 14. Everstreet's public steps follow in its own thread.
+
 ## After submitting
 
 - **No code changes** to the submitted tag. The repo stays public through judging (results by Nov 18).
