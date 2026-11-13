@@ -79,11 +79,21 @@ Post only after the repo is public and the hosted demo is live (checklist steps 
 - **NEAR wallet address (payout):** Tony's prize account (Meteor Wallet, created by Tony Oct 27; agents never touch it). Kept out of the repo like the email (Nov 11); Tony gives it at submit time and it is checked character by character.
 - **Tracks:** `realworld`, `business`, `security`, `agents`, `swarms`, `open` (Tony, Nov 8, OPEN_QUESTIONS #53: swarms added for the recorded group buy and sealed round; privacy not added. Tony, Nov 12: `open` added as the sixth). The form shows display names: Real-World Money, Autonomous Business, AI Security & Defense, Agent Economy, AI Swarms, Open Innovation.
 - **Repository link:** the public URL of `github.com/CoderofVibes/day-one`, once Tony makes it public.
-- **Demo post link:** the X post's URL, once posted.
+- **Demo post link:** https://x.com/CoderofVibes/status/2121303854788857875 (posted Nov 13; checked public through X's embed: the text, @NEARProtocol, #NEARHackathon, "Built at NEAR HACKATHON" and the video; its repo link resolves to the repo).
 - **Consent:** Tony ticks it himself.
 - **Order (Tony's guide, Nov 10; replaces Nov 4's):** on Fri Nov 13 Day One's public steps and form come first, then Everstreet's.
 - **Website field:** leave empty. HACKATHON.md says it is a spam honeypot and any value is rejected (research 19).
-- **Description (draft, ≤2000 characters; matches the README's opening, Nov 4):**
+- **Description (final, Tony Nov 13; 1,635 of 2,000 characters; the problem, the product and how NEAR fits, in HACKATHON.md's order):**
+
+> The problem: small manufacturers, 98% of American manufacturers by the SBA's count, still run production on paper batch records and spreadsheets. Shortages are caught by hand and orders are chased by email. When such a plant is acquired, its purchasing must follow the new owner's rules from day one, long before any ERP migration.
+>
+> The product: Day One gives the plant an AI purchasing and inventory agent, Kevin. He reads scanned batch records, the inventory spreadsheet and the purchasing mailbox, and a person confirms each reading before anything posts. He keeps inventory across the company's plants, catches shortages against the production plan, gets quotes from supplier agents and places orders. Staff work on ordinary screens and never see a wallet, a token or gas.
+>
+> How NEAR fits: a spend-policy contract on NEAR testnet holds the plant's budget and enforces the limits HQ sets. In the recorded demo it refused Kevin's $5,150 order against his $2,500 limit even though his model had signed APPROVE inside a NEAR AI Cloud enclave. The ops director's approval let Kevin fund escrow, and the supplier was paid only after receiving and QC released the lot. Supplier agents quote from their own NEAR accounts, two plants pool one order, a relayer pays staff gas, and batch records and lot histories are anchored on chain. The contract account has no keys, so its code cannot change.
+>
+> The demo uses fictional companies, a mock ERP, a simulated text reply, server-held staff keys and test tokens. Try it without installing at https://day-one-kevin.vercel.app, or run npm ci && npm run prove for a keyless scorecard of every claim.
+
+- **Description (the Nov 4 draft, not used):**
 
 > After Acme buys Hollow Pine, Ray still has a plant to run and paper batch records to enter. Kevin, an AI purchasing assistant, reads the scans and shows Ray the extracted values. When Ray confirms the record, inventory changes. Kevin checks which scheduled batches have enough usable material by their start date and asks supplier agents for quotes when the plan calls for a purchase.
 >
