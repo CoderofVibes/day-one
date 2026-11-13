@@ -16,7 +16,7 @@ The first customer is a company that has just bought such a plant and needs its 
 - **Keeps inventory and catches shortages.** He tracks every lot across the company’s plants, compares stock with the production plan, and flags a material that will run short. He suggests a transfer from a sister plant when that is the better fix.
 - **Buys within limits people set.** He asks supplier agents for quotes, leaves out suppliers HQ has not qualified, and places small orders on his own. An order over his limit goes to the director. The NEAR contract refuses to fund it until that director approves.
 - **Pays only for what arrived and passed.** The contract holds each payment in escrow. It pays the supplier named on the order after receiving confirms the delivery and QC releases the lot, and on a plain order with a set quantity, pays less for a short delivery.
-- **Keeps the chain out of the way.** Staff work on ordinary screens. Their approvals, receipts and QC releases become NEAR transactions, and a relayer pays the gas. Kevin’s own key can call only the contract’s purchasing methods. It cannot transfer tokens.
+- **Keeps the chain out of the way.** Staff work on ordinary screens. Their approvals, receipts and QC releases become NEAR transactions, and a relayer pays the gas. The key Kevin signs with can call only the contract’s purchasing methods. It cannot transfer tokens. (His account’s full-access key stays offline with the operator.)
 - **Leaves records anyone can check.** Each batch record and each lot’s history has a fingerprint on chain, so a one-gram edit shows up. Kevin’s model answers are signed inside a NEAR AI Cloud enclave, and the contract checks that signature on a large order.
 - **Works with other plants and other agents.** Two plants’ agents pool one order, and each plant’s director approves its own share. Supplier agents quote from their own NEAR accounts and take part in a sealed-bid round. The results reconcile with a mock of the acquirer’s ERP.
 
@@ -39,6 +39,8 @@ Ray uploads a paper batch record and confirms Kevin’s reading against the scan
 ![The fictional BR-B-1045 scan beside Kevin’s reading, with the material, lot, target and actual quantity ready for Ray to review.](docs/readme/kevin-batch-review.png)
 
 [See the refusal](https://testnet.nearblocks.io/txns/3bYd13vyu89wuD299y6gvmZMu1rV1vbBGQpKVEZdp1UC) → [Linda’s approval](https://testnet.nearblocks.io/txns/FpXXzZBkeCNouQgJn7eF8k7oe57dzgd3n21yhvFzGAtt) → [Funded retry](https://testnet.nearblocks.io/txns/3TzgR7iY2zrbYHvnbNphFfeJJaLQwLi4tPfGkQCH1oee) → [QC release and payment](https://testnet.nearblocks.io/txns/3F2TYKZ1bZPsKmrNt5aqJSQi49RaN9wTMUYdXDr1Hd6e)
+
+The explorer shows a bot check to scripts. Without a browser, `npm run proof -- --live` asks archival testnet RPC for every recorded transaction instead (no keys; 93 of 93 found, Nov 13).
 
 **Kevin’s model had already signed APPROVE. The contract still required Linda’s approval.** Both attempts carried the same signed model response. Linda’s authorization let Kevin fund the order. Northgate received payment after Tommy confirmed receipt and Priya released the lot. The staff screens show the order, the decision and what happens next. [Recorded calls and their signers](PROOF.md#the-purchasing-loop-po-1041-and-po-1042)
 
@@ -150,7 +152,7 @@ NEAR Intents and Chain Signatures are not used. Intents has no testnet, and this
 - **Planning inputs.** Supply dates are staff estimates of when goods will be usable, including any expected QC time. Undated and overdue shipments, and lots actually waiting on QC, do not count as usable supply. The forecast flags a threatened batch and includes existing supply when sizing additional purchases. The replay’s date comparison is a fictional planning exercise on the recorded order.
 
 - **Prototype and tokens.** All companies, people, prices and records are invented. All transactions are on NEAR testnet. The main and pooled runs use DTUSD. The separate Circle testnet USDC run uses the earlier contract, before quantity settlement and signed decisions. The old DTUSD deployment also remains readable. [Deployment evidence](PROOF.md)
-- **People and authority.** SMS is simulated and the server holds staff keys. Suppliers are rule-based agents. HQ chooses policies, authorized roles, supplier credentials and model signer addresses. The v2 contract account has no access keys since Nov 11, so its code cannot change (`npm run locked` asks testnet; [the deletion](https://testnet.nearblocks.io/txns/dUyRgg9mGbmT89utFPFA6YuakKmdxpB3QMwZLtQXHaR)); HQ still governs through the contract's owner methods. Operator-held full-access keys remain on the other accounts (HQ, staff, the USDC deployment). Those keys and HQ are trusted. [Account design](docs/CONTRACTS.md)
+- **People and authority.** SMS is simulated and the server holds staff keys. Suppliers are rule-based agents. HQ chooses policies, authorized roles, supplier credentials and model signer addresses. The v2 contract account has no access keys since Nov 11, so its code cannot change (`npm run locked` asks testnet; [the deletion](https://testnet.nearblocks.io/txns/dUyRgg9mGbmT89utFPFA6YuakKmdxpB3QMwZLtQXHaR)); HQ still governs through the contract's owner methods. Operator-held full-access keys remain on the other accounts (HQ, staff, Kevin’s account, held offline, and the USDC deployment). Those keys and HQ are trusted. [Account design](docs/CONTRACTS.md)
 - **Approval and model scope.** The contract compares specified approval fields and checks the signed response against a supplied PO fingerprint. It does not reconstruct the PO’s fingerprint from its terms. The quantity-binding case above demonstrates the consequence. Plant B’s plain-PO policy requires a signed decision above $2,500. Pooled POs use their own approval path. Model signatures establish provenance, and the model’s inputs still come from Kevin. The provider uses a model-wide signing key. [Contract checks](contracts/spend-policy/src/lib.rs), [boundary test](contracts/spend-policy/src/tests/settlement.rs)
 - **Receipt and settlement.** Staff report counts and QC results. Quantity settlement applies when a plain PO includes an ordered quantity. An invoice caps payment when recorded. Pooled POs take neither quantity nor invoice and pay in full on release. The packing slip’s fields come from a prepared fixture. Batch-record vision is recorded. [Settlement implementation](contracts/spend-policy/src/lib.rs), [receiving workflow](agents/kevin/src/receiving.ts)
 - **Supplier and ERP boundaries.** Credentials gate new funding. Revocation does not change an already funded PO’s payee or block its QC payout. A compromised supplier account still receives its payment. The ERP is a mock and its bill match is outside the contract’s payment conditions. [Credential rules](contracts/spend-policy/src/credentials.rs), [ERP connector](server/src/erp-connector)
@@ -197,12 +199,15 @@ Day One is a separate project from the same team’s other hackathon entry, [Eve
 
 Nothing in Day One is built on another chain: the contracts, escrow, payments and record anchors are all on NEAR testnet, and PO-1047's USDC is Circle's testnet USDC on NEAR. The build window runs Oct 19–Nov 14, 2026. The `pre-hackathon` tag marks the planning-only baseline of Oct 28 (docs and repo settings, no code); the `hackathon-submission` tag marks what was submitted. **[Everything built in the window: the diff between the two tags](https://github.com/CoderofVibes/day-one/compare/pre-hackathon...hackathon-submission)**. [MIT license](LICENSE)
 
+No starter template or boilerplate: the contracts, the TypeScript workspace and the web app were written in the window (a throwaway `cargo near new` project tested the toolchain on Oct 25 and was deleted). AI-written code is credited above.
+
 <details><summary>Libraries and versions</summary>
 
 | Library | Version | Use |
 |---|---|---|
 | near-sdk, near-contract-standards | 5.29.1 | contracts (built with cargo-near 0.22.0; `env::ecrecover` from near-sdk's `unstable` feature) |
 | near-sandbox, near-api (Rust) | 0.3.16, 0.8.6 | contract integration test |
+| cargo-near-build, k256, serde_json, tokio (Rust, tests only) | 0.11.5, 0.13, 1, 1 | building the wasm for the sandbox tests, signing test decisions, JSON, async runtime |
 | near-api-js | 7.3.1 | chain client and relayer |
 | better-sqlite3, drizzle-orm, drizzle-kit | 13.0.3, 0.45.4, 0.31.11 | ledger |
 | @anthropic-ai/sdk | 1.1.0 | fallback model route |
