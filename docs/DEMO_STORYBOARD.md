@@ -52,19 +52,21 @@ The **2:07 submission cut** opens on the Day One Overview (0:00), then shows the
 
 > Built by DadMod: one nuclear-startup engineer running on newborn hours, a project manager that never sleeps, and an engineer that never gets tired of tests. Kevin is the only one of us allowed near the purchase orders.
 
-## X post (final, Tony Nov 11; replaces the Nov 4 draft)
+## X post (final, Tony Nov 13; replaces the Nov 11 text)
 
-**Post 1, the main post** (274 of 280 characters; attach `Videos\Day One cut\Day One - cut v2 with voice.mp4`):
+**Post 1, the main post** (271 of 280 characters; X counts each link as 23; attach `Videos\Day One cut\Day One - cut v2 with voice.mp4`):
 
-> Kevin's Survival Guide to the Agentic Economy. Day One takes a newly acquired plant from paper to agents: Kevin reads the paperwork and buys within limits people set, enforced by a NEAR contract. Built at NEAR HACKATHON @NEARProtocol @NearLegion @NearBuilders #NEARHackathon
+> Day One: Kevin's Survival Guide to the Agentic Economy. It takes newly acquired plants from paper to automation. Agents read the paperwork and buy within set limits, enforced by a NEAR contract. https://github.com/CoderofVibes/day-one Built at NEAR HACKATHON @NEARProtocol #NEARHackathon
 
-**Post 2, a reply under it, posted right after** (151 characters; X counts each link as 23):
+**Post 2, a reply under it, posted right after** (210 characters):
 
-> Try it, no keys needed: https://github.com/CoderofVibes/day-one
+> If an AI ran your plant's purchasing, what's the first rule you'd write for it?
+>
 > Hosted demo: https://day-one-kevin.vercel.app
 > My other entry this hackathon, Everstreet: https://github.com/CoderofVibes/everstreet
+> @NearLegion @NearBuilders
 
-Post only after the repo is public and the hosted demo is live (checklist steps 6 and 6a); keep the Everstreet line only if its repo is public by then. The form's demo-post link is Post 1's URL. @NearLegion and @NearBuilders are optional tags (HACKATHON.md), kept for reach.
+Post only after the repo is public and the hosted demo is live (checklist steps 6 and 6a); keep the Everstreet line only if its repo is public by then. The form's demo-post link is Post 1's URL. The required tags (@NEARProtocol, #NEARHackathon) are in Post 1; @NearLegion and @NearBuilders are optional (HACKATHON.md) and sit in the reply to make room for the repo link. The question follows HACKATHON.md's tip to ask a genuine question.
 
 ---
 
